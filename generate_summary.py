@@ -547,10 +547,7 @@ def build_summary_image(
 
 # ── Total Excel builder ────────────────────────────────────────────────────────
 
-def build_total_excel(result: dict, out_path: str):
-    """
-    Build a summary Excel with 3 tables (Pickup / Delivery / Pending) on a SINGLE sheet.
-    """
+def build_total_excel(result, out_path, lang='kh'):
     import calendar
     import pandas as pd
     from openpyxl import Workbook
@@ -564,6 +561,38 @@ def build_total_excel(result: dict, out_path: str):
         'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'ACTION', 'NEXT_STEP'],
         'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'ACTION', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)'],
     }
+
+    ACTION_TRANSLATIONS_EN = {
+        'ដឹកជញ្ជូន': 'Deliver',
+        'ត្រួតពិនិត្យ': 'Check',
+        'ពិនិត្យ': 'Check',
+        'ត្រឡប់': 'Return',
+        'ផ្ញើត្រឡប់': 'Return',
+        'ចាត់អ្នកដឹក': 'Assign Driver',
+        'ដឹកជូនថ្ងៃនេះ': 'Deliver Today',
+        'ដឹកជូនឡើងវិញ': 'Redeliver',
+        'ជូនដំណឹងភ្ញៀវមកទទួល': 'Notify Customer to Collect',
+        'ទាក់ទងអ្នកទទួល': 'Contact Receiver',
+        'បញ្ជូនត្រឡប់ទៅហាងផ្ញើ': 'Return to Sender Store',
+        'បន្តដំណើរការត្រឡប់': 'Continue Return Process',
+        'ពិនិត្យព័ត៌មាន': 'Verify Info',
+        'ដោះស្រាយបញ្ហា': 'Resolve Issue',
+        'បញ្ជាក់អាសយដ្ឋានថ្មី': 'Confirm New Address',
+        'ផ្ទេរទៅឡានដឹក': 'Transfer to Truck',
+        'ចាកចេញពីស្ថានីយ៍រង': 'Depart Sub-station',
+        'ទទួលការផ្ទេរ': 'Receive Transfer',
+        'បញ្ជូនទៅឃ្លាំងធំ': 'Dispatch to Main Warehouse',
+        'ទទួលការបញ្ជូន': 'Receive Dispatch',
+    }
+
+    def _translate_val(v):
+        if lang != 'en' or not v or not isinstance(v, str):
+            return v
+        res = str(v)
+        for kh, en in ACTION_TRANSLATIONS_EN.items():
+            if kh in res:
+                res = res.replace(kh, en)
+        return res
 
     type_data = result.get('type_data', {})
     order_status_map = result.get('order_status_map', {})
@@ -579,11 +608,16 @@ def build_total_excel(result: dict, out_path: str):
     bdr   = Border(left=thin, right=thin, top=thin, bottom=thin)
 
     wb = Workbook()
-    ws = wb.active
-    ws.title = "Report_All"
-    current_row = 1
 
-    for rn in REPORT_ORDER:
+    for idx, rn in enumerate(REPORT_ORDER):
+        if idx == 0:
+            ws = wb.active
+            ws.title = rn
+        else:
+            ws = wb.create_sheet(title=rn)
+        ws.views.sheetView[0].showGridLines = True
+        current_row = 1
+
         df = type_data.get(rn)
         if df is None:
             df = pd.DataFrame(columns=REPORT_COLS[rn])
@@ -630,7 +664,7 @@ def build_total_excel(result: dict, out_path: str):
                     if pd.notna(dt):
                         order_created_map[order_id] = dt.date()
             agg = agg.copy()
-            agg['_act_w'] = agg['ACTION'].apply(lambda x: 1 if 'ដឹកជញ្ជូន' in str(x) else (2 if 'ពិនិត្យ' in str(x) else (3 if 'ត្រឡប់' in str(x) else 4)))
+            agg['_act_w'] = agg['ACTION'].apply(lambda x: 1 if 'ដឹកជញ្ជូន' in str(x) or 'Deliver' in str(x) else (2 if 'ពិនិត្យ' in str(x) or 'Check' in str(x) else (3 if 'ត្រឡប់' in str(x) or 'Return' in str(x) else 4)))
             from datetime import date as _dt_date
             agg['_created_dt'] = agg['ORDER ID'].apply(lambda x: order_created_map.get(str(x).strip(), _dt_date.max))
             
@@ -655,7 +689,7 @@ def build_total_excel(result: dict, out_path: str):
 
         title_row = current_row
         ws.row_dimensions[title_row].height = 22
-        tc = ws.cell(title_row, 1, f"{rn.upper()} BILL CHECK  {now_str}  — ALL BRANCHES")
+        tc = ws.cell(title_row, 1, f"{rn.upper()} BILL CHECK  {now_str}")
         tc.font      = Font(name=fn, color='FFFFFF', bold=True, size=12)
         tc.fill      = PatternFill(start_color=NAVY, end_color=NAVY, fill_type='solid')
         tc.alignment = Alignment(horizontal='left', vertical='center')
@@ -742,18 +776,18 @@ def build_total_excel(result: dict, out_path: str):
                 status_code = order_status_map.get(oid)
 
             for ci, col in enumerate(all_cols, start=1):
-                val  = row.get(col, '')
+                val  = _translate_val(row.get(col, ''))
                 cell = ws.cell(r, ci, val if val != '' else None)
                 cell.border = bdr
                 
                 cell_fill = None
                 if col == 'ACTION':
                     act_str = str(val)
-                    if 'ដឹកជញ្ជូន' in act_str:
+                    if 'ដឹកជញ្ជូន' in act_str or 'Deliver' in act_str:
                         cell_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-                    elif 'ពិនិត្យ' in act_str:
+                    elif 'ពិនិត្យ' in act_str or 'Check' in act_str:
                         cell_fill = PatternFill(start_color='FFF2CC', end_color='FFF2CC', fill_type='solid')
-                    elif 'ត្រឡប់' in act_str:
+                    elif 'ត្រឡប់' in act_str or 'Return' in act_str:
                         cell_fill = PatternFill(start_color='FCE4D6', end_color='FCE4D6', fill_type='solid')
                     cell.font = Font(name=fn, size=10, bold=False)
                 elif status_code in ('420', '472') and is_overdue_7days:
@@ -765,7 +799,6 @@ def build_total_excel(result: dict, out_path: str):
                 elif is_overdue:
                     cell_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
                     cell.font = Font(name=fn, size=10, bold=True)
-
                 else:
                     cell.font = Font(name=fn, size=10)
 
@@ -808,9 +841,8 @@ def build_total_excel(result: dict, out_path: str):
             elif col in ('Cus name', 'RECEIVER'):
                 max_len = max(
                     (len(str(ws.cell(r_iter, ci).value or ''))
-                     for r_iter in range(current_row, gt_row + 1)), default=20)
-                existing = ws.column_dimensions[letter].width or 0
-                ws.column_dimensions[letter].width = max(existing, min(max(max_len + 3, 22), 50))
+                     for r_iter in range(1, gt_row + 1)), default=20)
+                ws.column_dimensions[letter].width = min(max(max_len + 3, 22), 50)
             elif col == 'Phone':
                 max_len = max(
                     (len(str(ws.cell(r_iter, ci).value or ''))

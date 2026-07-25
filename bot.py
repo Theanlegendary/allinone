@@ -1842,6 +1842,33 @@ def _parse_export_branches(raw_args, cfg):
     return branches or _configured_export_branches(cfg)
 
 
+def _classify_facility(code, type_label):
+    code = str(code or "").strip().upper()
+    type_label = str(type_label or "").strip()
+    
+    m = re.search(r"^[A-Z]{3}([PSA])\d+$", code)
+    if m:
+        letter = m.group(1)
+        if letter == "P": return "Post Office"
+        if letter == "S": return "Showroom"
+        if letter == "A": return "Agent"
+
+    if re.search(r"[A-Z]{3}P\d+", code): return "Post Office"
+    if re.search(r"[A-Z]{3}S\d+", code): return "Showroom"
+    if re.search(r"[A-Z]{3}A\d+", code): return "Agent"
+
+    if "Warehouse" in type_label or "Hub" in type_label or "Operations" in type_label:
+        return "Warehouse / Hub"
+
+    if "Authorized" in type_label or "Agent" in type_label or "Dealer" in type_label:
+        return "Agent"
+
+    if "Post office" in type_label:
+        return "Post Office"
+
+    return "Post Office"
+
+
 def _strip_department_code(value, code=""):
     text = str(value or "").strip()
     if not text or text.lower() == "nan":
@@ -1918,6 +1945,8 @@ def _post_office_export_row(item, fallback_branch=""):
     )
     phone = _clean_export_phone(item.get("phone"))
 
+    category = _classify_facility(code, item.get("typeLabel") or item.get("type"))
+
     search_parts = [
         code,
         commune_en,
@@ -1926,6 +1955,7 @@ def _post_office_export_row(item, fallback_branch=""):
         branch_code,
         branch_en,
         branch_khmer,
+        category,
     ]
 
     return {
@@ -1937,6 +1967,7 @@ def _post_office_export_row(item, fallback_branch=""):
         "Branch EN": branch_en,
         "Branch Khmer": branch_khmer,
         "Type": str(item.get("typeLabel") or item.get("type") or "").strip(),
+        "Category": category,
         "Status": str(item.get("statusLabel") or item.get("status") or "").strip(),
         "Latitude": item.get("latitude"),
         "Longitude": item.get("longitude"),
@@ -2107,6 +2138,7 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
     import pandas as pd
 
     DARK_BLUE = "172033"
+    PRIMARY = "00A651"
     WHITE = "FFFFFF"
     BORDER_CLR = "CCCCCC"
     
@@ -2145,7 +2177,7 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
     ws.title = "Stores"
     ws.views.sheetView[0].showGridLines = True
     
-    data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Latitude", "Longitude", "Suggest Edit"]
+    data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
     
     for col_idx, col_name in enumerate(data_headers, 1):
         cell = ws.cell(row=1, column=col_idx, value=col_name)
@@ -2160,8 +2192,10 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
         commune_en = str(row.get("Commune EN", ""))
         commune_kh = str(row.get("Commune Khmer", ""))
         code = str(row.get("Pickup Branch", ""))
+        phone = str(row.get("Phone", ""))
         lat = row.get("Latitude")
         lon = row.get("Longitude")
+        category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
         
         prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
         store_name = f"{code} - {commune_en}"
@@ -2183,40 +2217,276 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
         
         ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
         ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=3, value=dist_en).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
         ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=5, value=lat).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=6, value=lon).font = Font(name="Calibri", size=10)
         
-        cell_suggest = ws.cell(row=row_idx, column=7, value=suggest_val)
+        # Category badge styling
+        cat_cell = ws.cell(row=row_idx, column=5, value=category)
+        cat_cell.alignment = Alignment(horizontal="center", vertical="center")
+        if category == "Post Office":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="137333")
+            cat_cell.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
+        elif category == "Showroom":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="B06000")
+            cat_cell.fill = PatternFill(start_color="FEF7E0", end_color="FEF7E0", fill_type="solid")
+        elif category == "Agent":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="1A73E8")
+            cat_cell.fill = PatternFill(start_color="E8F0FE", end_color="E8F0FE", fill_type="solid")
+        else:
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="6B21A8")
+            cat_cell.fill = PatternFill(start_color="F3E8FF", end_color="F3E8FF", fill_type="solid")
+
+        ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
+        
+        cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
         if suggest_val:
             cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
             cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
         else:
             cell_suggest.font = Font(name="Calibri", size=10)
             
-        for col_idx in range(1, 8):
+        for col_idx in range(1, 10):
             ws.cell(row=row_idx, column=col_idx).border = thin_border
             
     ws.column_dimensions["A"].width = 25
     ws.column_dimensions["B"].width = 25
     ws.column_dimensions["C"].width = 25
     ws.column_dimensions["D"].width = 45
-    ws.column_dimensions["E"].width = 15
-    ws.column_dimensions["F"].width = 15
-    ws.column_dimensions["G"].width = 30
+    ws.column_dimensions["E"].width = 22
+    ws.column_dimensions["F"].width = 20
+    ws.column_dimensions["G"].width = 15
+    ws.column_dimensions["H"].width = 15
+    ws.column_dimensions["I"].width = 30
     
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:G{len(df)+1}"
+    ws.auto_filter.ref = f"A1:I{len(df)+1}"
+
+    # ── Sheet 2: All Details ──
+    ws2 = wb.create_sheet(title="All Details")
+    ws2.views.sheetView[0].showGridLines = True
     
+    detail_headers = [
+        "Department Code", "Department Name", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category *", "Status", "Phone Number", "Latitude", "Longitude"
+    ]
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        cell = ws2.cell(row=1, column=col_idx, value=col_name)
+        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+        cell.fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type="solid")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+    ws2.row_dimensions[1].height = 28
+    
+    detail_cols = [
+        "Pickup Branch", "Commune EN", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category", "Status", "Phone", "Latitude", "Longitude"
+    ]
+    
+    for idx, row in df.iterrows():
+        row_idx = idx + 2
+        for col_idx, col_key in enumerate(detail_cols, 1):
+            val = row.get(col_key, "")
+            cell = ws2.cell(row=row_idx, column=col_idx, value=val)
+            cell.font = Font(name="Calibri", size=10)
+            cell.border = thin_border
+            
+    ws2.freeze_panes = "A2"
+    ws2.auto_filter.ref = f"A1:{get_column_letter(len(detail_headers))}{len(df)+1}"
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        max_len = len(str(col_name))
+        col_letter = get_column_letter(col_idx)
+        for row_idx in range(2, min(len(df) + 2, 50)):
+            v = ws2.cell(row=row_idx, column=col_idx).value
+            if v:
+                max_len = max(max_len, len(str(v)))
     wb.save(out_path)
 
+
+def _write_post_office_export_excel_by_category(df, out_path, sheet_label, title):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    import pandas as pd
+
+    DARK_BLUE = "172033"
+    PRIMARY = "00A651"
+    WHITE = "FFFFFF"
+    BORDER_CLR = "CCCCCC"
+    
+    thin_border = Border(
+        left=Side(style="thin", color=BORDER_CLR),
+        right=Side(style="thin", color=BORDER_CLR),
+        top=Side(style="thin", color=BORDER_CLR),
+        bottom=Side(style="thin", color=BORDER_CLR),
+    )
+    
+    lookup_map = {}
+    try:
+        ref_df = pd.read_csv("pickup_branch_lookup.csv", dtype=str)
+        for _, r in ref_df.iterrows():
+            code_val = str(r.get("Pickup Branch", "")).strip().upper()
+            comm_val = str(r.get("Commune EN", "")).strip()
+            if code_val and comm_val:
+                lookup_map[code_val] = comm_val
+    except Exception as e:
+        log.warning("Could not load pickup_branch_lookup.csv: %s", e)
+
+    gazetteer = _get_gazetteer()
+    valid_locations = set()
+    for item in gazetteer:
+        c_en = str(item.get("comm_en", "")).lower().replace(" ", "").replace("-", "")
+        d_en = str(item.get("dist_en", "")).lower().replace(" ", "").replace("-", "")
+        p_en = str(item.get("prov_en", "")).lower().replace(" ", "").replace("-", "")
+        if c_en: valid_locations.add(c_en)
+        if d_en: valid_locations.add(d_en)
+        if p_en: valid_locations.add(p_en)
+
+    wb = Workbook()
+    # Remove default sheet
+    wb.remove(wb.active)
+
+    category_tabs = [
+        ("Post Offices", "Post Office", "137333", "E6F4EA"),
+        ("Showrooms", "Showroom", "B06000", "FEF7E0"),
+        ("Agents", "Agent", "1A73E8", "E8F0FE"),
+    ]
+
+    for tab_title, cat_name, fg_color, bg_color in category_tabs:
+        sub_df = df[df["Category"] == cat_name] if "Category" in df.columns else df
+        ws = wb.create_sheet(title=tab_title)
+        ws.views.sheetView[0].showGridLines = True
+
+        data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
+        
+        for col_idx, col_name in enumerate(data_headers, 1):
+            cell = ws.cell(row=1, column=col_idx, value=col_name)
+            cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+            cell.fill = PatternFill(start_color=DARK_BLUE, end_color=DARK_BLUE, fill_type="solid")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = thin_border
+        ws.row_dimensions[1].height = 28
+
+        for idx, row in sub_df.reset_index(drop=True).iterrows():
+            branch_code = str(row.get("Branch Code", "")).strip().upper()
+            commune_en = str(row.get("Commune EN", ""))
+            commune_kh = str(row.get("Commune Khmer", ""))
+            code = str(row.get("Pickup Branch", ""))
+            phone = str(row.get("Phone", ""))
+            lat = row.get("Latitude")
+            lon = row.get("Longitude")
+            category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
+            
+            prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
+            store_name = f"{code} - {commune_en}"
+            
+            suggest_val = ""
+            if commune_en:
+                comm_norm = str(commune_en).lower().replace(" ", "").replace("-", "")
+                correct_name = lookup_map.get(code)
+                if correct_name:
+                    correct_norm = str(correct_name).lower().replace(" ", "").replace("-", "")
+                    if comm_norm != correct_norm:
+                        suggest_val = f"Change to \"{correct_name}\""
+                else:
+                    if comm_norm not in valid_locations:
+                        suggest_val = "Verify Location Name"
+
+            row_idx = idx + 2
+            ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
+            
+            cat_cell = ws.cell(row=row_idx, column=5, value=category)
+            cat_cell.alignment = Alignment(horizontal="center", vertical="center")
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color=fg_color)
+            cat_cell.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
+
+            ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
+            
+            cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
+            if suggest_val:
+                cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
+                cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+            else:
+                cell_suggest.font = Font(name="Calibri", size=10)
+                
+            for col_idx in range(1, 10):
+                ws.cell(row=row_idx, column=col_idx).border = thin_border
+
+        ws.column_dimensions["A"].width = 25
+        ws.column_dimensions["B"].width = 25
+        ws.column_dimensions["C"].width = 25
+        ws.column_dimensions["D"].width = 45
+        ws.column_dimensions["E"].width = 22
+        ws.column_dimensions["F"].width = 20
+        ws.column_dimensions["G"].width = 15
+        ws.column_dimensions["H"].width = 15
+        ws.column_dimensions["I"].width = 30
+        
+        ws.freeze_panes = "A2"
+        ws.auto_filter.ref = f"A1:I{len(sub_df)+1}"
+
+    # ── Sheet 4: All Details ──
+    ws2 = wb.create_sheet(title="All Details")
+    ws2.views.sheetView[0].showGridLines = True
+    
+    detail_headers = [
+        "Department Code", "Department Name", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category *", "Status", "Phone Number", "Latitude", "Longitude"
+    ]
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        cell = ws2.cell(row=1, column=col_idx, value=col_name)
+        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+        cell.fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type="solid")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+    ws2.row_dimensions[1].height = 28
+    
+    detail_cols = [
+        "Pickup Branch", "Commune EN", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category", "Status", "Phone", "Latitude", "Longitude"
+    ]
+    
+    for idx, row in df.iterrows():
+        row_idx = idx + 2
+        for col_idx, col_key in enumerate(detail_cols, 1):
+            val = row.get(col_key, "")
+            cell = ws2.cell(row=row_idx, column=col_idx, value=val)
+            cell.font = Font(name="Calibri", size=10)
+            cell.border = thin_border
+            
+    ws2.freeze_panes = "A2"
+    ws2.auto_filter.ref = f"A1:{get_column_letter(len(detail_headers))}{len(df)+1}"
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        max_len = len(str(col_name))
+        col_letter = get_column_letter(col_idx)
+        for row_idx in range(2, min(len(df) + 2, 50)):
+            v = ws2.cell(row=row_idx, column=col_idx).value
+            if v:
+                max_len = max(max_len, len(str(v)))
+        ws2.column_dimensions[col_letter].width = min(max_len + 4, 45)
+
+    wb.save(out_path)
 
 
 async def send_pickup_branch_export(update, context, cfg, raw_args):
     first_arg = raw_args[0].lower() if raw_args else ""
-    all_mode = first_arg in ("all", "pickup", "pickups", "search", "branches")
-    branch_args = raw_args[1:] if all_mode else raw_args
+    cat_mode = first_arg in ("po", "postoffice", "postoffices", "post_office", "office", "showroom", "showrooms", "agent", "agents", "dealer", "type", "types", "category", "categories", "divide", "split")
+    all_mode = cat_mode or (first_arg in ("all", "pickup", "pickups", "search", "branches"))
+    branch_args = raw_args[1:] if (all_mode or cat_mode) else raw_args
     branch_codes = _parse_export_branches(branch_args, cfg)
     if not branch_codes:
         await private_or_current_reply(update, context, "No branch codes configured for export.")
@@ -2335,14 +2605,30 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
             )
             return
 
-        if all_mode:
+        if all_mode and not cat_mode:
             df.to_csv(PICKUP_BRANCH_LOOKUP_PATH, index=False, encoding="utf-8-sig")
+
+        # Category filtering & divide options
+        cat_filter = None
+        divide_mode = False
+        if first_arg in ("po", "postoffice", "postoffices", "post_office", "office"):
+            cat_filter = "Post Office"
+        elif first_arg in ("showroom", "showrooms", "sub", "suboffice"):
+            cat_filter = "Showroom"
+        elif first_arg in ("agent", "agents", "dealer", "dealers"):
+            cat_filter = "Agent"
+        elif first_arg in ("type", "types", "category", "categories", "divide", "split"):
+            divide_mode = True
+
+        if cat_filter and "Category" in df.columns:
+            df = df[df["Category"] == cat_filter].copy()
+            description += f" ({cat_filter}s only)"
 
         await edit_or_send_requester_text(
             msg,
             update,
             context,
-            f"Found {len(df)} pickup branches. Building modern Excel..."
+            f"Found {len(df)} locations. Building modern Excel..."
         )
 
         tmpdir = tempfile.mkdtemp(prefix="export_po_")
@@ -2350,15 +2636,18 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
         safe_label = _safe_excel_label(label)
         filename = f"PickupBranches_{safe_label}_{stamp}.xlsx"
         out_path = os.path.join(tmpdir, filename)
-        title = f"Pickup Branch Search Export - {description} ({len(df)} offices)"
+        title = f"Pickup Branch Search Export - {description} ({len(df)} locations)"
 
-        _write_post_office_export_excel(df, out_path, label, title)
+        if divide_mode:
+            _write_post_office_export_excel_by_category(df, out_path, label, title)
+        else:
+            _write_post_office_export_excel(df, out_path, label, title)
 
         with open(out_path, "rb") as f:
             await send_requester_document(update, context, f, filename)
 
         done_lines = [
-            f"Exported {len(df)} pickup branches for {description}.",
+            f"Exported {len(df)} locations for {description}.",
             f"Time: {datetime.now().strftime('%d.%m.%Y %H:%M')}",
         ]
         if all_mode:
@@ -4321,7 +4610,7 @@ async def run_push(
 
                     # 2. Total Excel
                     zone_xlsx = os.path.join(tmpdir, f"Total_{zone_label}_{stamp}.xlsx")
-                    generate_summary.build_total_excel(zone_result, zone_xlsx)
+                    generate_summary.build_total_excel(zone_result, zone_xlsx, lang="en")
                     with open(zone_xlsx, "rb") as f:
                         await safe_api_call(
                             context.bot.send_document,
@@ -5037,7 +5326,152 @@ async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except Exception as e:
         log.exception("Error in /forward")
-        await edit_or_send_requester_text(msg, update, context, f"Error: {e}")
+MEDIA_GROUP_FILES = {}
+
+@pm_required_handler
+async def cmd_notice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /notice [target] <message> — Send a custom text remark, notice, or attached documents directly to groups without running a report.
+    Targets:
+      /notice <message>              -> Send remark to all regular branch groups
+      /notice zone <message>         -> Send remark to all zone groups
+      /notice all <message>          -> Send remark to ALL groups (branches + zones)
+      /notice KANP001 <message>      -> Send remark to KANP001 group
+    Supports document/photo attachments if sent as caption!
+    """
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    message_obj = update.effective_message
+    if not message_obj:
+        return
+
+    text_input = message_obj.caption or message_obj.text or ""
+    
+    # Collect media group files if album upload
+    mg_id = message_obj.media_group_id
+    current_file = message_obj.document or (message_obj.photo[-1] if message_obj.photo else None)
+    
+    if mg_id and current_file:
+        MEDIA_GROUP_FILES.setdefault(mg_id, [])
+        if current_file not in MEDIA_GROUP_FILES[mg_id]:
+            MEDIA_GROUP_FILES[mg_id].append(current_file)
+            
+    # Check if this update has the command prefix (e.g. /notice)
+    has_command = bool(re.search(r"^/(notice|announce|remark|sendmsg|msg)\b", text_input, re.IGNORECASE))
+    
+    if mg_id and not has_command:
+        # File part of media group without command - already stored in buffer
+        return
+
+    if not text_input and not current_file:
+        await private_or_current_reply(
+            update,
+            context,
+            "📢 Usage: /notice [target] <your message>\n\n"
+            "Sends a custom remark or document directly to groups (no report downloaded).\n\n"
+            "Examples:\n"
+            "  /notice Please clear all pending orders today!\n"
+            "  /notice zone Urgent: check inventory before 5 PM\n"
+            "  /notice all Important announcement for all branches\n"
+            "  /notice KANP001 Please call receivers first\n\n"
+            "💡 You can also attach a document/file/photo with /notice in the caption!"
+        )
+        return
+
+    # Parse target and text content
+    cleaned = re.sub(r"^/(notice|announce|remark|sendmsg|msg)(?:@\w+)?\s*", "", text_input, flags=re.IGNORECASE).strip()
+    words = cleaned.split()
+    first_word = words[0].lower() if words else ""
+
+    target_type = "branches"
+    text_content = cleaned
+
+    if first_word in ("zone", "zones"):
+        target_type = "zones"
+        text_content = re.sub(r"^\bzones?\b\s*", "", cleaned, flags=re.IGNORECASE).strip()
+    elif first_word in ("all", "everyone"):
+        target_type = "all"
+        text_content = re.sub(r"^\b(all|everyone)\b\s*", "", cleaned, flags=re.IGNORECASE).strip()
+    elif first_word and (
+        first_word.upper() in [h.upper() for zb in cfg.get("zone_branches", {}).values() for h in str(zb).split(",") if h.strip()]
+        or re.match(r"^[A-Z]{3,4}P?\d*$", first_word, re.I)
+    ):
+        target_type = first_word.upper()
+        text_content = re.sub(rf"^{re.escape(first_word)}\s*", "", cleaned, flags=re.IGNORECASE).strip()
+
+    # Determine files to send
+    attached_files = []
+    if mg_id:
+        await asyncio.sleep(1.0)
+        attached_files = MEDIA_GROUP_FILES.pop(mg_id, [current_file] if current_file else [])
+    elif current_file:
+        attached_files = [current_file]
+
+    if not text_content and not attached_files:
+        await private_or_current_reply(update, context, "Please specify a message text or attach a file to send.")
+        return
+
+    forward_mapping = get_forward_mapping(cfg)
+    all_branch_groups = get_all_forward_groups(cfg)
+    zone_groups = list(cfg.get("zone_forward_mapping", {}).keys())
+
+    target_group_ids = []
+    if target_type == "branches":
+        target_group_ids = all_branch_groups
+    elif target_type == "zones":
+        target_group_ids = zone_groups
+    elif target_type == "all":
+        target_group_ids = list(dict.fromkeys(all_branch_groups + zone_groups))
+    else:
+        for gid, handles in forward_mapping.items():
+            if target_type in [h.upper() for h in handles]:
+                target_group_ids.append(gid)
+
+    if not target_group_ids:
+        await private_or_current_reply(update, context, f"No group found for target: {target_type}")
+        return
+
+    msg = await send_requester_text(update, context, f"📤 Sending notice to {len(target_group_ids)} group(s)...")
+
+    formatted_msg = f"📢 REMARK / NOTICE\n{text_content}\n\n⏰ {datetime.now().strftime('%d/%m/%Y %H:%M')}" if text_content else f"📢 REMARK / NOTICE — {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+
+    sent_count = 0
+    for gid in target_group_ids:
+        try:
+            group_id = int(gid) if str(gid).lstrip("-").isdigit() else gid
+            if attached_files:
+                for idx_f, f_item in enumerate(attached_files):
+                    cap = formatted_msg if idx_f == 0 else ""
+                    if isinstance(f_item, telegram.Document):
+                        await safe_api_call(
+                            context.bot.send_document,
+                            chat_id=group_id,
+                            document=f_item.file_id,
+                            caption=cap,
+                        )
+                    else:
+                        await safe_api_call(
+                            context.bot.send_photo,
+                            chat_id=group_id,
+                            photo=f_item.file_id,
+                            caption=cap,
+                        )
+                    await asyncio.sleep(0.3)
+            else:
+                await safe_api_call(
+                    context.bot.send_message,
+                    chat_id=group_id,
+                    text=formatted_msg,
+                )
+            sent_count += 1
+            await asyncio.sleep(0.3)
+        except Exception as e:
+            log.error(f"Notice send failed to {gid}: {e}")
+
+    await edit_or_send_requester_text(
+        msg, update, context, f"✅ Notice sent successfully to {sent_count} group(s)."
+    )
 
 
 
@@ -5106,6 +5540,11 @@ def main():
     app.add_handler(CommandHandler("deletereport", cmd_delete_report))
     app.add_handler(CommandHandler("delreport",    cmd_delete_report))
     app.add_handler(CommandHandler("forward",  cmd_forward))
+    app.add_handler(CommandHandler("notice",   cmd_notice))
+    app.add_handler(CommandHandler("announce", cmd_notice))
+    app.add_handler(CommandHandler("remark",   cmd_notice))
+    app.add_handler(CommandHandler("sendmsg",  cmd_notice))
+    app.add_handler(MessageHandler(filters.CaptionRegex(r"^/(notice|announce|remark|sendmsg|msg)\b"), cmd_notice))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
 
     log.info("Bot running. Commands: push, /total, /vs, /vs2, /export, /find, /ask, /check, /trace, /statues, /help, /pause, /resume, /status, /mode, /register, /groups, /add, /remove, /list, /delay, /undelay, /delaylist, /clean, /qr, /deletereport")

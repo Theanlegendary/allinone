@@ -1,6 +1,6 @@
 {
   "telegram": {
-    "bot_token": "8988179337:AAE9qBpa9O4QZ2PVA7Bm8s25Hzkknv6jb0g",
+    "bot_token": "8988179337:AAGJsJ9XbVMpxbQTDSJ-2zeLrl0Nt8LWiCQ",
     "keyword": "push",
     "allowed_chat_ids": [],
     "allowed_user_ids": [],
@@ -42,9 +42,6 @@
       ],
       "-5154787193": [
         "PNPP005"
-      ],
-      "-5097607533": [
-        "KANP001"
       ],
       "-1003736417202": [
         "SIEP001"
@@ -102,6 +99,9 @@
       ],
       "-1004437427485": [
         "MONP001"
+      ],
+      "-1003970979375": [
+        "KANP001"
       ]
     },
     "image_mode": "long",
@@ -550,7 +550,6 @@
       "title": "DELIVERY BILL CHECK",
       "is_label": "Delivery",
       "status_codes": [
-        "400",
         "401",
         "402",
         "420",
@@ -575,7 +574,7 @@
         "230",
         "300",
         "302",
-        "306",
+        "310",
         "311"
       ]
     },
@@ -584,8 +583,9 @@
       "title": "PENDING BILL CHECK",
       "is_label": "Branch",
       "status_codes": [
+        "306",
         "309",
-        "310"
+        "400"
       ]
     }
   ],

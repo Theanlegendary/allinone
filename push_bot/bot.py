@@ -22,6 +22,7 @@ import asyncio
 import io
 from datetime import datetime, timedelta
 import threading
+import pandas as pd
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from telegram import Update
@@ -109,6 +110,91 @@ def update_webapp_cache(result):
     except Exception as e:
         log.error(f"Failed to update WebApp data cache: {e}")
 
+def save_highlight_history(result):
+    try:
+        today_date = datetime.now().date()
+        today_str = today_date.strftime("%Y-%m-%d")
+        timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        run_data = {"Pickup": {}, "Delivery": {}, "Transit": {}, "Branch": {}}
+        type_data = result.get("type_data", {})
+        filter_cols = {
+            'Pickup': 'POST OFFICE HANDLE',
+            'Delivery': 'POST OFFICE HANDLE',
+            'Transit': 'POST OFFICE HANDLE',
+            'Branch': 'POST OFFICE HANDLE'
+        }
+
+        for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+            df = type_data.get(rn)
+            if df is None or df.empty:
+                continue
+
+            fcol = filter_cols[rn]
+            if fcol not in df.columns:
+                continue
+
+            for h, df_h in df.groupby(fcol):
+                h_str = str(h).strip().upper()
+                if not h_str:
+                    continue
+                
+                oids = []
+                for _, row in df_h.iterrows():
+                    oid = str(row.get("ORDER ID") or "").strip()
+                    if not oid or oid.lower() == "nan":
+                        continue
+                    
+                    sc = str(row.get("STATUS_CODE") or "").strip()
+                    cd_val = row.get("CREATED DATE")
+                    
+                    is_highlight = False
+                    if sc in ('420', '472'):
+                        if cd_val:
+                            cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                            if not pd.isna(cd):
+                                if (today_date - cd.date()).days > 7:
+                                    is_highlight = True
+                    else:
+                        if cd_val:
+                            cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                            if not pd.isna(cd):
+                                if (today_date - cd.date()).days > 1:
+                                    is_highlight = True
+                    
+                    if is_highlight:
+                        oids.append(oid)
+                
+                if oids:
+                    run_data[rn][h_str] = oids
+
+        history_path = os.path.join(HERE, "highlight_history.json")
+        history = {}
+        if os.path.exists(history_path):
+            try:
+                with open(history_path, encoding="utf-8") as f:
+                    history = json.load(f)
+            except Exception:
+                pass
+
+        # Keep last 7 days of history
+        history = {k: v for k, v in history.items() if (datetime.now() - datetime.strptime(k, "%Y-%m-%d")).days < 7}
+
+        if today_str not in history:
+            history[today_str] = []
+
+        history[today_str].append({
+            "timestamp": timestamp_str,
+            "data": run_data
+        })
+
+        with open(history_path, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+
+        log.info(f"Saved highlighted orders history to highlight_history.json at {timestamp_str}")
+    except Exception as e:
+        log.warning(f"Failed to save highlight history: {e}")
+
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
@@ -116,15 +202,7 @@ import downloader
 import generate_report
 import generate_summary
 import excel_to_image
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-    stream=sys.stdout,
-)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-log = logging.getLogger("push_bot")
+import report_cmd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH        = os.path.join(HERE, "config.json")
@@ -132,6 +210,28 @@ REF_PATH           = os.path.join(HERE, "post_office_lookup.csv")
 PICKUP_BRANCH_LOOKUP_PATH = os.path.join(HERE, "pickup_branch_lookup.csv")
 REGISTERED_GROUPS_PATH = os.path.join(HERE, "registered_groups.json")
 REPORTS_LOG_PATH   = os.path.join(HERE, "reports_today.json")
+
+from logging.handlers import RotatingFileHandler
+log_file_path = os.path.join(HERE, "bot.log")
+file_handler = RotatingFileHandler(
+    log_file_path,
+    maxBytes=5 * 1024 * 1024,
+    backupCount=3,
+    encoding="utf-8"
+)
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        file_handler
+    ]
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+log = logging.getLogger("push_bot")
+
 
 
 # ── Today's report tracker (for /clean) ───────────────────────────────────────
@@ -486,13 +586,11 @@ async def send_requester_text(
         # If in a group chat, fallback to sending directly in the group
         if is_group_chat(update) and update.effective_chat:
             try:
-                reply_to_id = update.message.message_id if update.message else None
                 return await safe_api_call(
                     context.bot.send_message,
                     chat_id=update.effective_chat.id,
                     text=text,
                     parse_mode=parse_mode,
-                    reply_to_message_id=reply_to_id,
                 )
             except Exception as e2:
                 log.warning("Failed to send fallback requester text to group: %s", e2)
@@ -530,12 +628,10 @@ async def send_requester_photo(update: Update, context: ContextTypes.DEFAULT_TYP
         log.warning("Could not send requester photo to %s: %s", chat_id, e)
         if is_group_chat(update) and update.effective_chat:
             try:
-                reply_to_id = update.message.message_id if update.message else None
                 await safe_api_call(
                     context.bot.send_photo,
                     chat_id=update.effective_chat.id, 
                     photo=photo,
-                    reply_to_message_id=reply_to_id,
                 )
                 return True
             except Exception as e2:
@@ -569,14 +665,12 @@ async def send_requester_document(
         if is_group_chat(update) and update.effective_chat:
             try:
                 document.seek(0)
-                reply_to_id = update.message.message_id if update.message else None
                 await safe_api_call(
                     context.bot.send_document,
                     chat_id=update.effective_chat.id,
                     document=document,
                     filename=filename,
                     caption=caption,
-                    reply_to_message_id=reply_to_id,
                 )
                 return True
             except Exception as e2:
@@ -615,6 +709,23 @@ async def forward_result_to_groups(context: ContextTypes.DEFAULT_TYPE, payload):
                     await asyncio.sleep(0.5)
                 except Exception as e:
                     log.error(f"Image to group {group_id}: {e}")
+
+            # Send the single consolidated Excel file for this branch containing all tabs (Pickup, Delivery, Transit, Branch)
+            excel_path = hr.get("handle_excel_path")
+            if excel_path and os.path.exists(excel_path):
+                try:
+                    with open(excel_path, "rb") as ef:
+                        await safe_api_call(
+                            context.bot.send_document,
+                            chat_id=group_id,
+                            document=ef,
+                            filename=os.path.basename(excel_path),
+                        )
+                        sent_any = True
+                        await asyncio.sleep(0.5)
+                except Exception as e:
+                    log.error(f"Excel file to group {group_id} for {handle}: {e}")
+
             try:
                 await safe_api_call(context.bot.send_message, chat_id=group_id, text=hr["remark"])
                 sent_any = True
@@ -864,6 +975,64 @@ async def cmd_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @user_guard
+async def cmd_delete_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Delete a report message by replying to it with /deletereport."""
+    user_id = update.effective_user.id if update.effective_user else "Unknown"
+    chat_id = update.effective_chat.id if update.effective_chat else "Unknown"
+    log.info("=== cmd_delete_report triggered by user %s in chat %s ===", user_id, chat_id)
+    
+    await delete_group_command(update, context)
+    
+    message = update.effective_message
+    if not message:
+        log.warning("cmd_delete_report: No effective message found in update.")
+        return
+        
+    if not message.reply_to_message:
+        log.info("cmd_delete_report: Message is not a reply to another message.")
+        await private_or_current_reply(
+            update, context, 
+            "⚠️ Please reply to the report message you want to delete with `/deletereport`."
+        )
+        return
+
+    target_msg = message.reply_to_message
+    log.info("cmd_delete_report: Replying to message ID %s sent by user %s (is_bot: %s)", 
+             target_msg.message_id, 
+             target_msg.from_user.id if target_msg.from_user else "Unknown",
+             target_msg.from_user.is_bot if target_msg.from_user else "Unknown")
+    
+    try:
+        bot_user = await context.bot.get_me()
+        log.info("cmd_delete_report: Bot user ID is %s", bot_user.id)
+        if target_msg.from_user.id != bot_user.id:
+            log.info("cmd_delete_report: Message was not sent by the bot (sender ID %s != bot ID %s). Ignoring delete request.",
+                     target_msg.from_user.id, bot_user.id)
+            await private_or_current_reply(
+                update, context, 
+                "⚠️ You can only delete messages sent by the bot."
+            )
+            return
+    except Exception as e:
+        log.warning("Could not verify bot identity: %s", e)
+
+    try:
+        log.info("cmd_delete_report: Attempting to delete message %s in chat %s", target_msg.message_id, chat_id)
+        await context.bot.delete_message(
+            chat_id=chat_id,
+            message_id=target_msg.message_id
+        )
+        log.info("cmd_delete_report: Message %s deleted successfully.", target_msg.message_id)
+    except Exception as e:
+        log.error("Failed to delete report message: %s", e)
+        await private_or_current_reply(
+            update, context, 
+            f"❌ Failed to delete message: {e}"
+        )
+
+
+
+@user_guard
 async def cmd_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Toggle wide/long image mode."""
     await delete_group_command(update, context)
@@ -936,6 +1105,7 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "`push zone5` — Push to zone 5 only\n"
         "`/total` — Summary image + Excel (all data)\n"
         "`/total zone5` — Summary image + Excel (zone5 only)\n"
+        "`/deletereport` — Delete a report (reply to the bot's report message)\n"
         "\n"
         "📥 *Export*\n"
         "`/export KAM` — Export Kampot post office list\n"
@@ -1005,20 +1175,47 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 downloader.download_detail(cfg["api"], src, force_refresh=force_refresh)
                 msg = await edit_or_send_requester_text(msg, update, context, "Building TỒN MEGA CHECK report...")
                 import pivot
+
+                # 1. Combined Excel (Zone + Mega tables)
+                combined_xlsx = os.path.join(tmpdir, f"Report_MEGA_Combined_{stamp}.xlsx")
+                pivot.run_mega_combined(src, combined_xlsx, cfg)
+                img_combined = excel_to_image.excel_to_image(combined_xlsx)
+                img_combined.name = "mega_zone_combined.png"
+                await send_requester_photo(update, context, img_combined)
+
+                # 2. Mega-only pivot Excel + image
                 mega_xlsx = os.path.join(tmpdir, f"Report_MEGA_{stamp}.xlsx")
                 _, grand_total = pivot.run_mega(src, mega_xlsx, cfg)
                 img_buf = excel_to_image.excel_to_image(mega_xlsx)
                 img_buf.name = "mega_check.png"
                 await send_requester_photo(update, context, img_buf)
+
                 caption = f"TỒN MEGA CHECK {datetime.now().strftime('%d/%m/%Y %H:%M')}\nGrand Total: {grand_total}"
-                with open(mega_xlsx, "rb") as f:
+                with open(combined_xlsx, "rb") as f:
                     await send_requester_document(
                         update,
                         context,
                         f,
-                        os.path.basename(mega_xlsx),
+                        os.path.basename(combined_xlsx),
                         caption=caption,
                     )
+
+                # Build detail Excel with actual order data for MEGA/HUB/DVC
+                try:
+                    import mega_detail
+                    detail_xlsx = os.path.join(tmpdir, f"MEGA_Detail_{stamp}.xlsx")
+                    result_detail = mega_detail.build_mega_detail(src, detail_xlsx, cfg)
+                    total_orders = result_detail[0] if result_detail else 0
+                    urgent_orders = result_detail[1] if result_detail else 0
+                    with open(detail_xlsx, "rb") as f:
+                        await send_requester_document(
+                            update, context, f,
+                            os.path.basename(detail_xlsx),
+                            caption=f"📋 ទិន្នន័យលម្អិត MEGA {datetime.now().strftime('%d/%m/%Y %H:%M')}\nTotal: {total_orders} | Urgent: {urgent_orders}",
+                        )
+                except Exception as e:
+                    log.warning("Failed to build mega detail Excel: %s", e)
+
                 await edit_or_send_requester_text(msg, update, context, f"Done. TỒN MEGA CHECK {datetime.now().strftime('%d.%m.%Y %H:%M')}")
             except Exception as e:
                 log.exception("Error in /total mega")
@@ -1056,6 +1253,7 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             src, REF_PATH, tmpdir, return_metadata=True, mode=mode,
         )
         update_webapp_cache(result)
+        save_highlight_history(result)
 
         # ── Zone filtering ────────────────────────────────────────────────
         if zone_filter:
@@ -1065,7 +1263,7 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if hr["handle"] in zone_filter
             ]
             # Recalculate overall_counts from filtered handles
-            overall = {"Pickup": 0, "Delivery": 0, "Pending": 0}
+            overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
             for hr in result["handle_results"]:
                 for k in overall:
                     overall[k] += hr["handle_counts"].get(k, 0)
@@ -1073,30 +1271,86 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # Filter type_data DataFrames
             import pandas as pd
-            for rn in ["Pickup", "Delivery", "Pending"]:
+            for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
                 df = result.get("type_data", {}).get(rn)
                 if df is not None and not df.empty:
                     filter_col = "POST OFFICE HANDLE"
                     if filter_col in df.columns:
                         result["type_data"][rn] = df[df[filter_col].isin(zone_filter)].copy()
 
-            # Update summary caption
-            grand_total = sum(overall.values())
-            result["summary_caption"] = "\n".join([
-                f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                f"Pickup: {overall['Pickup']}  |  Delivery: {overall['Delivery']}  |  Pending: {overall['Pending']}",
-                f"Grand Total: {grand_total}",
-            ])
+            # Re-fetch overall if zone_filter was processed
+            overall = result["overall_counts"]
+
+        # Calculate day_date_counts and urgent_counts for /total image
+        total_day_date_counts = {}
+        total_urgent_counts   = {}
+        urgent_by_type        = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+        today_date = datetime.now().date()
+        import pandas as pd
+
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            df_z = result.get("type_data", {}).get(rn)
+            if df_z is None or df_z.empty:
+                continue
+            date_col_z = result.get("date_col") or (
+                "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else None
+            )
+            if date_col_z and date_col_z in df_z.columns:
+                parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
+                                          format="mixed", errors="coerce")
+                df_z = df_z.copy()
+                df_z["_zdate"] = parsed_z.dt.date
+
+            handle_col = "POST OFFICE HANDLE"
+            if handle_col not in df_z.columns:
+                continue
+
+            for _, row_z in df_z.iterrows():
+                h = str(row_z.get(handle_col, "")).strip().upper()
+                if not h:
+                    continue
+                d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
+                if d_val and not pd.isna(d_val):
+                    total_day_date_counts.setdefault(h, {})
+                    total_day_date_counts[h][d_val] = total_day_date_counts[h].get(d_val, 0) + 1
+                created_d = None
+                if "CREATED DATE" in df_z.columns:
+                    cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
+                                        format="mixed", errors="coerce")
+                    if not pd.isna(cd):
+                        created_d = cd.date()
+                if created_d and (today_date - created_d).days > 1:
+                    if h not in total_urgent_counts:
+                        total_urgent_counts[h] = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+                    total_urgent_counts[h][rn] = total_urgent_counts[h].get(rn, 0) + 1
+                    urgent_by_type[rn] += 1
+
+        overall = result["overall_counts"]
+        grand_total = sum(overall.values())
+        total_urgent_sum = sum(urgent_by_type.values())
+
+        # Build final formatted caption
+        result["summary_caption"] = "\n".join([
+            f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            f"Pickup: {overall['Pickup']} (U:{urgent_by_type.get('Pickup',0)})  |  "
+            f"Delivery: {overall['Delivery']} (U:{urgent_by_type.get('Delivery',0)})  |  "
+            f"Transit: {overall.get('Transit',0)} (U:{urgent_by_type.get('Transit',0)})  |  Branch: {overall.get('Branch',0)} (U:{urgent_by_type.get('Branch',0)})",
+            f"Grand Total: {grand_total}  |  Total Urgent: {total_urgent_sum}",
+        ])
 
         # 1. Summary image — totals per handle
         img_buf = generate_summary.build_summary_image(
             result["handle_results"],
             result["overall_counts"],
+            zone_label=zone_label,
+            day_date_counts=total_day_date_counts if total_day_date_counts else None,
+            urgent_counts=total_urgent_counts if total_urgent_counts else None,
         )
         img_buf.name = "summary.png"
         await send_requester_photo(update, context, img_buf)
 
-        # 2. Total Excel — 3 tables on one sheet (Pickup / Delivery / Pending)
+        # 2. Total Excel — 4 tables on one sheet (Pickup / Delivery / Transit / Branch)
         label = f"Total_{zone_label}_" if zone_filter else "Total_"
         total_xlsx = os.path.join(tmpdir, f"{label}{stamp}.xlsx")
         generate_summary.build_total_excel(result, total_xlsx)
@@ -1115,6 +1369,429 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         log.exception("Error in /total")
         await edit_or_send_requester_text(msg, update, context, f"Error: {e}")
+
+def get_highlighted_order_ids(df_t, today_date):
+    """Return a set of order IDs that are highlighted in this DataFrame."""
+    highlighted = set()
+    if df_t.empty:
+        return highlighted
+
+    for _, row in df_t.iterrows():
+        oid = str(row.get("ORDER ID") or "").strip()
+        if not oid or oid.lower() == "nan":
+            continue
+        
+        sc = str(row.get("STATUS_CODE") or "").strip()
+        cd_val = row.get("CREATED DATE")
+        
+        is_highlight = False
+        if sc in ('420', '472'):
+            if cd_val:
+                cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                if not pd.isna(cd):
+                    if (today_date - cd.date()).days > 7:
+                        is_highlight = True
+        else:
+            if cd_val:
+                cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                if not pd.isna(cd):
+                    if (today_date - cd.date()).days > 1:
+                        is_highlight = True
+        
+        if is_highlight:
+            highlighted.add(oid)
+            
+    return highlighted
+
+
+async def run_time_vs(update: Update, context: ContextTypes.DEFAULT_TYPE, start_hour: int, end_hour: int, command_label: str):
+    await delete_group_command(update, context)
+
+    cfg = load_config()
+    allowed = cfg["telegram"].get("allowed_chat_ids") or []
+    chat_id = update.effective_chat.id
+    if allowed and chat_id not in allowed:
+        await private_or_current_reply(update, context, "This chat is not allowed to use the bot.")
+        return
+
+    # Determine which handles to show based on arguments or chat context
+    args = [a.strip().upper() for a in (context.args or []) if a.strip()]
+    target_handles = None
+    title_label = ""
+
+    if args:
+        arg = args[0]
+        total_zones = cfg.get("total_zones", {})
+        if arg.lower() in total_zones:
+            target_handles = [h.upper() for h in total_zones[arg.lower()]]
+            title_label = f"{arg} "
+        else:
+            target_handles = [arg]
+            title_label = f"{arg} "
+    else:
+        # Check if in a registered group
+        forward_mapping = get_forward_mapping(cfg)
+        group_id_str = str(chat_id)
+        if group_id_str in forward_mapping:
+            group_handles = forward_mapping[group_id_str]
+            if "*" not in group_handles:
+                target_handles = [h.upper() for h in group_handles if h]
+                title_label = f"{', '.join(target_handles)} "
+
+        # Check if in a zone group
+        zone_fwd_map = cfg.get("zone_forward_mapping", {})
+        if group_id_str in zone_fwd_map:
+            zone_key = zone_fwd_map[group_id_str]
+            total_zones = cfg.get("total_zones", {})
+            if zone_key in total_zones:
+                target_handles = [h.upper() for h in total_zones[zone_key]]
+                title_label = f"{zone_key.upper()} "
+
+    # ── Try reading from JSON history first ─────────────────────────────────────
+    history_path = os.path.join(HERE, "highlight_history.json")
+    if os.path.exists(history_path):
+        try:
+            with open(history_path, encoding="utf-8") as f:
+                history = json.load(f)
+
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            runs = history.get(today_str, [])
+            if runs:
+                run_start = None
+                run_end = None
+                diff_start = None
+                diff_end = None
+
+                for r in runs:
+                    dt = datetime.strptime(r["timestamp"], "%Y-%m-%d %H:%M:%S")
+                    target_start = datetime.combine(dt.date(), datetime.min.time().replace(hour=start_hour))
+                    target_end = datetime.combine(dt.date(), datetime.min.time().replace(hour=end_hour))
+
+                    # start matching
+                    is_valid_start = False
+                    if start_hour == 8:
+                        is_valid_start = (dt.hour < 12)
+                    elif start_hour == 14:
+                        is_valid_start = (dt.hour >= 12 and dt.hour < 16)
+
+                    if is_valid_start:
+                        d_start = abs((dt - target_start).total_seconds())
+                        if diff_start is None or d_start < diff_start:
+                            diff_start = d_start
+                            run_start = r
+
+                    # end matching
+                    is_valid_end = False
+                    if end_hour == 14:
+                        is_valid_end = (dt.hour >= 12)
+                    elif end_hour == 17:
+                        is_valid_end = (dt.hour >= 16)
+
+                    if is_valid_end:
+                        d_end = abs((dt - target_end).total_seconds())
+                        if diff_end is None or d_end < diff_end:
+                            diff_end = d_end
+                            run_end = r
+
+                # Fallbacks
+                if not run_start:
+                    run_start = runs[0]
+                if not run_end:
+                    latest = runs[-1]
+                    if latest["timestamp"] != run_start["timestamp"]:
+                        run_end = latest
+
+                if run_start and run_end and run_start["timestamp"] != run_end["timestamp"]:
+                    dt_start = datetime.strptime(run_start["timestamp"], "%Y-%m-%d %H:%M:%S")
+                    dt_end = datetime.strptime(run_end["timestamp"], "%Y-%m-%d %H:%M:%S")
+
+                    t_start = dt_start.strftime('%I:%M %p')
+                    t_end = dt_end.strftime('%I:%M %p')
+
+                    all_h = set()
+                    map_1 = run_start["data"]
+                    map_2 = run_end["data"]
+
+                    for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+                        all_h.update(map_1.get(rn, {}).keys())
+                        all_h.update(map_2.get(rn, {}).keys())
+
+                    all_h = sorted(list(h for h in all_h if str(h).strip()))
+                    if target_handles:
+                        all_h = [h for h in all_h if h in target_handles]
+
+                    if all_h:
+                        text_lines = [
+                            f"📊 {title_label}VS REPORT ({command_label}) — {t_start} vs {t_end}",
+                            "=============================="
+                        ]
+
+                        grand_sets_1 = {"Pickup": set(), "Delivery": set(), "Transit": set(), "Branch": set()}
+                        grand_sets_2 = {"Pickup": set(), "Delivery": set(), "Transit": set(), "Branch": set()}
+
+                        for h in all_h:
+                            h_lines = []
+                            has_any_data = False
+                            
+                            for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+                                set_1 = set(map_1.get(rn, {}).get(h, []))
+                                set_2 = set(map_2.get(rn, {}).get(h, []))
+                                
+                                grand_sets_1[rn].update(set_1)
+                                grand_sets_2[rn].update(set_2)
+                                
+                                n1 = len(set_1)
+                                n2 = len(set_2)
+                                cleared = len(set_1 - set_2)
+                                
+                                if n1 > 0 or n2 > 0:
+                                    has_any_data = True
+                                    h_lines.append(f"  • {rn}: {n1} vs {n2} (Cleared {cleared})")
+
+                            if has_any_data and len(all_h) <= 10:
+                                text_lines.append(f"\n🏢 {h}:")
+                                text_lines.extend(h_lines)
+
+                        # Grand Summary
+                        text_lines.append("\n==============================")
+                        text_lines.append("📈 GRAND SUMMARY:")
+                        g_1 = 0
+                        g_2 = 0
+                        g_clear = 0
+                        for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+                            s1 = grand_sets_1[rn]
+                            s2 = grand_sets_2[rn]
+                            n1 = len(s1)
+                            n2 = len(s2)
+                            cleared = len(s1 - s2)
+                            
+                            g_1 += n1
+                            g_2 += n2
+                            g_clear += cleared
+                            
+                            text_lines.append(f"  • {rn}: {n1} vs {n2} (Cleared {cleared})")
+
+                        text_lines.append(f"  • Total: {g_1} vs {g_2} (Cleared {g_clear})")
+
+                        await send_requester_text(update, context, "\n".join(text_lines))
+                        return
+        except Exception as e:
+            log.warning(f"Error checking highlight history JSON: {e}")
+
+    if not os.path.exists(REPORTS_LOG_PATH):
+        await private_or_current_reply(update, context, "No reports run today yet.")
+        return
+
+    try:
+        with open(REPORTS_LOG_PATH, encoding="utf-8") as f:
+            log_data = json.load(f)
+    except Exception as e:
+        await private_or_current_reply(update, context, f"Error reading reports log: {e}")
+        return
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    dirs = log_data.get(today_str, [])
+    if not dirs:
+        await private_or_current_reply(update, context, "No reports run today yet.")
+        return
+
+    # Find all export files today
+    exports = []
+    for d in dirs:
+        if os.path.exists(d):
+            for f in os.listdir(d):
+                if f.startswith("export_") and f.endswith(".xlsx"):
+                    fpath = os.path.join(d, f)
+                    mtime = os.path.getmtime(fpath)
+                    mtime_dt = datetime.fromtimestamp(mtime)
+                    exports.append((mtime_dt, fpath))
+
+    if not exports:
+        await private_or_current_reply(update, context, "No raw exports found for today.")
+        return
+
+    exports = sorted(exports, key=lambda x: x[0])
+    
+    file_start = None
+    file_end = None
+    diff_start = None
+    diff_end = None
+
+    today_dt = exports[0][0].date()
+    target_start = datetime.combine(today_dt, datetime.min.time().replace(hour=start_hour))
+    target_end = datetime.combine(today_dt, datetime.min.time().replace(hour=end_hour))
+
+    for dt, path in exports:
+        # start file matching
+        is_valid_start = False
+        if start_hour == 8:
+            is_valid_start = (dt.hour < 12)
+        elif start_hour == 14:
+            is_valid_start = (dt.hour >= 12 and dt.hour < 16)
+
+        if is_valid_start:
+            d_start = abs((dt - target_start).total_seconds())
+            if diff_start is None or d_start < diff_start:
+                diff_start = d_start
+                file_start = (dt, path)
+
+        # end file matching
+        is_valid_end = False
+        if end_hour == 14:
+            is_valid_end = (dt.hour >= 12)
+        elif end_hour == 17:
+            is_valid_end = (dt.hour >= 16)
+
+        if is_valid_end:
+            d_end = abs((dt - target_end).total_seconds())
+            if diff_end is None or d_end < diff_end:
+                diff_end = d_end
+                file_end = (dt, path)
+
+    # Fallbacks
+    if not file_start:
+        file_start = exports[0]
+
+    if not file_end:
+        latest = exports[-1]
+        if latest[1] != file_start[1]:
+            file_end = latest
+
+    if not file_end:
+        await private_or_current_reply(
+            update,
+            context,
+            f"Only one report has been run today (at {file_start[0].strftime('%H:%M')}). "
+            "Please run another push first to compare."
+        )
+        return
+
+    msg = await send_requester_text(update, context, "Calculating differences...")
+
+    try:
+        tmpdir = tempfile.mkdtemp(prefix="vs_")
+        res_1 = generate_report.generate_reports_from_data(
+            file_start[1], REF_PATH, tmpdir, return_metadata=True, mode="wide"
+        )
+        res_2 = generate_report.generate_reports_from_data(
+            file_end[1], REF_PATH, tmpdir, return_metadata=True, mode="wide"
+        )
+        # Clean up
+        for f in os.listdir(tmpdir):
+            try:
+                os.remove(os.path.join(tmpdir, f))
+            except Exception:
+                pass
+        try:
+            os.rmdir(tmpdir)
+        except Exception:
+            pass
+    except Exception as e:
+        await edit_or_send_requester_text(msg, update, context, f"Error processing reports: {e}")
+        return
+
+    today_date = datetime.now().date()
+    filter_cols = {
+        'Pickup': 'POST OFFICE HANDLE',
+        'Delivery': 'POST OFFICE HANDLE',
+        'Transit': 'POST OFFICE HANDLE',
+            'Branch': 'POST OFFICE HANDLE'
+    }
+
+    # Aggregate by handle
+    all_h = set()
+    for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+        df1 = res_1['type_data'].get(rn, pd.DataFrame())
+        df2 = res_2['type_data'].get(rn, pd.DataFrame())
+        fcol = filter_cols[rn]
+        if fcol in df1.columns:
+            all_h.update(df1[fcol].dropna().unique())
+        if fcol in df2.columns:
+            all_h.update(df2[fcol].dropna().unique())
+
+    all_h = sorted(list(h for h in all_h if str(h).strip()))
+    if target_handles:
+        all_h = [h for h in all_h if h in target_handles]
+
+    if not all_h:
+        await edit_or_send_requester_text(msg, update, context, "No matching handles found in today's data.")
+        return
+
+    t_start = file_start[0].strftime('%I:%M %p')
+    t_end = file_end[0].strftime('%I:%M %p')
+
+    text_lines = [
+        f"📊 {title_label}VS REPORT ({command_label}) — {t_start} vs {t_end}",
+        "=============================="
+    ]
+
+    grand_sets_1 = {"Pickup": set(), "Delivery": set(), "Transit": set(), "Branch": set()}
+    grand_sets_2 = {"Pickup": set(), "Delivery": set(), "Transit": set(), "Branch": set()}
+
+    for h in all_h:
+        h_lines = []
+        has_any_data = False
+        
+        for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+            df1 = res_1['type_data'].get(rn, pd.DataFrame())
+            df2 = res_2['type_data'].get(rn, pd.DataFrame())
+            fcol = filter_cols[rn]
+            
+            df1_h = df1[df1[fcol] == h] if fcol in df1.columns else pd.DataFrame()
+            df2_h = df2[df2[fcol] == h] if fcol in df2.columns else pd.DataFrame()
+            
+            set_1 = get_highlighted_order_ids(df1_h, today_date)
+            set_2 = get_highlighted_order_ids(df2_h, today_date)
+            
+            grand_sets_1[rn].update(set_1)
+            grand_sets_2[rn].update(set_2)
+            
+            n1 = len(set_1)
+            n2 = len(set_2)
+            cleared = len(set_1 - set_2)
+            
+            if n1 > 0 or n2 > 0:
+                has_any_data = True
+                h_lines.append(f"  • {rn}: {n1} vs {n2} (Cleared {cleared})")
+
+        if has_any_data and len(all_h) <= 10:
+            text_lines.append(f"\n🏢 {h}:")
+            text_lines.extend(h_lines)
+
+    # Grand Summary
+    text_lines.append("\n==============================")
+    text_lines.append("📈 GRAND SUMMARY:")
+    g_1 = 0
+    g_2 = 0
+    g_clear = 0
+    for rn in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+        s1 = grand_sets_1[rn]
+        s2 = grand_sets_2[rn]
+        n1 = len(s1)
+        n2 = len(s2)
+        cleared = len(s1 - s2)
+        
+        g_1 += n1
+        g_2 += n2
+        g_clear += cleared
+        
+        text_lines.append(f"  • {rn}: {n1} vs {n2} (Cleared {cleared})")
+
+    text_lines.append(f"  • Total: {g_1} vs {g_2} (Cleared {g_clear})")
+
+    await edit_or_send_requester_text(msg, update, context, "\n".join(text_lines))
+
+
+@pm_required_handler
+async def cmd_vs(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/vs [handle/zone] — compare morning (8 AM) and afternoon (2 PM/current) reports."""
+    await run_time_vs(update, context, start_hour=8, end_hour=14, command_label="8AM vs 2PM")
+
+
+@pm_required_handler
+async def cmd_vs2(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/vs2 [handle/zone] — compare afternoon (2 PM) and evening (5 PM/current) reports."""
+    await run_time_vs(update, context, start_hour=14, end_hour=17, command_label="2PM vs 5PM")
 
 
 
@@ -1165,6 +1842,33 @@ def _parse_export_branches(raw_args, cfg):
     return branches or _configured_export_branches(cfg)
 
 
+def _classify_facility(code, type_label):
+    code = str(code or "").strip().upper()
+    type_label = str(type_label or "").strip()
+    
+    m = re.search(r"^[A-Z]{3}([PSA])\d+$", code)
+    if m:
+        letter = m.group(1)
+        if letter == "P": return "Post Office"
+        if letter == "S": return "Showroom"
+        if letter == "A": return "Agent"
+
+    if re.search(r"[A-Z]{3}P\d+", code): return "Post Office"
+    if re.search(r"[A-Z]{3}S\d+", code): return "Showroom"
+    if re.search(r"[A-Z]{3}A\d+", code): return "Agent"
+
+    if "Warehouse" in type_label or "Hub" in type_label or "Operations" in type_label:
+        return "Warehouse / Hub"
+
+    if "Authorized" in type_label or "Agent" in type_label or "Dealer" in type_label:
+        return "Agent"
+
+    if "Post office" in type_label:
+        return "Post Office"
+
+    return "Post Office"
+
+
 def _strip_department_code(value, code=""):
     text = str(value or "").strip()
     if not text or text.lower() == "nan":
@@ -1184,6 +1888,33 @@ def _clean_export_phone(value):
     if phone.isdigit() and not phone.startswith("0"):
         phone = "0" + phone
     return phone
+
+
+async def fetch_lat_long(code: str, token: str, sem: asyncio.Semaphore):
+    async with sem:
+        url = f"https://gw-express.metfone.com.kh/vtp-user/api/v1/departments/{code}"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Referer": "https://opsexpress.metfone.com.kh/",
+            "Accept": "application/json, text/plain, */*",
+            "User-Agent": "Mozilla/5.0",
+        }
+        for attempt in range(3):
+            try:
+                import requests
+                r = await asyncio.to_thread(
+                    requests.get, url, headers=headers, timeout=10
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    addr = data.get("departmentAddress") or {}
+                    return code, addr.get("latitude"), addr.get("longitude")
+                elif r.status_code == 404:
+                    return code, None, None
+            except Exception as e:
+                log.warning(f"Error fetching coordinates for {code} (attempt {attempt+1}): {e}")
+                await asyncio.sleep(0.5)
+        return code, None, None
 
 
 def _post_office_export_row(item, fallback_branch=""):
@@ -1214,6 +1945,8 @@ def _post_office_export_row(item, fallback_branch=""):
     )
     phone = _clean_export_phone(item.get("phone"))
 
+    category = _classify_facility(code, item.get("typeLabel") or item.get("type"))
+
     search_parts = [
         code,
         commune_en,
@@ -1222,6 +1955,7 @@ def _post_office_export_row(item, fallback_branch=""):
         branch_code,
         branch_en,
         branch_khmer,
+        category,
     ]
 
     return {
@@ -1233,7 +1967,10 @@ def _post_office_export_row(item, fallback_branch=""):
         "Branch EN": branch_en,
         "Branch Khmer": branch_khmer,
         "Type": str(item.get("typeLabel") or item.get("type") or "").strip(),
+        "Category": category,
         "Status": str(item.get("statusLabel") or item.get("status") or "").strip(),
+        "Latitude": item.get("latitude"),
+        "Longitude": item.get("longitude"),
         "Search Text": " | ".join(part for part in search_parts if part),
     }
 
@@ -1384,21 +2121,24 @@ def _map_to_administrative_division(branch_code, commune_en_raw, commune_kh_raw)
         c_kh = item["comm_kh"].lower().replace(" ", "").replace("-", "")
         
         if c_en == target_en or c_kh == target_kh or c_en in target_en or target_en in c_en:
-            return item["prov_kh"], item["dist_en"], item["dist_kh"], item["comm_kh"]
+            return item["prov_en"], item["prov_kh"], item["dist_en"], item["dist_kh"], item["comm_kh"]
             
+    prov_en = BRANCH_TO_PROVINCE_EN.get(branch_code, "Battambang")
     prov_kh = PROVINCE_MAP_KH.get(branch_code, "បាត់ដំបង")
     dist_en = DISTRICT_FALLBACK_EN.get(branch_code, "Battambang")
     dist_kh = DISTRICT_FALLBACK_KH.get(branch_code, "បាត់ដំបង")
     comm_kh = commune_kh_raw or commune_en_raw
-    return prov_kh, dist_en, dist_kh, comm_kh
+    return prov_en, prov_kh, dist_en, dist_kh, comm_kh
 
 
 def _write_post_office_export_excel(df, out_path, sheet_label, title):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter
+    import pandas as pd
 
     DARK_BLUE = "172033"
+    PRIMARY = "00A651"
     WHITE = "FFFFFF"
     BORDER_CLR = "CCCCCC"
     
@@ -1409,12 +2149,35 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
         bottom=Side(style="thin", color=BORDER_CLR),
     )
     
+    # Load pickup_branch_lookup.csv for suggestion reference
+    lookup_map = {}
+    try:
+        ref_df = pd.read_csv("pickup_branch_lookup.csv", dtype=str)
+        for _, r in ref_df.iterrows():
+            code_val = str(r.get("Pickup Branch", "")).strip().upper()
+            comm_val = str(r.get("Commune EN", "")).strip()
+            if code_val and comm_val:
+                lookup_map[code_val] = comm_val
+    except Exception as e:
+        log.warning("Could not load pickup_branch_lookup.csv: %s", e)
+
+    # Extract all valid commune, district, and province names from the gazetteer
+    gazetteer = _get_gazetteer()
+    valid_locations = set()
+    for item in gazetteer:
+        c_en = str(item.get("comm_en", "")).lower().replace(" ", "").replace("-", "")
+        d_en = str(item.get("dist_en", "")).lower().replace(" ", "").replace("-", "")
+        p_en = str(item.get("prov_en", "")).lower().replace(" ", "").replace("-", "")
+        if c_en: valid_locations.add(c_en)
+        if d_en: valid_locations.add(d_en)
+        if p_en: valid_locations.add(p_en)
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Stores"
     ws.views.sheetView[0].showGridLines = True
     
-    data_headers = ["Province *", "District *", "District KH", "Delivery Store *"]
+    data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
     
     for col_idx, col_name in enumerate(data_headers, 1):
         cell = ws.cell(row=1, column=col_idx, value=col_name)
@@ -1429,36 +2192,301 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
         commune_en = str(row.get("Commune EN", ""))
         commune_kh = str(row.get("Commune Khmer", ""))
         code = str(row.get("Pickup Branch", ""))
+        phone = str(row.get("Phone", ""))
+        lat = row.get("Latitude")
+        lon = row.get("Longitude")
+        category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
         
-        prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
+        prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
         store_name = f"{code} - {commune_en}"
         
+        # Calculate edit suggestion if current commune name is not a valid location in Cambodia
+        suggest_val = ""
+        if commune_en:
+            comm_norm = str(commune_en).lower().replace(" ", "").replace("-", "")
+            correct_name = lookup_map.get(code)
+            if correct_name:
+                correct_norm = str(correct_name).lower().replace(" ", "").replace("-", "")
+                if comm_norm != correct_norm:
+                    suggest_val = f"Change to \"{correct_name}\""
+            else:
+                if comm_norm not in valid_locations:
+                    suggest_val = "Verify Location Name"
+
         row_idx = idx + 2
         
-        ws.cell(row=row_idx, column=1, value=prov_kh).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
         ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
         ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
         ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
         
-        for col_idx in range(1, 5):
+        # Category badge styling
+        cat_cell = ws.cell(row=row_idx, column=5, value=category)
+        cat_cell.alignment = Alignment(horizontal="center", vertical="center")
+        if category == "Post Office":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="137333")
+            cat_cell.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
+        elif category == "Showroom":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="B06000")
+            cat_cell.fill = PatternFill(start_color="FEF7E0", end_color="FEF7E0", fill_type="solid")
+        elif category == "Agent":
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="1A73E8")
+            cat_cell.fill = PatternFill(start_color="E8F0FE", end_color="E8F0FE", fill_type="solid")
+        else:
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="6B21A8")
+            cat_cell.fill = PatternFill(start_color="F3E8FF", end_color="F3E8FF", fill_type="solid")
+
+        ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
+        ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
+        
+        cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
+        if suggest_val:
+            cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
+            cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+        else:
+            cell_suggest.font = Font(name="Calibri", size=10)
+            
+        for col_idx in range(1, 10):
             ws.cell(row=row_idx, column=col_idx).border = thin_border
             
     ws.column_dimensions["A"].width = 25
     ws.column_dimensions["B"].width = 25
     ws.column_dimensions["C"].width = 25
     ws.column_dimensions["D"].width = 45
+    ws.column_dimensions["E"].width = 22
+    ws.column_dimensions["F"].width = 20
+    ws.column_dimensions["G"].width = 15
+    ws.column_dimensions["H"].width = 15
+    ws.column_dimensions["I"].width = 30
     
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:D{len(df)+1}"
+    ws.auto_filter.ref = f"A1:I{len(df)+1}"
+
+    # ── Sheet 2: All Details ──
+    ws2 = wb.create_sheet(title="All Details")
+    ws2.views.sheetView[0].showGridLines = True
     
+    detail_headers = [
+        "Department Code", "Department Name", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category *", "Status", "Phone Number", "Latitude", "Longitude"
+    ]
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        cell = ws2.cell(row=1, column=col_idx, value=col_name)
+        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+        cell.fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type="solid")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+    ws2.row_dimensions[1].height = 28
+    
+    detail_cols = [
+        "Pickup Branch", "Commune EN", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category", "Status", "Phone", "Latitude", "Longitude"
+    ]
+    
+    for idx, row in df.iterrows():
+        row_idx = idx + 2
+        for col_idx, col_key in enumerate(detail_cols, 1):
+            val = row.get(col_key, "")
+            cell = ws2.cell(row=row_idx, column=col_idx, value=val)
+            cell.font = Font(name="Calibri", size=10)
+            cell.border = thin_border
+            
+    ws2.freeze_panes = "A2"
+    ws2.auto_filter.ref = f"A1:{get_column_letter(len(detail_headers))}{len(df)+1}"
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        max_len = len(str(col_name))
+        col_letter = get_column_letter(col_idx)
+        for row_idx in range(2, min(len(df) + 2, 50)):
+            v = ws2.cell(row=row_idx, column=col_idx).value
+            if v:
+                max_len = max(max_len, len(str(v)))
     wb.save(out_path)
 
+
+def _write_post_office_export_excel_by_category(df, out_path, sheet_label, title):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    import pandas as pd
+
+    DARK_BLUE = "172033"
+    PRIMARY = "00A651"
+    WHITE = "FFFFFF"
+    BORDER_CLR = "CCCCCC"
+    
+    thin_border = Border(
+        left=Side(style="thin", color=BORDER_CLR),
+        right=Side(style="thin", color=BORDER_CLR),
+        top=Side(style="thin", color=BORDER_CLR),
+        bottom=Side(style="thin", color=BORDER_CLR),
+    )
+    
+    lookup_map = {}
+    try:
+        ref_df = pd.read_csv("pickup_branch_lookup.csv", dtype=str)
+        for _, r in ref_df.iterrows():
+            code_val = str(r.get("Pickup Branch", "")).strip().upper()
+            comm_val = str(r.get("Commune EN", "")).strip()
+            if code_val and comm_val:
+                lookup_map[code_val] = comm_val
+    except Exception as e:
+        log.warning("Could not load pickup_branch_lookup.csv: %s", e)
+
+    gazetteer = _get_gazetteer()
+    valid_locations = set()
+    for item in gazetteer:
+        c_en = str(item.get("comm_en", "")).lower().replace(" ", "").replace("-", "")
+        d_en = str(item.get("dist_en", "")).lower().replace(" ", "").replace("-", "")
+        p_en = str(item.get("prov_en", "")).lower().replace(" ", "").replace("-", "")
+        if c_en: valid_locations.add(c_en)
+        if d_en: valid_locations.add(d_en)
+        if p_en: valid_locations.add(p_en)
+
+    wb = Workbook()
+    # Remove default sheet
+    wb.remove(wb.active)
+
+    category_tabs = [
+        ("Post Offices", "Post Office", "137333", "E6F4EA"),
+        ("Showrooms", "Showroom", "B06000", "FEF7E0"),
+        ("Agents", "Agent", "1A73E8", "E8F0FE"),
+    ]
+
+    for tab_title, cat_name, fg_color, bg_color in category_tabs:
+        sub_df = df[df["Category"] == cat_name] if "Category" in df.columns else df
+        ws = wb.create_sheet(title=tab_title)
+        ws.views.sheetView[0].showGridLines = True
+
+        data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
+        
+        for col_idx, col_name in enumerate(data_headers, 1):
+            cell = ws.cell(row=1, column=col_idx, value=col_name)
+            cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+            cell.fill = PatternFill(start_color=DARK_BLUE, end_color=DARK_BLUE, fill_type="solid")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = thin_border
+        ws.row_dimensions[1].height = 28
+
+        for idx, row in sub_df.reset_index(drop=True).iterrows():
+            branch_code = str(row.get("Branch Code", "")).strip().upper()
+            commune_en = str(row.get("Commune EN", ""))
+            commune_kh = str(row.get("Commune Khmer", ""))
+            code = str(row.get("Pickup Branch", ""))
+            phone = str(row.get("Phone", ""))
+            lat = row.get("Latitude")
+            lon = row.get("Longitude")
+            category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
+            
+            prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
+            store_name = f"{code} - {commune_en}"
+            
+            suggest_val = ""
+            if commune_en:
+                comm_norm = str(commune_en).lower().replace(" ", "").replace("-", "")
+                correct_name = lookup_map.get(code)
+                if correct_name:
+                    correct_norm = str(correct_name).lower().replace(" ", "").replace("-", "")
+                    if comm_norm != correct_norm:
+                        suggest_val = f"Change to \"{correct_name}\""
+                else:
+                    if comm_norm not in valid_locations:
+                        suggest_val = "Verify Location Name"
+
+            row_idx = idx + 2
+            ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
+            
+            cat_cell = ws.cell(row=row_idx, column=5, value=category)
+            cat_cell.alignment = Alignment(horizontal="center", vertical="center")
+            cat_cell.font = Font(name="Calibri", size=10, bold=True, color=fg_color)
+            cat_cell.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
+
+            ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
+            ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
+            
+            cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
+            if suggest_val:
+                cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
+                cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+            else:
+                cell_suggest.font = Font(name="Calibri", size=10)
+                
+            for col_idx in range(1, 10):
+                ws.cell(row=row_idx, column=col_idx).border = thin_border
+
+        ws.column_dimensions["A"].width = 25
+        ws.column_dimensions["B"].width = 25
+        ws.column_dimensions["C"].width = 25
+        ws.column_dimensions["D"].width = 45
+        ws.column_dimensions["E"].width = 22
+        ws.column_dimensions["F"].width = 20
+        ws.column_dimensions["G"].width = 15
+        ws.column_dimensions["H"].width = 15
+        ws.column_dimensions["I"].width = 30
+        
+        ws.freeze_panes = "A2"
+        ws.auto_filter.ref = f"A1:I{len(sub_df)+1}"
+
+    # ── Sheet 4: All Details ──
+    ws2 = wb.create_sheet(title="All Details")
+    ws2.views.sheetView[0].showGridLines = True
+    
+    detail_headers = [
+        "Department Code", "Department Name", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category *", "Status", "Phone Number", "Latitude", "Longitude"
+    ]
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        cell = ws2.cell(row=1, column=col_idx, value=col_name)
+        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
+        cell.fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type="solid")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = thin_border
+    ws2.row_dimensions[1].height = 28
+    
+    detail_cols = [
+        "Pickup Branch", "Commune EN", "Commune Khmer",
+        "Branch Code", "Branch EN", "Branch Khmer",
+        "Type", "Category", "Status", "Phone", "Latitude", "Longitude"
+    ]
+    
+    for idx, row in df.iterrows():
+        row_idx = idx + 2
+        for col_idx, col_key in enumerate(detail_cols, 1):
+            val = row.get(col_key, "")
+            cell = ws2.cell(row=row_idx, column=col_idx, value=val)
+            cell.font = Font(name="Calibri", size=10)
+            cell.border = thin_border
+            
+    ws2.freeze_panes = "A2"
+    ws2.auto_filter.ref = f"A1:{get_column_letter(len(detail_headers))}{len(df)+1}"
+    
+    for col_idx, col_name in enumerate(detail_headers, 1):
+        max_len = len(str(col_name))
+        col_letter = get_column_letter(col_idx)
+        for row_idx in range(2, min(len(df) + 2, 50)):
+            v = ws2.cell(row=row_idx, column=col_idx).value
+            if v:
+                max_len = max(max_len, len(str(v)))
+        ws2.column_dimensions[col_letter].width = min(max_len + 4, 45)
+
+    wb.save(out_path)
 
 
 async def send_pickup_branch_export(update, context, cfg, raw_args):
     first_arg = raw_args[0].lower() if raw_args else ""
-    all_mode = first_arg in ("all", "pickup", "pickups", "search", "branches")
-    branch_args = raw_args[1:] if all_mode else raw_args
+    cat_mode = first_arg in ("po", "postoffice", "postoffices", "post_office", "office", "showroom", "showrooms", "agent", "agents", "dealer", "type", "types", "category", "categories", "divide", "split")
+    all_mode = cat_mode or (first_arg in ("all", "pickup", "pickups", "search", "branches"))
+    branch_args = raw_args[1:] if (all_mode or cat_mode) else raw_args
     branch_codes = _parse_export_branches(branch_args, cfg)
     if not branch_codes:
         await private_or_current_reply(update, context, "No branch codes configured for export.")
@@ -1473,34 +2501,46 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
 
         post_offices = []
         branch_errors = []
-        
-        # Concurrency limit of 4 to avoid hitting server limits/500 errors
-        sem = asyncio.Semaphore(4)
-        
-        async def sem_download(code):
-            async with sem:
-                # Stagger the requests slightly to prevent a burst of 4 requests at the exact same millisecond
-                await asyncio.sleep(0.3)
-                return await asyncio.to_thread(
-                    downloader.download_post_offices,
-                    cfg["api"],
-                    code,
+
+        # If "all" mode with no specific branches, fetch ALL post offices at once
+        if all_mode and not branch_args:
+            try:
+                post_offices = await asyncio.to_thread(
+                    downloader.download_all_post_offices, cfg["api"]
                 )
-        
-        # Launch parallel downloads with semaphore limit
-        tasks = [sem_download(bc) for bc in branch_codes]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        for branch_code, res in zip(branch_codes, results):
-            if isinstance(res, Exception):
-                branch_errors.append(f"{branch_code}: {res}")
-                log.warning("Export failed for branch %s: %s", branch_code, res)
-            else:
-                for item in res:
+                for item in post_offices:
                     if isinstance(item, dict):
-                        item = dict(item)
-                        item["_export_branch_query"] = branch_code
-                    post_offices.append(item)
+                        item["_export_branch_query"] = str(item.get("branchCode", ""))
+            except Exception as e:
+                log.warning("download_all_post_offices failed, falling back: %s", e)
+                post_offices = []
+
+        # Fallback or specific branch mode: fetch per branch
+        if not post_offices:
+            sem = asyncio.Semaphore(4)
+        
+            async def sem_download(code):
+                async with sem:
+                    await asyncio.sleep(0.3)
+                    return await asyncio.to_thread(
+                        downloader.download_post_offices,
+                        cfg["api"],
+                        code,
+                    )
+        
+            tasks = [sem_download(bc) for bc in branch_codes]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+            for branch_code, res in zip(branch_codes, results):
+                if isinstance(res, Exception):
+                    branch_errors.append(f"{branch_code}: {res}")
+                    log.warning("Export failed for branch %s: %s", branch_code, res)
+                else:
+                    for item in res:
+                        if isinstance(item, dict):
+                            item = dict(item)
+                            item["_export_branch_query"] = branch_code
+                        post_offices.append(item)
 
         if not post_offices:
             extra = "\n".join(branch_errors[:5])
@@ -1511,6 +2551,37 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
                 f"No post offices found for {description}." + (f"\n{extra}" if extra else "")
             )
             return
+
+        # Fetch coordinates in parallel
+        unique_codes = list(set(
+            str(item.get("code", "")).strip().upper()
+            for item in post_offices
+            if isinstance(item, dict) and item.get("code")
+        ))
+        
+        if unique_codes:
+            await edit_or_send_requester_text(
+                msg,
+                update,
+                context,
+                f"Fetched {len(post_offices)} offices. Retrieving coordinates..."
+            )
+            detail_sem = asyncio.Semaphore(15)
+            detail_tasks = [fetch_lat_long(code, cfg["api"]["bearer_token"], detail_sem) for code in unique_codes]
+            detail_results = await asyncio.gather(*detail_tasks, return_exceptions=True)
+            
+            coords_map = {}
+            for res in detail_results:
+                if isinstance(res, tuple) and len(res) == 3:
+                    code, lat, lon = res
+                    coords_map[code] = (lat, lon)
+            
+            for item in post_offices:
+                if isinstance(item, dict):
+                    code = str(item.get("code", "")).strip().upper()
+                    lat, lon = coords_map.get(code, (None, None))
+                    item["latitude"] = lat
+                    item["longitude"] = lon
 
         rows = [
             _post_office_export_row(item, item.get("_export_branch_query", ""))
@@ -1534,14 +2605,30 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
             )
             return
 
-        if all_mode:
+        if all_mode and not cat_mode:
             df.to_csv(PICKUP_BRANCH_LOOKUP_PATH, index=False, encoding="utf-8-sig")
+
+        # Category filtering & divide options
+        cat_filter = None
+        divide_mode = False
+        if first_arg in ("po", "postoffice", "postoffices", "post_office", "office"):
+            cat_filter = "Post Office"
+        elif first_arg in ("showroom", "showrooms", "sub", "suboffice"):
+            cat_filter = "Showroom"
+        elif first_arg in ("agent", "agents", "dealer", "dealers"):
+            cat_filter = "Agent"
+        elif first_arg in ("type", "types", "category", "categories", "divide", "split"):
+            divide_mode = True
+
+        if cat_filter and "Category" in df.columns:
+            df = df[df["Category"] == cat_filter].copy()
+            description += f" ({cat_filter}s only)"
 
         await edit_or_send_requester_text(
             msg,
             update,
             context,
-            f"Found {len(df)} pickup branches. Building modern Excel..."
+            f"Found {len(df)} locations. Building modern Excel..."
         )
 
         tmpdir = tempfile.mkdtemp(prefix="export_po_")
@@ -1549,15 +2636,18 @@ async def send_pickup_branch_export(update, context, cfg, raw_args):
         safe_label = _safe_excel_label(label)
         filename = f"PickupBranches_{safe_label}_{stamp}.xlsx"
         out_path = os.path.join(tmpdir, filename)
-        title = f"Pickup Branch Search Export - {description} ({len(df)} offices)"
+        title = f"Pickup Branch Search Export - {description} ({len(df)} locations)"
 
-        _write_post_office_export_excel(df, out_path, label, title)
+        if divide_mode:
+            _write_post_office_export_excel_by_category(df, out_path, label, title)
+        else:
+            _write_post_office_export_excel(df, out_path, label, title)
 
         with open(out_path, "rb") as f:
             await send_requester_document(update, context, f, filename)
 
         done_lines = [
-            f"Exported {len(df)} pickup branches for {description}.",
+            f"Exported {len(df)} locations for {description}.",
             f"Time: {datetime.now().strftime('%d.%m.%Y %H:%M')}",
         ]
         if all_mode:
@@ -2789,6 +3879,214 @@ async def cmd_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_requester_text(update, context, f"❌ Failed to build Excel file: {e}")
 
 
+@pm_required_handler
+async def cmd_trace(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/trace <bill_id> — diagnose and track errors/status for a specific bill ID."""
+    await delete_group_command(update, context)
+    
+    args = [a.strip() for a in (context.args or []) if a.strip()]
+    bill_id = " ".join(args)
+    
+    if not bill_id and update.message and update.message.reply_to_message:
+        reply = update.message.reply_to_message
+        bill_id = (reply.text or reply.caption or "").strip()
+        
+    # Extract the first digit sequence of length >= 8 if it's a long text
+    if bill_id:
+        match = re.search(r'\d{8,}', bill_id)
+        if match:
+            bill_id = match.group(0)
+
+    # Clean up non-digits just in case
+    bill_id = "".join(c for c in bill_id if c.isdigit())
+    
+    if not bill_id:
+        await private_or_current_reply(
+            update,
+            context,
+            "Usage: `/trace <bill_id>`\n"
+            "Example: `/trace 3003568063`"
+        )
+        return
+        
+    msg = await send_requester_text(
+        update, context,
+        f"🔍 Initiating trace for Bill ID `{bill_id}`..."
+    )
+    
+    trace_results = []
+    trace_results.append(f"🔍 **Trace Report for Bill ID:** `{bill_id}`\n")
+    
+    # ── 1. Check ignore / test lists ──
+    trace_results.append("📋 **1. Settings & Config Check:**")
+    is_ignored = False
+    if os.path.exists("test_bills.txt"):
+        try:
+            with open("test_bills.txt", "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip() == bill_id:
+                        is_ignored = True
+                        break
+        except Exception as e:
+            trace_results.append(f"   • ❌ Failed to read `test_bills.txt`: {e}")
+            
+    if is_ignored:
+        trace_results.append(f"   • ⚠️ Listed in `test_bills.txt` (This bill is marked as TEST/IGNORED).")
+    else:
+        trace_results.append(f"   • ✅ Not listed in `test_bills.txt` (Active/not ignored).")
+        
+    # Check delayed_bills.json
+    is_delayed = False
+    if os.path.exists("delayed_bills.json"):
+        try:
+            with open("delayed_bills.json", "r", encoding="utf-8") as f:
+                delayed = json.load(f)
+                if bill_id in delayed:
+                    is_delayed = True
+                    trace_results.append(f"   • ⚠️ Listed in `delayed_bills.json` (Delayed until: `{delayed[bill_id]}`).")
+        except Exception as e:
+            trace_results.append(f"   • ❌ Failed to read `delayed_bills.json`: {e}")
+            
+    if not is_delayed:
+        trace_results.append("   • ✅ Not listed in `delayed_bills.json` (No delay filter applied).")
+    
+    trace_results.append("")
+    
+    # ── 2. Search local Excel cache ──
+    trace_results.append("📂 **2. Local Excel Cache Search:**")
+    found_in_cache = False
+    cache_file = os.path.join(HERE, "cache", "latest_detail.xlsx")
+    if os.path.exists(cache_file):
+        try:
+            import pandas as pd
+            xl = pd.ExcelFile(cache_file)
+            for sheet in xl.sheet_names:
+                df = xl.parse(sheet)
+                order_col = None
+                for col in df.columns:
+                    if "order" in str(col).lower() or "id" in str(col).lower():
+                        order_col = col
+                        break
+                if not order_col and len(df.columns) > 3:
+                    for col in df.columns:
+                        if df[col].astype(str).str.contains(bill_id, na=False).any():
+                            order_col = col
+                            break
+                if order_col is not None:
+                    matches = df[df[order_col].astype(str).str.strip() == bill_id]
+                    if not matches.empty:
+                        found_in_cache = True
+                        row = matches.iloc[0]
+                        trace_results.append(f"   • ✅ Found in cached Excel (`{sheet}` sheet):")
+                        status = row.get("CURRENT STATUS") or row.get("Current Status") or row.get("Trạng thái hiện tại") or "N/A"
+                        po = row.get("CURRENT POST OFFICE") or row.get("Current Post Office") or row.get("Bưu cục hiện tại") or "N/A"
+                        sender = row.get("SENDER") or row.get("Sender") or "N/A"
+                        receiver = row.get("RECEIVER") or row.get("Receiver") or "N/A"
+                        trace_results.append(f"     - Status: `{status}`")
+                        trace_results.append(f"     - Post Office: `{po}`")
+                        trace_results.append(f"     - Sender: `{sender}` | Receiver: `{receiver}`")
+                        break
+            if not found_in_cache:
+                trace_results.append("   • ℹ️ Bill ID not found in the latest cached Excel data.")
+        except Exception as e:
+            trace_results.append(f"   • ❌ Error reading cached Excel: {e}")
+    else:
+        trace_results.append("   • ℹ️ No cached Excel data found.")
+        
+    trace_results.append("")
+    
+    # ── 3. Live API Diagnostics ──
+    trace_results.append("⚡ **3. Live TMS API Diagnostics:**")
+    cfg = load_config()
+    token = cfg.get("api", {}).get("bearer_token")
+    if not token:
+        trace_results.append("   • ❌ API Token is missing in config.json")
+    else:
+        import requests
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json, text/plain, */*",
+            "User-Agent": "Mozilla/5.0",
+        }
+        
+        # Live Search call
+        url_search = "https://gw-express.metfone.com.kh/tms-receiving/api/v1/orders/search"
+        trace_results.append("   *Querying Search API...*")
+        try:
+            r_search = await asyncio.to_thread(
+                requests.get, url_search, params={"order_code": bill_id}, headers=headers, timeout=15
+            )
+            trace_results.append(f"   • Status: HTTP `{r_search.status_code}`")
+            if r_search.status_code == 200:
+                sdata = r_search.json()
+                cod = sdata.get("cod_money") or 0.0
+                fee = sdata.get("total_fees") or 0.0
+                bp = sdata.get("delivery_post_code") or sdata.get("post_code") or "N/A"
+                trace_results.append(f"     - COD: `{cod}` | Fee: `{fee}` | Post Code: `{bp}`")
+            else:
+                trace_results.append(f"     - Error Response: `{r_search.text[:250]}`")
+        except Exception as e:
+            trace_results.append(f"     - Search API Connection Failed: `{e}`")
+            
+        # Live Tracking call
+        url_track = "https://gw-express.metfone.com.kh/tms-tracking/api/v1/order-tracking"
+        trace_results.append("   *Querying Tracking API...*")
+        try:
+            r_track = await asyncio.to_thread(
+                requests.get, url_track, params={"order_id": bill_id}, headers=headers, timeout=15
+            )
+            trace_results.append(f"   • Status: HTTP `{r_track.status_code}`")
+            if r_track.status_code == 200:
+                tdata = r_track.json()
+                trips = tdata.get("trackingTrips", [])
+                if trips:
+                    latest = trips[0]
+                    status_name = latest.get("statusName", "Unknown")
+                    trace_results.append(f"     - Current Status Name: `{status_name}`")
+                    trace_results.append(f"     - Recent Trip Scans (max 3):")
+                    for idx, t in enumerate(trips[:3]):
+                        status = t.get("status", "")
+                        desc = t.get("description", "")
+                        user = t.get("updatedBy", {}).get("name") or t.get("shipperName") or "System"
+                        ts = t.get("updatedAt") or ""
+                        trace_results.append(f"       {idx+1}. [{status}] {desc} (by {user} at {ts})")
+                else:
+                    trace_results.append("     - No tracking trips found.")
+            else:
+                trace_results.append(f"     - Error Response: `{r_track.text[:250]}`")
+        except Exception as e:
+            trace_results.append(f"     - Tracking API Connection Failed: `{e}`")
+            
+    trace_results.append("")
+    
+    # ── 4. Log Scan ──
+    trace_results.append("📝 **4. Execution Logs (`bot.log`):**")
+    log_file = os.path.join(HERE, "bot.log")
+    if os.path.exists(log_file):
+        try:
+            matching_lines = []
+            with open(log_file, "r", encoding="utf-8", errors="ignore") as lf:
+                for line in lf:
+                    if bill_id in line:
+                        matching_lines.append(line.strip())
+            if matching_lines:
+                trace_results.append(f"   • Found {len(matching_lines)} matching log entry/entries:")
+                for ml in matching_lines[-15:]:
+                    trace_results.append(f"     - `{ml[:150]}`")
+            else:
+                trace_results.append("   • No logs found matching this Bill ID.")
+        except Exception as e:
+            trace_results.append(f"   • ❌ Failed to read log file: {e}")
+    else:
+        trace_results.append("   • ℹ/ No log file `bot.log` exists yet.")
+        
+    final_text = "\n".join(trace_results)
+    if len(final_text) > 4000:
+        final_text = final_text[:4000] + "\n... (Trace truncated due to size)"
+        
+    await edit_or_send_requester_text(msg, update, context, final_text)
+
+
 @user_guard
 async def cmd_qr(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/qr <order_id> - generate a QR code for the order ID to scan on the phone screen."""
@@ -2826,14 +4124,12 @@ async def cmd_qr(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log.warning("Could not send QR photo to private chat %s: %s", chat_id, e)
         if is_group_chat(update) and update.effective_chat:
             try:
-                reply_to_id = update.message.message_id if update.message else None
                 await safe_api_call(
                     context.bot.send_photo,
                     chat_id=update.effective_chat.id,
                     photo=qr_url,
                     caption=caption,
                     parse_mode="Markdown",
-                    reply_to_message_id=reply_to_id,
                 )
             except Exception as e2:
                 log.warning("Fallback send QR to group failed: %s", e2)
@@ -2992,6 +4288,7 @@ async def run_push(
             src, REF_PATH, tmpdir, return_metadata=True, mode=mode, target_handles=target_handles
         )
         update_webapp_cache(result)
+        save_highlight_history(result)
 
         # ── Apply handle filters ──────────────────────────────────────────
         if target_handles:
@@ -3002,7 +4299,7 @@ async def run_push(
 
         # Recalculate overall counts after filtering
         if target_handles or zone_mode:
-            overall = {"Pickup": 0, "Delivery": 0, "Pending": 0}
+            overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
             for hr in result["handle_results"]:
                 for k in overall:
                     overall[k] += hr["handle_counts"].get(k, 0)
@@ -3011,7 +4308,7 @@ async def run_push(
             label = f"{zone_mode} " if zone_mode else ""
             result["summary_caption"] = "\n".join([
                 f"📋 {label}Daily Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                f"Pickup: {overall['Pickup']}  |  Delivery: {overall['Delivery']}  |  Pending: {overall['Pending']}",
+                f"Pickup: {overall['Pickup']}  |  Delivery: {overall['Delivery']}  |  Transit: {overall.get('Transit',0)}  |  Branch: {overall.get('Branch',0)}",
                 f"Grand Total: {grand_total}",
             ])
 
@@ -3156,26 +4453,71 @@ async def run_push(
                     group_id = group_id_str
 
                 # Calculate zone totals
-                zone_overall = {"Pickup": 0, "Delivery": 0, "Pending": 0}
+                zone_overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
                 for hr in zone_results:
                     for k in zone_overall:
                         zone_overall[k] += hr["handle_counts"].get(k, 0)
                 zone_grand = sum(zone_overall.values())
 
                 zone_label = zone_key.upper()
+
+                # ── Calculate Fee + COD totals per handle and zone total ──
+                zone_fee_total = 0.0
+                zone_cod_total = 0.0
+                fee_cod_lines = []
+                for rn in ["Delivery", "Branch"]:
+                    df_fc = result.get("type_data", {}).get(rn)
+                    if df_fc is None or df_fc.empty:
+                        continue
+                    if "POST OFFICE HANDLE" not in df_fc.columns:
+                        continue
+                    df_z_fc = df_fc[df_fc["POST OFFICE HANDLE"].isin(zone_handles)].copy()
+                    if df_z_fc.empty:
+                        continue
+                    fee_col = next((c for c in df_z_fc.columns if "TOTAL FEE" in c.upper()), None)
+                    cod_col = next((c for c in df_z_fc.columns if c.upper().startswith("COD")), None)
+                    if fee_col:
+                        zone_fee_total += pd.to_numeric(df_z_fc[fee_col], errors="coerce").fillna(0).sum()
+                    if cod_col:
+                        zone_cod_total += pd.to_numeric(df_z_fc[cod_col], errors="coerce").fillna(0).sum()
+
+                # Per-branch breakdown
+                for hr in zone_results:
+                    h = hr["handle"]
+                    h_fee = 0.0
+                    h_cod = 0.0
+                    for rn in ["Delivery", "Branch"]:
+                        df_fc = result.get("type_data", {}).get(rn)
+                        if df_fc is None or df_fc.empty:
+                            continue
+                        if "POST OFFICE HANDLE" not in df_fc.columns:
+                            continue
+                        df_h = df_fc[df_fc["POST OFFICE HANDLE"] == h]
+                        fee_col = next((c for c in df_fc.columns if "TOTAL FEE" in c.upper()), None)
+                        cod_col = next((c for c in df_fc.columns if c.upper().startswith("COD")), None)
+                        if fee_col:
+                            h_fee += pd.to_numeric(df_h[fee_col], errors="coerce").fillna(0).sum()
+                        if cod_col:
+                            h_cod += pd.to_numeric(df_h[cod_col], errors="coerce").fillna(0).sum()
+                    total_orders = sum(hr["handle_counts"].get(k, 0) for k in ["Pickup","Delivery","Transit","Branch"])
+                    fee_cod_lines.append(
+                        f"  {h}: {total_orders} orders | Fee: ${h_fee:.2f} | COD: ${h_cod:.2f}"
+                    )
+
                 zone_caption = "\n".join([
                     f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                    f"Pickup: {zone_overall['Pickup']}  |  Delivery: {zone_overall['Delivery']}  |  Pending: {zone_overall['Pending']}",
-                    f"Grand Total: {zone_grand}",
+                    f"Pickup: {zone_overall['Pickup']}  |  Delivery: {zone_overall['Delivery']}  |  Transit: {zone_overall.get('Transit',0)}  |  Branch: {zone_overall.get('Branch',0)}",
+                    f"Grand Total: {zone_grand}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
                 ])
                 if inline_remark:
                     zone_caption += f"\n📝 Remark: {inline_remark}"
+
 
                 # Build zone-filtered result for total Excel
                 zone_result = {**result, "handle_results": zone_results, "overall_counts": zone_overall}
                 # Filter type_data DataFrames
                 zone_result["type_data"] = {}
-                for rn in ["Pickup", "Delivery", "Pending"]:
+                for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
                     df = result.get("type_data", {}).get(rn)
                     if df is not None and not df.empty:
                         filter_col = "POST OFFICE HANDLE"
@@ -3187,9 +4529,80 @@ async def run_push(
                         zone_result["type_data"][rn] = pd.DataFrame()
 
                 try:
+                    # ── Build day_date_counts and urgent_counts for zone image ──
+                    zone_day_date_counts = {}
+                    zone_urgent_counts   = {}
+                    today_date = datetime.now().date()
+
+                    for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                        df_z = zone_result["type_data"].get(rn)
+                        if df_z is None or df_z.empty:
+                            continue
+                        date_col_z = result.get("date_col") or (
+                            "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                            "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else None
+                        )
+                        if date_col_z and date_col_z in df_z.columns:
+                            parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
+                                                      format="mixed", errors="coerce")
+                            df_z = df_z.copy()
+                            df_z["_zdate"] = parsed_z.dt.date
+
+                        handle_col = "POST OFFICE HANDLE"
+                        if handle_col not in df_z.columns:
+                            continue
+
+                        for _, row_z in df_z.iterrows():
+                            h = str(row_z.get(handle_col, "")).strip().upper()
+                            if not h:
+                                continue
+                            # date counts
+                            d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
+                            if d_val and not pd.isna(d_val):
+                                zone_day_date_counts.setdefault(h, {})
+                                zone_day_date_counts[h][d_val] = zone_day_date_counts[h].get(d_val, 0) + 1
+                            # urgent = overdue (created > 1 day ago)
+                            created_d = None
+                            if "CREATED DATE" in df_z.columns:
+                                cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
+                                                    format="mixed", errors="coerce")
+                                if not pd.isna(cd):
+                                    created_d = cd.date()
+                            if created_d and (today_date - created_d).days > 1:
+                                zone_urgent_counts[h] = zone_urgent_counts.get(h, 0) + 1
+
+                    # Build per-handle fee/cod dicts for image columns
+                    zone_fee_counts = {}
+                    zone_cod_counts = {}
+                    for hr in zone_results:
+                        h = hr["handle"]
+                        h_fee = 0.0
+                        h_cod = 0.0
+                        for rn in ["Delivery", "Branch"]:
+                            df_fc = result.get("type_data", {}).get(rn)
+                            if df_fc is None or df_fc.empty:
+                                continue
+                            if "POST OFFICE HANDLE" not in df_fc.columns:
+                                continue
+                            df_h = df_fc[df_fc["POST OFFICE HANDLE"] == h]
+                            fee_col = next((c for c in df_fc.columns if "TOTAL FEE" in c.upper()), None)
+                            cod_col = next((c for c in df_fc.columns if c.upper().startswith("COD")), None)
+                            if fee_col:
+                                h_fee += pd.to_numeric(df_h[fee_col], errors="coerce").fillna(0).sum()
+                            if cod_col:
+                                h_cod += pd.to_numeric(df_h[cod_col], errors="coerce").fillna(0).sum()
+                        zone_fee_counts[h] = round(h_fee, 2)
+                        zone_cod_counts[h] = round(h_cod, 2)
+
                     # 1. Summary image
                     img_buf = generate_summary.build_summary_image(
-                        zone_results, zone_overall,
+                        zone_results,
+                        zone_overall,
+                        zone_label=zone_label,
+                        day_date_counts=zone_day_date_counts if zone_day_date_counts else None,
+                        urgent_counts=zone_urgent_counts if zone_urgent_counts else None,
+                        fee_counts=zone_fee_counts if any(zone_fee_counts.values()) else None,
+                        cod_counts=zone_cod_counts if any(zone_cod_counts.values()) else None,
                     )
                     img_buf.name = f"{zone_key}_summary.png"
                     await safe_api_call(context.bot.send_photo, chat_id=group_id, photo=img_buf)
@@ -3197,7 +4610,7 @@ async def run_push(
 
                     # 2. Total Excel
                     zone_xlsx = os.path.join(tmpdir, f"Total_{zone_label}_{stamp}.xlsx")
-                    generate_summary.build_total_excel(zone_result, zone_xlsx)
+                    generate_summary.build_total_excel(zone_result, zone_xlsx, lang="en")
                     with open(zone_xlsx, "rb") as f:
                         await safe_api_call(
                             context.bot.send_document,
@@ -3692,6 +5105,29 @@ async def cmd_app(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+@pm_required_handler
+async def cmd_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/report — generate Excel with all active bills (excludes done statuses)."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+    msg = await send_requester_text(update, context, "Building active bills report...")
+    tmpdir = tempfile.mkdtemp(prefix="report_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+    try:
+        downloader.download_detail(cfg["api"], src)
+        out_xlsx = os.path.join(tmpdir, f"Active_Bills_{stamp}.xlsx")
+        count = report_cmd.build_report_excel(src, out_xlsx, cfg)
+        caption = f"Active Bills Report {datetime.now().strftime('%d/%m/%Y %H:%M')}\nTotal: {count} bills"
+        with open(out_xlsx, "rb") as f:
+            await send_requester_document(update, context, f, os.path.basename(out_xlsx), caption=caption)
+        await edit_or_send_requester_text(msg, update, context, f"Done. {count} active bills exported.")
+    except Exception as e:
+        log.exception("Error in /report")
+        await edit_or_send_requester_text(msg, update, context, f"Error: {e}")
+
+
 async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
@@ -3752,6 +5188,294 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await run_push(update, context)
 
 
+
+
+# ── /forward command ───────────────────────────────────────────────────────────
+
+@pm_required_handler
+async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/forward - Send all zone reports to forward group using cached data."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    FORWARD_GROUP_ID = None  # disabled
+
+    cache_file = os.path.join(HERE, 'cache', 'latest_detail.xlsx')
+    if not os.path.exists(cache_file):
+        await send_requester_text(update, context, "No cached data. Run push first.")
+        return
+
+    msg = await send_requester_text(update, context, "Building zone reports from cached data...")
+
+    tmpdir = tempfile.mkdtemp(prefix="forward_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+
+    try:
+        mode = get_mode(cfg)
+        result = generate_report.generate_reports_from_data(
+            cache_file, REF_PATH, tmpdir, return_metadata=True, mode=mode,
+        )
+
+        total_zones = cfg.get("total_zones", {})
+        import pandas as pd
+
+        zone_keys = sorted(total_zones.keys())
+        sent_count = 0
+
+        for zone_key in zone_keys:
+            zone_handles = [h.upper() for h in total_zones.get(zone_key, [])]
+            if not zone_handles:
+                continue
+
+            zone_results = [
+                hr for hr in result["handle_results"]
+                if hr["handle"] in zone_handles
+            ]
+
+            zone_overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+            for hr in zone_results:
+                for k in zone_overall:
+                    zone_overall[k] += hr["handle_counts"].get(k, 0)
+            zone_grand = sum(zone_overall.values())
+
+            zone_label = zone_key.upper()
+            zone_caption = "\n".join([
+                f"\U0001f4cb {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+                f"Pickup: {zone_overall['Pickup']}  |  Delivery: {zone_overall['Delivery']}  |  Transit: {zone_overall.get('Transit',0)}  |  Branch: {zone_overall.get('Branch',0)}",
+                f"Grand Total: {zone_grand}",
+            ])
+
+            zone_result = {**result, "handle_results": zone_results, "overall_counts": zone_overall}
+            zone_result["type_data"] = {}
+            for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                df = result.get("type_data", {}).get(rn)
+                if df is not None and not df.empty:
+                    filter_col = "POST OFFICE HANDLE"
+                    if filter_col in df.columns:
+                        zone_result["type_data"][rn] = df[df[filter_col].isin(zone_handles)].copy()
+                    else:
+                        zone_result["type_data"][rn] = df.copy()
+                else:
+                    zone_result["type_data"][rn] = pd.DataFrame()
+
+            try:
+                zone_day_date_counts = {}
+                zone_urgent_counts = {}
+                today_date = datetime.now().date()
+
+                for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                    df_z = zone_result["type_data"].get(rn)
+                    if df_z is None or df_z.empty:
+                        continue
+                    date_col_z = (
+                        "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
+                    )
+                    if date_col_z and date_col_z in df_z.columns:
+                        parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True, format="mixed", errors="coerce")
+                        df_z = df_z.copy()
+                        df_z["_zdate"] = parsed_z.dt.date
+                    handle_col = "POST OFFICE HANDLE"
+                    if handle_col not in df_z.columns:
+                        continue
+                    for _, row_z in df_z.iterrows():
+                        h = str(row_z.get(handle_col, "")).strip().upper()
+                        if not h:
+                            continue
+                        d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
+                        if d_val and not pd.isna(d_val):
+                            zone_day_date_counts.setdefault(h, {})
+                            zone_day_date_counts[h][d_val] = zone_day_date_counts[h].get(d_val, 0) + 1
+                        created_d = None
+                        if "CREATED DATE" in df_z.columns:
+                            cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True, format="mixed", errors="coerce")
+                            if not pd.isna(cd):
+                                created_d = cd.date()
+                        if created_d and (today_date - created_d).days > 1:
+                            zone_urgent_counts[h] = zone_urgent_counts.get(h, 0) + 1
+
+                img_buf = generate_summary.build_summary_image(
+                    zone_results, zone_overall,
+                    zone_label=zone_label,
+                    day_date_counts=zone_day_date_counts if zone_day_date_counts else None,
+                    urgent_counts=zone_urgent_counts if zone_urgent_counts else None,
+                )
+                img_buf.name = f"{zone_key}_summary.png"
+                await safe_api_call(context.bot.send_photo, chat_id=FORWARD_GROUP_ID, photo=img_buf)
+                await asyncio.sleep(0.5)
+
+                zone_xlsx = os.path.join(tmpdir, f"Total_{zone_label}_{stamp}.xlsx")
+                generate_summary.build_total_excel(zone_result, zone_xlsx)
+                with open(zone_xlsx, "rb") as f:
+                    await safe_api_call(
+                        context.bot.send_document,
+                        chat_id=FORWARD_GROUP_ID,
+                        document=f,
+                        filename=os.path.basename(zone_xlsx),
+                        caption=zone_caption,
+                    )
+                sent_count += 1
+                await asyncio.sleep(1.0)
+            except Exception as e:
+                log.error(f"Forward {zone_key}: {e}")
+
+        await edit_or_send_requester_text(
+            msg, update, context,
+            f"\u2705 Forwarded {sent_count} zone reports to forward group."
+        )
+    except Exception as e:
+        log.exception("Error in /forward")
+MEDIA_GROUP_FILES = {}
+
+@pm_required_handler
+async def cmd_notice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    /notice [target] <message> — Send a custom text remark, notice, or attached documents directly to groups without running a report.
+    Targets:
+      /notice <message>              -> Send remark to all regular branch groups
+      /notice zone <message>         -> Send remark to all zone groups
+      /notice all <message>          -> Send remark to ALL groups (branches + zones)
+      /notice KANP001 <message>      -> Send remark to KANP001 group
+    Supports document/photo attachments if sent as caption!
+    """
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    message_obj = update.effective_message
+    if not message_obj:
+        return
+
+    text_input = message_obj.caption or message_obj.text or ""
+    
+    # Collect media group files if album upload
+    mg_id = message_obj.media_group_id
+    current_file = message_obj.document or (message_obj.photo[-1] if message_obj.photo else None)
+    
+    if mg_id and current_file:
+        MEDIA_GROUP_FILES.setdefault(mg_id, [])
+        if current_file not in MEDIA_GROUP_FILES[mg_id]:
+            MEDIA_GROUP_FILES[mg_id].append(current_file)
+            
+    # Check if this update has the command prefix (e.g. /notice)
+    has_command = bool(re.search(r"^/(notice|announce|remark|sendmsg|msg)\b", text_input, re.IGNORECASE))
+    
+    if mg_id and not has_command:
+        # File part of media group without command - already stored in buffer
+        return
+
+    if not text_input and not current_file:
+        await private_or_current_reply(
+            update,
+            context,
+            "📢 Usage: /notice [target] <your message>\n\n"
+            "Sends a custom remark or document directly to groups (no report downloaded).\n\n"
+            "Examples:\n"
+            "  /notice Please clear all pending orders today!\n"
+            "  /notice zone Urgent: check inventory before 5 PM\n"
+            "  /notice all Important announcement for all branches\n"
+            "  /notice KANP001 Please call receivers first\n\n"
+            "💡 You can also attach a document/file/photo with /notice in the caption!"
+        )
+        return
+
+    # Parse target and text content
+    cleaned = re.sub(r"^/(notice|announce|remark|sendmsg|msg)(?:@\w+)?\s*", "", text_input, flags=re.IGNORECASE).strip()
+    words = cleaned.split()
+    first_word = words[0].lower() if words else ""
+
+    target_type = "branches"
+    text_content = cleaned
+
+    if first_word in ("zone", "zones"):
+        target_type = "zones"
+        text_content = re.sub(r"^\bzones?\b\s*", "", cleaned, flags=re.IGNORECASE).strip()
+    elif first_word in ("all", "everyone"):
+        target_type = "all"
+        text_content = re.sub(r"^\b(all|everyone)\b\s*", "", cleaned, flags=re.IGNORECASE).strip()
+    elif first_word and (
+        first_word.upper() in [h.upper() for zb in cfg.get("zone_branches", {}).values() for h in str(zb).split(",") if h.strip()]
+        or re.match(r"^[A-Z]{3,4}P?\d*$", first_word, re.I)
+    ):
+        target_type = first_word.upper()
+        text_content = re.sub(rf"^{re.escape(first_word)}\s*", "", cleaned, flags=re.IGNORECASE).strip()
+
+    # Determine files to send
+    attached_files = []
+    if mg_id:
+        await asyncio.sleep(1.0)
+        attached_files = MEDIA_GROUP_FILES.pop(mg_id, [current_file] if current_file else [])
+    elif current_file:
+        attached_files = [current_file]
+
+    if not text_content and not attached_files:
+        await private_or_current_reply(update, context, "Please specify a message text or attach a file to send.")
+        return
+
+    forward_mapping = get_forward_mapping(cfg)
+    all_branch_groups = get_all_forward_groups(cfg)
+    zone_groups = list(cfg.get("zone_forward_mapping", {}).keys())
+
+    target_group_ids = []
+    if target_type == "branches":
+        target_group_ids = all_branch_groups
+    elif target_type == "zones":
+        target_group_ids = zone_groups
+    elif target_type == "all":
+        target_group_ids = list(dict.fromkeys(all_branch_groups + zone_groups))
+    else:
+        for gid, handles in forward_mapping.items():
+            if target_type in [h.upper() for h in handles]:
+                target_group_ids.append(gid)
+
+    if not target_group_ids:
+        await private_or_current_reply(update, context, f"No group found for target: {target_type}")
+        return
+
+    msg = await send_requester_text(update, context, f"📤 Sending notice to {len(target_group_ids)} group(s)...")
+
+    formatted_msg = f"📢 REMARK / NOTICE\n{text_content}\n\n⏰ {datetime.now().strftime('%d/%m/%Y %H:%M')}" if text_content else f"📢 REMARK / NOTICE — {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+
+    sent_count = 0
+    for gid in target_group_ids:
+        try:
+            group_id = int(gid) if str(gid).lstrip("-").isdigit() else gid
+            if attached_files:
+                for idx_f, f_item in enumerate(attached_files):
+                    cap = formatted_msg if idx_f == 0 else ""
+                    if isinstance(f_item, telegram.Document):
+                        await safe_api_call(
+                            context.bot.send_document,
+                            chat_id=group_id,
+                            document=f_item.file_id,
+                            caption=cap,
+                        )
+                    else:
+                        await safe_api_call(
+                            context.bot.send_photo,
+                            chat_id=group_id,
+                            photo=f_item.file_id,
+                            caption=cap,
+                        )
+                    await asyncio.sleep(0.3)
+            else:
+                await safe_api_call(
+                    context.bot.send_message,
+                    chat_id=group_id,
+                    text=formatted_msg,
+                )
+            sent_count += 1
+            await asyncio.sleep(0.3)
+        except Exception as e:
+            log.error(f"Notice send failed to {gid}: {e}")
+
+    await edit_or_send_requester_text(
+        msg, update, context, f"✅ Notice sent successfully to {sent_count} group(s)."
+    )
+
+
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -3785,6 +5509,8 @@ def main():
     app.add_handler(CommandHandler("app",        cmd_app))
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
+    app.add_handler(CommandHandler("vs",         cmd_vs))
+    app.add_handler(CommandHandler("vs2",        cmd_vs2))
     app.add_handler(CommandHandler("help",       cmd_help))
     app.add_handler(CommandHandler("pause",      cmd_pause))
     app.add_handler(CommandHandler("resume",     cmd_resume))
@@ -3800,6 +5526,7 @@ def main():
     app.add_handler(CommandHandler("ask",        cmd_ask))
     app.add_handler(CommandHandler("check",      cmd_check))
     app.add_handler(CommandHandler("qr",         cmd_qr))
+    app.add_handler(CommandHandler("trace",      cmd_trace))
     app.add_handler(CommandHandler("add",        cmd_add))
     app.add_handler(CommandHandler("remove",     cmd_remove))
     app.add_handler(CommandHandler("del",        cmd_remove))
@@ -3809,9 +5536,18 @@ def main():
     app.add_handler(CommandHandler("undelay",    cmd_undelay))
     app.add_handler(CommandHandler("delaylist",  cmd_delaylist))
     app.add_handler(CommandHandler("clean",      cmd_clean))
+    app.add_handler(CommandHandler("report",     cmd_report))
+    app.add_handler(CommandHandler("deletereport", cmd_delete_report))
+    app.add_handler(CommandHandler("delreport",    cmd_delete_report))
+    app.add_handler(CommandHandler("forward",  cmd_forward))
+    app.add_handler(CommandHandler("notice",   cmd_notice))
+    app.add_handler(CommandHandler("announce", cmd_notice))
+    app.add_handler(CommandHandler("remark",   cmd_notice))
+    app.add_handler(CommandHandler("sendmsg",  cmd_notice))
+    app.add_handler(MessageHandler(filters.CaptionRegex(r"^/(notice|announce|remark|sendmsg|msg)\b"), cmd_notice))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
 
-    log.info("Bot running. Commands: push, /total, /export, /find, /ask, /check, /statues, /help, /pause, /resume, /status, /mode, /register, /groups, /add, /remove, /list, /delay, /undelay, /delaylist, /clean, /qr")
+    log.info("Bot running. Commands: push, /total, /vs, /vs2, /export, /find, /ask, /check, /trace, /statues, /help, /pause, /resume, /status, /mode, /register, /groups, /add, /remove, /list, /delay, /undelay, /delaylist, /clean, /qr, /deletereport")
     try:
         app.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
