@@ -342,16 +342,13 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if exclude_test and _is_test_row(row, test_keywords):
             continue
 
-        # Filter: all active parcels that passed through MEGA hub or currently at MEGA hub
-        col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
+        # Filter: strictly check CURRENT POST OFFICE for MEGA/DVC/HUB
         po = str(row[COL_CURRENT_PO] or "").strip().upper()
-
-        is_mega = ("MEGA" in col35 or "DVC" in col35 or "MEGA" in po or "DVC" in po or "HUB" in po)
-        if not is_mega:
+        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
             continue
 
-        # Classify into MEGA1 vs DVMEGA row
-        if "MEGA1" in col35 or "MEGA1" in po:
+        col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
+        if "MEGA1" in po or "MEGA1" in col35:
             label = "MEGA1"
         else:
             label = "DVMEGA"

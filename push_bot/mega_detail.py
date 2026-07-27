@@ -130,13 +130,12 @@ def build_mega_detail(source_path, out_path, cfg):
             if any(k.lower() in blob for k in test_kw):
                 continue
 
-        # Filter: all active parcels that passed through MEGA hub or currently at MEGA hub
+        # Filter: strictly check CURRENT POST OFFICE for MEGA/DVC/HUB
         po = str(row[CI_CURRENT_PO] or "").strip().upper()
-        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
-
-        is_mega = ("MEGA" in col35 or "DVC" in col35 or "MEGA" in po or "DVC" in po or "HUB" in po)
-        if not is_mega:
+        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
             continue
+
+        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
 
         created_date = _parse_created(row[CI_CREATED], _dt)
         age = (today - created_date).days if created_date else 0
