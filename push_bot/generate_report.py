@@ -312,8 +312,9 @@ def build_section_rows(df_h, index_cols, day_cols, date_col):
     else:
         df['_date'] = None
 
+    today_date = datetime.now().date()
     dates_present = set(df['_date'].dropna().unique())
-    active_days = [d for d in day_cols if d in dates_present]
+    active_days = [d for d in day_cols if (d in dates_present or d == today_date)]
 
     if not active_days:
         footer = {col: '' for col in index_cols}

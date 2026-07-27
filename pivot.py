@@ -19,13 +19,19 @@ from openpyxl.utils import get_column_letter
 
 
 # ---- vi tri cot trong file nguon (0-based) ----
-COL_CREATED_DATE = 1     # CREATED DATE  (dd/mm/yyyy HH:MM:SS)
-COL_ORDER_ID = 2         # ORDER ID
-COL_CURRENT_PO = 15      # CURRENT POST OFFICE
-COL_CURRENT_STATUS = 23  # CURRENT STATUS  ("110 - Chua tiep nhan")
-COL_SENDER = 3
-COL_RECEIVER = 4
-COL_ACTION_PO_306 = 35  # ACTION POST OFFICE for status 306
+COL_CREATED_DATE    = 1   # CREATED DATE  (dd/mm/yyyy HH:MM:SS)
+COL_ORDER_ID        = 2   # ORDER ID
+COL_CURRENT_PO      = 15  # CURRENT POST OFFICE
+COL_CURRENT_STATUS  = 23  # CURRENT STATUS  ("110 - Chua tiep nhan")
+COL_SENDER          = 3
+COL_RECEIVER        = 4
+COL_ACTION_PO_306   = 35  # ACTION POST OFFICE at ORIGIN HUB (col 35) — MEGA1 / DVCMEGA1 / etc.
+
+# MEGA hub mapping: code in col 35  ->  display row label in report
+MEGA_HUB_LABELS = {
+    "MEGA1":    "MEGA1",
+    "DVCMEGA1": "DVMEGA",
+}
 
 
 def _status_code(value):
@@ -306,22 +312,24 @@ def run_report(rows, out_path, config, report):
 
 def build_mega_pivot(rows, pivot_cfg, zone_cfg):
     """
-    Builds a pivot tree for MEGA check:
-      Only counts orders where CURRENT POST OFFICE (col 15) contains MEGA, DVC, or HUB.
-      These are parcels actually stuck at hub right now.
+    Builds a pivot tree for MEGA check with exactly 2 rows:
+      - MEGA1  : parcels that passed through the MEGA1 hub (col 35 == 'MEGA1')
+      - DVMEGA : parcels that passed through DVCMEGA1 hub (col 35 == 'DVCMEGA1')
+    Only active (non-delivered) orders are counted.
     """
-    exclude_test = pivot_cfg.get("exclude_test", False)
-    test_keywords = pivot_cfg.get("test_keywords", ["test"])
-    
+    exclude_test     = pivot_cfg.get("exclude_test", False)
+    test_keywords    = pivot_cfg.get("test_keywords", ["test"])
     exclude_statuses = {"410", "201", "520", "99", "100", "-99"}
 
-    tree = defaultdict(lambda: defaultdict(int))
-    urgent_tree = defaultdict(int)
+    tree         = defaultdict(lambda: defaultdict(int))   # label -> {(month,day): count}
+    urgent_tree  = defaultdict(int)                         # label -> urgent_count
     day_keys_seen = set()
     today = datetime.now().date()
 
     for row in rows:
-        if not row or row[COL_ORDER_ID] in (None, ""):
+        if not row or len(row) <= COL_ACTION_PO_306:
+            continue
+        if row[COL_ORDER_ID] in (None, ""):
             continue
         status_code = _status_code(row[COL_CURRENT_STATUS])
         if status_code in exclude_statuses:
@@ -329,23 +337,22 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if exclude_test and _is_test_row(row, test_keywords):
             continue
 
-        po = str(row[COL_CURRENT_PO] or "").strip()
-        po_upper = po.upper()
-        
-        # Only CURRENT POST OFFICE containing MEGA, DVC, or HUB
-        if not ("MEGA" in po_upper or "HUB" in po_upper or "DVC" in po_upper):
-            continue
+        # Determine which hub this parcel passed through
+        hub_code = str(row[COL_ACTION_PO_306] or "").strip().upper()
+        label = MEGA_HUB_LABELS.get(hub_code)
+        if label is None:
+            continue  # not a MEGA1 or DVMEGA parcel
 
         month, day = _parse_day(row[COL_CREATED_DATE])
         if day is None:
             continue
 
         key = (month, day)
-        tree[po][key] += 1
+        tree[label][key] += 1
         day_keys_seen.add(key)
 
         # Check urgent: created > 1 day ago
-        created_val = row[COL_CREATED_DATE]
+        created_val  = row[COL_CREATED_DATE]
         created_date = None
         if isinstance(created_val, datetime):
             created_date = created_val.date()
@@ -358,7 +365,7 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
                 except ValueError:
                     continue
         if created_date and (today - created_date).days > 1:
-            urgent_tree[po] += 1
+            urgent_tree[label] += 1
 
     day_keys = sorted(day_keys_seen)
     return tree, day_keys, urgent_tree
@@ -422,13 +429,17 @@ def export_mega_pivot(tree, day_keys, out_path, urgent_tree=None):
     # Urgent header in red
     ws.cell(3, urgent_col_num).font = urgent_font
 
-    # 4. Data rows
+    # 4. Data rows — always MEGA1 first, then DVMEGA
     r = 4
     col_totals = defaultdict(int)
     grand_total = 0
     total_urgent = 0
 
-    for hub in sorted(tree.keys()):
+    for hub in ["MEGA1", "DVMEGA"]:
+        if hub not in tree and not urgent_tree.get(hub):
+            # Still write empty row so table always has 2 rows
+            pass
+
         ws.row_dimensions[r].height = 20
         ws.cell(r, 1, hub).font = data_font
         ws.cell(r, 1).border = _BORDER
