@@ -105,6 +105,9 @@ def build_pivot(rows, pivot_cfg, zone_cfg):
 
     tree = defaultdict(lambda: defaultdict(dict))  # zone -> po -> {order_id: (month, day)}
     day_keys_seen = set()
+    today = datetime.now().date()
+    for d in range(1, today.day + 1):
+        day_keys_seen.add((today.month, d))
 
     for row in rows:
         if not row or row[COL_ORDER_ID] in (None, ""):
@@ -328,7 +331,9 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
     urgent_tree  = defaultdict(int)
     day_keys_seen = set()
     today = datetime.now().date()
-    day_keys_seen.add((today.month, today.day))   # always include today
+    # Always include all days from 1 to today's day of current month (01 to 27)
+    for d in range(1, today.day + 1):
+        day_keys_seen.add((today.month, d))
 
     for row in rows:
         if not row or len(row) <= COL_CURRENT_PO:
