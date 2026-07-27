@@ -315,20 +315,15 @@ def run_report(rows, out_path, config, report):
 
 def build_mega_pivot(rows, pivot_cfg, zone_cfg):
     """
-    Builds a pivot tree for MEGA check.
-    Filters: CURRENT POST OFFICE contains 'MEGA', 'DVC', or 'HUB'
-      (these are parcels physically stuck at the MEGA hub right now).
-    Row label comes from the ORIGIN HUB code (col 35):
-      MEGA1    -> 'MEGA'
-      DVCMEGA1 -> 'MEGA'
-      unknown  -> 'MEGA'  (fallback for any DVC/HUB code)
-    Result: always 1 row called 'MEGA'.
+    Builds a pivot tree for MEGA check with 2 rows:
+      - MEGA1  : parcels originating from MEGA1 hub or currently at MEGA1
+      - DVMEGA : parcels originating from DVCMEGA1 hub or currently at DVC/HUB
+    Only active parcels physically at a MEGA/DVC/HUB post office are counted.
     """
     exclude_test     = pivot_cfg.get("exclude_test", False)
     test_keywords    = pivot_cfg.get("test_keywords", ["test"])
     exclude_statuses = {"410", "201", "520", "99", "100", "-99"}
 
-    LABEL = "MEGA"   # single row label
     tree         = defaultdict(lambda: defaultdict(int))
     urgent_tree  = defaultdict(int)
     day_keys_seen = set()
@@ -351,12 +346,19 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if not ("MEGA" in po or "HUB" in po or "DVC" in po):
             continue
 
+        # Classify into MEGA1 vs DVMEGA row
+        col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
+        if "MEGA1" in col35 or "MEGA1" in po:
+            label = "MEGA1"
+        else:
+            label = "DVMEGA"
+
         month, day = _parse_day(row[COL_CREATED_DATE])
         if day is None:
             continue
 
         key = (month, day)
-        tree[LABEL][key] += 1
+        tree[label][key] += 1
         day_keys_seen.add(key)
 
         # Check urgent: created > 1 day ago
@@ -373,7 +375,7 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
                 except ValueError:
                     continue
         if created_date and (today - created_date).days > 1:
-            urgent_tree[LABEL] += 1
+            urgent_tree[label] += 1
 
     day_keys = sorted(day_keys_seen)
     return tree, day_keys, urgent_tree
@@ -443,7 +445,7 @@ def export_mega_pivot(tree, day_keys, out_path, urgent_tree=None):
     grand_total = 0
     total_urgent = 0
 
-    for hub in ["MEGA"]:
+    for hub in ["DVMEGA", "MEGA1"]:
         ws.row_dimensions[r].height = 20
         ws.cell(r, 1, hub).font = data_font
         ws.cell(r, 1).border = _BORDER

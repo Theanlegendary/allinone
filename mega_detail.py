@@ -8,15 +8,16 @@ Layout:
   Section 2 — Normal               — white background
 
 Columns:
-  1. ស្ថានភាព     (Status KM)
-  2. បុគ្គលិក       (Action User - staff who handled parcel)
-  3. ប.ស.ចេញ    (Origin PO  = RECEIVE POST OFFICE)
-  4. ប.ស.ទៅ     (Dest PO    = DELIVERY POST OFFICE)
-  5. លេខបញ្ជា    (ORDER ID)
-  6. ថ្លៃ (USD)   (Total Fee USD)
-  7. COD (USD)   (COD USD)
-  8. កាលបរិច្ឆេទ   (Created Date)
-  9. ថ្ងៃ        (Age days)
+  1. មណ្ឌល        (Hub: MEGA1 / DVMEGA)
+  2. ស្ថានភាព     (Status KM)
+  3. បុគ្គលិក       (Action User - staff ID & name who handled parcel)
+  4. ប.ស.ចេញ    (Origin PO  = RECEIVE POST OFFICE)
+  5. ប.ស.ទៅ     (Dest PO    = DELIVERY POST OFFICE)
+  6. លេខបញ្ជា    (ORDER ID)
+  7. ថ្លៃ (USD)   (Total Fee USD)
+  8. COD (USD)   (COD USD)
+  9. កាលបរិច្ឆេទ   (Created Date)
+  10. ថ្ងៃ       (Age days)
 """
 
 import openpyxl
@@ -59,6 +60,7 @@ CI_TOTAL_FEE   = 19  # TOTAL FEE (USD)
 CI_COD         = 20  # COD (USD)
 CI_STATUS      = 23  # CURRENT STATUS
 CI_ACTION_USER = 25  # ACTION USER (Staff ID & Name)
+CI_HUB_CODE    = 35  # ACTION POST OFFICE at ORIGIN HUB (MEGA1 / DVCMEGA1)
 
 
 def _sc(val):
@@ -138,8 +140,15 @@ def build_mega_detail(source_path, out_path, cfg):
         is_urgent = age > 1
 
         action_user = str(row[CI_ACTION_USER] or "").strip() if len(row) > CI_ACTION_USER else ""
+        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
+
+        if "MEGA1" in col35 or "MEGA1" in po:
+            hub_label = "MEGA1"
+        else:
+            hub_label = "DVMEGA"
 
         record = {
+            "hub":         hub_label,
             "status_km":   STATUS_KM.get(sc, sc),
             "action_user": action_user,
             "origin":      str(row[CI_RECV_PO]  or "").strip(),
@@ -156,9 +165,10 @@ def build_mega_detail(source_path, out_path, cfg):
         else:
             normal_rows.append(record)
 
-    # Sort: age descending, then order_id
-    urgent_rows.sort(key=lambda r: (-r["age"], r["order_id"]))
-    normal_rows.sort(key=lambda r: (-r["age"], r["order_id"]))
+    # Sort: Hub (MEGA1 first, DVMEGA second), then age desc, then order_id
+    _hub_rank = {"MEGA1": 0, "DVMEGA": 1}
+    urgent_rows.sort(key=lambda r: (_hub_rank.get(r["hub"], 9), -r["age"], r["order_id"]))
+    normal_rows.sort(key=lambda r: (_hub_rank.get(r["hub"], 9), -r["age"], r["order_id"]))
 
     # ── Build Excel ──────────────────────────────────────────────────────────
     wb = openpyxl.Workbook()
@@ -187,17 +197,18 @@ def build_mega_detail(source_path, out_path, cfg):
     fee_font  = Font(name="Segoe UI", size=10, color="196B24")  # green for fee/cod
 
     HDR = [
-        "ស្ថានភាព",      # 1 — Status KM
-        "បុគ្គលិក",       # 2 — Action User (Staff ID & Name)
-        "ប.ស.ចេញ",       # 3 — Origin PO
-        "ប.ស.ទៅ",        # 4 — Dest PO
-        "លេខបញ្ជា",      # 5 — Order ID
-        "ថ្លៃ (USD)",    # 6 — Fee
-        "COD (USD)",     # 7 — COD
-        "កាលបរិច្ឆេទ",  # 8 — Created Date
-        "ថ្ងៃ",          # 9 — Age
+        "មណ្ឌល",         # 1 — Hub (MEGA1 / DVMEGA)
+        "ស្ថានភាព",      # 2 — Status KM
+        "បុគ្គលិក",       # 3 — Action User (Staff ID & Name)
+        "ប.ស.ចេញ",       # 4 — Origin PO
+        "ប.ស.ទៅ",        # 5 — Dest PO
+        "លេខបញ្ជា",      # 6 — Order ID
+        "ថ្លៃ (USD)",    # 7 — Fee
+        "COD (USD)",     # 8 — COD
+        "កាលបរិច្ឆេទ",  # 9 — Created Date
+        "ថ្ងៃ",          # 10 — Age
     ]
-    COL_WIDTHS = [26, 32, 12, 12, 16, 10, 10, 18, 6]
+    COL_WIDTHS = [12, 26, 32, 12, 12, 16, 10, 10, 18, 6]
     NCOLS = len(HDR)
 
     def _write_section_header(row_num, label, fill):
@@ -218,6 +229,7 @@ def build_mega_detail(source_path, out_path, cfg):
     def _write_data_row(row_num, rec, bg_fill):
         ws.row_dimensions[row_num].height = 18
         vals = [
+            rec["hub"],
             rec["status_km"],
             rec["action_user"],
             rec["origin"],
@@ -231,14 +243,14 @@ def build_mega_detail(source_path, out_path, cfg):
         for ci, v in enumerate(vals, 1):
             c = ws.cell(row_num, ci, v)
             c.fill = bg_fill; c.border = bdr
-            if ci == 5:          # Order ID — bold blue centered
+            if ci == 6:          # Order ID — bold blue centered
                 c.font = id_font; c.alignment = ctr
-            elif ci in (6, 7):   # Fee / COD — green right-aligned
+            elif ci in (7, 8):   # Fee / COD — green right-aligned
                 c.font = fee_font; c.alignment = right_align
-            elif ci == 9:        # Age — red if urgent
+            elif ci == 10:       # Age — red if urgent
                 c.font = red_font if rec["age"] > 1 else data_font
                 c.alignment = ctr
-            elif ci in (3, 4, 8):  # POs, Date — centered gray
+            elif ci in (1, 4, 5, 9):  # Hub, POs, Date — centered gray
                 c.font = gray_font; c.alignment = ctr
             else:
                 c.font = data_font; c.alignment = left_align
