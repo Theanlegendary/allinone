@@ -3,9 +3,9 @@
 Filter: CURRENT POST OFFICE contains 'MEGA', 'DVC', or 'HUB'
   (parcels physically stuck at MEGA hub right now)
 
-Layout:
-  Section 1 — Urgent (age > 1 day) — light red background
-  Section 2 — Normal               — white background
+Layout: 2 Separate Excel Sheets
+  Sheet 1 — ⚠ Urgent (age >= 1 day for MEGA hub)
+  Sheet 2 — ✓ Normal (age < 1 day)
 
 Columns:
   1. មណ្ឌល        (Hub: MEGA1 / DVMEGA)
@@ -96,7 +96,7 @@ def _fmt_money(val):
 
 
 def build_mega_detail(source_path, out_path, cfg):
-    """Build detail Excel for orders currently at MEGA/DVC/HUB post offices.
+    """Build detail Excel with 2 separate sheets (⚠ Urgent and ✓ Normal).
     Returns (total_orders, urgent_count).
     """
     from datetime import datetime as _dt
@@ -111,11 +111,6 @@ def build_mega_detail(source_path, out_path, cfg):
     if not all_rows:
         return 0, 0
     data_rows = all_rows[1:]
-
-    wb_out = openpyxl.Workbook()
-    ws_out = wb_out.active
-    ws_out.title = "MEGA Detail"
-
 
     today = _dt.now().date()
 
@@ -149,9 +144,16 @@ def build_mega_detail(source_path, out_path, cfg):
                 continue
         else:
             continue
-        created_date = _parse_created(row[CI_CREATED], _dt)
-        age = (today - created_date).days if created_date else 0
-        is_urgent = age > 1
+
+        # Date parsing: Use Action Date (Col 24) or Created Date
+        action_val = row[24] if len(row) > 24 and row[24] else row[CI_CREATED]
+        action_date = _parse_created(action_val, _dt)
+        if not action_date:
+            action_date = _parse_created(row[CI_CREATED], _dt)
+
+        age = (today - action_date).days if action_date else 0
+        # MEGA SLA Rule: Hold >= 1 day at MEGA hub is Urgent
+        is_urgent = age >= 1
 
         action_user = str(row[CI_ACTION_USER] or "").strip() if len(row) > CI_ACTION_USER else ""
 
@@ -178,10 +180,15 @@ def build_mega_detail(source_path, out_path, cfg):
     urgent_rows.sort(key=lambda r: (_hub_rank.get(r["hub"], 9), -r["age"], r["order_id"]))
     normal_rows.sort(key=lambda r: (_hub_rank.get(r["hub"], 9), -r["age"], r["order_id"]))
 
-    # ── Build Excel ──────────────────────────────────────────────────────────
+    # ── Build Excel with 2 Sheets ─────────────────────────────────────────────
     wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "MEGA Detail"
+
+    # Sheet 1: Urgent
+    ws_urg = wb.active
+    ws_urg.title = "⚠ Urgent"
+
+    # Sheet 2: Normal
+    ws_norm = wb.create_sheet(title="✓ Normal")
 
     # Styles
     thin        = Side(style="thin", color="BFBFBF")
@@ -219,73 +226,73 @@ def build_mega_detail(source_path, out_path, cfg):
     COL_WIDTHS = [12, 26, 32, 12, 12, 16, 10, 10, 18, 6]
     NCOLS = len(HDR)
 
-    def _write_section_header(row_num, label, fill):
-        ws.merge_cells(start_row=row_num, start_column=1,
-                       end_row=row_num, end_column=NCOLS)
-        c = ws.cell(row_num, 1, label)
-        c.fill = fill; c.font = sec_font
-        c.alignment = left_align; c.border = bdr
-        ws.row_dimensions[row_num].height = 18
+    def _populate_sheet(ws, rows_data, sec_label, sec_fill, is_urg):
+        ws.views.sheetView[0].showGridLines = True
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=NCOLS)
+        c = ws.cell(1, 1, sec_label)
+        c.fill = sec_fill
+        c.font = sec_font
+        c.alignment = left_align
+        c.border = bdr
+        ws.row_dimensions[1].height = 20
 
-    def _write_header_row(row_num):
-        ws.row_dimensions[row_num].height = 22
+        ws.row_dimensions[2].height = 22
         for ci, h in enumerate(HDR, 1):
-            c = ws.cell(row_num, ci, h)
-            c.fill = hdr_fill; c.font = hdr_font
-            c.alignment = ctr; c.border = bdr
+            cell = ws.cell(2, ci, h)
+            cell.fill = hdr_fill
+            cell.font = hdr_font
+            cell.alignment = ctr
+            cell.border = bdr
 
-    def _write_data_row(row_num, rec, bg_fill):
-        ws.row_dimensions[row_num].height = 18
-        vals = [
-            rec["hub"],
-            rec["status_km"],
-            rec["action_user"],
-            rec["origin"],
-            rec["dest"],
-            rec["order_id"],
-            rec["fee"],
-            rec["cod"],
-            rec["created"],
-            rec["age"],
-        ]
-        for ci, v in enumerate(vals, 1):
-            c = ws.cell(row_num, ci, v)
-            c.fill = bg_fill; c.border = bdr
-            if ci == 6:          # Order ID — bold blue centered
-                c.font = id_font; c.alignment = ctr
-            elif ci in (7, 8):   # Fee / COD — green right-aligned
-                c.font = fee_font; c.alignment = right_align
-            elif ci == 10:       # Age — red if urgent
-                c.font = red_font if rec["age"] > 1 else data_font
-                c.alignment = ctr
-            elif ci in (1, 4, 5, 9):  # Hub, POs, Date — centered gray
-                c.font = gray_font; c.alignment = ctr
-            else:
-                c.font = data_font; c.alignment = left_align
+        curr = 3
+        bg = urgent_row if is_urg else normal_bg
+        for rec in rows_data:
+            ws.row_dimensions[curr].height = 18
+            vals = [
+                rec["hub"],
+                rec["status_km"],
+                rec["action_user"],
+                rec["origin"],
+                rec["dest"],
+                rec["order_id"],
+                rec["fee"],
+                rec["cod"],
+                rec["created"],
+                rec["age"],
+            ]
+            for ci, val in enumerate(vals, 1):
+                cell = ws.cell(curr, ci, val)
+                cell.fill = bg
+                cell.border = bdr
 
-    r = 1
+                if ci == 1:       # Hub
+                    cell.font = data_font; cell.alignment = ctr
+                elif ci == 2:     # Status
+                    cell.font = data_font; cell.alignment = left_align
+                elif ci == 3:     # Action User
+                    cell.font = gray_font; cell.alignment = left_align
+                elif ci in (4, 5):# Origin / Dest
+                    cell.font = data_font; cell.alignment = ctr
+                elif ci == 6:     # Order ID
+                    cell.font = id_font; cell.alignment = ctr
+                elif ci in (7, 8):# Fee / COD
+                    cell.font = fee_font; cell.alignment = right_align
+                    if val != "":
+                        cell.number_format = "$#,##0.00"
+                elif ci == 9:     # Created Date
+                    cell.font = gray_font; cell.alignment = ctr
+                elif ci == 10:    # Age
+                    cell.font = red_font if is_urg else data_font
+                    cell.alignment = ctr
 
-    # ── Section 1: URGENT ───────────────────────────────────────────────────
-    _write_section_header(r, f"⚠ ប្រញាប់ (Urgent) — {len(urgent_rows)} records", urgent_sec)
-    r += 1
-    _write_header_row(r); r += 1
-    for rec in urgent_rows:
-        _write_data_row(r, rec, urgent_row); r += 1
+            curr += 1
 
-    ws.row_dimensions[r].height = 6; r += 1   # gap
+        for ci, w in enumerate(COL_WIDTHS, 1):
+            ws.column_dimensions[get_column_letter(ci)].width = w
 
-    # ── Section 2: NORMAL ───────────────────────────────────────────────────
-    _write_section_header(r, f"✓ ធម្មតា (Normal) — {len(normal_rows)} records", normal_sec)
-    r += 1
-    _write_header_row(r); r += 1
-    for rec in normal_rows:
-        _write_data_row(r, rec, normal_bg); r += 1
+    _populate_sheet(ws_urg, urgent_rows, f"⚠ ប្រញាប់ (Urgent) — {len(urgent_rows)} records", urgent_sec, True)
+    _populate_sheet(ws_norm, normal_rows, f"✓ ធម្មតា (Normal) — {len(normal_rows)} records", normal_sec, False)
 
-    for ci, w in enumerate(COL_WIDTHS, 1):
-        ws.column_dimensions[get_column_letter(ci)].width = w
-
-    ws.freeze_panes = "A3"
     wb.save(out_path)
-
-    total = len(urgent_rows) + len(normal_rows)
-    return total, len(urgent_rows)
+    total_orders = len(urgent_rows) + len(normal_rows)
+    return total_orders, len(urgent_rows)
