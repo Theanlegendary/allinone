@@ -342,16 +342,16 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if exclude_test and _is_test_row(row, test_keywords):
             continue
 
-        # Filter: strictly check CURRENT POST OFFICE for MEGA/DVC/HUB
+        # Filter: Middle-mile Hub orders (DVCMEGA1 and MEGA1)
         po = str(row[COL_CURRENT_PO] or "").strip().upper()
-        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
-            continue
-
         col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
-        if "MEGA1" in po or "MEGA1" in col35:
+
+        if col35 == "MEGA1" or po == "MEGA1":
             label = "MEGA1"
-        else:
+        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
             label = "DVMEGA"
+        else:
+            continue
 
         month, day = _parse_day(row[COL_CREATED_DATE])
         if day is None:

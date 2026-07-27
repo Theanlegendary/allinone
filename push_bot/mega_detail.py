@@ -130,23 +130,21 @@ def build_mega_detail(source_path, out_path, cfg):
             if any(k.lower() in blob for k in test_kw):
                 continue
 
-        # Filter: strictly check CURRENT POST OFFICE for MEGA/DVC/HUB
+        # Filter: Middle-mile Hub orders (DVCMEGA1 and MEGA1)
         po = str(row[CI_CURRENT_PO] or "").strip().upper()
-        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
-            continue
-
         col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
 
+        if col35 == "MEGA1" or po == "MEGA1":
+            hub_label = "MEGA1"
+        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
+            hub_label = "DVMEGA"
+        else:
+            continue
         created_date = _parse_created(row[CI_CREATED], _dt)
         age = (today - created_date).days if created_date else 0
         is_urgent = age > 1
 
         action_user = str(row[CI_ACTION_USER] or "").strip() if len(row) > CI_ACTION_USER else ""
-
-        if "MEGA1" in col35 or "MEGA1" in po:
-            hub_label = "MEGA1"
-        else:
-            hub_label = "DVMEGA"
 
         record = {
             "hub":         hub_label,
