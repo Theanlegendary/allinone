@@ -238,6 +238,7 @@ def build_mega_detail(source_path, out_path, cfg):
 
         # Data Rows
         curr = 3
+        row_fill = PatternFill("solid", fgColor="FFEBEB") if is_urg else PatternFill("solid", fgColor="FFFFFF")
         for rec in rows_data:
             ws.row_dimensions[curr].height = 18
             vals = [
@@ -254,8 +255,9 @@ def build_mega_detail(source_path, out_path, cfg):
             ]
             for ci, val in enumerate(vals, 1):
                 cell = ws.cell(curr, ci, val)
-                cell.fill = white_bg
+                cell.fill = row_fill
                 cell.border = bdr
+
 
                 if ci == 1:         # Hub
                     cell.font = data_font; cell.alignment = ctr

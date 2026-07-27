@@ -543,12 +543,13 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
             if p_cod > 0:
                 c_cell.number_format = "$#,##0.00"
 
-            # URGENT cell (Light Red fill, Dark Red text)
+            # URGENT cell (Light Red fill & Dark Red text ONLY when p_urg > 0)
             u_cell = ws.cell(r, urg_col, p_urg if p_urg > 0 else "")
             u_cell.font = urg_font
-            u_cell.fill = urg_cell_fill
+            u_cell.fill = urg_cell_fill if p_urg > 0 else row_bg
             u_cell.alignment = _CENTER
             u_cell.border = _BORDER
+
 
             hub_total_orders += row_sum
             hub_total_fee += p_fee
