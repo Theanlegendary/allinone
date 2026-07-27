@@ -25,12 +25,15 @@ COL_CURRENT_PO      = 15  # CURRENT POST OFFICE
 COL_CURRENT_STATUS  = 23  # CURRENT STATUS  ("110 - Chua tiep nhan")
 COL_SENDER          = 3
 COL_RECEIVER        = 4
-COL_ACTION_PO_306   = 35  # ACTION POST OFFICE at ORIGIN HUB (col 35) — MEGA1 / DVCMEGA1 / etc.
+COL_ACTION_PO_HUB   = 35  # ACTION POST OFFICE at ORIGIN HUB (col 35)
+COL_TOTAL_FEE       = 19  # TOTAL FEE (USD)
+COL_COD             = 20  # COD (USD)
 
-# MEGA hub mapping: code in col 35  ->  display row label in report
+# Hub origin code -> row label in MEGA report
+# MEGA1 and DVCMEGA1 are the same physical hub; both map to "MEGA"
 MEGA_HUB_LABELS = {
-    "MEGA1":    "MEGA1",
-    "DVCMEGA1": "DVMEGA",
+    "MEGA1":    "MEGA",
+    "DVCMEGA1": "MEGA",
 }
 
 
@@ -312,22 +315,28 @@ def run_report(rows, out_path, config, report):
 
 def build_mega_pivot(rows, pivot_cfg, zone_cfg):
     """
-    Builds a pivot tree for MEGA check with exactly 2 rows:
-      - MEGA1  : parcels that passed through the MEGA1 hub (col 35 == 'MEGA1')
-      - DVMEGA : parcels that passed through DVCMEGA1 hub (col 35 == 'DVCMEGA1')
-    Only active (non-delivered) orders are counted.
+    Builds a pivot tree for MEGA check.
+    Filters: CURRENT POST OFFICE contains 'MEGA', 'DVC', or 'HUB'
+      (these are parcels physically stuck at the MEGA hub right now).
+    Row label comes from the ORIGIN HUB code (col 35):
+      MEGA1    -> 'MEGA'
+      DVCMEGA1 -> 'MEGA'
+      unknown  -> 'MEGA'  (fallback for any DVC/HUB code)
+    Result: always 1 row called 'MEGA'.
     """
     exclude_test     = pivot_cfg.get("exclude_test", False)
     test_keywords    = pivot_cfg.get("test_keywords", ["test"])
     exclude_statuses = {"410", "201", "520", "99", "100", "-99"}
 
-    tree         = defaultdict(lambda: defaultdict(int))   # label -> {(month,day): count}
-    urgent_tree  = defaultdict(int)                         # label -> urgent_count
+    LABEL = "MEGA"   # single row label
+    tree         = defaultdict(lambda: defaultdict(int))
+    urgent_tree  = defaultdict(int)
     day_keys_seen = set()
     today = datetime.now().date()
+    day_keys_seen.add((today.month, today.day))   # always include today
 
     for row in rows:
-        if not row or len(row) <= COL_ACTION_PO_306:
+        if not row or len(row) <= COL_CURRENT_PO:
             continue
         if row[COL_ORDER_ID] in (None, ""):
             continue
@@ -337,18 +346,17 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if exclude_test and _is_test_row(row, test_keywords):
             continue
 
-        # Determine which hub this parcel passed through
-        hub_code = str(row[COL_ACTION_PO_306] or "").strip().upper()
-        label = MEGA_HUB_LABELS.get(hub_code)
-        if label is None:
-            continue  # not a MEGA1 or DVMEGA parcel
+        # Filter: only parcels CURRENTLY at a hub (MEGA/DVC/HUB code)
+        po = str(row[COL_CURRENT_PO] or "").strip().upper()
+        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
+            continue
 
         month, day = _parse_day(row[COL_CREATED_DATE])
         if day is None:
             continue
 
         key = (month, day)
-        tree[label][key] += 1
+        tree[LABEL][key] += 1
         day_keys_seen.add(key)
 
         # Check urgent: created > 1 day ago
@@ -365,7 +373,7 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
                 except ValueError:
                     continue
         if created_date and (today - created_date).days > 1:
-            urgent_tree[label] += 1
+            urgent_tree[LABEL] += 1
 
     day_keys = sorted(day_keys_seen)
     return tree, day_keys, urgent_tree
@@ -435,11 +443,7 @@ def export_mega_pivot(tree, day_keys, out_path, urgent_tree=None):
     grand_total = 0
     total_urgent = 0
 
-    for hub in ["MEGA1", "DVMEGA"]:
-        if hub not in tree and not urgent_tree.get(hub):
-            # Still write empty row so table always has 2 rows
-            pass
-
+    for hub in ["MEGA"]:
         ws.row_dimensions[r].height = 20
         ws.cell(r, 1, hub).font = data_font
         ws.cell(r, 1).border = _BORDER
