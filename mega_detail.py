@@ -130,9 +130,12 @@ def build_mega_detail(source_path, out_path, cfg):
             if any(k.lower() in blob for k in test_kw):
                 continue
 
-        # Filter: only parcels CURRENTLY at a MEGA/DVC/HUB post office
+        # Filter: all active parcels that passed through MEGA hub or currently at MEGA hub
         po = str(row[CI_CURRENT_PO] or "").strip().upper()
-        if not ("MEGA" in po or "HUB" in po or "DVC" in po):
+        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
+
+        is_mega = ("MEGA" in col35 or "DVC" in col35 or "MEGA" in po or "DVC" in po or "HUB" in po)
+        if not is_mega:
             continue
 
         created_date = _parse_created(row[CI_CREATED], _dt)
@@ -140,7 +143,6 @@ def build_mega_detail(source_path, out_path, cfg):
         is_urgent = age > 1
 
         action_user = str(row[CI_ACTION_USER] or "").strip() if len(row) > CI_ACTION_USER else ""
-        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
 
         if "MEGA1" in col35 or "MEGA1" in po:
             hub_label = "MEGA1"
