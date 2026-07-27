@@ -1179,13 +1179,18 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 msg = await edit_or_send_requester_text(msg, update, context, "Building TỒN MEGA CHECK report...")
                 import pivot
 
-                # MEGA-only pivot Excel + image (MEGA1 + DVMEGA rows only)
-                mega_xlsx = os.path.join(tmpdir, f"Report_MEGA_{stamp}.xlsx")
-                _, grand_total = pivot.run_mega(src, mega_xlsx, cfg)
-                img_buf = excel_to_image.excel_to_image(mega_xlsx)
-                img_buf.name = "mega_check.png"
-                caption_pivot = f"TỒN MEGA CHECK {datetime.now().strftime('%d/%m/%Y %H:%M')}\nGrand Total: {grand_total}"
-                await send_requester_photo(update, context, img_buf)
+                # Generate 2 separate pivot tables/images: MEGA1 and DVCMEGA1
+                rows = pivot.read_source(src)
+                tree, day_keys, extra_data = pivot.build_mega_pivot(rows, cfg.get("pivot", {}), cfg.get("zone_mapping", {}))
+
+                for hub in ["MEGA1", "DVCMEGA1"]:
+                    if hub in tree and tree[hub]:
+                        sub_tree = {hub: tree[hub]}
+                        hub_xlsx = os.path.join(tmpdir, f"Report_{hub}_{stamp}.xlsx")
+                        pivot.export_mega_pivot(sub_tree, day_keys, hub_xlsx, extra_data=extra_data)
+                        img_buf = excel_to_image.excel_to_image(hub_xlsx)
+                        img_buf.name = f"{hub}_check.png"
+                        await send_requester_photo(update, context, img_buf)
 
                 # Detail Excel with actual order data split into Urgent / Normal
                 try:
