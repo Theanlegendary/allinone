@@ -1175,8 +1175,9 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stamp  = datetime.now().strftime("%d.%m_%HH%M")
             src    = os.path.join(tmpdir, f"export_{stamp}.xlsx")
             try:
-                downloader.download_detail(cfg["api"], src, force_refresh=force_refresh)
+                downloader.download_detail(cfg["api"], src, branch_code="MEGA", force_refresh=True)
                 msg = await edit_or_send_requester_text(msg, update, context, "Building TỒN MEGA CHECK report...")
+
                 import pivot
 
                 # Generate 2 separate pivot tables/images: MEGA1 and DVCMEGA1
