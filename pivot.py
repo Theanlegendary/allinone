@@ -300,19 +300,18 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         po = str(row[COL_CURRENT_PO] or "").strip().upper()
         col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
 
-        # Strict Hub Filter matching user 266-record manual export (Detail_order status report)
-        # CURRENT POST OFFICE (Col 15) must be physically at the Hub (MEGA1 or DVCMEGA1/DVC/HUB).
-        # Parcels already received by local branches (Col 15 == BATP001, BANP001 etc.) are EXCLUDED!
+        # Filter matching Metfone Web Order Status Report (Select Branch = MEGA HUB)
         hub_statuses = {"306", "309", "302", "311", "310"}
         if status_code not in hub_statuses:
             continue
 
-        col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
-
         if col35 == "MEGA1" or po == "MEGA1":
             hub_label = "MEGA1"
-        else:
+        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
             hub_label = "DVCMEGA1"
+        else:
+            continue
+
 
 
 
