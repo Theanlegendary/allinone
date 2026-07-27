@@ -460,6 +460,10 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     grand_overall_cod = 0.0
     grand_overall_urgent = 0
 
+    row_bg_even = PatternFill("solid", fgColor="F8FAFC") # Soft Slate-Grey Tint
+    row_bg_odd  = PatternFill("solid", fgColor="FFFFFF") # White
+    tot_row_fill= PatternFill("solid", fgColor="E2E8F0") # Rich Slate-Grey Total Row
+
     for hub in hub_keys:
         prov_dict = tree.get(hub, {})
         if not prov_dict:
@@ -471,18 +475,23 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
         hub_total_cod = 0.0
         hub_total_urgent = 0
 
-        # Province Rows
-        for prov in sorted(prov_dict.keys()):
+        # Province Rows with Alternating Striping
+        for prov_idx, prov in enumerate(sorted(prov_dict.keys())):
+            row_bg = row_bg_even if prov_idx % 2 == 0 else row_bg_odd
             ws.row_dimensions[r].height = 22
-            ws.cell(r, 1, prov).font = data_font
-            ws.cell(r, 1).border = _BORDER
-            ws.cell(r, 1).alignment = _LEFT
+
+            c_prov = ws.cell(r, 1, prov)
+            c_prov.font = data_font
+            c_prov.fill = row_bg
+            c_prov.border = _BORDER
+            c_prov.alignment = _LEFT
 
             row_sum = 0
             for idx, dk in enumerate(day_keys):
                 col_num = col_idx_map[dk]
                 val = prov_dict[prov].get(dk, 0)
                 cell = ws.cell(r, col_num)
+                cell.fill = row_bg
                 cell.border = _BORDER
                 cell.font = blue_font
                 cell.alignment = _CENTER
@@ -491,6 +500,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
                     row_sum += val
                     hub_col_totals[dk] += val
                     grand_col_totals[dk] += val
+
 
             p_fee = fee_tree[hub].get(prov, 0.0)
             p_cod = cod_tree[hub].get(prov, 0.0)
