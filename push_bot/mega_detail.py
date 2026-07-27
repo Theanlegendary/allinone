@@ -124,15 +124,16 @@ def build_mega_detail(source_path, out_path, cfg):
                 continue
 
         # Filter matching Metfone Web Order Status Report (Select Branch = MEGA HUB)
-        col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
-        po    = str(row[CI_CURRENT_PO] or "").strip().upper()
+        # CURRENT POST OFFICE (Col 15) must be physically at the Hub!
+        po = str(row[CI_CURRENT_PO] or "").strip().upper()
 
-        if col35 == "MEGA1" or po == "MEGA1":
+        if po == "MEGA1":
             hub_label = "MEGA1"
-        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
+        elif "DVC" in po or "MEGA" in po or "HUB" in po:
             hub_label = "DVMEGA"
         else:
             continue
+
 
         # Date parsing: Use Action Date (Col 24) or Created Date
         action_val = row[24] if len(row) > 24 and row[24] else row[CI_CREATED]

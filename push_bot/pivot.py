@@ -301,16 +301,18 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
 
         # Filter matching Metfone Web Order Status Report (Select Branch = MEGA HUB)
+        # CURRENT POST OFFICE (Col 15) must be physically at the Hub!
         hub_statuses = {"306", "309", "302", "311", "310"}
         if status_code not in hub_statuses:
             continue
 
-        if col35 == "MEGA1" or po == "MEGA1":
+        if po == "MEGA1":
             hub_label = "MEGA1"
-        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
+        elif "DVC" in po or "MEGA" in po or "HUB" in po:
             hub_label = "DVCMEGA1"
         else:
             continue
+
 
 
 
