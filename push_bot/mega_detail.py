@@ -136,8 +136,12 @@ def build_mega_detail(source_path, out_path, cfg):
 
         if col35 == "MEGA1" or po == "MEGA1":
             hub_label = "MEGA1"
+            if sc not in ("309", "306"):
+                continue
         elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
             hub_label = "DVMEGA"
+            if sc != "306":
+                continue
         else:
             continue
         created_date = _parse_created(row[CI_CREATED], _dt)
