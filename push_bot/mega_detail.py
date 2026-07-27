@@ -8,15 +8,15 @@ Layout:
   Section 2 — Normal               — white background
 
 Columns:
-  1. ស្ថានភាព  (Status KM)
-  2. អតិថិជន  (Customer / Receiver name)
-  3. ប.ស.ចេញ  (Origin PO  = RECEIVE POST OFFICE)
-  4. ប.ស.ទៅ   (Dest PO    = DELIVERY POST OFFICE)
-  5. លេខបញ្ជា (ORDER ID)
-  6. ថ្លៃ      (Total Fee USD)
-  7. COD       (COD USD)
-  8. កាលបរិច្ឆេទ (Created Date)
-  9. ថ្ងៃ      (Age days)
+  1. ស្ថានភាព     (Status KM)
+  2. បុគ្គលិក       (Action User - staff who handled parcel)
+  3. ប.ស.ចេញ    (Origin PO  = RECEIVE POST OFFICE)
+  4. ប.ស.ទៅ     (Dest PO    = DELIVERY POST OFFICE)
+  5. លេខបញ្ជា    (ORDER ID)
+  6. ថ្លៃ (USD)   (Total Fee USD)
+  7. COD (USD)   (COD USD)
+  8. កាលបរិច្ឆេទ   (Created Date)
+  9. ថ្ងៃ        (Age days)
 """
 
 import openpyxl
@@ -48,16 +48,17 @@ STATUS_KM = {
 }
 
 # Column indices in source Excel (0-based)
-CI_CREATED    = 1   # CREATED DATE
-CI_ORDER      = 2   # ORDER ID
-CI_SENDER     = 3   # SENDER
-CI_RECEIVER   = 4   # RECEIVER
-CI_RECV_PO    = 11  # RECEIVE POST OFFICE  (origin)
-CI_DELIV_PO   = 13  # DELIVERY POST OFFICE (destination)
-CI_CURRENT_PO = 15  # CURRENT POST OFFICE
-CI_TOTAL_FEE  = 19  # TOTAL FEE (USD)
-CI_COD        = 20  # COD (USD)
-CI_STATUS     = 23  # CURRENT STATUS
+CI_CREATED     = 1   # CREATED DATE
+CI_ORDER       = 2   # ORDER ID
+CI_SENDER      = 3   # SENDER
+CI_RECEIVER    = 4   # RECEIVER
+CI_RECV_PO     = 11  # RECEIVE POST OFFICE  (origin)
+CI_DELIV_PO    = 13  # DELIVERY POST OFFICE (destination)
+CI_CURRENT_PO  = 15  # CURRENT POST OFFICE
+CI_TOTAL_FEE   = 19  # TOTAL FEE (USD)
+CI_COD         = 20  # COD (USD)
+CI_STATUS      = 23  # CURRENT STATUS
+CI_ACTION_USER = 25  # ACTION USER (Staff ID & Name)
 
 
 def _sc(val):
@@ -67,16 +68,6 @@ def _sc(val):
     if " - " in s:
         s = s.split(" - ", 1)[0]
     return s.split()[0].strip() if s else ""
-
-
-def _clean_person(val):
-    """Strip phone prefix: '0712345678 - Kim Heang' -> 'Kim Heang'."""
-    if val is None:
-        return ""
-    s = str(val).strip()
-    if " - " in s:
-        return s.split(" - ", 1)[1].strip()
-    return s
 
 
 def _parse_created(val, dt_cls):
@@ -146,16 +137,18 @@ def build_mega_detail(source_path, out_path, cfg):
         age = (today - created_date).days if created_date else 0
         is_urgent = age > 1
 
+        action_user = str(row[CI_ACTION_USER] or "").strip() if len(row) > CI_ACTION_USER else ""
+
         record = {
-            "status_km": STATUS_KM.get(sc, sc),
-            "customer":  _clean_person(row[CI_RECEIVER]) or _clean_person(row[CI_SENDER]),
-            "origin":    str(row[CI_RECV_PO]  or "").strip(),
-            "dest":      str(row[CI_DELIV_PO] or "").strip(),
-            "order_id":  str(row[CI_ORDER]    or "").strip(),
-            "fee":       _fmt_money(row[CI_TOTAL_FEE] if len(row) > CI_TOTAL_FEE else None),
-            "cod":       _fmt_money(row[CI_COD]       if len(row) > CI_COD       else None),
-            "created":   str(row[CI_CREATED]  or "").strip(),
-            "age":       age,
+            "status_km":   STATUS_KM.get(sc, sc),
+            "action_user": action_user,
+            "origin":      str(row[CI_RECV_PO]  or "").strip(),
+            "dest":        str(row[CI_DELIV_PO] or "").strip(),
+            "order_id":    str(row[CI_ORDER]    or "").strip(),
+            "fee":         _fmt_money(row[CI_TOTAL_FEE] if len(row) > CI_TOTAL_FEE else None),
+            "cod":         _fmt_money(row[CI_COD]       if len(row) > CI_COD       else None),
+            "created":     str(row[CI_CREATED]  or "").strip(),
+            "age":         age,
         }
 
         if is_urgent:
@@ -195,7 +188,7 @@ def build_mega_detail(source_path, out_path, cfg):
 
     HDR = [
         "ស្ថានភាព",      # 1 — Status KM
-        "អតិថិជន",       # 2 — Customer
+        "បុគ្គលិក",       # 2 — Action User (Staff ID & Name)
         "ប.ស.ចេញ",       # 3 — Origin PO
         "ប.ស.ទៅ",        # 4 — Dest PO
         "លេខបញ្ជា",      # 5 — Order ID
@@ -204,7 +197,7 @@ def build_mega_detail(source_path, out_path, cfg):
         "កាលបរិច្ឆេទ",  # 8 — Created Date
         "ថ្ងៃ",          # 9 — Age
     ]
-    COL_WIDTHS = [26, 22, 12, 12, 16, 10, 10, 18, 6]
+    COL_WIDTHS = [26, 32, 12, 12, 16, 10, 10, 18, 6]
     NCOLS = len(HDR)
 
     def _write_section_header(row_num, label, fill):
@@ -226,7 +219,7 @@ def build_mega_detail(source_path, out_path, cfg):
         ws.row_dimensions[row_num].height = 18
         vals = [
             rec["status_km"],
-            rec["customer"],
+            rec["action_user"],
             rec["origin"],
             rec["dest"],
             rec["order_id"],
