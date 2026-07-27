@@ -134,16 +134,19 @@ def build_mega_detail(source_path, out_path, cfg):
         po = str(row[CI_CURRENT_PO] or "").strip().upper()
         col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
 
-        if col35 == "MEGA1" or po == "MEGA1":
+        # Strictly check if parcel is still at the HUB (po is MEGA1 or DVCMEGA1/DVC/HUB).
+        # If po is a local branch (e.g. BATP001, BANP001), the branch already scanned & received it -> EXCLUDE!
+        if po == "MEGA1":
             hub_label = "MEGA1"
             if sc not in ("309", "306"):
                 continue
-        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
+        elif "DVC" in po or "MEGA" in po or "HUB" in po:
             hub_label = "DVMEGA"
             if sc != "306":
                 continue
         else:
             continue
+
 
         # Date parsing: Use Action Date (Col 24) or Created Date
         action_val = row[24] if len(row) > 24 and row[24] else row[CI_CREATED]

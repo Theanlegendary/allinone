@@ -300,16 +300,19 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         po = str(row[COL_CURRENT_PO] or "").strip().upper()
         col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
 
-        if col35 == "MEGA1" or po == "MEGA1":
+        # Strictly check if parcel is still at the HUB (po is MEGA1 or DVCMEGA1/DVC/HUB).
+        # If po is a local branch (e.g. BATP001, BANP001), the branch already scanned & received it -> EXCLUDE!
+        if po == "MEGA1":
             hub_label = "MEGA1"
             if status_code not in ("309", "306"):
                 continue
-        elif "DVC" in col35 or "DVC" in po or "MEGA" in col35 or "MEGA" in po or "HUB" in po:
+        elif "DVC" in po or "MEGA" in po or "HUB" in po:
             hub_label = "DVCMEGA1"
             if status_code != "306":
                 continue
         else:
             continue
+
 
         prov = str(row[COL_DELIVERY_PROV] if len(row) > COL_DELIVERY_PROV and row[COL_DELIVERY_PROV] else "").strip().upper() or "KHAC"
 
