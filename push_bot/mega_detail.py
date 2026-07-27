@@ -112,6 +112,11 @@ def build_mega_detail(source_path, out_path, cfg):
         return 0, 0
     data_rows = all_rows[1:]
 
+    wb_out = openpyxl.Workbook()
+    ws_out = wb_out.active
+    ws_out.title = "MEGA Detail"
+
+
     today = _dt.now().date()
 
     urgent_rows = []

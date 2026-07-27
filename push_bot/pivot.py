@@ -356,99 +356,125 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
 
 def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     """
-    Renders pivot table matching exact /push zone style:
-      - Dark Slate (#1E293B) Header Bar with White Bold text
-      - Grey (#EAEAEA) Hub Banner (MEGA1 / DVCMEGA1)
-      - Indented province rows (   MON,   BAT,   PNP, etc.)
-      - Soft Grey (#F1F5F9) Total row with Bold Red text (#EF4444)
-      - Fee (USD) & COD (USD) summary columns on the right
+    Renders pivot table matching exact Zone 4 report screenshot design:
+      - Dark Navy (#0B132B) Top Banner with Date Stamp
+      - Double Header Bar: Date columns + TOTAL (#0F3976) + Fee($) (#166534) + COD($) (#166534) + URGENT (#B91C1C)
+      - Data Rows with Light Green fill (#E6F4EA) for Fee/COD and Light Red (#FCE8E6) for Urgent
+      - Bold Red GRAND TOTAL row (#B91C1C)
     """
-    fee_tree = extra_data[0] if extra_data and len(extra_data) > 0 else defaultdict(lambda: defaultdict(float))
-    cod_tree = extra_data[1] if extra_data and len(extra_data) > 1 else defaultdict(lambda: defaultdict(float))
+    fee_tree    = extra_data[0] if extra_data and len(extra_data) > 0 else defaultdict(lambda: defaultdict(float))
+    cod_tree    = extra_data[1] if extra_data and len(extra_data) > 1 else defaultdict(lambda: defaultdict(float))
+    urgent_tree = extra_data[2] if extra_data and len(extra_data) > 2 else defaultdict(lambda: defaultdict(int))
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "PENDING BILL"
 
     fn = "Segoe UI"
-    hdr_font  = Font(name=fn, size=10, bold=True, color="FFFFFF")
-    hub_font  = Font(name=fn, size=10, bold=True, color="0F172A")
-    data_font = Font(name=fn, size=10, color="0F172A")
-    tot_font  = Font(name=fn, size=10, bold=True, color="EF4444")
-    fee_font  = Font(name=fn, size=10, color="166534", bold=True)
+    banner_font = Font(name=fn, size=11, bold=True, color="FFFFFF")
+    hdr_font    = Font(name=fn, size=10, bold=True, color="FFFFFF")
+    hub_font    = Font(name=fn, size=10, bold=True, color="FFFFFF")
+    data_font   = Font(name=fn, size=10, color="0F172A")
+    blue_font   = Font(name=fn, size=10, color="1E40AF")
+    fee_font    = Font(name=fn, size=10, color="166534", bold=True)
+    urg_font    = Font(name=fn, size=10, color="B91C1C", bold=True)
+    tot_red_font= Font(name=fn, size=10, bold=True, color="B91C1C")
 
-    # 1. Header Row 1 (Matching /push zone header)
-    ws.cell(1, 1, "Zone / Post Office").font = hdr_font
-    ws.cell(1, 1).fill = _HDR_FILL
-    ws.cell(1, 1).border = _BORDER
+    # Header Fills matching Zone 4 screenshot
+    banner_fill  = PatternFill("solid", fgColor="0B132B")  # Dark Navy
+    hdr_navy     = PatternFill("solid", fgColor="111827")  # Deep Header
+    tot_hdr_fill = PatternFill("solid", fgColor="0F3976")  # Navy Blue for TOTAL
+    fee_hdr_fill = PatternFill("solid", fgColor="166534")  # Forest Green for Fee($) / COD($)
+    urg_hdr_fill = PatternFill("solid", fgColor="B91C1C")  # Dark Red for URGENT
+
+    # Data Background Fills matching Zone 4 screenshot
+    fee_cell_fill = PatternFill("solid", fgColor="E6F4EA") # Light Green fill for Fee / COD
+    urg_cell_fill = PatternFill("solid", fgColor="FCE8E6") # Light Red fill for Urgent
+    tot_row_fill  = PatternFill("solid", fgColor="F1F5F9") # Soft Grey Total Row
+
+    # Detect current hub label
+    hub_keys = [h for h in ["MEGA1", "DVCMEGA1"] if h in tree and tree[h]]
+    hub_title = " — ".join(hub_keys) if hub_keys else "MEGA"
+
+    # 1. Top Banner Row 1
+    stamp_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+    ws.cell(1, 1, f"DAILY REPORT — {hub_title}  {stamp_str}").font = banner_font
+    ws.cell(1, 1).fill = banner_fill
     ws.cell(1, 1).alignment = _LEFT
+    ws.row_dimensions[1].height = 24
+
+    # 2. Row 2: Headers
+    ws.cell(2, 1, "HANDLE").font = hdr_font
+    ws.cell(2, 1).fill = hdr_navy
+    ws.cell(2, 1).border = _BORDER
+    ws.cell(2, 1).alignment = _LEFT
 
     col_idx_map = {}
     for idx, dk in enumerate(day_keys):
         col_num = 2 + idx
         col_idx_map[dk] = col_num
-        cell = ws.cell(1, col_num, f"{dk[1]:02d}/{dk[0]:02d}")
+        cell = ws.cell(2, col_num, f"{dk[1]:02d}/{dk[0]:02d}")
         cell.font = hdr_font
-        cell.fill = _HDR_FILL
+        cell.fill = hdr_navy
         cell.border = _BORDER
         cell.alignment = _CENTER
 
     tot_col = 2 + len(day_keys)
     fee_col = tot_col + 1
     cod_col = fee_col + 1
+    urg_col = cod_col + 1
 
-    ws.cell(1, tot_col, "Grand Total").font = hdr_font
-    ws.cell(1, tot_col).fill = _HDR_FILL
-    ws.cell(1, tot_col).border = _BORDER
-    ws.cell(1, tot_col).alignment = _CENTER
+    c_tot_hdr = ws.cell(2, tot_col, "TOTAL")
+    c_tot_hdr.font = hdr_font
+    c_tot_hdr.fill = tot_hdr_fill
+    c_tot_hdr.border = _BORDER
+    c_tot_hdr.alignment = _CENTER
 
-    ws.cell(1, fee_col, "Total Fees (USD)").font = hdr_font
-    ws.cell(1, fee_col).fill = _HDR_FILL
-    ws.cell(1, fee_col).border = _BORDER
-    ws.cell(1, fee_col).alignment = _CENTER
+    c_fee_hdr = ws.cell(2, fee_col, "Fee($)")
+    c_fee_hdr.font = hdr_font
+    c_fee_hdr.fill = fee_hdr_fill
+    c_fee_hdr.border = _BORDER
+    c_fee_hdr.alignment = _CENTER
 
-    ws.cell(1, cod_col, "Total COD (USD)").font = hdr_font
-    ws.cell(1, cod_col).fill = _HDR_FILL
-    ws.cell(1, cod_col).border = _BORDER
-    ws.cell(1, cod_col).alignment = _CENTER
+    c_cod_hdr = ws.cell(2, cod_col, "COD($)")
+    c_cod_hdr.font = hdr_font
+    c_cod_hdr.fill = fee_hdr_fill
+    c_cod_hdr.border = _BORDER
+    c_cod_hdr.alignment = _CENTER
 
-    ws.row_dimensions[1].height = 24
+    c_urg_hdr = ws.cell(2, urg_col, "URGENT")
+    c_urg_hdr.font = hdr_font
+    c_urg_hdr.fill = urg_hdr_fill
+    c_urg_hdr.border = _BORDER
+    c_urg_hdr.alignment = _CENTER
 
-    r = 2
+    for c in range(1, urg_col + 1):
+        ws.cell(1, c).fill = banner_fill
+
+    ws.row_dimensions[2].height = 24
+
+    r = 3
     grand_col_totals = defaultdict(int)
     grand_overall_orders = 0
     grand_overall_fee = 0.0
     grand_overall_cod = 0.0
+    grand_overall_urgent = 0
 
-    hubs = ["MEGA1", "DVCMEGA1"]
-    for hub_idx, hub in enumerate(hubs):
+    for hub in hub_keys:
         prov_dict = tree.get(hub, {})
         if not prov_dict:
             continue
-
-        # Hub Banner Row (Matching /push zone header fill)
-        ws.row_dimensions[r].height = 20
-        ws.cell(r, 1, hub).font = hub_font
-        ws.cell(r, 1).fill = _ZONE_FILL
-        ws.cell(r, 1).border = _BORDER
-        ws.cell(r, 1).alignment = _LEFT
-
-        for c in range(2, cod_col + 1):
-            cell = ws.cell(r, c)
-            cell.fill = _ZONE_FILL
-            cell.border = _BORDER
-
-        r += 1
 
         hub_col_totals = defaultdict(int)
         hub_total_orders = 0
         hub_total_fee = 0.0
         hub_total_cod = 0.0
+        hub_total_urgent = 0
 
-        # All Provinces listed cleanly
+        # Province Rows
         for prov in sorted(prov_dict.keys()):
-            ws.row_dimensions[r].height = 20
-            ws.cell(r, 1, f"   {prov}").font = data_font
+            ws.row_dimensions[r].height = 22
+            ws.cell(r, 1, prov).font = data_font
             ws.cell(r, 1).border = _BORDER
             ws.cell(r, 1).alignment = _LEFT
 
@@ -458,7 +484,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
                 val = prov_dict[prov].get(dk, 0)
                 cell = ws.cell(r, col_num)
                 cell.border = _BORDER
-                cell.font = data_font
+                cell.font = blue_font
                 cell.alignment = _CENTER
                 if val > 0:
                     cell.value = val
@@ -468,84 +494,106 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
 
             p_fee = fee_tree[hub].get(prov, 0.0)
             p_cod = cod_tree[hub].get(prov, 0.0)
+            p_urg = urgent_tree[hub].get(prov, 0)
 
-            ws.cell(r, tot_col, row_sum if row_sum > 0 else "").font = data_font
-            ws.cell(r, tot_col).alignment = _CENTER
-            ws.cell(r, tot_col).border = _BORDER
+            # TOTAL cell (Bold Red)
+            t_cell = ws.cell(r, tot_col, row_sum if row_sum > 0 else "")
+            t_cell.font = tot_red_font
+            t_cell.alignment = _CENTER
+            t_cell.border = _BORDER
 
+            # Fee($) cell (Light Green fill, Green text)
             f_cell = ws.cell(r, fee_col, round(p_fee, 2) if p_fee > 0 else "")
             f_cell.font = fee_font
+            f_cell.fill = fee_cell_fill
             f_cell.alignment = _RIGHT
             f_cell.border = _BORDER
             if p_fee > 0:
                 f_cell.number_format = "$#,##0.00"
 
+            # COD($) cell (Light Green fill, Green text)
             c_cell = ws.cell(r, cod_col, round(p_cod, 2) if p_cod > 0 else "")
             c_cell.font = fee_font
+            c_cell.fill = fee_cell_fill
             c_cell.alignment = _RIGHT
             c_cell.border = _BORDER
             if p_cod > 0:
                 c_cell.number_format = "$#,##0.00"
 
+            # URGENT cell (Light Red fill, Dark Red text)
+            u_cell = ws.cell(r, urg_col, p_urg if p_urg > 0 else "")
+            u_cell.font = urg_font
+            u_cell.fill = urg_cell_fill
+            u_cell.alignment = _CENTER
+            u_cell.border = _BORDER
+
             hub_total_orders += row_sum
             hub_total_fee += p_fee
             hub_total_cod += p_cod
+            hub_total_urgent += p_urg
             r += 1
-
-        # Hub Total Subtotal Row (Matching /push zone total style)
-        ws.row_dimensions[r].height = 22
-        sub_label = f"{hub} Total"
-        ws.cell(r, 1, sub_label).font = tot_font
-        ws.cell(r, 1).fill = _TOT_FILL
-        ws.cell(r, 1).border = _BORDER
-        ws.cell(r, 1).alignment = _LEFT
-
-        for idx, dk in enumerate(day_keys):
-            col_num = col_idx_map[dk]
-            val = hub_col_totals.get(dk, 0)
-            cell = ws.cell(r, col_num)
-            cell.fill = _TOT_FILL
-            cell.font = tot_font
-            cell.border = _BORDER
-            cell.alignment = _CENTER
-            if val > 0:
-                cell.value = val
-
-        tot_h = ws.cell(r, tot_col, hub_total_orders)
-        tot_h.fill = _TOT_FILL
-        tot_h.font = tot_font
-        tot_h.border = _BORDER
-        tot_h.alignment = _CENTER
-
-        hf_cell = ws.cell(r, fee_col, round(hub_total_fee, 2) if hub_total_fee > 0 else 0)
-        hf_cell.fill = _TOT_FILL
-        hf_cell.font = fee_font
-        hf_cell.alignment = _RIGHT
-        hf_cell.border = _BORDER
-        hf_cell.number_format = "$#,##0.00"
-
-        hc_cell = ws.cell(r, cod_col, round(hub_total_cod, 2) if hub_total_cod > 0 else 0)
-        hc_cell.fill = _TOT_FILL
-        hc_cell.font = fee_font
-        hc_cell.alignment = _RIGHT
-        hc_cell.border = _BORDER
-        hc_cell.number_format = "$#,##0.00"
 
         grand_overall_orders += hub_total_orders
         grand_overall_fee += hub_total_fee
         grand_overall_cod += hub_total_cod
-        r += 1
+        grand_overall_urgent += hub_total_urgent
 
-    # Widths
-    ws.column_dimensions["A"].width = 28
+    # GRAND TOTAL Row
+    ws.row_dimensions[r].height = 24
+    ws.cell(r, 1, "GRAND TOTAL").font = tot_red_font
+    ws.cell(r, 1).fill = tot_row_fill
+    ws.cell(r, 1).border = _BORDER
+    ws.cell(r, 1).alignment = _LEFT
+
+    for idx, dk in enumerate(day_keys):
+        col_num = col_idx_map[dk]
+        val = grand_col_totals.get(dk, 0)
+        cell = ws.cell(r, col_num)
+        cell.fill = tot_row_fill
+        cell.font = tot_red_font
+        cell.border = _BORDER
+        cell.alignment = _CENTER
+        if val > 0:
+            cell.value = val
+
+    gt_c = ws.cell(r, tot_col, grand_overall_orders)
+    gt_c.fill = tot_hdr_fill
+    gt_c.font = Font(name=fn, size=10, bold=True, color="FFFFFF")
+    gt_c.border = _BORDER
+    gt_c.alignment = _CENTER
+
+    gf_c = ws.cell(r, fee_col, round(grand_overall_fee, 2))
+    gf_c.fill = fee_cell_fill
+    gf_c.font = fee_font
+    gf_c.alignment = _RIGHT
+    gf_c.border = _BORDER
+    gf_c.number_format = "$#,##0.00"
+
+    gc_c = ws.cell(r, cod_col, round(grand_overall_cod, 2))
+    gc_c.fill = fee_cell_fill
+    gc_c.font = fee_font
+    gc_c.alignment = _RIGHT
+    gc_c.border = _BORDER
+    gc_c.number_format = "$#,##0.00"
+
+    gu_c = ws.cell(r, urg_col, grand_overall_urgent)
+    gu_c.fill = urg_cell_fill
+    gu_c.font = urg_font
+    gu_c.alignment = _CENTER
+    gu_c.border = _BORDER
+
+    # Column Widths
+    ws.column_dimensions["A"].width = 18
     for c in range(2, tot_col):
         ws.column_dimensions[get_column_letter(c)].width = 7
-    ws.column_dimensions[get_column_letter(tot_col)].width = 14
-    ws.column_dimensions[get_column_letter(fee_col)].width = 16
-    ws.column_dimensions[get_column_letter(cod_col)].width = 16
+    ws.column_dimensions[get_column_letter(tot_col)].width = 10
+    ws.column_dimensions[get_column_letter(fee_col)].width = 14
+    ws.column_dimensions[get_column_letter(cod_col)].width = 14
+    ws.column_dimensions[get_column_letter(urg_col)].width = 10
 
     wb.save(out_path)
     return out_path, grand_overall_orders
+
 
 
 def run_mega(source_path, out_path, config):
