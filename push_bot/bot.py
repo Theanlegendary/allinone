@@ -621,22 +621,25 @@ async def send_requester_photo(update: Update, context: ContextTypes.DEFAULT_TYP
         log.warning("Cannot send requester photo without a chat id.")
         return False
 
+    # Prepare buffer copy for potential document fallback if send_photo fails
+    photo_copy = None
+    if hasattr(photo, "getvalue"):
+        import io
+        photo_copy = io.BytesIO(photo.getvalue())
+
     try:
         await safe_api_call(context.bot.send_photo, chat_id=chat_id, photo=photo)
         return True
     except Exception as e:
-        log.warning("Could not send requester photo to %s: %s", chat_id, e)
-        if is_group_chat(update) and update.effective_chat:
-            try:
-                await safe_api_call(
-                    context.bot.send_photo,
-                    chat_id=update.effective_chat.id, 
-                    photo=photo,
-                )
-                return True
-            except Exception as e2:
-                log.warning("Fallback send photo to group failed: %s", e2)
-        return False
+        log.warning("Could not send requester photo to %s: %s (trying send_document fallback)", chat_id, e)
+        try:
+            doc_buf = photo_copy if photo_copy else photo
+            doc_name = getattr(photo, "name", "report_image.png") or "report_image.png"
+            await safe_api_call(context.bot.send_document, chat_id=chat_id, document=doc_buf, filename=doc_name)
+            return True
+        except Exception as e2:
+            log.warning("Fallback send document failed: %s", e2)
+            return False
 
 
 async def send_requester_document(

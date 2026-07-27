@@ -191,9 +191,17 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
                     time.sleep(0.5)
             
             if img:
-                # Aspect ratio safety check for Telegram
-                max_ratio = 20.0  # Telegram max aspect ratio safety
+                # Max dimension & aspect ratio safety check for Telegram
                 w, h = img.size
+                max_dim = 2400
+                if w > max_dim or h > max_dim:
+                    scale_factor = min(max_dim / float(w), max_dim / float(h))
+                    new_w = max(1, int(w * scale_factor))
+                    new_h = max(1, int(h * scale_factor))
+                    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+                w, h = img.size
+                max_ratio = 18.0
                 new_w, new_h = w, h
                 if h > 0 and w / h > max_ratio:
                     new_h = int(w / max_ratio)
@@ -424,11 +432,19 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
             x += cw
         y += rh
 
-    # ── Aspect ratio safety check for Telegram ──────────────────────────────
-    # Telegram rejects photos with aspect ratios > 20 (Photo_invalid_dimensions).
-    # We enforce a safe ratio of 18 by adding white background padding if needed.
-    max_ratio = 18.0
+    # ── Aspect ratio & max dimension safety check for Telegram ─────────────────
+    # Telegram rejects photos with dimensions > 2500px or aspect ratio > 20 (Photo_invalid_dimensions).
     w, h = img.size
+    max_dim = 2400
+    if w > max_dim or h > max_dim:
+        scale_factor = min(max_dim / float(w), max_dim / float(h))
+        new_w = max(1, int(w * scale_factor))
+        new_h = max(1, int(h * scale_factor))
+        img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Check aspect ratio safety
+    w, h = img.size
+    max_ratio = 18.0
     new_w, new_h = w, h
     if h > 0 and w / h > max_ratio:
         new_h = int(w / max_ratio)

@@ -12,7 +12,7 @@ from openpyxl.utils import get_column_letter
 from PIL import Image, ImageDraw, ImageFont
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-SCALE       = 2
+SCALE       = 3             # Increased from 2 to 3 for HD resolution quality
 
 FONT_SIZE   = 10 * SCALE
 ROW_H       = 22 * SCALE    # px — uniform row height
@@ -108,7 +108,8 @@ def _load_khmer_font(size):
 def _get_font(text: str, size: int, bold: bool = False):
     """Return Khmer font if text has Khmer chars, otherwise return normal font."""
     if _has_khmer(text):
-        return _load_khmer_font(size + 3) # Khmer fonts are slightly smaller, boost size
+        # Khmer fonts are slightly smaller, boost size dynamically based on scale
+        return _load_khmer_font(size + int(1.5 * SCALE))
     return _load_font(size, bold)
 
 
@@ -129,20 +130,78 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
         try:
             wb = excel.Workbooks.Open(abs_path)
             ws = wb.ActiveSheet
-            ws.UsedRange.CopyPicture(1, 2)
-            time.sleep(0.5) # wait for clipboard
             
             img = None
-            for _ in range(5):
-                img = ImageGrab.grabclipboard()
-                if img:
-                    break
-                time.sleep(0.5)
+            temp_png = None
+            
+            # --- 1. Try High Quality Chart Export Method (Crisp HD 2.0x rendering) ---
+            try:
+                rng = ws.UsedRange
+                excel_scale = 3.0  # Scale factor for HD rendering (higher = sharper text)
+                chart_width = rng.Width * excel_scale
+                chart_height = rng.Height * excel_scale
                 
+                # Copy as picture using xlScreen=1, xlPicture=-4147 for maximum vector detail
+                rng.CopyPicture(1, -4147)
+                
+                # Add temporary chart
+                chart_obj = ws.ChartObjects().Add(Left=rng.Left, Top=rng.Top, Width=chart_width, Height=chart_height)
+                chart_obj.Activate()
+                chart = chart_obj.Chart
+                chart.Paste()
+                
+                # Scale the pasted picture shape to fill the chart and position it at top-left (0,0)
+                if chart.Shapes.Count > 0:
+                    shape = chart.Shapes(1)
+                    shape.Left = 0
+                    shape.Top = 0
+                    shape.Width = chart_width
+                    shape.Height = chart_height
+                
+                # Remove chart borders and fill to prevent extra margins/background padding
+                chart.ChartArea.Format.Line.Visible = 0
+                chart.ChartArea.Format.Fill.Visible = 0
+                
+                # Export to temp PNG
+                temp_png = os.path.abspath(os.path.join(os.path.dirname(xlsx_path), f"temp_excel_hd_{int(time.time())}.png"))
+                chart.Export(temp_png, "PNG")
+                chart_obj.Delete()
+                
+                if os.path.exists(temp_png):
+                    img = Image.open(temp_png)
+                    # Load image fully into memory and then close file handle so we can delete it
+                    img.load()
+            except Exception:
+                img = None
+            finally:
+                if temp_png and os.path.exists(temp_png):
+                    try:
+                        os.remove(temp_png)
+                    except Exception:
+                        pass
+            
+            # --- 2. Clipboard Fallback Method (if Chart method failed or wasn't used) ---
+            if img is None:
+                ws.UsedRange.CopyPicture(1, 2)
+                time.sleep(0.5) # wait for clipboard
+                for _ in range(5):
+                    img = ImageGrab.grabclipboard()
+                    if img:
+                        break
+                    time.sleep(0.5)
+            
             if img:
-                # Aspect ratio safety check for Telegram
-                max_ratio = 18.0
+                # Max dimension & aspect ratio safety check for Telegram
                 w, h = img.size
+                max_dim = 2400
+                if w > max_dim or h > max_dim:
+                    scale_factor = min(max_dim / float(w), max_dim / float(h))
+                    new_w = max(1, int(w * scale_factor))
+                    new_h = max(1, int(h * scale_factor))
+                    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+                w, h = img.size
+                max_ratio = 18.0
                 new_w, new_h = w, h
                 if h > 0 and w / h > max_ratio:
                     new_h = int(w / max_ratio)
@@ -155,7 +214,7 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
                     img = padded_img
 
                 buf = io.BytesIO()
-                img.save(buf, format='PNG')
+                img.save(buf, format='PNG', optimize=True)
                 buf.seek(0)
                 return buf
         finally:
@@ -164,6 +223,8 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
             excel.Quit()
     except Exception as e:
         # Fall back to Pillow rendering if Excel COM fails or is not available
+        import logging
+        logging.warning("Excel COM rendering failed, falling back to Pillow: %s", e, exc_info=True)
         pass
 
     wb = load_workbook(xlsx_path, data_only=True)
@@ -259,12 +320,16 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
                     continue
                 bold = _cell_bold(ws.cell(r, c))
                 f = _get_font(text, FONT_SIZE, bold)
+                stroke_w = 0
+                if bold and _has_khmer(text):
+                    # Simulate bold for Khmer OS fonts using a stroke outline
+                    stroke_w = max(1, int(0.4 * SCALE))
                 try:
-                    bb = d.textbbox((0, 0), text, font=f)
+                    bb = d.textbbox((0, 0), text, font=f, stroke_width=stroke_w)
                     w  = bb[2] - bb[0]
                 except Exception:
-                    w = len(text) * (FONT_SIZE - 2)
-                    max_w = max(max_w, w + PAD_X * 2)
+                    w = len(text) * (FONT_SIZE - 2) + stroke_w * 2
+                max_w = max(max_w, w + PAD_X * 2)
             col_px.append(min(max_w, PX_MAX))
 
     # Columns to actually render (skip 0-width hidden ones)
@@ -339,12 +404,16 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
 
             if text:
                 f = _get_font(text, FONT_SIZE, bold)
+                stroke_w = 0
+                if bold and _has_khmer(text):
+                    # Simulate bold for Khmer OS fonts using a stroke outline
+                    stroke_w = max(1, int(0.4 * SCALE))
                 try:
-                    bb = draw.textbbox((0, 0), text, font=f)
+                    bb = draw.textbbox((0, 0), text, font=f, stroke_width=stroke_w)
                     tw, th = bb[2] - bb[0], bb[3] - bb[1]
                 except Exception:
-                    tw = len(text) * (FONT_SIZE - 2)
-                    th = FONT_SIZE
+                    tw = len(text) * (FONT_SIZE - 2) + stroke_w * 2
+                    th = FONT_SIZE + stroke_w * 2
 
                 ty = y + (mh - th) // 2
                 if align == 'center':
@@ -354,17 +423,28 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
                 else:
                     tx = x + PAD_X
 
-                draw.text((tx, ty), text, font=f, fill=fg)
+                if stroke_w > 0:
+                    draw.text((tx, ty), text, font=f, fill=fg, stroke_width=stroke_w, stroke_fill=fg)
+                else:
+                    draw.text((tx, ty), text, font=f, fill=fg)
 
             draw.rectangle([x, y, x + mw, y + mh], outline=BORDER_COL, width=1 * SCALE)
             x += cw
         y += rh
 
-    # ── Aspect ratio safety check for Telegram ──────────────────────────────
-    # Telegram rejects photos with aspect ratios > 20 (Photo_invalid_dimensions).
-    # We enforce a safe ratio of 18 by adding white background padding if needed.
-    max_ratio = 18.0
+    # ── Aspect ratio & max dimension safety check for Telegram ─────────────────
+    # Telegram rejects photos with dimensions > 2500px or aspect ratio > 20 (Photo_invalid_dimensions).
     w, h = img.size
+    max_dim = 2400
+    if w > max_dim or h > max_dim:
+        scale_factor = min(max_dim / float(w), max_dim / float(h))
+        new_w = max(1, int(w * scale_factor))
+        new_h = max(1, int(h * scale_factor))
+        img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Check aspect ratio safety
+    w, h = img.size
+    max_ratio = 18.0
     new_w, new_h = w, h
     if h > 0 and w / h > max_ratio:
         new_h = int(w / max_ratio)
