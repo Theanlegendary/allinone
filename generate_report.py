@@ -814,17 +814,14 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
 
     today = datetime.now().date()
 
-    # Build day_cols = all days 1 to today.day + any other dates with data
+    # Build day_cols = only days that have data in the export, + today's date
     if date_col:
         parsed = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
         dates_with_data = set(parsed.dropna().dt.date.tolist())
     else:
         dates_with_data = set()
 
-    from datetime import date as _dt_date
-    for d in range(1, today.day + 1):
-        dates_with_data.add(_dt_date(today.year, today.month, d))
-
+    dates_with_data.add(today)
     day_cols = sorted(list(dates_with_data))
 
     # Exclude test orders
