@@ -134,18 +134,20 @@ def build_mega_detail(source_path, out_path, cfg):
         po = str(row[CI_CURRENT_PO] or "").strip().upper()
         col35 = str(row[CI_HUB_CODE] if len(row) > CI_HUB_CODE and row[CI_HUB_CODE] else "").strip().upper()
 
-        # Strictly check if parcel is still at the HUB (po is MEGA1 or DVCMEGA1/DVC/HUB).
-        # If po is a local branch (e.g. BATP001, BANP001), the branch already scanned & received it -> EXCLUDE!
+        # Strict Hub Filter matching user 266-record manual export (Detail_order status report)
+        # CURRENT POST OFFICE (Col 15) must be physically at the Hub (MEGA1 or DVCMEGA1/DVC/HUB).
+        # Parcels already received by local branches (Col 15 == BATP001, BANP001 etc.) are EXCLUDED!
+        hub_statuses = {"306", "309", "302", "311", "310"}
+        if sc not in hub_statuses:
+            continue
+
         if po == "MEGA1":
             hub_label = "MEGA1"
-            if sc not in ("309", "306"):
-                continue
         elif "DVC" in po or "MEGA" in po or "HUB" in po:
             hub_label = "DVMEGA"
-            if sc != "306":
-                continue
         else:
             continue
+
 
 
         # Date parsing: Use Action Date (Col 24) or Created Date
