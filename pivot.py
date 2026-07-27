@@ -313,9 +313,14 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
 
         prov = str(row[COL_DELIVERY_PROV] if len(row) > COL_DELIVERY_PROV and row[COL_DELIVERY_PROV] else "").strip().upper() or "KHAC"
 
-        month, day = _parse_day(row[COL_CREATED_DATE])
+        # Use Action Time (Col 24 - CURRENT TIME) matching boss Action day pivot
+        action_time_val = row[24] if len(row) > 24 and row[24] else row[COL_CREATED_DATE]
+        month, day = _parse_day(action_time_val)
+        if day is None:
+            month, day = _parse_day(row[COL_CREATED_DATE])
         if day is None:
             continue
+
 
         key = (month, day)
         tree[hub_label][prov][key] += 1
