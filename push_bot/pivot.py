@@ -307,12 +307,13 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if status_code not in hub_statuses:
             continue
 
-        if po == "MEGA1":
+        col35 = str(row[COL_ACTION_PO_HUB] if len(row) > COL_ACTION_PO_HUB and row[COL_ACTION_PO_HUB] else "").strip().upper()
+
+        if col35 == "MEGA1" or po == "MEGA1":
             hub_label = "MEGA1"
-        elif "DVC" in po or "MEGA" in po or "HUB" in po:
-            hub_label = "DVCMEGA1"
         else:
-            continue
+            hub_label = "DVCMEGA1"
+
 
 
 
