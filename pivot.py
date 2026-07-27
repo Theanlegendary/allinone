@@ -378,7 +378,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     for idx, dk in enumerate(day_keys):
         col_num = 2 + idx
         col_idx_map[dk] = col_num
-        cell = ws.cell(1, col_num, f"{dk[1]:02d}")
+        cell = ws.cell(1, col_num, f"{dk[1]:02d}/{dk[0]:02d}")
         cell.font = hdr_font
         cell.fill = _HDR_FILL
         cell.border = _BORDER
