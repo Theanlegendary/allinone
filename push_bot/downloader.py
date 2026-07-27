@@ -9,23 +9,23 @@ from datetime import datetime, timedelta
 import requests
 
 
-def today_range(days=7):
-    """Tra ve (from_date, to_date) tinh nguoc theo so ngay cau hinh."""
+def day14_to_today_range():
+    """Return (from_date, to_date) starting from the 14th of the current month to today."""
     today = datetime.now()
-    try:
-        days = int(days)
-    except (TypeError, ValueError):
-        days = 7
-    days = max(days, 1)
-    start = today - timedelta(days=days - 1)
-    return start.strftime("%Y%m%d"), today.strftime("%Y%m%d")
+    if today.day >= 14:
+        start_date = datetime(today.year, today.month, 14)
+    else:
+        first_of_month = datetime(today.year, today.month, 1)
+        prev_month_end = first_of_month - timedelta(days=1)
+        start_date = datetime(prev_month_end.year, prev_month_end.month, 14)
+    return start_date.strftime("%Y%m%d"), today.strftime("%Y%m%d")
 
 
 def download_detail(api_cfg, out_path, from_date=None, to_date=None, branch_code=None, force_refresh=False):
     """
     Goi API, luu file Excel ve out_path.
-    Mac dinh lay theo api.date_range_days den hom nay.
-    branch_code: override branch_code from config (e.g. "KAM" for Kampot only).
+    Mac dinh lay tu ngay 14 den hom nay.
+    branch_code: override branch_code from config.
     """
     import os
     import time
@@ -33,7 +33,7 @@ def download_detail(api_cfg, out_path, from_date=None, to_date=None, branch_code
 
     # Cache logic: Only cache when downloading the default date range
     is_default_range = (from_date is None and to_date is None)
-    cache_minutes = api_cfg.get("cache_minutes", 5)
+    cache_minutes = api_cfg.get("cache_minutes", 0)
 
     # Cache file stored locally in a 'cache' folder under this script's directory
     cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -49,7 +49,8 @@ def download_detail(api_cfg, out_path, from_date=None, to_date=None, branch_code
                 return out_path
 
     if from_date is None or to_date is None:
-        from_date, to_date = today_range(api_cfg.get("date_range_days", 7))
+        from_date, to_date = day14_to_today_range()
+
 
     headers = {
         "Authorization": f"Bearer {api_cfg['bearer_token']}",
@@ -156,7 +157,7 @@ def download_post_offices(api_cfg, branch_code, limit=200):
         for attempt in range(3):
             try:
                 resp = requests.post(url, headers=headers, params=params,
-                                     data=json.dumps(body), timeout=120)
+                                     data=json.dumps(body), timeout=180)
                 resp.raise_for_status()
                 success = True
                 break
@@ -194,6 +195,65 @@ def download_post_offices(api_cfg, branch_code, limit=200):
     ]
 
     return filtered
+
+
+def download_all_post_offices(api_cfg, limit=500):
+    """Fetch ALL post offices without keyword filter. Uses limit=500 to minimize round-trips."""
+    import time
+    base = api_cfg["url"].split("/tms-report/")[0]
+    url = f"{base}/vtp-user/api/v1/departments/posts/search"
+
+    headers = {
+        "Authorization": f"Bearer {api_cfg['bearer_token']}",
+        "Referer": api_cfg.get("referer", "https://opsexpress.metfone.com.kh/"),
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "x-client-id": api_cfg.get("x_client_id", "TMS_ANDROID"),
+        "x-need-count": "true",
+        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/148.0.0.0 Safari/537.36"),
+    }
+
+    all_items = []
+    offset = 0
+
+    while True:
+        params = {"offset": offset, "limit": limit}
+        body = {"keyword": ""}
+
+        success = False
+        last_err = None
+        for attempt in range(3):
+            try:
+                resp = requests.post(url, headers=headers, params=params,
+                                     data=json.dumps(body), timeout=180)
+                resp.raise_for_status()
+                success = True
+                break
+            except Exception as e:
+                last_err = e
+                if offset > 0 and hasattr(e, 'response') and e.response is not None:
+                    if e.response.status_code == 500:
+                        break
+                time.sleep(1.0)
+
+        if not success:
+            if offset > 0 and last_err and hasattr(last_err, 'response') and last_err.response is not None and last_err.response.status_code == 500:
+                break
+            raise last_err
+
+        data = resp.json()
+        items = data.get("items", data.get("data", []))
+        if not items:
+            break
+
+        all_items.extend(items)
+        if len(items) < limit:
+            break
+        offset += limit
+
+    return all_items
 
 
 if __name__ == "__main__":
