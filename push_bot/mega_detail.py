@@ -159,7 +159,7 @@ def build_mega_detail(source_path, out_path, cfg):
 
         record = {
             "hub":         hub_label,
-            "status_km":   STATUS_KM.get(sc, sc),
+            "status_km":   f"{sc} - {STATUS_KM.get(sc, sc)}" if sc in STATUS_KM else str(row[CI_STATUS] or sc),
             "action_user": action_user,
             "origin":      str(row[CI_RECV_PO]  or "").strip(),
             "dest":        str(row[CI_DELIV_PO] or "").strip(),

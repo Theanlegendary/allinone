@@ -392,9 +392,14 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     urg_cell_fill = PatternFill("solid", fgColor="FCE8E6") # Light Red fill for Urgent
     tot_row_fill  = PatternFill("solid", fgColor="F1F5F9") # Soft Grey Total Row
 
-    # Detect current hub label
+    # Detect current hub label & status code
     hub_keys = [h for h in ["MEGA1", "DVCMEGA1"] if h in tree and tree[h]]
-    hub_title = " — ".join(hub_keys) if hub_keys else "MEGA"
+    if len(hub_keys) == 1:
+        h_name = hub_keys[0]
+        status_info = "(Status 309, 306)" if h_name == "MEGA1" else "(Status 306)"
+        hub_title = f"{h_name} {status_info}"
+    else:
+        hub_title = "MEGA (Status 306/309)"
 
     # 1. Top Banner Row 1
     stamp_str = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -402,6 +407,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     ws.cell(1, 1).fill = banner_fill
     ws.cell(1, 1).alignment = _LEFT
     ws.row_dimensions[1].height = 24
+
 
     # 2. Row 2: Headers
     ws.cell(2, 1, "HANDLE").font = hdr_font
