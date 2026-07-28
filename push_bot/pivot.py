@@ -425,7 +425,8 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     ws.cell(2, 1, "HANDLE").font = hdr_font
     ws.cell(2, 1).fill = hdr_navy
     ws.cell(2, 1).border = _BORDER
-    ws.cell(2, 1).alignment = _LEFT
+    ws.cell(2, 1).alignment = _CENTER
+
 
     col_idx_map = {}
     for idx, dk in enumerate(day_keys):
@@ -502,7 +503,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
             c_prov.font = data_font
             c_prov.fill = row_bg
             c_prov.border = _BORDER
-            c_prov.alignment = _LEFT
+            c_prov.alignment = _CENTER
 
             row_sum = 0
             for idx, dk in enumerate(day_keys):
@@ -534,7 +535,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
             f_cell = ws.cell(r, fee_col, round(p_fee, 2) if p_fee > 0 else "")
             f_cell.font = fee_font
             f_cell.fill = fee_cell_fill
-            f_cell.alignment = _RIGHT
+            f_cell.alignment = _CENTER
             f_cell.border = _BORDER
             if p_fee > 0:
                 f_cell.number_format = "$#,##0.00"
@@ -543,7 +544,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
             c_cell = ws.cell(r, cod_col, round(p_cod, 2) if p_cod > 0 else "")
             c_cell.font = fee_font
             c_cell.fill = fee_cell_fill
-            c_cell.alignment = _RIGHT
+            c_cell.alignment = _CENTER
             c_cell.border = _BORDER
             if p_cod > 0:
                 c_cell.number_format = "$#,##0.00"
@@ -572,7 +573,7 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     ws.cell(r, 1, "GRAND TOTAL").font = tot_red_font
     ws.cell(r, 1).fill = tot_row_fill
     ws.cell(r, 1).border = _BORDER
-    ws.cell(r, 1).alignment = _LEFT
+    ws.cell(r, 1).alignment = _CENTER
 
     for idx, dk in enumerate(day_keys):
         col_num = col_idx_map[dk]
@@ -594,16 +595,17 @@ def export_mega_pivot(tree, day_keys, out_path, extra_data=None):
     gf_c = ws.cell(r, fee_col, round(grand_overall_fee, 2))
     gf_c.fill = fee_cell_fill
     gf_c.font = fee_font
-    gf_c.alignment = _RIGHT
+    gf_c.alignment = _CENTER
     gf_c.border = _BORDER
     gf_c.number_format = "$#,##0.00"
 
     gc_c = ws.cell(r, cod_col, round(grand_overall_cod, 2))
     gc_c.fill = fee_cell_fill
     gc_c.font = fee_font
-    gc_c.alignment = _RIGHT
+    gc_c.alignment = _CENTER
     gc_c.border = _BORDER
     gc_c.number_format = "$#,##0.00"
+
 
     gu_c = ws.cell(r, urg_col, grand_overall_urgent)
     gu_c.fill = urg_cell_fill
