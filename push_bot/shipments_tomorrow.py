@@ -5,7 +5,7 @@ from datetime import datetime
 
 def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     """
-    Builds 100% exact replica of user's SHIPMENTS TOMORROW REPORT template Excel file:
+    Builds CEO-Level Executive SHIPMENTS TOMORROW REPORT Excel file:
       - Sheet 1: SHIPMENTS TOMORROW REPORT (Left main table + Right Executive Summary table)
       - Sheet 2: base (Raw order dataset)
     """
@@ -151,35 +151,38 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     ws1.title = "SHIPMENTS TOMORROW REPORT"
     ws1.views.sheetView[0].showGridLines = True
 
-    # Exact colors & borders matching user's template screenshot
-    fill_title_left  = PatternFill("solid", fgColor="1F4E78") # Dark Navy
-    fill_title_right = PatternFill("solid", fgColor="31565F") # Dark Teal
-    fill_hdr_left    = PatternFill("solid", fgColor="2F5597") # Medium Navy
-    fill_hdr_right   = PatternFill("solid", fgColor="31565F") # Dark Teal
-    fill_sum_tot     = PatternFill("solid", fgColor="D9E1F2") # Soft Blue Total
-    fill_left_tot    = PatternFill("solid", fgColor="B4C6E7") # Periwinkle Blue Total
+    # Executive CEO Color Palette (Subtle, High-Contrast, Professional)
+    fill_title_left  = PatternFill("solid", fgColor="0F172A") # Deep Slate Navy
+    fill_title_right = PatternFill("solid", fgColor="0F766E") # Deep Teal Slate
+    fill_hdr_left    = PatternFill("solid", fgColor="1E293B") # Executive Navy Slate
+    fill_hdr_right   = PatternFill("solid", fgColor="0F766E") # Deep Teal Slate
+    fill_row_alt     = PatternFill("solid", fgColor="F8FAFC") # Subtle Zebra Tint
+    fill_left_tot    = PatternFill("solid", fgColor="CBD5E1") # Refined Slate Grey Total
+    fill_sum_tot     = PatternFill("solid", fgColor="CCFBF1") # Refined Soft Teal Total
 
-    thin_border = Border(
-        left=Side(style="thin", color="D9D9D9"),
-        right=Side(style="thin", color="D9D9D9"),
-        top=Side(style="thin", color="D9D9D9"),
-        bottom=Side(style="thin", color="D9D9D9")
+    border_clean = Border(
+        left=Side(style="thin", color="E2E8F0"),
+        right=Side(style="thin", color="E2E8F0"),
+        top=Side(style="thin", color="E2E8F0"),
+        bottom=Side(style="thin", color="E2E8F0")
     )
 
-    tot_border_thick_bottom = Border(
-        left=Side(style="thin", color="D9D9D9"),
-        right=Side(style="thin", color="D9D9D9"),
-        top=Side(style="thin", color="D9D9D9"),
-        bottom=Side(style="medium", color="000000") # Dark thick line under Grand Total
+    # Double-line Accounting Bottom Border for CEO Grand Total
+    tot_border_accounting = Border(
+        left=Side(style="thin", color="CBD5E1"),
+        right=Side(style="thin", color="CBD5E1"),
+        top=Side(style="thin", color="64748B"),
+        bottom=Side(style="double", color="0F172A") # Executive Double Line
     )
 
-    font_banner = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    font_hdr    = Font(name="Calibri", size=9,  bold=True, color="FFFFFF")
-    font_data   = Font(name="Calibri", size=9,  color="000000")
-    font_data_b = Font(name="Calibri", size=9,  bold=True, color="000000")
-    font_tot    = Font(name="Calibri", size=10, bold=True, color="000000")
+    font_banner = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
+    font_hdr    = Font(name="Segoe UI", size=9,  bold=True, color="FFFFFF")
+    font_data   = Font(name="Segoe UI", size=9,  color="0F172A")
+    font_data_b = Font(name="Segoe UI", size=9,  bold=True, color="0F172A")
+    font_tot    = Font(name="Segoe UI", size=10, bold=True, color="0F172A")
+    font_tot_red= Font(name="Segoe UI", size=10, bold=True, color="991B1B")
 
-    # Row 1: Title Banners (Height 35)
+    # Row 1: Title Banners (Height 36)
     stamp_date = datetime.now().strftime("%d.%m")
     target_clean = target_label.upper()
     title_left_txt = f"SHIPMENTS TOMORROW REPORT {stamp_date} (Báo cáo hàng đến {target_clean})"
@@ -197,7 +200,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(10, 15):
         ws1.cell(1, c).fill = fill_title_right
 
-    ws1.row_dimensions[1].height = 35.0
+    ws1.row_dimensions[1].height = 36.0
 
     # Row 2: Header Rows (Height 32)
     headers_left = [
@@ -224,14 +227,14 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         cell.font = font_hdr
         cell.fill = fill_hdr_left
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        cell.border = thin_border
+        cell.border = border_clean
 
     for ci, h in enumerate(headers_right, 10):
         cell = ws1.cell(2, ci, h)
         cell.font = font_hdr
         cell.fill = fill_hdr_right
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        cell.border = thin_border
+        cell.border = border_clean
 
     # Populate Left Data Rows
     summary_data = {}
@@ -239,8 +242,10 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     total_weight = 0.0
 
     r_curr = 3
-    for item in base_rows:
+    for idx_row, item in enumerate(base_rows):
         ws1.row_dimensions[r_curr].height = 20.0
+        row_fill = fill_row_alt if idx_row % 2 == 1 else None
+
         vals = [
             item["destination_branch"],
             item["district"],
@@ -254,7 +259,10 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         for ci, val in enumerate(vals, 1):
             cell = ws1.cell(r_curr, ci, val)
             cell.font = font_data_b if ci == 1 else font_data
-            cell.border = thin_border
+            cell.border = border_clean
+            if row_fill:
+                cell.fill = row_fill
+
             if ci in (1, 2, 3, 4):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             elif ci in (5, 7, 8):
@@ -272,8 +280,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         total_weight += item["weight_g"]
         r_curr += 1
 
-    # Left Grand Total Row (Matching User Screenshot 100%)
-    ws1.row_dimensions[r_curr].height = 24.0
+    # Left Grand Total Row (Refined CEO Double-Line Accounting Finish)
+    ws1.row_dimensions[r_curr].height = 25.0
     ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=5)
     gt_left = ws1.cell(r_curr, 1, "Grand Total / សរុប")
     gt_left.font = font_tot
@@ -281,19 +289,19 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(1, 6):
         cell = ws1.cell(r_curr, c)
         cell.fill = fill_left_tot
-        cell.border = tot_border_thick_bottom
+        cell.border = tot_border_accounting
 
     gt_w_cell = ws1.cell(r_curr, 6, total_weight)
-    gt_w_cell.font = font_tot
+    gt_w_cell.font = font_tot_red
     gt_w_cell.fill = fill_left_tot
-    gt_w_cell.border = tot_border_thick_bottom
+    gt_w_cell.border = tot_border_accounting
     gt_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     gt_w_cell.number_format = "#,##0"
 
     for c in (7, 8):
         cell = ws1.cell(r_curr, c)
         cell.fill = fill_left_tot
-        cell.border = tot_border_thick_bottom
+        cell.border = tot_border_accounting
 
     # Populate Executive Summary Table on Right
     r_sum = 3
@@ -309,7 +317,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         for ci, val in enumerate(s_vals, 10):
             cell = ws1.cell(r_sum, ci, val)
             cell.font = font_data
-            cell.border = thin_border
+            cell.border = border_clean
             if ci in (10, 11, 12):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             elif ci in (13, 14):
@@ -318,8 +326,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
                     cell.number_format = "#,##0"
         r_sum += 1
 
-    # Right Summary Total Row
-    ws1.row_dimensions[r_sum].height = 24.0
+    # Right Summary Total Row (CEO Double-Line Accounting Finish)
+    ws1.row_dimensions[r_sum].height = 25.0
     ws1.merge_cells(start_row=r_sum, start_column=10, end_row=r_sum, end_column=12)
     tot_label_cell = ws1.cell(r_sum, 10, f"{target_clean[:3]} Total")
     tot_label_cell.font = font_tot
@@ -327,18 +335,18 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(10, 13):
         cell = ws1.cell(r_sum, c)
         cell.fill = fill_sum_tot
-        cell.border = tot_border_thick_bottom
+        cell.border = tot_border_accounting
 
     tot_b_cell = ws1.cell(r_sum, 13, total_bills)
     tot_b_cell.font = font_tot
     tot_b_cell.fill = fill_sum_tot
-    tot_b_cell.border = tot_border_thick_bottom
+    tot_b_cell.border = tot_border_accounting
     tot_b_cell.alignment = Alignment(horizontal="right", vertical="center")
 
     tot_w_cell = ws1.cell(r_sum, 14, total_weight)
-    tot_w_cell.font = font_tot
+    tot_w_cell.font = font_tot_red
     tot_w_cell.fill = fill_sum_tot
-    tot_w_cell.border = tot_border_thick_bottom
+    tot_w_cell.border = tot_border_accounting
     tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     tot_w_cell.number_format = "#,##0"
 
@@ -367,8 +375,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     ws2.row_dimensions[1].height = 24.0
     for c in range(1, len(base_headers) + 1):
         cell = ws2.cell(1, c)
-        cell.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="1F4E78")
+        cell.font = Font(name="Segoe UI", size=10, bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="0F172A")
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
     for item in base_rows:
