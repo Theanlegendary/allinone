@@ -1152,7 +1152,15 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @pm_required_handler
+async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Shortcut command for /total mega (Tomorrow Vehicle & Dispatch Preparation Report)."""
+    context.args = ["mega"]
+    await cmd_total(update, context)
+
+
+@pm_required_handler
 async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     """/total [zone] — summary image + Excel sorted by report type.
     Examples: /total  (all data)  |  /total zone5  |  /total zone1 | /total mega
     """
@@ -5503,6 +5511,8 @@ def main():
     app.add_handler(CommandHandler("app",        cmd_app))
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
+    app.add_handler(CommandHandler("tomorrow",   cmd_tomorrow))
+
     app.add_handler(CommandHandler("vs",         cmd_vs))
     app.add_handler(CommandHandler("vs2",        cmd_vs2))
     app.add_handler(CommandHandler("help",       cmd_help))
