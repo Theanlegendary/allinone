@@ -22,10 +22,13 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     ci_dest_po   = col_map.get("DELIVERY POST OFFICE", col_map.get("DESTINATION_POST", 14))
     ci_created   = col_map.get("CREATED DATE", col_map.get("CREATED_AT", 2))
     ci_fee       = col_map.get("TOTAL FEE (USD)", col_map.get("TOTAL_AMOUNT (USD)", 20))
+    ci_vas_fee   = col_map.get("VAS FEE (USD) (2)", 18)
     ci_cod       = col_map.get("COD (USD)", 21)
     ci_weight    = col_map.get("WEIGHT (G)", col_map.get("ACTUAL_WEIGHT (G)", 8))
     ci_status    = col_map.get("CURRENT STATUS", col_map.get("STATUES", 24))
     ci_receiver  = col_map.get("RECEIVER", 5)
+    ci_service   = col_map.get("SERVICE", 6)
+    ci_pay_meth  = col_map.get("PAYMENT METHOD", 22)
 
     base_rows = []
     r_idx = 1
@@ -41,6 +44,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         created   = str(ws_src.cell(r, ci_created).value or "").strip()
         status    = str(ws_src.cell(r, ci_status).value or "").strip()
         receiver  = str(ws_src.cell(r, ci_receiver).value or "").strip()
+        service   = str(ws_src.cell(r, ci_service).value or "").strip().upper()
+        pay_meth  = str(ws_src.cell(r, ci_pay_meth).value or "").strip()
 
         try:
             weight = float(ws_src.cell(r, ci_weight).value or 0)
@@ -51,6 +56,11 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             fee = float(ws_src.cell(r, ci_fee).value or 0)
         except (ValueError, TypeError):
             fee = 0.0
+
+        try:
+            vas_fee = float(ws_src.cell(r, ci_vas_fee).value or 0)
+        except (ValueError, TypeError):
+            vas_fee = 0.0
 
         try:
             cod = float(ws_src.cell(r, ci_cod).value or 0)
@@ -68,6 +78,26 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             branch_prefix = tgt[:3]
             if dest_prov != branch_prefix and dest_po != tgt:
                 continue
+
+        # Determine VAS Code & VAS Khmer Description
+        vas_codes = []
+        vas_khmer_list = []
+
+        if "NGƯỜI GỬI" in pay_meth.upper() or "SENDER" in pay_meth.upper():
+            vas_codes.append("NTN")
+            vas_khmer_list.append("អ្នកផ្ញើបង់")
+        if vas_fee > 0:
+            vas_codes.append("VBH")
+            vas_khmer_list.append("ធានារ៉ាប់រង")
+        if cod > 0:
+            vas_codes.append("VBP")
+            vas_khmer_list.append("ទារប្រាក់")
+        if not vas_codes or service in ("CCN", "CLT"):
+            vas_codes.append("VTT")
+            vas_khmer_list.append("ដឹកដល់ផ្ទះ")
+
+        vas_code_str = ", ".join(vas_codes)
+        vas_khmer_str = ", ".join(vas_khmer_list)
 
         district_map = {
             # Battambang (BAT)
@@ -107,6 +137,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             "weight_g": weight,
             "status": status,
             "receiver": receiver,
+            "vas_code": vas_code_str,
+            "vas_khmer": vas_khmer_str,
             "district": dist_name,
             "zone": "Zone 3" if dest_prov in ("BAT", "SIE", "PUR") else ("Zone 5" if dest_prov in ("SIH", "KOH", "TAK") else "Zone 1")
         })
@@ -119,7 +151,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     ws1.title = "SHIPMENTS TOMORROW REPORT"
     ws1.views.sheetView[0].showGridLines = True
 
-    # Exact colors matching template file
+    # Exact colors & borders matching user's template screenshot
     fill_title_left  = PatternFill("solid", fgColor="1F4E78") # Dark Navy
     fill_title_right = PatternFill("solid", fgColor="31565F") # Dark Teal
     fill_hdr_left    = PatternFill("solid", fgColor="2F5597") # Medium Navy
@@ -134,11 +166,18 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         bottom=Side(style="thin", color="D9D9D9")
     )
 
+    tot_border_thick_bottom = Border(
+        left=Side(style="thin", color="D9D9D9"),
+        right=Side(style="thin", color="D9D9D9"),
+        top=Side(style="thin", color="D9D9D9"),
+        bottom=Side(style="medium", color="000000") # Dark thick line under Grand Total
+    )
+
     font_banner = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
     font_hdr    = Font(name="Calibri", size=9,  bold=True, color="FFFFFF")
     font_data   = Font(name="Calibri", size=9,  color="000000")
     font_data_b = Font(name="Calibri", size=9,  bold=True, color="000000")
-    font_tot    = Font(name="Calibri", size=9,  bold=True, color="000000")
+    font_tot    = Font(name="Calibri", size=10, bold=True, color="000000")
 
     # Row 1: Title Banners (Height 35)
     stamp_date = datetime.now().strftime("%d.%m")
@@ -209,8 +248,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             item["order_number"],
             item["receiver"],
             item["weight_g"],
-            "",
-            ""
+            item["vas_code"],
+            item["vas_khmer"]
         ]
         for ci, val in enumerate(vals, 1):
             cell = ws1.cell(r_curr, ci, val)
@@ -233,7 +272,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         total_weight += item["weight_g"]
         r_curr += 1
 
-    # Left Grand Total Row
+    # Left Grand Total Row (Matching User Screenshot 100%)
     ws1.row_dimensions[r_curr].height = 24.0
     ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=5)
     gt_left = ws1.cell(r_curr, 1, "Grand Total / សរុប")
@@ -242,19 +281,19 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(1, 6):
         cell = ws1.cell(r_curr, c)
         cell.fill = fill_left_tot
-        cell.border = thin_border
+        cell.border = tot_border_thick_bottom
 
     gt_w_cell = ws1.cell(r_curr, 6, total_weight)
     gt_w_cell.font = font_tot
     gt_w_cell.fill = fill_left_tot
-    gt_w_cell.border = thin_border
+    gt_w_cell.border = tot_border_thick_bottom
     gt_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     gt_w_cell.number_format = "#,##0"
 
     for c in (7, 8):
         cell = ws1.cell(r_curr, c)
         cell.fill = fill_left_tot
-        cell.border = thin_border
+        cell.border = tot_border_thick_bottom
 
     # Populate Executive Summary Table on Right
     r_sum = 3
@@ -288,18 +327,18 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(10, 13):
         cell = ws1.cell(r_sum, c)
         cell.fill = fill_sum_tot
-        cell.border = thin_border
+        cell.border = tot_border_thick_bottom
 
     tot_b_cell = ws1.cell(r_sum, 13, total_bills)
     tot_b_cell.font = font_tot
     tot_b_cell.fill = fill_sum_tot
-    tot_b_cell.border = thin_border
+    tot_b_cell.border = tot_border_thick_bottom
     tot_b_cell.alignment = Alignment(horizontal="right", vertical="center")
 
     tot_w_cell = ws1.cell(r_sum, 14, total_weight)
     tot_w_cell.font = font_tot
     tot_w_cell.fill = fill_sum_tot
-    tot_w_cell.border = thin_border
+    tot_w_cell.border = tot_border_thick_bottom
     tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     tot_w_cell.number_format = "#,##0"
 
@@ -352,8 +391,8 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             item["weight_g"],
             "",
             "",
-            "",
-            "",
+            item["vas_code"],
+            item["vas_khmer"],
             "",
             "",
             "",
