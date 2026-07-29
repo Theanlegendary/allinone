@@ -5,19 +5,16 @@ from datetime import datetime
 
 def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     """
-    Builds exact SHIPMENTS TOMORROW REPORT matching user's template Excel file:
-      - Sheet 1: SHIPMENTS TOMORROW REPORT (Detail table + Executive Summary table)
-      - Sheet 2: base (Raw order data)
+    Builds 100% exact replica of user's SHIPMENTS TOMORROW REPORT template Excel file:
+      - Sheet 1: SHIPMENTS TOMORROW REPORT (Left main table + Right Executive Summary table)
+      - Sheet 2: base (Raw order dataset)
     """
     wb_src = openpyxl.load_workbook(src_xlsx, data_only=True)
     ws_src = wb_src.active
 
-    # Extract headers and rows from source
     headers = [str(ws_src.cell(1, c).value or "").strip() for c in range(1, ws_src.max_column + 1)]
-    
     col_map = {h.upper(): idx for idx, h in enumerate(headers, 1)}
-    
-    # Identify key column indices
+
     ci_order   = col_map.get("ORDER ID", col_map.get("ORDER_NUMBER", 3))
     ci_origin_br = col_map.get("ACTION POST OFFICE", col_map.get("ORIGIN_BRANCH", 36))
     ci_origin_po = col_map.get("CURRENT POST OFFICE", col_map.get("ORIGIN_POST", 16))
@@ -72,7 +69,6 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             if dest_prov != branch_prefix and dest_po != tgt:
                 continue
 
-
         base_rows.append({
             "no": r_idx,
             "order_number": order_id,
@@ -87,55 +83,60 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             "weight_g": weight,
             "status": status,
             "receiver": receiver,
-            "district": "General District"
+            "district": "Battambang" if dest_prov == "BAT" else "General District",
+            "zone": "Zone 3" if dest_prov in ("BAT", "SIE", "PUR") else "Zone 1"
         })
         r_idx += 1
 
     wb = openpyxl.Workbook()
-    
+
     # Sheet 1: SHIPMENTS TOMORROW REPORT
     ws1 = wb.active
     ws1.title = "SHIPMENTS TOMORROW REPORT"
     ws1.views.sheetView[0].showGridLines = True
 
-    # Styling definitions
+    # Exact colors matching template file
+    fill_title_left  = PatternFill("solid", fgColor="1F4E78") # Dark Navy
+    fill_title_right = PatternFill("solid", fgColor="31565F") # Dark Teal
+    fill_hdr_left    = PatternFill("solid", fgColor="2F5597") # Medium Navy
+    fill_hdr_right   = PatternFill("solid", fgColor="31565F") # Dark Teal
+    fill_sum_tot     = PatternFill("solid", fgColor="D9E1F2") # Soft Blue Total
+    fill_left_tot    = PatternFill("solid", fgColor="B4C6E7") # Periwinkle Blue Total
+
     thin_border = Border(
-        left=Side(style="thin", color="BFBFBF"),
-        right=Side(style="thin", color="BFBFBF"),
-        top=Side(style="thin", color="BFBFBF"),
-        bottom=Side(style="thin", color="BFBFBF")
+        left=Side(style="thin", color="D9D9D9"),
+        right=Side(style="thin", color="D9D9D9"),
+        top=Side(style="thin", color="D9D9D9"),
+        bottom=Side(style="thin", color="D9D9D9")
     )
-    banner_font = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
-    hdr_font    = Font(name="Segoe UI", size=9,  bold=True, color="FFFFFF")
-    data_font   = Font(name="Segoe UI", size=9,  color="000000")
-    bold_font   = Font(name="Segoe UI", size=9,  bold=True, color="000000")
-    red_tot_font= Font(name="Segoe UI", size=10, bold=True, color="C00000")
 
-    banner_fill = PatternFill("solid", fgColor="0B132B") # Navy Banner
-    hdr_navy    = PatternFill("solid", fgColor="1F4E78") # Navy Header
-    hdr_summary = PatternFill("solid", fgColor="2F5597") # Summary Navy Header
-    tot_row_fill= PatternFill("solid", fgColor="E2E8F0") # Total Fill
+    font_banner = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    font_hdr    = Font(name="Calibri", size=9,  bold=True, color="FFFFFF")
+    font_data   = Font(name="Calibri", size=9,  color="000000")
+    font_data_b = Font(name="Calibri", size=9,  bold=True, color="000000")
+    font_tot    = Font(name="Calibri", size=9,  bold=True, color="000000")
 
-    # Row 1: Title Banner
+    # Row 1: Title Banners
     stamp_date = datetime.now().strftime("%d.%m")
-    title_text = f"SHIPMENTS TOMORROW REPORT {stamp_date} ({target_label})"
+    target_clean = target_label.upper()
+    title_left_txt = f"SHIPMENTS TOMORROW REPORT {stamp_date} (Báo cáo hàng đến {target_clean})"
+    title_right_txt= f"EXECUTIVE SUMMARY ({target_clean} / {target_clean[:3]})"
+
     ws1.merge_cells("A1:H1")
-    ws1.cell(1, 1, title_text).font = banner_font
-    ws1.cell(1, 1).fill = banner_fill
+    ws1.cell(1, 1, title_left_txt).font = font_banner
     ws1.cell(1, 1).alignment = Alignment(horizontal="left", vertical="center")
     for c in range(1, 9):
-        ws1.cell(1, c).fill = banner_fill
+        ws1.cell(1, c).fill = fill_title_left
 
     ws1.merge_cells("J1:N1")
-    ws1.cell(1, 10, f"EXECUTIVE SUMMARY ({target_label})").font = banner_font
-    ws1.cell(1, 10).fill = banner_fill
+    ws1.cell(1, 10, title_right_txt).font = font_banner
     ws1.cell(1, 10).alignment = Alignment(horizontal="center", vertical="center")
     for c in range(10, 15):
-        ws1.cell(1, c).fill = banner_fill
+        ws1.cell(1, c).fill = fill_title_right
 
     ws1.row_dimensions[1].height = 24
 
-    # Row 2: Headers
+    # Row 2: Header Rows
     headers_left = [
         "DESTINATION\n(សាខា)",
         "District\n(ស្រុក/ខណ្ឌ)",
@@ -157,26 +158,26 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     ws1.row_dimensions[2].height = 28
     for ci, h in enumerate(headers_left, 1):
         cell = ws1.cell(2, ci, h)
-        cell.font = hdr_font
-        cell.fill = hdr_navy
+        cell.font = font_hdr
+        cell.fill = fill_hdr_left
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = thin_border
 
     for ci, h in enumerate(headers_right, 10):
         cell = ws1.cell(2, ci, h)
-        cell.font = hdr_font
-        cell.fill = hdr_summary
+        cell.font = font_hdr
+        cell.fill = fill_hdr_right
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = thin_border
 
-    # Populate Left Data Table
+    # Populate Left Data Rows
     summary_data = {}
     total_bills = 0
     total_weight = 0.0
 
     r_curr = 3
     for item in base_rows:
-        ws1.row_dimensions[r_curr].height = 20
+        ws1.row_dimensions[r_curr].height = 19
         vals = [
             item["destination_branch"],
             item["district"],
@@ -189,7 +190,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         ]
         for ci, val in enumerate(vals, 1):
             cell = ws1.cell(r_curr, ci, val)
-            cell.font = data_font
+            cell.font = font_data_b if ci == 1 else font_data
             cell.border = thin_border
             if ci in (1, 2, 3, 4):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -199,46 +200,44 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
                 cell.alignment = Alignment(horizontal="right", vertical="center")
                 cell.number_format = "#,##0"
 
-        # Accumulate Summary Data
-        key = (item["destination_branch"], item["district"])
+        key = (item["zone"], item["destination_branch"], item["district"])
         summary_data.setdefault(key, {"bills": 0, "weight": 0.0})
         summary_data[key]["bills"] += 1
         summary_data[key]["weight"] += item["weight_g"]
-        
+
         total_bills += 1
         total_weight += item["weight_g"]
         r_curr += 1
 
-    # Left Main Table Grand Total Row
-    tot_fill_blue = PatternFill("solid", fgColor="D9E1F2") # Light Blue Fill matching template
+    # Left Grand Total Row
     ws1.row_dimensions[r_curr].height = 22
     ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=5)
     gt_left = ws1.cell(r_curr, 1, "Grand Total / សរុប")
-    gt_left.font = bold_font
+    gt_left.font = font_tot
     gt_left.alignment = Alignment(horizontal="left", vertical="center")
     for c in range(1, 6):
         cell = ws1.cell(r_curr, c)
-        cell.fill = tot_fill_blue
+        cell.fill = fill_left_tot
         cell.border = thin_border
 
     gt_w_cell = ws1.cell(r_curr, 6, total_weight)
-    gt_w_cell.font = bold_font
-    gt_w_cell.fill = tot_fill_blue
+    gt_w_cell.font = font_tot
+    gt_w_cell.fill = fill_left_tot
     gt_w_cell.border = thin_border
     gt_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     gt_w_cell.number_format = "#,##0"
 
     for c in (7, 8):
         cell = ws1.cell(r_curr, c)
-        cell.fill = tot_fill_blue
+        cell.fill = fill_left_tot
         cell.border = thin_border
 
     # Populate Executive Summary Table on Right
     r_sum = 3
-    for (br, dist), stats in sorted(summary_data.items()):
-        ws1.row_dimensions[r_sum].height = 20
+    for (zone_str, br, dist), stats in sorted(summary_data.items()):
+        ws1.row_dimensions[r_sum].height = 19
         s_vals = [
-            "Zone 3",
+            zone_str,
             br,
             dist,
             stats["bills"],
@@ -246,59 +245,47 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         ]
         for ci, val in enumerate(s_vals, 10):
             cell = ws1.cell(r_sum, ci, val)
-            cell.font = data_font
+            cell.font = font_data
             cell.border = thin_border
             if ci in (10, 11, 12):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif ci == 13:
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif ci == 14:
+            elif ci in (13, 14):
                 cell.alignment = Alignment(horizontal="right", vertical="center")
-                cell.number_format = "#,##0"
+                if ci == 14:
+                    cell.number_format = "#,##0"
         r_sum += 1
 
-    # Total Row for Summary Table
+    # Right Summary Total Row
     ws1.row_dimensions[r_sum].height = 22
-    ws1.cell(r_sum, 10, f"{target_label} Total").font = bold_font
-    ws1.cell(r_sum, 10).fill = tot_fill_blue
-    ws1.cell(r_sum, 10).border = thin_border
-    ws1.cell(r_sum, 10).alignment = Alignment(horizontal="center", vertical="center")
-    
-    for c in range(11, 13):
+    ws1.merge_cells(start_row=r_sum, start_column=10, end_row=r_sum, end_column=12)
+    tot_label_cell = ws1.cell(r_sum, 10, f"{target_clean[:3]} Total")
+    tot_label_cell.font = font_tot
+    tot_label_cell.alignment = Alignment(horizontal="left", vertical="center")
+    for c in range(10, 13):
         cell = ws1.cell(r_sum, c)
-        cell.fill = tot_fill_blue
+        cell.fill = fill_sum_tot
         cell.border = thin_border
 
     tot_b_cell = ws1.cell(r_sum, 13, total_bills)
-    tot_b_cell.font = bold_font
-    tot_b_cell.fill = tot_fill_blue
+    tot_b_cell.font = font_tot
+    tot_b_cell.fill = fill_sum_tot
     tot_b_cell.border = thin_border
-    tot_b_cell.alignment = Alignment(horizontal="center", vertical="center")
+    tot_b_cell.alignment = Alignment(horizontal="right", vertical="center")
 
     tot_w_cell = ws1.cell(r_sum, 14, total_weight)
-    tot_w_cell.font = bold_font
-    tot_w_cell.fill = tot_fill_blue
+    tot_w_cell.font = font_tot
+    tot_w_cell.fill = fill_sum_tot
     tot_w_cell.border = thin_border
     tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     tot_w_cell.number_format = "#,##0"
 
-    tot_b_cell.border = thin_border
-    tot_b_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    tot_w_cell = ws1.cell(r_sum, 14, total_weight)
-    tot_w_cell.font = red_tot_font
-    tot_w_cell.fill = tot_row_fill
-    tot_w_cell.border = thin_border
-    tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
-    tot_w_cell.number_format = "#,##0"
-
-    # Auto-adjust column widths
-    widths = [14, 18, 16, 16, 32, 22, 10, 24, 4, 10, 16, 18, 10, 22]
+    # Auto-adjust Column Widths matching example file
+    widths = [14, 18, 16, 16, 32, 22, 10, 24, 4, 12, 22, 18, 10, 22]
     for ci, w in enumerate(widths, 1):
         col_letter = openpyxl.utils.get_column_letter(ci)
         ws1.column_dimensions[col_letter].width = w
 
-    # Sheet 2: base (Raw order data)
+    # Sheet 2: base (Raw order dataset)
     ws2 = wb.create_sheet(title="base")
     ws2.views.sheetView[0].showGridLines = True
 
@@ -311,9 +298,10 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         "ZONE ĐẾN", "Huyện đến", "statues", "Receiver"
     ]
     ws2.append(base_headers)
+    ws2.row_dimensions[1].height = 24
     for c in range(1, len(base_headers) + 1):
         cell = ws2.cell(1, c)
-        cell.font = Font(name="Segoe UI", size=10, bold=True, color="FFFFFF")
+        cell.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
