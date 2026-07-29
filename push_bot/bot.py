@@ -1186,8 +1186,9 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await send_requester_photo(update, context, img_buf)
 
         caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({target_label})*\n📦 Total Bills: `{bills}`\n⚖️ Total Weight: `{weight/1000:,.2f} kg`"
-        await send_requester_document(update, context, out_xlsx, caption=caption)
+        await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
         await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
 
 
     except Exception as e:
