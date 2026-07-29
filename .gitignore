@@ -7,3 +7,5 @@ cache/
 output_preview/
 test_out_temp/
 *.tmp
+*.xlsx
+imports_check.txt

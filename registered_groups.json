@@ -44,10 +44,6 @@
     "title": "PNPP002 Operation"
   },
   {
-    "chat_id": -5097607533,
-    "title": "KANP001 Operation (KANDAL)"
-  },
-  {
     "chat_id": -5154787193,
     "title": "PNPP005 Operation"
   },
@@ -158,5 +154,13 @@
   {
     "chat_id": -1004437427485,
     "title": "MONP001 Operation"
+  },
+  {
+    "chat_id": -1003970979375,
+    "title": "KANP001 Operation (KANDAL)"
+  },
+  {
+    "chat_id": -1004493373354,
+    "title": "MEGA HUB"
   }
 ]
