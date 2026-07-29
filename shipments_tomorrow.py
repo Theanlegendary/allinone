@@ -83,10 +83,11 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         }
 
         if tgt.startswith("ZONE"):
-            target_zone_name = tgt # e.g. ZONE1
+            target_zone_name = tgt if len(tgt) > 4 else "ZONE1" # e.g. ZONE1
             item_zone = zone_by_prefix.get(dest_prov, "ZONE1")
             if item_zone != target_zone_name:
                 continue
+
         elif tgt not in ("ALL", "TOTAL"):
             branch_prefix = tgt[:3]
             if dest_prov != branch_prefix and dest_po != tgt:

@@ -1158,7 +1158,8 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cfg = load_config()
 
     args = [a.strip() for a in (context.args or []) if a.strip()]
-    target_label = args[0] if args else "Zone 1"
+    target_label = " ".join(args) if args else "Zone 1"
+
 
     msg = await send_requester_text(update, context, f"Generating SHIPMENTS TOMORROW REPORT ({target_label})...")
     tmpdir = tempfile.mkdtemp(prefix="tomorrow_")
