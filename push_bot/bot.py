@@ -1180,6 +1180,36 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tgt_upper = target_label.upper().replace(" ", "")
         chats_to_send = set()
 
+        if tgt_upper in ("ALL", "MEGA"):
+            # Forward for all 5 Zones to their respective Zone groups
+            zone_fwd_map = cfg.get("zone_forward_mapping", {})
+            total_sent_zones = 0
+            for z_idx in range(1, 6):
+                z_name = f"Zone {z_idx}"
+                z_clean = f"zone{z_idx}"
+                z_xlsx = os.path.join(tmpdir, f"SHIPMENTS_TOMORROW_REPORT_{stamp}_{z_name.replace(' ', '_')}.xlsx")
+                z_bills, z_weight = shipments_tomorrow.build_shipments_tomorrow_report(src, z_xlsx, target_label=z_name)
+                z_caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({z_name})*\n📦 Total Bills: `{z_bills}`\n⚖️ Total Weight: `{z_weight/1000:,.2f} kg`"
+
+                for gid, zkey in zone_fwd_map.items():
+                    if zkey.lower() == z_clean:
+                        try:
+                            with open(z_xlsx, "rb") as f_doc:
+                                await safe_api_call(
+                                    context.bot.send_document,
+                                    chat_id=int(gid),
+                                    document=f_doc,
+                                    filename=os.path.basename(z_xlsx),
+                                    caption=z_caption
+                                )
+                                total_sent_zones += 1
+                        except Exception as e_fwd:
+                            log.warning("Failed forwarding /tomorrow document to zone group %s: %s", gid, e_fwd)
+
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Generated & forwarded SHIPMENTS TOMORROW REPORTS for all 5 Zones to {total_sent_zones} Zone Groups.")
+            return
+
+        # Single target forwarding (Zone or Branch)
         # 1. Check zone_forward_mapping (e.g. zone1 -> "-1004390650725")
         zone_fwd_map = cfg.get("zone_forward_mapping", {})
         if tgt_upper.startswith("ZONE"):
@@ -1208,6 +1238,7 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 log.warning("Failed forwarding /tomorrow document to group %s: %s", cid, e_fwd)
 
         await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
 
 
 
