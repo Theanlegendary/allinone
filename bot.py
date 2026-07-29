@@ -1181,7 +1181,7 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chats_to_send = set()
 
         if tgt_upper in ("ALL", "MEGA"):
-            # Forward for all 5 Zones to their respective Zone groups
+            # 1. Forward for all 5 Zones to their respective Zone groups
             zone_fwd_map = cfg.get("zone_forward_mapping", {})
             total_sent_zones = 0
             for z_idx in range(1, 6):
@@ -1206,8 +1206,33 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         except Exception as e_fwd:
                             log.warning("Failed forwarding /tomorrow document to zone group %s: %s", gid, e_fwd)
 
-            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Generated & forwarded SHIPMENTS TOMORROW REPORTS for all 5 Zones to {total_sent_zones} Zone Groups.")
+            # 2. Forward for all registered Branch groups in forward_mapping
+            fwd_map = get_forward_mapping(cfg)
+            total_sent_branches = 0
+            for gid, handles in fwd_map.items():
+                if not handles or "*" in handles:
+                    continue
+                br_code = handles[0].upper()
+                br_xlsx = os.path.join(tmpdir, f"SHIPMENTS_TOMORROW_REPORT_{stamp}_{br_code}.xlsx")
+                try:
+                    b_bills, b_weight = shipments_tomorrow.build_shipments_tomorrow_report(src, br_xlsx, target_label=br_code)
+                    if b_bills > 0:
+                        b_caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({br_code})*\n📦 Total Bills: `{b_bills}`\n⚖️ Total Weight: `{b_weight/1000:,.2f} kg`"
+                        with open(br_xlsx, "rb") as f_doc:
+                            await safe_api_call(
+                                context.bot.send_document,
+                                chat_id=int(gid),
+                                document=f_doc,
+                                filename=os.path.basename(br_xlsx),
+                                caption=b_caption
+                            )
+                            total_sent_branches += 1
+                except Exception as e_br:
+                    log.warning("Failed building/forwarding tomorrow report for branch %s: %s", br_code, e_br)
+
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Forwarded SHIPMENTS TOMORROW REPORTS to {total_sent_zones} Zone Groups and {total_sent_branches} Branch Groups.")
             return
+
 
         # Single target forwarding (Zone or Branch)
         # 1. Check zone_forward_mapping (e.g. zone1 -> "-1004390650725")
