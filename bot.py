@@ -1309,10 +1309,11 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @pm_required_handler
 async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler for /today [branch/zone] command: tracks Picked Up from MEGA & Success Delivery Today."""
-    if not is_authorized(update):
-        return
+    await delete_group_command(update, context)
+    cfg = load_config()
 
     args = [a.strip() for a in (context.args or []) if a.strip()]
+
     target_label = " ".join(args) if args else "Zone 1"
 
     msg = await send_requester_text(update, context, f"Generating TODAY BRANCH PERFORMANCE REPORT ({target_label})...")
