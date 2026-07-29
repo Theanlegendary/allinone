@@ -443,7 +443,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
 def render_executive_summary_image(out_xlsx):
     """Renders ONLY the small right Executive Summary table to a pixel-perfect PNG image."""
-    import tempfile, openpyxl, excel_to_image
+    import tempfile, copy, openpyxl, excel_to_image
     from openpyxl.utils import get_column_letter
 
     wb = openpyxl.load_workbook(out_xlsx)
@@ -472,10 +472,10 @@ def render_executive_summary_image(out_xlsx):
             cell_tgt  = ws_sum.cell(r, target_c, cell_orig.value)
             
             if cell_orig.has_style:
-                cell_tgt.font = cell_orig.font
-                cell_tgt.fill = cell_orig.fill
-                cell_tgt.border = cell_orig.border
-                cell_tgt.alignment = cell_orig.alignment
+                cell_tgt.font = copy.copy(cell_orig.font)
+                cell_tgt.fill = copy.copy(cell_orig.fill)
+                cell_tgt.border = copy.copy(cell_orig.border)
+                cell_tgt.alignment = copy.copy(cell_orig.alignment)
                 cell_tgt.number_format = cell_orig.number_format
 
     # Merge Title Row A1:E1
@@ -496,6 +496,7 @@ def render_executive_summary_image(out_xlsx):
 
     # Render to pixel-perfect cropped image using excel_to_image
     return excel_to_image.excel_to_image(tmp_sum_xlsx)
+
 
 
 
