@@ -1445,7 +1445,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e_fwd:
                 log.warning("Failed forwarding today document to group %s: %s", cid, e_fwd)
 
-        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded TODAY BRANCH PERFORMANCE REPORT ({target_label}) with {picked_up:,.0f} Picked Up & {delivered:,.0f} Delivered Today.")
+        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded TODAY PERFORMANCE REPORT ({target_label}) with {from_mega:,.0f} From Mega, {pending:,.0f} Pending & {success:,.0f} Success.")
+
 
     except Exception as e:
         log.exception("Error in /today command: %s", e)
