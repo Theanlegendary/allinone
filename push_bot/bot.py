@@ -1306,8 +1306,151 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await edit_or_send_requester_text(msg, update, context, f"❌ Error generating tomorrow report: {e}")
 
 
+@pm_required_handler
+async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handler for /today [branch/zone] command: tracks Picked Up from MEGA & Success Delivery Today."""
+    if not is_authorized(update):
+        return
+
+    args = [a.strip() for a in (context.args or []) if a.strip()]
+    target_label = " ".join(args) if args else "Zone 1"
+
+    msg = await send_requester_text(update, context, f"Generating TODAY BRANCH PERFORMANCE REPORT ({target_label})...")
+    tmpdir = tempfile.mkdtemp(prefix="today_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src   = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import branch_today
+        out_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{target_label.replace(' ', '_')}.xlsx")
+        picked_up, delivered = branch_today.build_branch_today_report(src, out_xlsx, target_label=target_label)
+
+        # Generate summary image for instant Telegram mobile viewing
+        try:
+            img_buf = branch_today.render_today_summary_image(out_xlsx)
+            img_buf.name = f"TODAY_PERFORMANCE_{target_label.replace(' ', '_')}.png"
+            await send_requester_photo(update, context, img_buf)
+        except Exception as e_img:
+            log.warning("Could not render today summary image: %s", e_img)
+
+        caption = f"📊 *BRANCH TODAY PERFORMANCE ({target_label})*\n📥 Picked Up from MEGA: `{picked_up:,.0f}`\n✅ Success Delivery Today: `{delivered:,.0f}`"
+        await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
+
+        # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
+        tgt_upper = target_label.upper().replace(" ", "")
+        chats_to_send = set()
+
+        if tgt_upper in ("ALL", "MEGA"):
+            # Forward for all 5 Zones to their respective Zone groups
+            zone_fwd_map = cfg.get("zone_forward_mapping", {})
+            total_sent_zones = 0
+            for z_idx in range(1, 6):
+                z_name = f"Zone {z_idx}"
+                z_clean = f"zone{z_idx}"
+                z_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{z_name.replace(' ', '_')}.xlsx")
+                z_picked, z_deliv = branch_today.build_branch_today_report(src, z_xlsx, target_label=z_name)
+                z_caption = f"📊 *BRANCH TODAY PERFORMANCE ({z_name})*\n📥 Picked Up from MEGA: `{z_picked:,.0f}`\n✅ Success Delivery Today: `{z_deliv:,.0f}`"
+
+                for gid, zkey in zone_fwd_map.items():
+                    if zkey.lower() == z_clean:
+                        try:
+                            try:
+                                z_img = branch_today.render_today_summary_image(z_xlsx)
+                                z_img.name = f"TODAY_PERFORMANCE_{z_name.replace(' ', '_')}.png"
+                                await safe_api_call(context.bot.send_photo, chat_id=int(gid), photo=z_img)
+                            except Exception as e_zp:
+                                log.warning("Failed sending today photo to zone group %s: %s", gid, e_zp)
+
+                            with open(z_xlsx, "rb") as f_doc:
+                                await safe_api_call(
+                                    context.bot.send_document,
+                                    chat_id=int(gid),
+                                    document=f_doc,
+                                    filename=os.path.basename(z_xlsx),
+                                    caption=z_caption
+                                )
+                                total_sent_zones += 1
+                        except Exception as e_fwd:
+                            log.warning("Failed forwarding today document to zone group %s: %s", gid, e_fwd)
+
+            # Forward for all registered Branch groups in forward_mapping
+            fwd_map = get_forward_mapping(cfg)
+            total_sent_branches = 0
+            for gid, handles in fwd_map.items():
+                if not handles or "*" in handles:
+                    continue
+                br_code = handles[0].upper()
+                br_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{br_code}.xlsx")
+                try:
+                    b_picked, b_deliv = branch_today.build_branch_today_report(src, br_xlsx, target_label=br_code)
+                    if b_picked > 0 or b_deliv > 0:
+                        b_caption = f"📊 *BRANCH TODAY PERFORMANCE ({br_code})*\n📥 Picked Up from MEGA: `{b_picked:,.0f}`\n✅ Success Delivery Today: `{b_deliv:,.0f}`"
+                        try:
+                            b_img = branch_today.render_today_summary_image(br_xlsx)
+                            b_img.name = f"TODAY_PERFORMANCE_{br_code}.png"
+                            await safe_api_call(context.bot.send_photo, chat_id=int(gid), photo=b_img)
+                        except Exception as e_bp:
+                            log.warning("Failed sending today photo to branch group %s: %s", gid, e_bp)
+
+                        with open(br_xlsx, "rb") as f_doc:
+                            await safe_api_call(
+                                context.bot.send_document,
+                                chat_id=int(gid),
+                                document=f_doc,
+                                filename=os.path.basename(br_xlsx),
+                                caption=b_caption
+                            )
+                            total_sent_branches += 1
+                except Exception as e_br:
+                    log.warning("Failed building/forwarding today report for branch %s: %s", br_code, e_br)
+
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Forwarded TODAY BRANCH PERFORMANCE REPORTS to {total_sent_zones} Zone Groups and {total_sent_branches} Branch Groups.")
+            return
+
+        # Single target forwarding (Zone or Branch)
+        zone_fwd_map = cfg.get("zone_forward_mapping", {})
+        if tgt_upper.startswith("ZONE"):
+            zone_key_clean = "zone" + tgt_upper.replace("ZONE", "").strip()
+            for gid, zkey in zone_fwd_map.items():
+                if zkey.lower() == zone_key_clean.lower():
+                    chats_to_send.add(int(gid))
+
+        fwd_map = get_forward_mapping(cfg)
+        for gid, handles in fwd_map.items():
+            if any(h.upper() in (tgt_upper, tgt_upper[:3]) for h in handles):
+                chats_to_send.add(int(gid))
+
+        for cid in chats_to_send:
+            try:
+                try:
+                    g_img = branch_today.render_today_summary_image(out_xlsx)
+                    g_img.name = f"TODAY_PERFORMANCE_{target_label.replace(' ', '_')}.png"
+                    await safe_api_call(context.bot.send_photo, chat_id=cid, photo=g_img)
+                except Exception as e_gp:
+                    log.warning("Failed sending today photo to group %s: %s", cid, e_gp)
+
+                with open(out_xlsx, "rb") as f_doc:
+                    await safe_api_call(
+                        context.bot.send_document,
+                        chat_id=cid,
+                        document=f_doc,
+                        filename=os.path.basename(out_xlsx),
+                        caption=caption
+                    )
+            except Exception as e_fwd:
+                log.warning("Failed forwarding today document to group %s: %s", cid, e_fwd)
+
+        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded TODAY BRANCH PERFORMANCE REPORT ({target_label}) with {picked_up:,.0f} Picked Up & {delivered:,.0f} Delivered Today.")
+
+    except Exception as e:
+        log.exception("Error in /today command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Error generating today branch report: {e}")
+
 
 @pm_required_handler
+
 async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     """/total [zone] — summary image + Excel sorted by report type.
@@ -5661,6 +5804,9 @@ def main():
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
     app.add_handler(CommandHandler("tomorrow",   cmd_tomorrow))
+    app.add_handler(CommandHandler("today",      cmd_today))
+    app.add_handler(CommandHandler("daily",      cmd_today))
+
 
     app.add_handler(CommandHandler("vs",         cmd_vs))
     app.add_handler(CommandHandler("vs2",        cmd_vs2))
