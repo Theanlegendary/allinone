@@ -65,6 +65,14 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         if sc not in ("306", "309", "302", "310", "311"):
             continue
 
+        # Target branch/zone filter
+        if target_label and target_label.upper() not in ("ALL", "TOTAL", "ZONE 1", "ZONE 2", "ZONE 3", "ZONE 4", "ZONE 5"):
+            tgt = target_label.upper()
+            branch_prefix = tgt[:3]
+            if dest_prov != branch_prefix and dest_po != tgt:
+                continue
+
+
         base_rows.append({
             "no": r_idx,
             "order_number": order_id,
