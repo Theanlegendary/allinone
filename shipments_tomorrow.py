@@ -72,12 +72,26 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         if sc not in ("306", "309", "302", "310", "311"):
             continue
 
-        # Target branch/zone filter
-        if target_label and target_label.upper() not in ("ALL", "TOTAL", "ZONE 1", "ZONE 2", "ZONE 3", "ZONE 4", "ZONE 5"):
-            tgt = target_label.upper()
+        # Zone or Branch Filter
+        tgt = target_label.upper().replace(" ", "")
+        zone_by_prefix = {
+            "KAN": "ZONE1", "PNP": "ZONE1", "PRE": "ZONE1", "SVA": "ZONE1",
+            "KAM": "ZONE2", "KOH": "ZONE2", "SIH": "ZONE2", "SPE": "ZONE2", "TAK": "ZONE2",
+            "BAN": "ZONE3", "BAT": "ZONE3", "CHH": "ZONE3", "PUR": "ZONE3",
+            "ODD": "ZONE4", "PRH": "ZONE4", "SIE": "ZONE4", "THO": "ZONE4",
+            "CHA": "ZONE5", "KRA": "ZONE5", "TBK": "ZONE5", "ROT": "ZONE5", "MON": "ZONE5", "STU": "ZONE5"
+        }
+
+        if tgt.startswith("ZONE"):
+            target_zone_name = tgt # e.g. ZONE1
+            item_zone = zone_by_prefix.get(dest_prov, "ZONE1")
+            if item_zone != target_zone_name:
+                continue
+        elif tgt not in ("ALL", "TOTAL"):
             branch_prefix = tgt[:3]
             if dest_prov != branch_prefix and dest_po != tgt:
                 continue
+
 
         # Determine VAS Code & VAS Khmer Description
         vas_codes = []
