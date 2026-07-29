@@ -149,7 +149,29 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             # Sihanoukville (SIH)
             'SIHP001': 'Sihanoukville', 'SIHA001': 'Preah Sihanouk', 'SIHA002': 'Stung Hav', 'SIHA003': 'Kampong Seila'
         }
-        dist_name = district_map.get(dest_po, dest_prov)
+        if dest_po in district_map:
+            dist_name = district_map[dest_po]
+        else:
+            br_prefix = dest_prov.upper()
+            if br_prefix == 'SVA':
+
+                dist_name = 'Svay Rieng'
+            elif br_prefix == 'PNP':
+                dist_name = 'Phnom Penh'
+            elif br_prefix == 'KAN':
+                dist_name = 'General District'
+            elif br_prefix == 'BAT':
+                dist_name = 'Battambang'
+            elif br_prefix == 'PRE':
+                dist_name = 'Prey Veng'
+            elif br_prefix == 'SIE':
+                dist_name = 'Siem Reap'
+            elif br_prefix == 'SIH':
+                dist_name = 'Sihanoukville'
+            else:
+                dist_name = dest_prov if dest_prov != dest_po else 'General District'
+
+
 
 
         base_rows.append({
