@@ -1176,24 +1176,39 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({target_label})*\n📦 Total Bills: `{bills}`\n⚖️ Total Weight: `{weight/1000:,.2f} kg`"
         await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
 
-        # Forward to target branch Telegram group if registered in forward_mapping
-        tgt_upper = target_label.upper()
+        # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
+        tgt_upper = target_label.upper().replace(" ", "")
+        chats_to_send = set()
+
+        # 1. Check zone_forward_mapping (e.g. zone1 -> "-1004390650725")
+        zone_fwd_map = cfg.get("zone_forward_mapping", {})
+        if tgt_upper.startswith("ZONE"):
+            zone_key_clean = "zone" + tgt_upper.replace("ZONE", "").strip()
+            for gid, zkey in zone_fwd_map.items():
+                if zkey.lower() == zone_key_clean.lower():
+                    chats_to_send.add(int(gid))
+
+        # 2. Check forward_mapping (e.g. SVAP001 -> branch chat)
         fwd_map = get_forward_mapping(cfg)
         for gid, handles in fwd_map.items():
             if any(h.upper() in (tgt_upper, tgt_upper[:3]) for h in handles):
-                try:
-                    with open(out_xlsx, "rb") as f_doc:
-                        await safe_api_call(
-                            context.bot.send_document,
-                            chat_id=int(gid),
-                            document=f_doc,
-                            filename=os.path.basename(out_xlsx),
-                            caption=caption
-                        )
-                except Exception as e_fwd:
-                    log.warning("Failed forwarding /tomorrow document to group %s: %s", gid, e_fwd)
+                chats_to_send.add(int(gid))
+
+        for cid in chats_to_send:
+            try:
+                with open(out_xlsx, "rb") as f_doc:
+                    await safe_api_call(
+                        context.bot.send_document,
+                        chat_id=cid,
+                        document=f_doc,
+                        filename=os.path.basename(out_xlsx),
+                        caption=caption
+                    )
+            except Exception as e_fwd:
+                log.warning("Failed forwarding /tomorrow document to group %s: %s", cid, e_fwd)
 
         await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
 
 
 
