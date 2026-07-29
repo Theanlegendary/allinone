@@ -1204,6 +1204,13 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 for gid, zkey in zone_fwd_map.items():
                     if zkey.lower() == z_clean:
                         try:
+                            try:
+                                z_img = shipments_tomorrow.render_executive_summary_image(z_xlsx)
+                                z_img.name = f"EXECUTIVE_SUMMARY_{z_name.replace(' ', '_')}.png"
+                                await safe_api_call(context.bot.send_photo, chat_id=int(gid), photo=z_img)
+                            except Exception as e_zp:
+                                log.warning("Failed sending zone photo to group %s: %s", gid, e_zp)
+
                             with open(z_xlsx, "rb") as f_doc:
                                 await safe_api_call(
                                     context.bot.send_document,
@@ -1228,6 +1235,13 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     b_bills, b_weight = shipments_tomorrow.build_shipments_tomorrow_report(src, br_xlsx, target_label=br_code)
                     if b_bills > 0:
                         b_caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({br_code})*\n📦 Total Bills: `{b_bills}`\n⚖️ Total Weight: `{b_weight/1000:,.2f} kg`"
+                        try:
+                            b_img = shipments_tomorrow.render_executive_summary_image(br_xlsx)
+                            b_img.name = f"EXECUTIVE_SUMMARY_{br_code}.png"
+                            await safe_api_call(context.bot.send_photo, chat_id=int(gid), photo=b_img)
+                        except Exception as e_bp:
+                            log.warning("Failed sending branch photo to group %s: %s", gid, e_bp)
+
                         with open(br_xlsx, "rb") as f_doc:
                             await safe_api_call(
                                 context.bot.send_document,
@@ -1242,7 +1256,6 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             await edit_or_send_requester_text(msg, update, context, f"✅ Done! Forwarded SHIPMENTS TOMORROW REPORTS to {total_sent_zones} Zone Groups and {total_sent_branches} Branch Groups.")
             return
-
 
         # Single target forwarding (Zone or Branch)
         # 1. Check zone_forward_mapping (e.g. zone1 -> "-1004390650725")
@@ -1261,6 +1274,13 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         for cid in chats_to_send:
             try:
+                try:
+                    g_img = shipments_tomorrow.render_executive_summary_image(out_xlsx)
+                    g_img.name = f"EXECUTIVE_SUMMARY_{target_label.replace(' ', '_')}.png"
+                    await safe_api_call(context.bot.send_photo, chat_id=cid, photo=g_img)
+                except Exception as e_gp:
+                    log.warning("Failed sending photo to group %s: %s", cid, e_gp)
+
                 with open(out_xlsx, "rb") as f_doc:
                     await safe_api_call(
                         context.bot.send_document,
@@ -1273,6 +1293,7 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 log.warning("Failed forwarding /tomorrow document to group %s: %s", cid, e_fwd)
 
         await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
 
 
 
