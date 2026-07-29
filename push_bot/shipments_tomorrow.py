@@ -442,7 +442,15 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
 
 def render_executive_summary_image(out_xlsx):
-    """Renders Ultra-HD 2x (300 DPI) Executive Summary Table Image matching user screenshot."""
+    """Renders pixel-perfect Excel image matching user screenshot with full Khmer font support."""
+    import excel_to_image
+    try:
+        buf = excel_to_image.excel_to_image(out_xlsx)
+        if buf:
+            return buf
+    except Exception as e:
+        print("Fallback to PIL renderer:", e)
+
     import io
     from PIL import Image, ImageDraw, ImageFont
 
@@ -454,7 +462,7 @@ def render_executive_summary_image(out_xlsx):
         if ws.cell(r, 10).value is not None or ws.cell(r, 13).value is not None:
             max_r = r
 
-    scale = 2  # 2x Ultra-HD Retina Crisp Scaling (300 DPI)
+    scale = 2
     col_widths = [int(w * scale) for w in [110, 160, 180, 110, 210]]
     pad = int(20 * scale)
     total_w = sum(col_widths) + (pad * 2)
@@ -468,11 +476,19 @@ def render_executive_summary_image(out_xlsx):
     img = Image.new('RGB', (total_w, total_h), color='#FFFFFF')
     draw = ImageDraw.Draw(img)
 
-    try:
-        font_b = ImageFont.truetype('arialbd.ttf', int(15 * scale))
-        font_n = ImageFont.truetype('arial.ttf', int(14 * scale))
-        font_title = ImageFont.truetype('arialbd.ttf', int(18 * scale))
-    except Exception:
+    # Use Leelawadee UI / Segoe UI for 100% perfect Khmer font support on Windows
+    font_paths = ['leelawadb.ttf', 'leelawad.ttf', 'segoeuib.ttf', 'segoeui.ttf', 'arialbd.ttf']
+    font_b = font_n = font_title = None
+    for fp in font_paths:
+        try:
+            font_b = ImageFont.truetype(fp, int(15 * scale))
+            font_n = ImageFont.truetype(fp, int(14 * scale))
+            font_title = ImageFont.truetype(fp, int(18 * scale))
+            break
+        except Exception:
+            continue
+
+    if not font_b:
         font_b = font_n = font_title = ImageFont.load_default()
 
     title_text = str(ws.cell(1, 10).value or '')
@@ -538,5 +554,6 @@ def render_executive_summary_image(out_xlsx):
     img.save(buf, format='PNG', dpi=(300, 300))
     buf.seek(0)
     return buf
+
 
 
