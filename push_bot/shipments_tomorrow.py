@@ -236,7 +236,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = border_clean
 
-    # Populate Left Data Rows
+    # Populate Left Data Rows (Single pure white background for all data rows)
     summary_data = {}
     total_bills = 0
     total_weight = 0.0
@@ -244,7 +244,6 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     r_curr = 3
     for idx_row, item in enumerate(base_rows):
         ws1.row_dimensions[r_curr].height = 20.0
-        row_fill = fill_row_alt if idx_row % 2 == 1 else None
 
         vals = [
             item["destination_branch"],
@@ -260,8 +259,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             cell = ws1.cell(r_curr, ci, val)
             cell.font = font_data_b if ci == 1 else font_data
             cell.border = border_clean
-            if row_fill:
-                cell.fill = row_fill
+
 
             if ci in (1, 2, 3, 4):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
