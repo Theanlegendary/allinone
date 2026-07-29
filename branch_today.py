@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-branch_today.py - Generate Branch Today Performance Summary Report
-Tracks 2 key metrics per branch/district:
-1. Picked Up from MEGA Today (Status 306)
-2. Success Delivery Today (Status 410)
+branch_today.py - Generate Branch / Post Office Today Performance Summary Report
+Tracks 3 key metrics per post office / district:
+1. From Mega (Status 306 - Received from Hub)
+2. Pending (Pending delivery - status not 410, 520, 201)
+3. Success Delivery (Status 410 - Delivered successfully)
 """
 
 import os
 import openpyxl
 import copy
 import pandas as pd
+from datetime import datetime
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
@@ -51,7 +53,7 @@ POST_OFFICE_DISTRICT_MAP = {
 
 
 def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
-    """Builds Branch Today Performance Report Excel file."""
+    """Builds Branch/Post Office Today Performance Report Excel file."""
     df = pd.read_excel(src_excel)
 
     # Standardize target label
@@ -66,9 +68,13 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
         "CHA": "ZONE5", "KRA": "ZONE5", "TBK": "ZONE5", "ROT": "ZONE5", "MON": "ZONE5", "STU": "ZONE5"
     }
 
-    summary_data = {} # (zone_str, br, dist) -> {"picked_up": c1, "delivered": c2}
-    total_picked_up = 0
-    total_delivered = 0
+    summary_data = {} # (zone_str, br, dist_or_po) -> {"from_mega": c1, "pending": c2, "success": c3}
+    total_from_mega = 0
+    total_pending = 0
+    total_success = 0
+
+    # Determine if target is a specific 7-char Post Office Code (e.g. PNPP012, SVAP001, BATP001)
+    is_specific_po = len(tgt) >= 7 and (tgt.endswith("001") or tgt.endswith("012") or tgt.endswith("002") or tgt[3:4] in ("P", "A", "S"))
 
     for idx, row in df.iterrows():
         dest_po = str(row.get("DELIVERY POST OFFICE", "")).strip().upper()
@@ -80,21 +86,25 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
 
         dest_br = dest_po[:3] if len(dest_po) >= 3 else dest_prov
 
-        # Filtering target
+        # Filtering target logic
         tgt_norm = tgt.replace(" ", "")
-        if tgt_norm.startswith("ZONE"):
+        if is_specific_po:
+            if dest_po != tgt:
+                continue
+        elif tgt_norm.startswith("ZONE"):
             target_zone_name = tgt_norm
             item_zone = zone_by_prefix.get(dest_prov, "ZONE1")
             if item_zone != target_zone_name:
                 continue
-
         elif tgt not in ("ALL", "TOTAL", "MEGA"):
             branch_prefix = tgt[:3]
             if dest_prov != branch_prefix and dest_po != tgt:
                 continue
 
-        # District mapping
-        if dest_po in POST_OFFICE_DISTRICT_MAP:
+        # District / PO Label
+        if is_specific_po:
+            dist_name = dest_po
+        elif dest_po in POST_OFFICE_DISTRICT_MAP:
             dist_name = POST_OFFICE_DISTRICT_MAP[dest_po]
         else:
             if dest_br == 'SVA':
@@ -117,19 +127,24 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
         zone_str = zone_by_prefix.get(dest_prov, "Zone 1").replace("ZONE", "Zone ")
 
         # Status check
-        is_picked_up = "306" in curr_status or pd.notna(row.get("STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)"))
-        is_delivered = "410" in curr_status or "GIAO THÀNH CÔNG" in curr_status
+        is_from_mega = "306" in curr_status or pd.notna(row.get("STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)"))
+        is_success   = "410" in curr_status or "GIAO THÀNH CÔNG" in curr_status
+        is_done      = is_success or any(st in curr_status for st in ["520", "201", "CANCEL"])
+        is_pending   = not is_done
 
         key = (zone_str, dest_br, dist_name)
         if key not in summary_data:
-            summary_data[key] = {"picked_up": 0, "delivered": 0}
+            summary_data[key] = {"from_mega": 0, "pending": 0, "success": 0}
 
-        if is_picked_up:
-            summary_data[key]["picked_up"] += 1
-            total_picked_up += 1
-        if is_delivered:
-            summary_data[key]["delivered"] += 1
-            total_delivered += 1
+        if is_from_mega:
+            summary_data[key]["from_mega"] += 1
+            total_from_mega += 1
+        if is_pending:
+            summary_data[key]["pending"] += 1
+            total_pending += 1
+        if is_success:
+            summary_data[key]["success"] += 1
+            total_success += 1
 
     # Create Workbook
     wb = openpyxl.Workbook()
@@ -142,7 +157,8 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
     font_hdr   = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
     font_data  = Font(name="Segoe UI", size=10, color="0F172A")
     font_tot   = Font(name="Segoe UI", size=11, bold=True, color="0F172A")
-    font_tot_red = Font(name="Segoe UI", size=11, bold=True, color="991B1B")
+    font_tot_green = Font(name="Segoe UI", size=11, bold=True, color="15803D")
+    font_tot_amber = Font(name="Segoe UI", size=11, bold=True, color="B45309")
 
     fill_hdr      = PatternFill("solid", fgColor="0F766E")
     fill_sub      = PatternFill("solid", fgColor="E0F2FE")
@@ -163,8 +179,8 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
 
     # Title Banner (Row 1)
     ws1.row_dimensions[1].height = 35.0
-    ws1.merge_cells("A1:E1")
-    title_cell = ws1.cell(1, 1, f"BRANCH TODAY PERFORMANCE ({target_label})")
+    ws1.merge_cells("A1:F1")
+    title_cell = ws1.cell(1, 1, f"TODAY PERFORMANCE SUMMARY ({target_label})")
     title_cell.font = font_title
     title_cell.fill = fill_hdr
     title_cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -173,9 +189,10 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
     headers = [
         "ZONE\n(តំបន់)",
         "DESTINATION_BRANCH\n(សាខា)",
-        "District\n(ស្រុក/ខណ្ឌ)",
-        "Picked Up from MEGA\n(ទទួលពី MEGA)",
-        "Success Delivery Today\n(ដឹកជោគជ័យថ្ងៃនេះ)"
+        "Post Office / District\n(ស្រុក/ខណ្ឌ/បុស្តិ៍)",
+        "From Mega\n(ទទួលពី MEGA)",
+        "Pending\n(កំពុងរង់ចាំ)",
+        "Success Delivery\n(ដឹកជោគជ័យ)"
     ]
     ws1.row_dimensions[2].height = 35.0
     for c_idx, h in enumerate(headers, 1):
@@ -194,12 +211,13 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
 
     for br in sorted(branch_groups.keys()):
         br_items = branch_groups[br]
-        br_picked = 0
-        br_deliv  = 0
+        br_mega    = 0
+        br_pending = 0
+        br_success = 0
 
         for zone_str, b_code, dist, stats in br_items:
             ws1.row_dimensions[r_curr].height = 20.0
-            row_vals = [zone_str, b_code, dist, stats["picked_up"], stats["delivered"]]
+            row_vals = [zone_str, b_code, dist, stats["from_mega"], stats["pending"], stats["success"]]
             for ci, val in enumerate(row_vals, 1):
                 cell = ws1.cell(r_curr, ci, val)
                 cell.font = font_data
@@ -210,8 +228,9 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                     cell.number_format = "#,##0"
 
-            br_picked += stats["picked_up"]
-            br_deliv  += stats["delivered"]
+            br_mega    += stats["from_mega"]
+            br_pending += stats["pending"]
+            br_success += stats["success"]
             r_curr += 1
 
         # Branch Subtotal Row
@@ -226,26 +245,33 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
             cell.fill = fill_sub
             cell.border = border_clean
 
-        p_c = ws1.cell(r_curr, 4, br_picked)
-        p_c.font = font_tot
+        m_c = ws1.cell(r_curr, 4, br_mega)
+        m_c.font = font_tot
+        m_c.fill = fill_sub
+        m_c.border = border_clean
+        m_c.alignment = Alignment(horizontal="right", vertical="center")
+        m_c.number_format = "#,##0"
+
+        p_c = ws1.cell(r_curr, 5, br_pending)
+        p_c.font = font_tot_amber
         p_c.fill = fill_sub
         p_c.border = border_clean
         p_c.alignment = Alignment(horizontal="right", vertical="center")
         p_c.number_format = "#,##0"
 
-        d_c = ws1.cell(r_curr, 5, br_deliv)
-        d_c.font = font_tot_red
-        d_c.fill = fill_sub
-        d_c.border = border_clean
-        d_c.alignment = Alignment(horizontal="right", vertical="center")
-        d_c.number_format = "#,##0"
+        s_c = ws1.cell(r_curr, 6, br_success)
+        s_c.font = font_tot_green
+        s_c.fill = fill_sub
+        s_c.border = border_clean
+        s_c.alignment = Alignment(horizontal="right", vertical="center")
+        s_c.number_format = "#,##0"
 
         r_curr += 1
 
     # Grand Total Row
     ws1.row_dimensions[r_curr].height = 25.0
     ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=3)
-    gt_lbl = ws1.cell(r_curr, 1, f"{target_clean[:3]} Total")
+    gt_lbl = ws1.cell(r_curr, 1, f"{target_clean[:7]} Total")
     gt_lbl.font = font_tot
     gt_lbl.alignment = Alignment(horizontal="left", vertical="center")
 
@@ -254,27 +280,34 @@ def build_branch_today_report(src_excel, out_xlsx, target_label="ALL"):
         cell.fill = fill_tot
         cell.border = border_tot_acc
 
-    gt_p = ws1.cell(r_curr, 4, total_picked_up)
-    gt_p.font = font_tot
+    gt_m = ws1.cell(r_curr, 4, total_from_mega)
+    gt_m.font = font_tot
+    gt_m.fill = fill_tot
+    gt_m.border = border_tot_acc
+    gt_m.alignment = Alignment(horizontal="right", vertical="center")
+    gt_m.number_format = "#,##0"
+
+    gt_p = ws1.cell(r_curr, 5, total_pending)
+    gt_p.font = font_tot_amber
     gt_p.fill = fill_tot
     gt_p.border = border_tot_acc
     gt_p.alignment = Alignment(horizontal="right", vertical="center")
     gt_p.number_format = "#,##0"
 
-    gt_d = ws1.cell(r_curr, 5, total_delivered)
-    gt_d.font = font_tot_red
-    gt_d.fill = fill_tot
-    gt_d.border = border_tot_acc
-    gt_d.alignment = Alignment(horizontal="right", vertical="center")
-    gt_d.number_format = "#,##0"
+    gt_s = ws1.cell(r_curr, 6, total_success)
+    gt_s.font = font_tot_green
+    gt_s.fill = fill_tot
+    gt_s.border = border_tot_acc
+    gt_s.alignment = Alignment(horizontal="right", vertical="center")
+    gt_s.number_format = "#,##0"
 
     # Column Widths
-    col_widths = [14, 22, 18, 22, 24]
+    col_widths = [14, 22, 24, 18, 18, 20]
     for ci, w in enumerate(col_widths, 1):
         ws1.column_dimensions[get_column_letter(ci)].width = w
 
     wb.save(out_xlsx)
-    return total_picked_up, total_delivered
+    return total_from_mega, total_pending, total_success
 
 
 def render_today_summary_image(out_xlsx):

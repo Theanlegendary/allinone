@@ -1309,15 +1309,14 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @pm_required_handler
 async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handler for /today [branch/zone] command: tracks Picked Up from MEGA & Success Delivery Today."""
+    """Handler for /today [branch/zone/post_office] command."""
     await delete_group_command(update, context)
     cfg = load_config()
 
     args = [a.strip() for a in (context.args or []) if a.strip()]
-
     target_label = " ".join(args) if args else "Zone 1"
 
-    msg = await send_requester_text(update, context, f"Generating TODAY BRANCH PERFORMANCE REPORT ({target_label})...")
+    msg = await send_requester_text(update, context, f"Generating TODAY PERFORMANCE REPORT ({target_label})...")
     tmpdir = tempfile.mkdtemp(prefix="today_")
     track_report_dir(tmpdir)
     stamp = datetime.now().strftime("%d.%m_%HH%M")
@@ -1327,7 +1326,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
         downloader.download_detail(cfg["api"], src, force_refresh=True)
         import branch_today
         out_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{target_label.replace(' ', '_')}.xlsx")
-        picked_up, delivered = branch_today.build_branch_today_report(src, out_xlsx, target_label=target_label)
+        from_mega, pending, success = branch_today.build_branch_today_report(src, out_xlsx, target_label=target_label)
+
 
         # Generate summary image for instant Telegram mobile viewing
         try:
@@ -1337,13 +1337,12 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e_img:
             log.warning("Could not render today summary image: %s", e_img)
 
-        caption = f"📊 *BRANCH TODAY PERFORMANCE ({target_label})*\n📥 Picked Up from MEGA: `{picked_up:,.0f}`\n✅ Success Delivery Today: `{delivered:,.0f}`"
+        caption = f"📊 *TODAY PERFORMANCE SUMMARY ({target_label})*\n📥 *From Mega*: `{from_mega:,.0f} bills`\n⏳ *Pending*: `{pending:,.0f} bills`\n✅ *Success*: `{success:,.0f} bills`"
         await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
 
         # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
         tgt_upper = target_label.upper().replace(" ", "")
         chats_to_send = {update.effective_chat.id} if update.effective_chat else set()
-
 
         if tgt_upper in ("ALL", "MEGA"):
             # Forward for all 5 Zones to their respective Zone groups
@@ -1353,8 +1352,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 z_name = f"Zone {z_idx}"
                 z_clean = f"zone{z_idx}"
                 z_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{z_name.replace(' ', '_')}.xlsx")
-                z_picked, z_deliv = branch_today.build_branch_today_report(src, z_xlsx, target_label=z_name)
-                z_caption = f"📊 *BRANCH TODAY PERFORMANCE ({z_name})*\n📥 Picked Up from MEGA: `{z_picked:,.0f}`\n✅ Success Delivery Today: `{z_deliv:,.0f}`"
+                z_fm, z_pend, z_succ = branch_today.build_branch_today_report(src, z_xlsx, target_label=z_name)
+                z_caption = f"📊 *TODAY PERFORMANCE SUMMARY ({z_name})*\n📥 *From Mega*: `{z_fm:,.0f} bills`\n⏳ *Pending*: `{z_pend:,.0f} bills`\n✅ *Success*: `{z_succ:,.0f} bills`"
 
                 for gid, zkey in zone_fwd_map.items():
                     if zkey.lower() == z_clean:
@@ -1387,9 +1386,9 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 br_code = handles[0].upper()
                 br_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{br_code}.xlsx")
                 try:
-                    b_picked, b_deliv = branch_today.build_branch_today_report(src, br_xlsx, target_label=br_code)
-                    if b_picked > 0 or b_deliv > 0:
-                        b_caption = f"📊 *BRANCH TODAY PERFORMANCE ({br_code})*\n📥 Picked Up from MEGA: `{b_picked:,.0f}`\n✅ Success Delivery Today: `{b_deliv:,.0f}`"
+                    b_fm, b_pend, b_succ = branch_today.build_branch_today_report(src, br_xlsx, target_label=br_code)
+                    if b_fm > 0 or b_pend > 0 or b_succ > 0:
+                        b_caption = f"📊 *TODAY PERFORMANCE SUMMARY ({br_code})*\n📥 *From Mega*: `{b_fm:,.0f} bills`\n⏳ *Pending*: `{b_pend:,.0f} bills`\n✅ *Success*: `{b_succ:,.0f} bills`"
                         try:
                             b_img = branch_today.render_today_summary_image(br_xlsx)
                             b_img.name = f"TODAY_PERFORMANCE_{br_code}.png"
@@ -1409,10 +1408,11 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except Exception as e_br:
                     log.warning("Failed building/forwarding today report for branch %s: %s", br_code, e_br)
 
-            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Forwarded TODAY BRANCH PERFORMANCE REPORTS to {total_sent_zones} Zone Groups and {total_sent_branches} Branch Groups.")
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Forwarded TODAY PERFORMANCE REPORTS to {total_sent_zones} Zone Groups and {total_sent_branches} Branch Groups.")
             return
 
         # Single target forwarding (Zone or Branch)
+
         zone_fwd_map = cfg.get("zone_forward_mapping", {})
         if tgt_upper.startswith("ZONE"):
             zone_key_clean = "zone" + tgt_upper.replace("ZONE", "").strip()
