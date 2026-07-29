@@ -330,27 +330,69 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         cell.fill = fill_left_tot
         cell.border = tot_border_accounting
 
-    # Populate Executive Summary Table on Right
+    # Populate Executive Summary Table on Right with Province/Branch Subtotals
     r_sum = 3
+    branch_groups = {}
     for (zone_str, br, dist), stats in sorted(summary_data.items()):
-        ws1.row_dimensions[r_sum].height = 20.0
-        s_vals = [
-            zone_str,
-            br,
-            dist,
-            stats["bills"],
-            stats["weight"]
-        ]
-        for ci, val in enumerate(s_vals, 10):
-            cell = ws1.cell(r_sum, ci, val)
-            cell.font = font_data
-            cell.border = border_clean
-            if ci in (10, 11, 12):
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif ci in (13, 14):
-                cell.alignment = Alignment(horizontal="right", vertical="center")
-                if ci == 14:
-                    cell.number_format = "#,##0"
+        if br not in branch_groups:
+            branch_groups[br] = []
+        branch_groups[br].append((zone_str, br, dist, stats))
+
+    sub_fill = PatternFill("solid", fgColor="E0F2FE")
+    sub_border = Border(
+        top=Side(style="thin", color="94A3B8"),
+        bottom=Side(style="thin", color="94A3B8"),
+        left=Side(style="thin", color="E2E8F0"),
+        right=Side(style="thin", color="E2E8F0")
+    )
+
+    for br in sorted(branch_groups.keys()):
+        br_items = branch_groups[br]
+        br_bills = 0
+        br_weight = 0
+
+        for zone_str, b_code, dist, stats in br_items:
+            ws1.row_dimensions[r_sum].height = 20.0
+            s_vals = [zone_str, b_code, dist, stats["bills"], stats["weight"]]
+            for ci, val in enumerate(s_vals, 10):
+                cell = ws1.cell(r_sum, ci, val)
+                cell.font = font_data
+                cell.border = border_clean
+                if ci in (10, 11, 12):
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                elif ci in (13, 14):
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+                    if ci == 14:
+                        cell.number_format = "#,##0"
+            br_bills += stats["bills"]
+            br_weight += stats["weight"]
+            r_sum += 1
+
+        # Branch Subtotal Row (e.g. KAN Total, PNP Total, PRE Total, SVA Total)
+        ws1.row_dimensions[r_sum].height = 22.0
+        ws1.merge_cells(start_row=r_sum, start_column=10, end_row=r_sum, end_column=12)
+        sub_lbl = ws1.cell(r_sum, 10, f"{br} Total")
+        sub_lbl.font = Font(name="Segoe UI", size=10, bold=True, color="0F172A")
+        sub_lbl.alignment = Alignment(horizontal="left", vertical="center")
+
+        for c in range(10, 13):
+            cell = ws1.cell(r_sum, c)
+            cell.fill = sub_fill
+            cell.border = sub_border
+
+        sub_b_cell = ws1.cell(r_sum, 13, br_bills)
+        sub_b_cell.font = Font(name="Segoe UI", size=10, bold=True, color="0F172A")
+        sub_b_cell.fill = sub_fill
+        sub_b_cell.border = sub_border
+        sub_b_cell.alignment = Alignment(horizontal="right", vertical="center")
+        sub_b_cell.number_format = "#,##0"
+
+        sub_w_cell = ws1.cell(r_sum, 14, br_weight)
+        sub_w_cell.font = Font(name="Segoe UI", size=10, bold=True, color="991B1B")
+        sub_w_cell.fill = sub_fill
+        sub_w_cell.border = sub_border
+        sub_w_cell.alignment = Alignment(horizontal="right", vertical="center")
+        sub_w_cell.number_format = "#,##0"
         r_sum += 1
 
     # Right Summary Total Row (CEO Double-Line Accounting Finish)
@@ -393,10 +435,10 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     base_headers = [
         "No", "ORDER_NUMBER", "CUSTOMER", "ORIGIN_BRANCH", "ORIGIN_POST",
         "DESTINATION_BRANCH", "DESTINATION_POST", "CREATED_BY", "CREATED_AT",
-        "PAYMENT_TERM", "BASE_FEE (USD)", "VAS_FEE (USD)", "DISCOUNT (USD)",
-        "TOTAL_AMOUNT (USD)", "COD (USD)", "ACTUAL_WEIGHT (G)", "SIZE (CM)",
-        "BASE_SERVICE", "VAS_SERVICE", "VAS_KHMER", "CARGO_TYPE", "FROM_SOURCE",
-        "ZONE ĐẾN", "Huyện đến", "statues", "Receiver"
+        "PAYMENT_METHOD", "SHIPPING_FEE", "DISCOUNT", "SERVICE_FEE",
+        "TOTAL_FEE", "COD", "WEIGHT_G", "LENGTH", "WIDTH",
+        "VAS_CODE", "VAS_DESCRIPTION", "DESTINATION_PROVINCE", "DESTINATION_DISTRICT",
+        "STATUS", "RECEIVER_NAME"
     ]
     ws2.append(base_headers)
     ws2.row_dimensions[1].height = 24.0
@@ -428,14 +470,13 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             "",
             item["vas_code"],
             item["vas_khmer"],
-            "",
-            "",
-            "",
+            item.get("province", item.get("destination_branch", "")),
             item["district"],
             item["status"],
             item["receiver"]
         ]
         ws2.append(row_data)
+
 
     wb.save(out_xlsx)
     return total_bills, total_weight
@@ -478,12 +519,17 @@ def render_executive_summary_image(out_xlsx):
                 cell_tgt.alignment = copy.copy(cell_orig.alignment)
                 cell_tgt.number_format = cell_orig.number_format
 
-    # Merge Title Row A1:E1
-    ws_sum.merge_cells('A1:E1')
-
-    # Merge Total Row Label
-    if max_r >= 3:
-        ws_sum.merge_cells(start_row=max_r, start_column=1, end_row=max_r, end_column=3)
+    # Copy all merged ranges for Cols J..N (10..14) -> A..E (1..5)
+    for m_range in ws.merged_cells.ranges:
+        if m_range.min_col >= 10 and m_range.max_col <= 14:
+            new_min_c = m_range.min_col - 9
+            new_max_c = m_range.max_col - 9
+            ws_sum.merge_cells(
+                start_row=m_range.min_row,
+                end_row=m_range.max_row,
+                start_column=new_min_c,
+                end_column=new_max_c
+            )
 
     # Column Widths
     col_widths = [14, 22, 18, 12, 24]
@@ -496,8 +542,3 @@ def render_executive_summary_image(out_xlsx):
 
     # Render to pixel-perfect cropped image using excel_to_image
     return excel_to_image.excel_to_image(tmp_sum_xlsx)
-
-
-
-
-
