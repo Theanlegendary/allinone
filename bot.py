@@ -1337,8 +1337,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e_img:
             log.warning("Could not render today summary image: %s", e_img)
 
-        caption = f"📊 *TODAY PERFORMANCE SUMMARY ({target_label})*\n📥 *From Mega*: `{from_mega:,.0f} bills`\n⏳ *Pending*: `{pending:,.0f} bills`\n✅ *Success*: `{success:,.0f} bills`"
-        await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
+        caption = os.path.basename(out_xlsx)
+        await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=None)
 
         # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
         tgt_upper = target_label.upper().replace(" ", "")
@@ -1353,7 +1353,7 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 z_clean = f"zone{z_idx}"
                 z_xlsx = os.path.join(tmpdir, f"BRANCH_TODAY_PERFORMANCE_{stamp}_{z_name.replace(' ', '_')}.xlsx")
                 z_fm, z_pend, z_succ = branch_today.build_branch_today_report(src, z_xlsx, target_label=z_name)
-                z_caption = f"📊 *TODAY PERFORMANCE SUMMARY ({z_name})*\n📥 *From Mega*: `{z_fm:,.0f} bills`\n⏳ *Pending*: `{z_pend:,.0f} bills`\n✅ *Success*: `{z_succ:,.0f} bills`"
+                z_caption = None
 
                 for gid, zkey in zone_fwd_map.items():
                     if zkey.lower() == z_clean:
@@ -1388,7 +1388,7 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 try:
                     b_fm, b_pend, b_succ = branch_today.build_branch_today_report(src, br_xlsx, target_label=br_code)
                     if b_fm > 0 or b_pend > 0 or b_succ > 0:
-                        b_caption = f"📊 *TODAY PERFORMANCE SUMMARY ({br_code})*\n📥 *From Mega*: `{b_fm:,.0f} bills`\n⏳ *Pending*: `{b_pend:,.0f} bills`\n✅ *Success*: `{b_succ:,.0f} bills`"
+                        b_caption = None
                         try:
                             b_img = branch_today.render_today_summary_image(br_xlsx)
                             b_img.name = f"TODAY_PERFORMANCE_{br_code}.png"
@@ -1451,6 +1451,111 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         log.exception("Error in /today command: %s", e)
         await edit_or_send_requester_text(msg, update, context, f"❌ Error generating today branch report: {e}")
+
+
+@pm_required_handler
+async def cmd_allthetime(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handler for /allthetime [branch/zone] — sends text summary (From Mega / Pending / Success) to all registered groups."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    args = [a.strip() for a in (context.args or []) if a.strip()]
+    target_label = " ".join(args) if args else "all"
+
+    msg = await send_requester_text(update, context, f"Sending TODAY TEXT SUMMARY ({target_label}) to all groups...")
+    tmpdir = tempfile.mkdtemp(prefix="allthetime_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src   = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import branch_today
+
+        tgt_upper = target_label.upper().replace(" ", "")
+        total_sent = 0
+
+        # Determine list of targets to broadcast
+        if tgt_upper in ("ALL", "MEGA", ""):
+            # Send to all 5 Zones
+            zone_fwd_map = cfg.get("zone_forward_mapping", {})
+            for z_idx in range(1, 6):
+                z_name = f"Zone {z_idx}"
+                z_clean = f"zone{z_idx}"
+                z_xlsx = os.path.join(tmpdir, f"ATT_{stamp}_{z_name.replace(' ', '_')}.xlsx")
+                z_fm, z_pend, z_succ = branch_today.build_branch_today_report(src, z_xlsx, target_label=z_name)
+                z_text = (
+                    f"📊 *TODAY PERFORMANCE SUMMARY ({z_name})*\n"
+                    f"📥 *From Mega*: `{z_fm:,.0f} bills`\n"
+                    f"⏳ *Pending*: `{z_pend:,.0f} bills`\n"
+                    f"✅ *Success*: `{z_succ:,.0f} bills`"
+                )
+                for gid, zkey in zone_fwd_map.items():
+                    if zkey.lower() == z_clean:
+                        try:
+                            await safe_api_call(context.bot.send_message, chat_id=int(gid), text=z_text, parse_mode="Markdown")
+                            total_sent += 1
+                        except Exception as ez:
+                            log.warning("Failed sending allthetime to zone %s: %s", gid, ez)
+
+            # Send to all Branch groups
+            fwd_map = get_forward_mapping(cfg)
+            for gid, handles in fwd_map.items():
+                if not handles or "*" in handles:
+                    continue
+                br_code = handles[0].upper()
+                br_xlsx = os.path.join(tmpdir, f"ATT_{stamp}_{br_code}.xlsx")
+                try:
+                    b_fm, b_pend, b_succ = branch_today.build_branch_today_report(src, br_xlsx, target_label=br_code)
+                    if b_fm > 0 or b_pend > 0 or b_succ > 0:
+                        b_text = (
+                            f"📊 *TODAY PERFORMANCE SUMMARY ({br_code})*\n"
+                            f"📥 *From Mega*: `{b_fm:,.0f} bills`\n"
+                            f"⏳ *Pending*: `{b_pend:,.0f} bills`\n"
+                            f"✅ *Success*: `{b_succ:,.0f} bills`"
+                        )
+                        await safe_api_call(context.bot.send_message, chat_id=int(gid), text=b_text, parse_mode="Markdown")
+                        total_sent += 1
+                except Exception as eb:
+                    log.warning("Failed sending allthetime to branch %s: %s", br_code, eb)
+
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent TODAY TEXT SUMMARY to {total_sent} groups.")
+
+        else:
+            # Single target
+            single_xlsx = os.path.join(tmpdir, f"ATT_{stamp}_{tgt_upper}.xlsx")
+            fm, pend, succ = branch_today.build_branch_today_report(src, single_xlsx, target_label=target_label)
+            text = (
+                f"📊 *TODAY PERFORMANCE SUMMARY ({target_label})*\n"
+                f"📥 *From Mega*: `{fm:,.0f} bills`\n"
+                f"⏳ *Pending*: `{pend:,.0f} bills`\n"
+                f"✅ *Success*: `{succ:,.0f} bills`"
+            )
+            # Send to requester chat + matching group chats
+            chats_to_send = {update.effective_chat.id} if update.effective_chat else set()
+            zone_fwd_map = cfg.get("zone_forward_mapping", {})
+            if tgt_upper.startswith("ZONE"):
+                z_clean = "zone" + tgt_upper.replace("ZONE", "").strip()
+                for gid, zkey in zone_fwd_map.items():
+                    if zkey.lower() == z_clean.lower():
+                        chats_to_send.add(int(gid))
+            fwd_map = get_forward_mapping(cfg)
+            for gid, handles in fwd_map.items():
+                if any(h.upper() in (tgt_upper, tgt_upper[:3]) for h in handles):
+                    chats_to_send.add(int(gid))
+
+            for cid in chats_to_send:
+                try:
+                    await safe_api_call(context.bot.send_message, chat_id=cid, text=text, parse_mode="Markdown")
+                    total_sent += 1
+                except Exception as ec:
+                    log.warning("Failed sending allthetime to chat %s: %s", cid, ec)
+
+            await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent TODAY TEXT SUMMARY ({target_label}) to {total_sent} chats.")
+
+    except Exception as e:
+        log.exception("Error in /allthetime command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Error: {e}")
 
 
 @pm_required_handler
@@ -5808,8 +5913,9 @@ def main():
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
     app.add_handler(CommandHandler("tomorrow",   cmd_tomorrow))
-    app.add_handler(CommandHandler("today",      cmd_today))
-    app.add_handler(CommandHandler("daily",      cmd_today))
+    app.add_handler(CommandHandler("today",       cmd_today))
+    app.add_handler(CommandHandler("daily",       cmd_today))
+    app.add_handler(CommandHandler("allthetime",  cmd_allthetime))
 
 
     app.add_handler(CommandHandler("vs",         cmd_vs))
