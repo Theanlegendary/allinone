@@ -112,7 +112,6 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         })
         r_idx += 1
 
-
     wb = openpyxl.Workbook()
 
     # Sheet 1: SHIPMENTS TOMORROW REPORT
@@ -141,7 +140,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     font_data_b = Font(name="Calibri", size=9,  bold=True, color="000000")
     font_tot    = Font(name="Calibri", size=9,  bold=True, color="000000")
 
-    # Row 1: Title Banners
+    # Row 1: Title Banners (Height 35)
     stamp_date = datetime.now().strftime("%d.%m")
     target_clean = target_label.upper()
     title_left_txt = f"SHIPMENTS TOMORROW REPORT {stamp_date} (Báo cáo hàng đến {target_clean})"
@@ -159,9 +158,9 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     for c in range(10, 15):
         ws1.cell(1, c).fill = fill_title_right
 
-    ws1.row_dimensions[1].height = 24
+    ws1.row_dimensions[1].height = 35.0
 
-    # Row 2: Header Rows
+    # Row 2: Header Rows (Height 32)
     headers_left = [
         "DESTINATION\n(សាខា)",
         "District\n(ស្រុក/ខណ្ឌ)",
@@ -180,7 +179,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         "SUM ACTUAL_WEIGHT (G)\n(ទម្ងន់សរុប g)"
     ]
 
-    ws1.row_dimensions[2].height = 28
+    ws1.row_dimensions[2].height = 32.0
     for ci, h in enumerate(headers_left, 1):
         cell = ws1.cell(2, ci, h)
         cell.font = font_hdr
@@ -202,7 +201,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
     r_curr = 3
     for item in base_rows:
-        ws1.row_dimensions[r_curr].height = 19
+        ws1.row_dimensions[r_curr].height = 20.0
         vals = [
             item["destination_branch"],
             item["district"],
@@ -219,7 +218,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             cell.border = thin_border
             if ci in (1, 2, 3, 4):
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif ci == 5:
+            elif ci in (5, 7, 8):
                 cell.alignment = Alignment(horizontal="left", vertical="center")
             elif ci == 6:
                 cell.alignment = Alignment(horizontal="right", vertical="center")
@@ -235,7 +234,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         r_curr += 1
 
     # Left Grand Total Row
-    ws1.row_dimensions[r_curr].height = 22
+    ws1.row_dimensions[r_curr].height = 24.0
     ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=5)
     gt_left = ws1.cell(r_curr, 1, "Grand Total / សរុប")
     gt_left.font = font_tot
@@ -260,7 +259,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     # Populate Executive Summary Table on Right
     r_sum = 3
     for (zone_str, br, dist), stats in sorted(summary_data.items()):
-        ws1.row_dimensions[r_sum].height = 19
+        ws1.row_dimensions[r_sum].height = 20.0
         s_vals = [
             zone_str,
             br,
@@ -281,7 +280,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         r_sum += 1
 
     # Right Summary Total Row
-    ws1.row_dimensions[r_sum].height = 22
+    ws1.row_dimensions[r_sum].height = 24.0
     ws1.merge_cells(start_row=r_sum, start_column=10, end_row=r_sum, end_column=12)
     tot_label_cell = ws1.cell(r_sum, 10, f"{target_clean[:3]} Total")
     tot_label_cell.font = font_tot
@@ -304,11 +303,14 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
     tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
     tot_w_cell.number_format = "#,##0"
 
-    # Auto-adjust Column Widths matching example file
-    widths = [14, 18, 16, 16, 32, 22, 10, 24, 4, 12, 22, 18, 10, 22]
-    for ci, w in enumerate(widths, 1):
-        col_letter = openpyxl.utils.get_column_letter(ci)
-        ws1.column_dimensions[col_letter].width = w
+    # Exact Column Widths matching example file
+    exact_widths = {
+        'A': 16.0, 'B': 18.0, 'C': 20.0, 'D': 18.0, 'E': 35.0, 'F': 24.0,
+        'G': 14.0, 'H': 26.0, 'I': 4.0,  'J': 12.0, 'K': 22.0, 'L': 18.0,
+        'M': 12.0, 'N': 24.0
+    }
+    for col_let, w in exact_widths.items():
+        ws1.column_dimensions[col_let].width = w
 
     # Sheet 2: base (Raw order dataset)
     ws2 = wb.create_sheet(title="base")
@@ -323,7 +325,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         "ZONE ĐẾN", "Huyện đến", "statues", "Receiver"
     ]
     ws2.append(base_headers)
-    ws2.row_dimensions[1].height = 24
+    ws2.row_dimensions[1].height = 24.0
     for c in range(1, len(base_headers) + 1):
         cell = ws2.cell(1, c)
         cell.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
