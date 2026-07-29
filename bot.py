@@ -1153,9 +1153,46 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @pm_required_handler
 async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Shortcut command for /total mega (Tomorrow Vehicle & Dispatch Preparation Report)."""
-    context.args = ["mega"]
-    await cmd_total(update, context)
+    """Generates exact SHIPMENTS TOMORROW REPORT (Báo cáo hàng đến) matching official template."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    args = [a.strip() for a in (context.args or []) if a.strip()]
+    target_label = args[0] if args else "Zone 1"
+
+    msg = await send_requester_text(update, context, f"Generating SHIPMENTS TOMORROW REPORT ({target_label})...")
+    tmpdir = tempfile.mkdtemp(prefix="tomorrow_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src   = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import shipments_tomorrow
+        out_xlsx = os.path.join(tmpdir, f"SHIPMENTS_TOMORROW_REPORT_{stamp}_{target_label.replace(' ', '_')}.xlsx")
+        bills, weight = shipments_tomorrow.build_shipments_tomorrow_report(src, out_xlsx, target_label=target_label)
+
+        # Also generate MEGA pivot images for summary
+        import pivot
+        rows = pivot.read_source(src)
+        tree, day_keys, extra_data = pivot.build_mega_pivot(rows, cfg.get("pivot", {}), cfg.get("zone_mapping", {}))
+        for hub in ["MEGA1", "DVCMEGA1"]:
+            if hub in tree and tree[hub]:
+                sub_tree = {hub: tree[hub]}
+                hub_xlsx = os.path.join(tmpdir, f"Report_{hub}_{stamp}.xlsx")
+                pivot.export_mega_pivot(sub_tree, day_keys, hub_xlsx, extra_data=extra_data)
+                img_buf = excel_to_image.excel_to_image(hub_xlsx)
+                img_buf.name = f"{hub}_check.png"
+                await send_requester_photo(update, context, img_buf)
+
+        caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({target_label})*\n📦 Total Bills: `{bills}`\n⚖️ Total Weight: `{weight/1000:,.2f} kg`"
+        await send_requester_doc(update, context, out_xlsx, caption=caption)
+        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
+    except Exception as e:
+        log.exception("Error in /tomorrow command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Error generating tomorrow report: {e}")
+
 
 
 @pm_required_handler
