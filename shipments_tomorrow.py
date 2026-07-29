@@ -442,7 +442,7 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
 
 def render_executive_summary_image(out_xlsx):
-    """Renders cropped Executive Summary Table Image matching user screenshot."""
+    """Renders Ultra-HD 2x (300 DPI) Executive Summary Table Image matching user screenshot."""
     import io
     from PIL import Image, ImageDraw, ImageFont
 
@@ -454,28 +454,30 @@ def render_executive_summary_image(out_xlsx):
         if ws.cell(r, 10).value is not None or ws.cell(r, 13).value is not None:
             max_r = r
 
-    col_widths = [110, 160, 180, 110, 210]
-    total_w = sum(col_widths) + 40
-    row_h = 32
-    hdr_h1 = 45
-    hdr_h2 = 45
+    scale = 2  # 2x Ultra-HD Retina Crisp Scaling (300 DPI)
+    col_widths = [int(w * scale) for w in [110, 160, 180, 110, 210]]
+    pad = int(20 * scale)
+    total_w = sum(col_widths) + (pad * 2)
+    row_h = int(32 * scale)
+    hdr_h1 = int(46 * scale)
+    hdr_h2 = int(46 * scale)
     
     num_rows = max_r - 2
-    total_h = hdr_h1 + hdr_h2 + (num_rows * row_h) + 40
+    total_h = hdr_h1 + hdr_h2 + (num_rows * row_h) + (pad * 2)
 
     img = Image.new('RGB', (total_w, total_h), color='#FFFFFF')
     draw = ImageDraw.Draw(img)
 
     try:
-        font_b = ImageFont.truetype('arialbd.ttf', 15)
-        font_n = ImageFont.truetype('arial.ttf', 14)
-        font_title = ImageFont.truetype('arialbd.ttf', 17)
+        font_b = ImageFont.truetype('arialbd.ttf', int(15 * scale))
+        font_n = ImageFont.truetype('arial.ttf', int(14 * scale))
+        font_title = ImageFont.truetype('arialbd.ttf', int(18 * scale))
     except Exception:
         font_b = font_n = font_title = ImageFont.load_default()
 
     title_text = str(ws.cell(1, 10).value or '')
-    draw.rectangle([20, 20, total_w - 20, 20 + hdr_h1], fill='#0F766E')
-    draw.text((total_w // 2, 20 + hdr_h1 // 2), title_text, fill='#FFFFFF', font=font_title, anchor='mm')
+    draw.rectangle([pad, pad, total_w - pad, pad + hdr_h1], fill='#0F766E')
+    draw.text((total_w // 2, pad + hdr_h1 // 2), title_text, fill='#FFFFFF', font=font_title, anchor='mm')
 
     headers = [
         'ZONE\n(តំបន់)',
@@ -485,17 +487,17 @@ def render_executive_summary_image(out_xlsx):
         'SUM ACTUAL_WEIGHT (G)\n(ទម្ងន់សរុប g)'
     ]
     
-    y_curr = 20 + hdr_h1
-    x_curr = 20
+    y_curr = pad + hdr_h1
+    x_curr = pad
     for i, h in enumerate(headers):
         w = col_widths[i]
-        draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + hdr_h2], fill='#0F766E', outline='#14B8A6')
+        draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + hdr_h2], fill='#0F766E', outline='#14B8A6', width=int(2*scale))
         draw.text((x_curr + w // 2, y_curr + hdr_h2 // 2), h, fill='#FFFFFF', font=font_b, anchor='mm', align='center')
         x_curr += w
 
     y_curr += hdr_h2
     for r in range(3, max_r + 1):
-        x_curr = 20
+        x_curr = pad
         is_tot = (r == max_r)
         row_bg = '#CCFBF1' if is_tot else '#FFFFFF'
         
@@ -507,11 +509,11 @@ def render_executive_summary_image(out_xlsx):
             if is_tot and c_idx in (0, 1, 2):
                 if c_idx == 0:
                     val_str = str(cell_val or '')
-                    draw.rectangle([20, y_curr, 20 + col_widths[0] + col_widths[1] + col_widths[2], y_curr + row_h], fill='#CCFBF1', outline='#94A3B8')
-                    draw.text((20 + 15, y_curr + row_h // 2), val_str, fill='#0F172A', font=font_b, anchor='lm')
+                    draw.rectangle([pad, y_curr, pad + col_widths[0] + col_widths[1] + col_widths[2], y_curr + row_h], fill='#CCFBF1', outline='#94A3B8', width=int(1.5*scale))
+                    draw.text((pad + int(15 * scale), y_curr + row_h // 2), val_str, fill='#0F172A', font=font_b, anchor='lm')
                 continue
 
-            draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + row_h], fill=row_bg, outline='#E2E8F0')
+            draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + row_h], fill=row_bg, outline='#E2E8F0', width=int(1.5*scale))
 
             if cell_val is not None:
                 if c_idx == 4 and type(cell_val) in (int, float):
@@ -525,7 +527,7 @@ def render_executive_summary_image(out_xlsx):
                 f = font_b if (is_tot or c_idx == 1) else font_n
 
                 if c_idx in (3, 4):
-                    draw.text((x_curr + w - 15, y_curr + row_h // 2), val_str, fill=txt_color, font=f, anchor='rm')
+                    draw.text((x_curr + w - int(15 * scale), y_curr + row_h // 2), val_str, fill=txt_color, font=f, anchor='rm')
                 else:
                     draw.text((x_curr + w // 2, y_curr + row_h // 2), val_str, fill=txt_color, font=f, anchor='mm')
 
@@ -533,7 +535,8 @@ def render_executive_summary_image(out_xlsx):
         y_curr += row_h
 
     buf = io.BytesIO()
-    img.save(buf, format='PNG')
+    img.save(buf, format='PNG', dpi=(300, 300))
     buf.seek(0)
     return buf
+
 
