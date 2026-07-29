@@ -439,3 +439,101 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
     wb.save(out_xlsx)
     return total_bills, total_weight
+
+
+def render_executive_summary_image(out_xlsx):
+    """Renders cropped Executive Summary Table Image matching user screenshot."""
+    import io
+    from PIL import Image, ImageDraw, ImageFont
+
+    wb = openpyxl.load_workbook(out_xlsx, data_only=True)
+    ws = wb['SHIPMENTS TOMORROW REPORT']
+
+    max_r = 1
+    for r in range(1, ws.max_row + 1):
+        if ws.cell(r, 10).value is not None or ws.cell(r, 13).value is not None:
+            max_r = r
+
+    col_widths = [110, 160, 180, 110, 210]
+    total_w = sum(col_widths) + 40
+    row_h = 32
+    hdr_h1 = 45
+    hdr_h2 = 45
+    
+    num_rows = max_r - 2
+    total_h = hdr_h1 + hdr_h2 + (num_rows * row_h) + 40
+
+    img = Image.new('RGB', (total_w, total_h), color='#FFFFFF')
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font_b = ImageFont.truetype('arialbd.ttf', 15)
+        font_n = ImageFont.truetype('arial.ttf', 14)
+        font_title = ImageFont.truetype('arialbd.ttf', 17)
+    except Exception:
+        font_b = font_n = font_title = ImageFont.load_default()
+
+    title_text = str(ws.cell(1, 10).value or '')
+    draw.rectangle([20, 20, total_w - 20, 20 + hdr_h1], fill='#0F766E')
+    draw.text((total_w // 2, 20 + hdr_h1 // 2), title_text, fill='#FFFFFF', font=font_title, anchor='mm')
+
+    headers = [
+        'ZONE\n(តំបន់)',
+        'DESTINATION_BRANCH\n(សាខា)',
+        'District\n(ស្រុក/ខណ្ឌ)',
+        'Bill\n(ចំនួនប័ណ្ណ)',
+        'SUM ACTUAL_WEIGHT (G)\n(ទម្ងន់សរុប g)'
+    ]
+    
+    y_curr = 20 + hdr_h1
+    x_curr = 20
+    for i, h in enumerate(headers):
+        w = col_widths[i]
+        draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + hdr_h2], fill='#0F766E', outline='#14B8A6')
+        draw.text((x_curr + w // 2, y_curr + hdr_h2 // 2), h, fill='#FFFFFF', font=font_b, anchor='mm', align='center')
+        x_curr += w
+
+    y_curr += hdr_h2
+    for r in range(3, max_r + 1):
+        x_curr = 20
+        is_tot = (r == max_r)
+        row_bg = '#CCFBF1' if is_tot else '#FFFFFF'
+        
+        for c_idx in range(5):
+            col_idx = 10 + c_idx
+            w = col_widths[c_idx]
+            cell_val = ws.cell(r, col_idx).value
+            
+            if is_tot and c_idx in (0, 1, 2):
+                if c_idx == 0:
+                    val_str = str(cell_val or '')
+                    draw.rectangle([20, y_curr, 20 + col_widths[0] + col_widths[1] + col_widths[2], y_curr + row_h], fill='#CCFBF1', outline='#94A3B8')
+                    draw.text((20 + 15, y_curr + row_h // 2), val_str, fill='#0F172A', font=font_b, anchor='lm')
+                continue
+
+            draw.rectangle([x_curr, y_curr, x_curr + w, y_curr + row_h], fill=row_bg, outline='#E2E8F0')
+
+            if cell_val is not None:
+                if c_idx == 4 and type(cell_val) in (int, float):
+                    val_str = f'{cell_val:,.0f}'
+                elif c_idx == 3 and type(cell_val) in (int, float):
+                    val_str = f'{cell_val:,.0f}'
+                else:
+                    val_str = str(cell_val)
+
+                txt_color = '#991B1B' if (is_tot and c_idx == 4) else '#0F172A'
+                f = font_b if (is_tot or c_idx == 1) else font_n
+
+                if c_idx in (3, 4):
+                    draw.text((x_curr + w - 15, y_curr + row_h // 2), val_str, fill=txt_color, font=f, anchor='rm')
+                else:
+                    draw.text((x_curr + w // 2, y_curr + row_h // 2), val_str, fill=txt_color, font=f, anchor='mm')
+
+            x_curr += w
+        y_curr += row_h
+
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return buf
+
