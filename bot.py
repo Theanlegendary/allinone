@@ -1174,7 +1174,26 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({target_label})*\n📦 Total Bills: `{bills}`\n⚖️ Total Weight: `{weight/1000:,.2f} kg`"
         await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
-        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
+        # Forward to target branch Telegram group if registered in forward_mapping
+        tgt_upper = target_label.upper()
+        fwd_map = get_forward_mapping(cfg)
+        for gid, handles in fwd_map.items():
+            if any(h.upper() in (tgt_upper, tgt_upper[:3]) for h in handles):
+                try:
+                    with open(out_xlsx, "rb") as f_doc:
+                        await safe_api_call(
+                            context.bot.send_document,
+                            chat_id=int(gid),
+                            document=f_doc,
+                            filename=os.path.basename(out_xlsx),
+                            caption=caption
+                        )
+                except Exception as e_fwd:
+                    log.warning("Failed forwarding /tomorrow document to group %s: %s", gid, e_fwd)
+
+        await edit_or_send_requester_text(msg, update, context, f"✅ Done! Sent & forwarded SHIPMENTS TOMORROW REPORT ({target_label}) with {bills} bills ({weight/1000:,.2f} kg).")
+
 
 
 

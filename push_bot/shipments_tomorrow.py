@@ -69,6 +69,30 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             if dest_prov != branch_prefix and dest_po != tgt:
                 continue
 
+        district_map = {
+            # Battambang (BAT)
+            'BATA003': 'Banan', 'BATA016': 'Banan',
+            'BATA001': 'Battambang', 'BATA009': 'Battambang', 'BATA040': 'Battambang', 'BATA042': 'Battambang', 'BATP001': 'Battambang',
+            'BATA011': 'Kamrieng', 'BATS007': 'Moung Ruessei', 'BATA017': 'Samlout',
+            'BATA010': 'Sampov Lun', 'BATA028': 'Sampov Lun', 'BATA004': 'Sangkae', 'BATA008': 'Sangkae',
+            'BATA023': 'Thma Koul', 'BATA025': 'Thma Koul',
+
+            # Kandal (KAN)
+            'KANA024': 'Kandal Stueng', 'KANA028': 'Kandal Stueng', 'KANA049': 'Kandal Stueng',
+            'KANS003': 'Kaoh Thum', 'KANA031': 'Khsach Kandal', 'KANA012': 'Kien Svay', 'KANA013': 'Kien Svay',
+            'KANA008': 'Leuk Daek', 'KANS004': 'Mukh Kampul', 'KANS001': 'Mukh Kampul',
+
+            # Svay Rieng (SVA)
+            'SVAP001': 'Svay Rieng', 'SVAA001': 'Bavet', 'SVAA002': 'Bavet', 'SVAA003': 'Romeas Haek', 'SVAA004': 'Rumduol', 'SVAA005': 'Svay Chrum',
+
+            # Siem Reap (SIE)
+            'SIEP001': 'Siem Reap', 'SIEA001': 'Angkor Chum', 'SIEA002': 'Angkor Thon', 'SIEA003': 'Banteay Srei', 'SIEA004': 'Chi Kraeng',
+
+            # Sihanoukville (SIH)
+            'SIHP001': 'Sihanoukville', 'SIHA001': 'Preah Sihanouk', 'SIHA002': 'Stung Hav', 'SIHA003': 'Kampong Seila'
+        }
+        dist_name = district_map.get(dest_po, dest_prov)
+
         base_rows.append({
             "no": r_idx,
             "order_number": order_id,
@@ -83,10 +107,11 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             "weight_g": weight,
             "status": status,
             "receiver": receiver,
-            "district": "Battambang" if dest_prov == "BAT" else "General District",
-            "zone": "Zone 3" if dest_prov in ("BAT", "SIE", "PUR") else "Zone 1"
+            "district": dist_name,
+            "zone": "Zone 3" if dest_prov in ("BAT", "SIE", "PUR") else ("Zone 5" if dest_prov in ("SIH", "KOH", "TAK") else "Zone 1")
         })
         r_idx += 1
+
 
     wb = openpyxl.Workbook()
 
