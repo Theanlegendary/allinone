@@ -1173,8 +1173,18 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         out_xlsx = os.path.join(tmpdir, f"SHIPMENTS_TOMORROW_REPORT_{stamp}_{target_label.replace(' ', '_')}.xlsx")
         bills, weight = shipments_tomorrow.build_shipments_tomorrow_report(src, out_xlsx, target_label=target_label)
 
+        # Generate summary image for instant Telegram mobile viewing
+        import excel_to_image
+        try:
+            img_buf = excel_to_image.excel_to_image(out_xlsx)
+            img_buf.name = f"summary_{stamp}.png"
+            await send_requester_photo(update, context, img_buf)
+        except Exception as e_img:
+            log.warning("Could not render tomorrow summary image: %s", e_img)
+
         caption = f"🚚 *SHIPMENTS TOMORROW REPORT ({target_label})*\n📦 Total Bills: `{bills}`\n⚖️ Total Weight: `{weight/1000:,.2f} kg`"
         await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption=caption)
+
 
         # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
         tgt_upper = target_label.upper().replace(" ", "")
