@@ -1188,7 +1188,8 @@ async def cmd_tomorrow(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
         tgt_upper = target_label.upper().replace(" ", "")
-        chats_to_send = set()
+        chats_to_send = {update.effective_chat.id} if update.effective_chat else set()
+
 
         if tgt_upper in ("ALL", "MEGA"):
             # 1. Forward for all 5 Zones to their respective Zone groups
@@ -1341,7 +1342,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Forward to target Telegram group (both branch groups in forward_mapping and zone groups in zone_forward_mapping)
         tgt_upper = target_label.upper().replace(" ", "")
-        chats_to_send = set()
+        chats_to_send = {update.effective_chat.id} if update.effective_chat else set()
+
 
         if tgt_upper in ("ALL", "MEGA"):
             # Forward for all 5 Zones to their respective Zone groups
