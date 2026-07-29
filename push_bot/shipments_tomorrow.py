@@ -209,12 +209,36 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         total_weight += item["weight_g"]
         r_curr += 1
 
+    # Left Main Table Grand Total Row
+    tot_fill_blue = PatternFill("solid", fgColor="D9E1F2") # Light Blue Fill matching template
+    ws1.row_dimensions[r_curr].height = 22
+    ws1.merge_cells(start_row=r_curr, start_column=1, end_row=r_curr, end_column=5)
+    gt_left = ws1.cell(r_curr, 1, "Grand Total / សរុប")
+    gt_left.font = bold_font
+    gt_left.alignment = Alignment(horizontal="left", vertical="center")
+    for c in range(1, 6):
+        cell = ws1.cell(r_curr, c)
+        cell.fill = tot_fill_blue
+        cell.border = thin_border
+
+    gt_w_cell = ws1.cell(r_curr, 6, total_weight)
+    gt_w_cell.font = bold_font
+    gt_w_cell.fill = tot_fill_blue
+    gt_w_cell.border = thin_border
+    gt_w_cell.alignment = Alignment(horizontal="right", vertical="center")
+    gt_w_cell.number_format = "#,##0"
+
+    for c in (7, 8):
+        cell = ws1.cell(r_curr, c)
+        cell.fill = tot_fill_blue
+        cell.border = thin_border
+
     # Populate Executive Summary Table on Right
     r_sum = 3
     for (br, dist), stats in sorted(summary_data.items()):
         ws1.row_dimensions[r_sum].height = 20
         s_vals = [
-            "Zone",
+            "Zone 3",
             br,
             dist,
             stats["bills"],
@@ -235,19 +259,29 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
 
     # Total Row for Summary Table
     ws1.row_dimensions[r_sum].height = 22
-    ws1.cell(r_sum, 10, f"{target_label} Total").font = red_tot_font
-    ws1.cell(r_sum, 10).fill = tot_row_fill
+    ws1.cell(r_sum, 10, f"{target_label} Total").font = bold_font
+    ws1.cell(r_sum, 10).fill = tot_fill_blue
     ws1.cell(r_sum, 10).border = thin_border
     ws1.cell(r_sum, 10).alignment = Alignment(horizontal="center", vertical="center")
     
     for c in range(11, 13):
         cell = ws1.cell(r_sum, c)
-        cell.fill = tot_row_fill
+        cell.fill = tot_fill_blue
         cell.border = thin_border
 
     tot_b_cell = ws1.cell(r_sum, 13, total_bills)
-    tot_b_cell.font = red_tot_font
-    tot_b_cell.fill = tot_row_fill
+    tot_b_cell.font = bold_font
+    tot_b_cell.fill = tot_fill_blue
+    tot_b_cell.border = thin_border
+    tot_b_cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    tot_w_cell = ws1.cell(r_sum, 14, total_weight)
+    tot_w_cell.font = bold_font
+    tot_w_cell.fill = tot_fill_blue
+    tot_w_cell.border = thin_border
+    tot_w_cell.alignment = Alignment(horizontal="right", vertical="center")
+    tot_w_cell.number_format = "#,##0"
+
     tot_b_cell.border = thin_border
     tot_b_cell.alignment = Alignment(horizontal="center", vertical="center")
 
