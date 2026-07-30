@@ -748,28 +748,38 @@ class SanctuaryMiniPlayer extends StatelessWidget {
         if (!state.isAnyAudioPlaying) return const SizedBox.shrink();
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
           child: GestureDetector(
             onTap: () => state.setTab(AppTab.sounds),
-            child: Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 68,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F202E).withOpacity(0.92),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+                color: const Color(0xFF0C1924).withOpacity(0.96),
+                borderRadius: BorderRadius.circular(34),
+                border: Border.all(color: tealPrimary.withOpacity(0.6), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
-                    blurRadius: 16,
+                    color: tealPrimary.withOpacity(0.32),
+                    blurRadius: 22,
+                    spreadRadius: 2,
                     offset: const Offset(0, 6),
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  const AnimatedSoundWave(accentColor: tealPrimary),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: tealPrimary.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: tealPrimary.withOpacity(0.4)),
+                    ),
+                    child: const AnimatedSoundWave(accentColor: tealPrimary),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -778,34 +788,56 @@ class SanctuaryMiniPlayer extends StatelessWidget {
                         const Text(
                           'NOW PLAYING SANCTUARY',
                           style: TextStyle(
-                            fontSize: 8.5,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                             color: tealPrimary,
-                            letterSpacing: 1.2,
+                            letterSpacing: 1.4,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           state.activePlayingLabel,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => state.stopAllAudio(),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        shape: BoxShape.circle,
+                        color: tealPrimary,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: tealPrimary.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.pause_rounded, color: Colors.white, size: 20),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.pause_rounded, color: Colors.black, size: 18),
+                          SizedBox(width: 4),
+                          Text(
+                            'Pause',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -815,5 +847,6 @@ class SanctuaryMiniPlayer extends StatelessWidget {
         );
       },
     );
+  }
   }
 }
