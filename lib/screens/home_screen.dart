@@ -574,7 +574,6 @@ class HomeScreen extends StatelessWidget {
       );
     }
   }
-}
 
 // ── Soft Quick Action Pill ───────────────────────────────────────────────────
 class _QuickAction extends StatelessWidget {
