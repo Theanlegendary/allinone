@@ -368,129 +368,203 @@ class _SoundsScreenState extends State<SoundsScreen> {
     final color = t.$4;
     final vol = _volumes[name] ?? 0.0;
     final isActive = vol > 0 && _isPlaying;
+    final imgUrl = soundImages[name];
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: GlassCard(
-        cornerRadius: 20,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
+      padding: const EdgeInsets.only(bottom: 14),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isActive ? color.withOpacity(0.8) : Colors.white.withOpacity(0.08),
+              width: isActive ? 1.5 : 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isActive ? color.withOpacity(0.3) : Colors.black.withOpacity(0.35),
+                blurRadius: isActive ? 18 : 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // 🖼️ High-Definition Artwork Background with Gradient Overlay
+              if (imgUrl != null) ...[
+                Positioned.fill(
+                  child: Image.network(
+                    imgUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                  ),
+                ),
+                Positioned.fill(
                   child: Container(
-                    width: 48,
-                    height: 48,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF09141D).withOpacity(0.82),
+                          const Color(0xFF050D15).withOpacity(0.94),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              // 🎨 Card Content Layer
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        // 3D Artwork Thumbnail Badge
+                        Container(
+                          width: 54,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isActive ? color : Colors.white.withOpacity(0.2),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withOpacity(0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: imgUrl != null
+                                ? Image.network(
+                                    imgUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, err, stack) => Center(
+                                      child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                                    ),
+                                  )
+                                : Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+
+                        // Title & Subtitle Description
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: isActive ? color : textPrimary,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isActive) ...[
+                                    const SizedBox(width: 8),
+                                    AnimatedSoundWave(accentColor: color),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                desc,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 12.5, color: textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Volume Badge & Switch Toggle
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: vol > 0 ? color.withOpacity(0.2) : Colors.white.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: vol > 0 ? color.withOpacity(0.4) : Colors.white10,
+                            ),
+                          ),
+                          child: Text(
+                            '${(vol * 100).toInt()}%',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: vol > 0 ? color : textSecondary.withOpacity(0.6),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        Switch(
+                          value: vol > 0,
+                          activeColor: color,
+                          activeTrackColor: color.withOpacity(0.4),
+                          onChanged: (val) {
+                            final newVol = val ? 0.6 : 0.0;
+                            setState(() {
+                              _volumes[name] = newVol;
+                              _isPlaying = true;
+                            });
+                            state.updateSoundTrackVolume(name, newVol);
+                          },
                         ),
                       ],
                     ),
-                    child: soundImages.containsKey(name)
-                        ? Image.network(
-                            soundImages[name]!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) => Center(
-                              child: Text(emoji, style: const TextStyle(fontSize: 22)),
-                            ),
-                          )
-                        : Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
-                  ),
-                ),
-                const SizedBox(width: 14),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: textPrimary,
-                              ),
-                            ),
+                    // Smooth Interactive Volume Slider
+                    AnimatedCrossFade(
+                      duration: const Duration(milliseconds: 220),
+                      crossFadeState: vol > 0 ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                      firstChild: const SizedBox.shrink(),
+                      secondChild: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: color,
+                            thumbColor: Colors.white,
+                            inactiveTrackColor: Colors.white.withOpacity(0.12),
+                            overlayColor: color.withOpacity(0.2),
+                            trackHeight: 5,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
                           ),
-                          if (isActive) ...[
-                            const SizedBox(width: 6),
-                            AnimatedSoundWave(accentColor: color),
-                          ],
-                        ],
+                          child: Slider(
+                            value: vol,
+                            onChanged: (v) {
+                              setState(() {
+                                _volumes[name] = v;
+                                _isPlaying = true;
+                              });
+                              state.updateSoundTrackVolume(name, v);
+                            },
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        desc,
-                        style: TextStyle(fontSize: 12, color: textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Text(
-                  '${(vol * 100).toInt()}%',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: vol > 0 ? color : textSecondary.withOpacity(0.5),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                Switch(
-                  value: vol > 0,
-                  activeColor: color,
-                  onChanged: (val) {
-                    final newVol = val ? 0.6 : 0.0;
-                    setState(() {
-                      _volumes[name] = newVol;
-                      _isPlaying = true;
-                    });
-                    state.updateSoundTrackVolume(name, newVol);
-                  },
-                ),
-              ],
-            ),
-
-            AnimatedCrossFade(
-              duration: const Duration(milliseconds: 200),
-              crossFadeState: vol > 0 ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-              firstChild: const SizedBox.shrink(),
-              secondChild: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: color,
-                    thumbColor: color,
-                    overlayColor: color.withOpacity(0.15),
-                  ),
-                  child: Slider(
-                    value: vol,
-                    onChanged: (v) {
-                      setState(() {
-                        _volumes[name] = v;
-                        _isPlaying = true;
-                      });
-                      state.updateSoundTrackVolume(name, v);
-                    },
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
