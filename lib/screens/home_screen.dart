@@ -567,51 +567,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
 
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _SpotifyAmbientCard(
-                              title: '432Hz Solfeggio',
-                              subtitle: 'Chakra Deep Healing',
-                              duration: '20 min',
-                              icon: Icons.graphic_eq_rounded,
-                              color: tealPrimary,
-                              onTap: () => state.playGuidedSession('Chakra Balancing Tones', 20),
-                            ),
-                            const SizedBox(width: 12),
-                            _SpotifyAmbientCard(
-                              title: 'Rainy Windows',
-                              subtitle: 'Lo-Fi Ambient Piano',
-                              duration: '25 min',
-                              icon: Icons.umbrella_rounded,
-                              color: coralAccent,
-                              onTap: () => state.applyCuratedPreset('🌧️ Rainy Cabin'),
-                            ),
-                            const SizedBox(width: 12),
-                            _SpotifyAmbientCard(
-                              title: 'Alpine Forest Winds',
-                              subtitle: 'Deep Wilderness Calm',
-                              duration: '30 min',
-                              icon: Icons.forest_rounded,
-                              color: mintAccent,
-                              onTap: () => state.applyCuratedPreset('🌲 Forest Walk'),
-                            ),
-                            const SizedBox(width: 12),
-                            _SpotifyAmbientCard(
-                              title: 'Cosmic Deep Space',
-                              subtitle: '108Hz Theta Waves',
-                              duration: '35 min',
-                              icon: Icons.blur_on_rounded,
-                              color: purpleAccent,
-                              onTap: () => state.applyCuratedPreset('🌌 Deep Space'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
 
                       // ── 5. Subtle Streak Sanctuary ───────────────────────
                       GlassCard(
