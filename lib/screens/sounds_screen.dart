@@ -126,6 +126,48 @@ class _SoundsScreenState extends State<SoundsScreen> {
     );
   }
 
+  void _showRenamePresetDialog(BuildContext context, String currentName, AppState state) {
+    final displayName = state.getPresetDisplayName(currentName);
+    final controller = TextEditingController(text: displayName);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: bgMid,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Rename Recommended Mix', style: TextStyle(color: textPrimary)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Enter custom name',
+            hintStyle: TextStyle(color: textSecondary),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary.withOpacity(0.5))),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: tealPrimary),
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                state.renameCuratedPreset(currentName, controller.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Renamed to "${controller.text.trim()}" ✓')),
+                );
+              }
+            },
+            child: const Text('Save Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTrackCard(
     (String, String, String, Color) t,
     AppState state,
@@ -382,11 +424,15 @@ class _SoundsScreenState extends State<SoundsScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: AppState.curatedPresets.entries.map((e) {
+                          final displayName = state.getPresetDisplayName(e.key);
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
-                            child: GlassChip(
-                              label: e.key,
-                              onTap: () => _applyVolumes(e.value, state),
+                            child: GestureDetector(
+                              onLongPress: () => _showRenamePresetDialog(context, e.key, state),
+                              child: GlassChip(
+                                label: displayName,
+                                onTap: () => _applyVolumes(e.value, state),
+                              ),
                             ),
                           );
                         }).toList(),

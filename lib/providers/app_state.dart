@@ -149,6 +149,20 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Renamed Custom Presets State (Moodist-Inspired Customization)
+  Map<String, String> _renamedPresets = {};
+  Map<String, String> get renamedPresets => Map.unmodifiable(_renamedPresets);
+
+  void renameCuratedPreset(String oldName, String newName) {
+    _renamedPresets[oldName] = newName;
+    _prefs?.setString('renamed_presets', jsonEncode(_renamedPresets));
+    notifyListeners();
+  }
+
+  String getPresetDisplayName(String originalName) {
+    return _renamedPresets[originalName] ?? originalName;
+  }
+
   // Curated One-Tap Multi-Track Ambient Sound Mix Presets
   static const Map<String, Map<String, double>> curatedPresets = {
     '🌧️ Rainy Cabin': {
@@ -481,6 +495,13 @@ class AppState extends ChangeNotifier {
     final rawP = _prefs!.getStringList('presets') ?? [];
     _presets = rawP.map((s) { try { return SoundPreset.fromJson(jsonDecode(s)); } catch (_) { return null; } })
         .whereType<SoundPreset>().toList();
+
+    final rawRenamed = _prefs!.getString('renamed_presets');
+    if (rawRenamed != null) {
+      try {
+        _renamedPresets = Map<String, String>.from(jsonDecode(rawRenamed) as Map);
+      } catch (_) {}
+    }
 
     notifyListeners();
   }
