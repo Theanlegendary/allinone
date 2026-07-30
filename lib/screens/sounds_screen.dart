@@ -13,20 +13,131 @@ class SoundsScreen extends StatefulWidget {
 
 class _SoundsScreenState extends State<SoundsScreen> {
   bool _isPlaying = false;
-  String _selectedCategory = 'All';
+  String _selectedCategory = '🌧️ Rain';
 
+  // 75 Sound Volumes State Map
   final Map<String, double> _volumes = {
-    'Soft Rain': 0.3,
-    'Ocean Waves': 0.3,
-    'Mountain Stream': 0.0,
-    'Soothing Breeze': 0.0,
-    'Singing Bowls': 0.0,
-    'Cozy Hearth': 0.0,
-    'Thunderstorm': 0.0,
-    'Forest Birds': 0.0,
-    'Bamboo Chimes': 0.0,
-    'Deep Space Drone': 0.0,
-    'Ambient Piano': 0.0,
+    // Rain (12)
+    'Soft Rain': 0.3, 'Heavy Rain': 0.0, 'Rain on Window': 0.0, 'Rain on Roof': 0.0,
+    'Rain on Umbrella': 0.0, 'Rain on Tent': 0.0, 'Thunderstorm': 0.0, 'Rain on Leaves': 0.0,
+    'Urban Rain': 0.0, 'Light Drizzle': 0.0, 'Rain Cave': 0.0, 'Tropical Storm': 0.0,
+    // Nature (15)
+    'Ocean Waves': 0.3, 'Mountain Stream': 0.0, 'Forest Birds': 0.0, 'Campfire': 0.0,
+    'Wind in Trees': 0.0, 'Crickets': 0.0, 'Waterfall': 0.0, 'Frogs': 0.0,
+    'Waves on Pebbles': 0.0, 'Underwater': 0.0, 'Meadow Breeze': 0.0, 'Desert Wind': 0.0,
+    'Jungle Night': 0.0, 'Leaves Rustling': 0.0, 'Mountain Echo': 0.0,
+    // Places (10)
+    'Coffee Shop': 0.0, 'Library': 0.0, 'Office Ambience': 0.0, 'Church Bells': 0.0,
+    'Quiet Park': 0.0, 'Street Market': 0.0, 'Temple Bowl': 0.0, 'Zen Garden': 0.0,
+    'Harbor': 0.0, 'Farmyard': 0.0,
+    // Transport (8)
+    'Train Track': 0.0, 'Airplane Cabin': 0.0, 'Driving Rain Car': 0.0, 'Boat Deck': 0.0,
+    'Subway Train': 0.0, 'Bicycle Ride': 0.0, 'Sailing Ship': 0.0, 'Highway Traffic': 0.0,
+    // Things (10)
+    'Clock Ticking': 0.0, 'Fan Noise': 0.0, 'Keyboard Typing': 0.0, 'Washing Machine': 0.0,
+    'Vinyl Crackle': 0.0, 'Boiling Kettle': 0.0, 'Bamboo Chimes': 0.0, 'Page Turning': 0.0,
+    'Pendulum': 0.0, 'Wind Generator': 0.0,
+    // Noise Colors (6)
+    'White Noise': 0.0, 'Pink Noise': 0.0, 'Brown Noise': 0.0, 'Blue Noise': 0.0,
+    'Violet Noise': 0.0, 'Grey Noise': 0.0,
+    // Solfeggio (14)
+    'Singing Bowls': 0.0, '432Hz Healing': 0.0, '528Hz Transformation': 0.0, '639Hz Harmonics': 0.0,
+    '108Hz Theta Drone': 0.0, 'Deep Space Drone': 0.0, 'Delta Deep Sleep': 0.0, 'Alpha Focus Flow': 0.0,
+    'Beta Energy Boost': 0.0, 'Gamma Insight': 0.0, '174Hz Pain Relief': 0.0, '285Hz Cellular': 0.0,
+    '396Hz Liberation': 0.0, '741Hz Intuition': 0.0, '852Hz Awakening': 0.0, '963Hz Crown State': 0.0,
+    'Ambient Piano': 0.0, 'Cozy Hearth': 0.0, 'Soothing Breeze': 0.0,
+  };
+
+  static const Map<String, List<(String, String, String, Color)>> soundCategories = {
+    '🌧️ Rain': [
+      ('🌧️', 'Soft Rain', 'Gentle Downpour', Color(0xFF42A5F5)),
+      ('⛈️', 'Thunderstorm', 'Distant Low Rumble', Color(0xFF5C6BC0)),
+      ('🪟', 'Rain on Window', 'Soft Drops on Glass', Color(0xFF29B6F6)),
+      ('🏠', 'Rain on Roof', 'Cozy Attic Downpour', Color(0xFF0288D1)),
+      ('🌂', 'Rain on Umbrella', 'Rhythmic Pitter Patter', Color(0xFF039BE5)),
+      ('⛺', 'Rain on Tent', 'Wilderness Camping Rain', Color(0xFF00ACC1)),
+      ('🍃', 'Rain on Leaves', 'Forest Canopy Drizzle', Color(0xFF26A69A)),
+      ('🏙️', 'Urban Rain', 'City Street Rainfall', Color(0xFF78909C)),
+      ('🌧️', 'Heavy Rain', 'Continuous Pouring Storm', Color(0xFF1E88E5)),
+      ('🌧️', 'Light Drizzle', 'Gentle Atmospheric Mist', Color(0xFF80DEEA)),
+      ('洞', 'Rain Cave', 'Echoing Cavern Drops', Color(0xFF3F51B5)),
+      ('🌴', 'Tropical Storm', 'Warm Rainforest Gale', Color(0xFF00897B)),
+    ],
+    '🌲 Nature': [
+      ('🌊', 'Ocean Waves', 'Rolling Pacific Tide', Color(0xFF26A69A)),
+      ('🏞️', 'Mountain Stream', 'Flowing Crystal Creek', Color(0xFF66BB6A)),
+      ('🐦', 'Forest Birds', 'Morning Canopy Chirp', Color(0xFF9CCC65)),
+      ('🔥', 'Campfire', 'Warm Crackling Wood Logs', Color(0xFFFF7043)),
+      ('💨', 'Wind in Trees', 'Calm Mountain Breeze', Color(0xFF78909C)),
+      ('🦗', 'Crickets', 'Night Meadow Symphony', Color(0xFF8D6E63)),
+      ('🌊', 'Waterfall', 'Majestic Cascade Spray', Color(0xFF00BCD4)),
+      ('🐸', 'Frogs', 'Serene Marshland Night', Color(0xFF4CAF50)),
+      ('🪨', 'Waves on Pebbles', 'Gentle Shoreline Shimmer', Color(0xFF80CBC4)),
+      ('🤿', 'Underwater', 'Deep Ocean Submersion', Color(0xFF0277BD)),
+      ('🌾', 'Meadow Breeze', 'Soft Grasslands Whispers', Color(0xFFAED581)),
+      ('🏜️', 'Desert Wind', 'Solitary Dune Sweep', Color(0xFFFFB74D)),
+      ('🌴', 'Jungle Night', 'Nocturnal Rainforest', Color(0xFF2E7D32)),
+      ('🍂', 'Leaves Rustling', 'Autumn Footsteps', Color(0xFFD84315)),
+      ('⛰️', 'Mountain Echo', 'Resonant Valley Stillness', Color(0xFF546E7A)),
+    ],
+    '☕ Places': [
+      ('☕', 'Coffee Shop', 'Gentle Ambient Chatter', Color(0xFF8D6E63)),
+      ('📚', 'Library', 'Silent Study Sanctuary', Color(0xFF5D4037)),
+      ('🏢', 'Office Ambience', 'Low Productivity Hum', Color(0xFF78909C)),
+      ('🔔', 'Church Bells', 'Distant Resonant Chimes', Color(0xFFFFB300)),
+      ('🌳', 'Quiet Park', 'Peaceful Bench Retreat', Color(0xFF7CB342)),
+      ('🛍️', 'Street Market', 'Soft Bustling Market', Color(0xFFFB8C00)),
+      ('🥣', 'Temple Bowl', 'Zen Monastery Gong', Color(0xFFAB47BC)),
+      ('🎍', 'Zen Garden', 'Raked Sand Fountain', Color(0xFF00ACC1)),
+      ('⚓', 'Harbor', 'Gentle Boat Dock Lapping', Color(0xFF0288D1)),
+      ('🚜', 'Farmyard', 'Rural Countryside', Color(0xFF8BC34A)),
+    ],
+    '🚆 Transport': [
+      ('🚆', 'Train Track', 'Rhythmic Iron Rail Clicker', Color(0xFF546E7A)),
+      ('✈️', 'Airplane Cabin', 'Soothing White Noise Cruise', Color(0xFF0288D1)),
+      ('🚗', 'Driving Rain Car', 'Highway Windshield Rain', Color(0xFF455A64)),
+      ('⛵', 'Boat Deck', 'Creaking Wooden Hull Waves', Color(0xFF0097A7)),
+      ('🚇', 'Subway Train', 'Low Underground Metro', Color(0xFF37474F)),
+      ('🚲', 'Bicycle Ride', 'Gentle Coasting Wind', Color(0xFF689F38)),
+      ('⛵', 'Sailing Ship', 'Rigging Breeze & Swell', Color(0xFF00838F)),
+      ('🛣️', 'Highway Traffic', 'Distant Asphalt Roll', Color(0xFF607D8B)),
+    ],
+    '⚙️ Things': [
+      ('🕰️', 'Clock Ticking', 'Steady Rhythmic Pendulum', Color(0xFF78909C)),
+      ('🌀', 'Fan Noise', 'Cooling Air Circulation', Color(0xFF00ACC1)),
+      ('⌨️', 'Keyboard Typing', 'Soft Mechanical Keys', Color(0xFF546E7A)),
+      ('🧺', 'Washing Machine', 'Gentle Laundry Rinsing', Color(0xFF0288D1)),
+      ('📻', 'Vinyl Crackle', 'Warm Analog Nostalgia', Color(0xFF8D6E63)),
+      ('🫖', 'Boiling Kettle', 'Cozy Teatime Whistle', Color(0xFFFF7043)),
+      ('🎋', 'Bamboo Chimes', 'Pentatonic Wind Chimes', Color(0xFF26C6DA)),
+      ('📖', 'Page Turning', 'Book Study Leaf', Color(0xFFA1887F)),
+      ('⏱️', 'Pendulum', 'Hypnotic Second Beat', Color(0xFF455A64)),
+      ('💨', 'Wind Generator', 'Constant Turbine Sweep', Color(0xFF90A4AE)),
+    ],
+    '🔊 Noise': [
+      ('⚪', 'White Noise', 'Full Spectrum Flat Noise', Color(0xFFCFD8DC)),
+      ('🌸', 'Pink Noise', 'Balanced Waterfall Spectrum', Color(0xFFF48FB1)),
+      ('🤎', 'Brown Noise', 'Deep Low Frequency Rumble', Color(0xFF8D6E63)),
+      ('🔵', 'Blue Noise', 'High Pitch Crisp Hiss', Color(0xFF64B5F6)),
+      ('💜', 'Violet Noise', 'Ultra Crisp Shimmer', Color(0xFFBA68C8)),
+      ('🩶', 'Grey Noise', 'Equal Perception Contour', Color(0xFF90A4AE)),
+    ],
+    '🔮 Solfeggio': [
+      ('🧘', '432Hz Healing', 'Natural Harmony Tone', Color(0xFFAB47BC)),
+      ('✨', '528Hz Transformation', 'Miracle Healing Frequency', Color(0xFF00E676)),
+      ('💖', '639Hz Harmonics', 'Heart Relationship Harmony', Color(0xFFFF4081)),
+      ('🧠', '108Hz Theta Drone', 'Deep Meditation State', Color(0xFF00ACC1)),
+      ('💤', 'Delta Deep Sleep', 'Restful Subconscious Waves', Color(0xFF3F51B5)),
+      ('⚡', 'Alpha Focus Flow', 'Peak Concentration Alpha Waves', Color(0xFFFFC107)),
+      ('🔥', 'Beta Energy Boost', 'Active Consciousness', Color(0xFFFF5722)),
+      ('🌌', 'Gamma Insight', 'High Cognitive Transcendence', Color(0xFF9C27B0)),
+      ('🛡️', '174Hz Pain Relief', 'Physical Comfort Frequency', Color(0xFF4CAF50)),
+      ('🌿', '285Hz Cellular', 'Vitality & Tissue Renewal', Color(0xFF8BC34A)),
+      ('🕊️', '396Hz Liberation', 'Liberating Guilt & Fear', Color(0xFF00BCD4)),
+      ('👁️', '741Hz Intuition', 'Awakening Inner Intuition', Color(0xFF7C4DFF)),
+      ('✡️', '852Hz Awakening', 'Spiritual Order & Light', Color(0xFFE040FB)),
+      ('👑', '963Hz Crown State', 'Divine Unity Consciousness', Color(0xFFFFD700)),
+    ],
   };
 
   @override
@@ -482,22 +593,18 @@ class _SoundsScreenState extends State<SoundsScreen> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: [
-                          ('All', 'All 11 Sounds'),
-                          ('Rain', '🌧️ Rain & Storm'),
-                          ('Nature', '🌲 Nature & Birds'),
-                          ('Healing', '🔮 Solfeggio & Healing'),
-                        ].map((cat) {
-                          final isSelected = _selectedCategory == cat.$1;
+                        children: soundCategories.keys.map((catKey) {
+                          final isSelected = _selectedCategory == catKey;
+                          final soundCount = soundCategories[catKey]?.length ?? 0;
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: GlassChip(
-                              label: cat.$2,
+                              label: '$catKey ($soundCount)',
                               isSelected: isSelected,
                               selectedColor: tealPrimary,
                               onTap: () {
                                 setState(() {
-                                  _selectedCategory = cat.$1;
+                                  _selectedCategory = catKey;
                                 });
                               },
                             ),
@@ -511,90 +618,20 @@ class _SoundsScreenState extends State<SoundsScreen> {
               ),
             ),
 
-            // LIST OF SOUNDS FILTERED BY CATEGORY TRAY
-            if (_selectedCategory == 'All' || _selectedCategory == 'Rain' || _selectedCategory == 'Nature')
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      final tracks = _popularNaturalSounds.where((t) {
-                        if (_selectedCategory == 'Rain') {
-                          return t.$2 == 'Soft Rain' || t.$2 == 'Ocean Waves' || t.$2 == 'Mountain Stream' || t.$2 == 'Thunderstorm';
-                        }
-                        if (_selectedCategory == 'Nature') {
-                          return t.$2 == 'Soothing Breeze' || t.$2 == 'Cozy Hearth';
-                        }
-                        return true;
-                      }).toList();
-                      if (i >= tracks.length) return const SizedBox.shrink();
-                      return _buildTrackCard(tracks[i], state);
-                    },
-                    childCount: _popularNaturalSounds.where((t) {
-                      if (_selectedCategory == 'Rain') {
-                        return t.$2 == 'Soft Rain' || t.$2 == 'Ocean Waves' || t.$2 == 'Mountain Stream' || t.$2 == 'Thunderstorm';
-                      }
-                      if (_selectedCategory == 'Nature') {
-                        return t.$2 == 'Soothing Breeze' || t.$2 == 'Cozy Hearth';
-                      }
-                      return true;
-                    }).length,
-                  ),
+            // LIST OF SOUND CARDS FOR SELECTED CATEGORY
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final currentList = soundCategories[_selectedCategory] ?? [];
+                    if (i >= currentList.length) return const SizedBox.shrink();
+                    return _buildTrackCard(currentList[i], state);
+                  },
+                  childCount: (soundCategories[_selectedCategory] ?? []).length,
                 ),
               ),
-
-            if (_selectedCategory == 'All' || _selectedCategory == 'Healing' || _selectedCategory == 'Nature')
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.graphic_eq_rounded, color: purpleAccent, size: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        'HEALING & FREQUENCY ENHANCEMENTS',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: textSecondary,
-                          letterSpacing: 1.6,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            if (_selectedCategory == 'All' || _selectedCategory == 'Healing' || _selectedCategory == 'Nature')
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      final tracks = _advancedSounds.where((t) {
-                        if (_selectedCategory == 'Healing') {
-                          return t.$2 == 'Singing Bowls' || t.$2 == 'Deep Space Drone' || t.$2 == 'Ambient Piano';
-                        }
-                        if (_selectedCategory == 'Nature') {
-                          return t.$2 == 'Forest Birds' || t.$2 == 'Bamboo Chimes';
-                        }
-                        return true;
-                      }).toList();
-                      if (i >= tracks.length) return const SizedBox.shrink();
-                      return _buildTrackCard(tracks[i], state);
-                    },
-                    childCount: _advancedSounds.where((t) {
-                      if (_selectedCategory == 'Healing') {
-                        return t.$2 == 'Singing Bowls' || t.$2 == 'Deep Space Drone' || t.$2 == 'Ambient Piano';
-                      }
-                      if (_selectedCategory == 'Nature') {
-                        return t.$2 == 'Forest Birds' || t.$2 == 'Bamboo Chimes';
-                      }
-                      return true;
-                    }).length,
-                  ),
-                ),
-              ),
+            ),
           ],
         ),
       ),
