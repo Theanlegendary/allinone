@@ -109,14 +109,14 @@ class _MeditationScreenState extends State<MeditationScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Daily Featured Card (Real Nature Photography)
+                    // Daily Featured Card (Pixel-Perfect Match to Screenshot)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(26),
                       child: Stack(
                         children: [
                           Positioned.fill(
                             child: Image.network(
-                              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                              'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -136,57 +136,106 @@ class _MeditationScreenState extends State<MeditationScreen> {
                           ),
                           Padding(
                             padding: const EdgeInsets.all(20),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white30, width: 1),
-                                  ),
-                                  child: const Center(child: Text('🌅', style: TextStyle(fontSize: 28))),
+                                Row(
+                                  children: [
+                                    // 64x64 Rounded Artwork Badge
+                                    Container(
+                                      width: 64,
+                                      height: 64,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.4),
+                                            blurRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'DAILY GUIDED JOURNEY',
+                                            style: TextStyle(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: tealPrimary,
+                                              letterSpacing: 1.4,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          const Text(
+                                            'Calm Mountain Horizon',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              letterSpacing: -0.3,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.schedule_rounded, size: 13, color: Colors.white70),
+                                              const SizedBox(width: 4),
+                                              const Text(
+                                                '10 Min • Deep Relaxation',
+                                                style: TextStyle(fontSize: 12, color: Colors.white70),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Consumer<AppState>(
+                                      builder: (ctx, state, _) => GestureDetector(
+                                        onTap: () => state.playGuidedSession('Calm Mountain Horizon', 10),
+                                        child: Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.4),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.white.withOpacity(0.3)),
+                                          ),
+                                          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'DAILY GUIDED JOURNEY',
-                                        style: TextStyle(
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: coralAccent,
-                                          letterSpacing: 1.4,
-                                        ),
+                                const SizedBox(height: 18),
+
+                                Row(
+                                  children: [
+                                    Consumer<AppState>(
+                                      builder: (ctx, state, _) => GlassPillButton(
+                                        text: 'Begin Session',
+                                        icon: Icons.play_arrow_rounded,
+                                        containerColor: tealPrimary,
+                                        contentColor: Colors.black,
+                                        onTap: () {
+                                          state.playGuidedSession('Calm Mountain Horizon', 10);
+                                        },
                                       ),
-                                      const SizedBox(height: 4),
-                                      const Text(
-                                        'Calm Mountain Horizon',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Text(
-                                        '10 Min • Deep Relaxation',
-                                        style: TextStyle(fontSize: 12, color: Colors.white70),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Consumer<AppState>(
-                                        builder: (ctx, state, _) => GlassPillButton(
-                                          text: 'Begin Session',
-                                          icon: Icons.play_arrow_rounded,
-                                          onTap: () {
-                                            state.playGuidedSession('Calm Mountain Horizon', 10);
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Spacer(),
+                                    const AnimatedSoundWave(accentColor: tealPrimary),
+                                  ],
                                 ),
                               ],
                             ),
