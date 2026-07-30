@@ -506,6 +506,21 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Local Cache Persistence for Active Volume Mix
+  Map<String, double> get cachedVolumes {
+    final raw = _prefs?.getString('cached_volumes');
+    if (raw == null) return {};
+    try {
+      return Map<String, double>.from((jsonDecode(raw) as Map).map((k, v) => MapEntry(k as String, (v as num).toDouble())));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  void saveCachedVolumes(Map<String, double> volumes) {
+    _prefs?.setString('cached_volumes', jsonEncode(volumes));
+  }
+
   // ─── Helpers ────────────────────────────────────────────────────────────────
   bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 

@@ -13,6 +13,8 @@ class SoundsScreen extends StatefulWidget {
 
 class _SoundsScreenState extends State<SoundsScreen> {
   bool _isPlaying = false;
+  String _selectedCategory = 'All';
+
   final Map<String, double> _volumes = {
     'Soft Rain': 0.3,
     'Ocean Waves': 0.3,
@@ -26,6 +28,25 @@ class _SoundsScreenState extends State<SoundsScreen> {
     'Deep Space Drone': 0.0,
     'Ambient Piano': 0.0,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = context.read<AppState>();
+      final cached = state.cachedVolumes;
+      if (cached.isNotEmpty) {
+        setState(() {
+          cached.forEach((k, v) {
+            if (_volumes.containsKey(k)) {
+              _volumes[k] = v;
+            }
+          });
+          _isPlaying = _volumes.values.any((v) => v > 0);
+        });
+      }
+    });
+  }
 
   // Group 1: Natural Environment Sounds (Popular)
   static const _popularNaturalSounds = [
@@ -55,6 +76,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
       });
       _isPlaying = true;
     });
+    state.saveCachedVolumes(_volumes);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Preset Applied ✓ Playing ambient soundscape'), duration: Duration(seconds: 1)),
     );
@@ -440,13 +462,13 @@ class _SoundsScreenState extends State<SoundsScreen> {
                     ),
                     const SizedBox(height: 22),
 
-                    // POPULAR NATURAL SOUNDS HEADER
+                    // MESSENGER-STYLE HORIZONTAL CATEGORY FILTER TRAY
                     Row(
                       children: [
-                        const Icon(Icons.park_rounded, color: mintAccent, size: 16),
+                        const Icon(Icons.category_rounded, color: tealPrimary, size: 16),
                         const SizedBox(width: 6),
                         Text(
-                          'NATURAL ENVIRONMENT SOUNDS',
+                          'SOUND CATEGORY TRAY',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -456,55 +478,123 @@ class _SoundsScreenState extends State<SoundsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            ),
-
-            // LIST OF POPULAR NATURAL SOUNDS
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) => _buildTrackCard(_popularNaturalSounds[i], state),
-                  childCount: _popularNaturalSounds.length,
-                ),
-              ),
-            ),
-
-            // ADVANCED HEALING ENHANCEMENTS HEADER
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.graphic_eq_rounded, color: purpleAccent, size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ADVANCED HEALING ENHANCEMENTS',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: textSecondary,
-                        letterSpacing: 1.6,
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ('All', 'All 11 Sounds'),
+                          ('Rain', '🌧️ Rain & Storm'),
+                          ('Nature', '🌲 Nature & Birds'),
+                          ('Healing', '🔮 Solfeggio & Healing'),
+                        ].map((cat) {
+                          final isSelected = _selectedCategory == cat.$1;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: GlassChip(
+                              label: cat.$2,
+                              isSelected: isSelected,
+                              selectedColor: tealPrimary,
+                              onTap: () {
+                                setState(() {
+                                  _selectedCategory = cat.$1;
+                                });
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
 
-            // LIST OF ADVANCED SOUNDS
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) => _buildTrackCard(_advancedSounds[i], state),
-                  childCount: _advancedSounds.length,
+            // LIST OF SOUNDS FILTERED BY CATEGORY TRAY
+            if (_selectedCategory == 'All' || _selectedCategory == 'Rain' || _selectedCategory == 'Nature')
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      final tracks = _popularNaturalSounds.where((t) {
+                        if (_selectedCategory == 'Rain') {
+                          return t.$2 == 'Soft Rain' || t.$2 == 'Ocean Waves' || t.$2 == 'Mountain Stream' || t.$2 == 'Thunderstorm';
+                        }
+                        if (_selectedCategory == 'Nature') {
+                          return t.$2 == 'Soothing Breeze' || t.$2 == 'Cozy Hearth';
+                        }
+                        return true;
+                      }).toList();
+                      if (i >= tracks.length) return const SizedBox.shrink();
+                      return _buildTrackCard(tracks[i], state);
+                    },
+                    childCount: _popularNaturalSounds.where((t) {
+                      if (_selectedCategory == 'Rain') {
+                        return t.$2 == 'Soft Rain' || t.$2 == 'Ocean Waves' || t.$2 == 'Mountain Stream' || t.$2 == 'Thunderstorm';
+                      }
+                      if (_selectedCategory == 'Nature') {
+                        return t.$2 == 'Soothing Breeze' || t.$2 == 'Cozy Hearth';
+                      }
+                      return true;
+                    }).length,
+                  ),
                 ),
               ),
-            ),
+
+            if (_selectedCategory == 'All' || _selectedCategory == 'Healing' || _selectedCategory == 'Nature')
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.graphic_eq_rounded, color: purpleAccent, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        'HEALING & FREQUENCY ENHANCEMENTS',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: textSecondary,
+                          letterSpacing: 1.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            if (_selectedCategory == 'All' || _selectedCategory == 'Healing' || _selectedCategory == 'Nature')
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      final tracks = _advancedSounds.where((t) {
+                        if (_selectedCategory == 'Healing') {
+                          return t.$2 == 'Singing Bowls' || t.$2 == 'Deep Space Drone' || t.$2 == 'Ambient Piano';
+                        }
+                        if (_selectedCategory == 'Nature') {
+                          return t.$2 == 'Forest Birds' || t.$2 == 'Bamboo Chimes';
+                        }
+                        return true;
+                      }).toList();
+                      if (i >= tracks.length) return const SizedBox.shrink();
+                      return _buildTrackCard(tracks[i], state);
+                    },
+                    childCount: _advancedSounds.where((t) {
+                      if (_selectedCategory == 'Healing') {
+                        return t.$2 == 'Singing Bowls' || t.$2 == 'Deep Space Drone' || t.$2 == 'Ambient Piano';
+                      }
+                      if (_selectedCategory == 'Nature') {
+                        return t.$2 == 'Forest Birds' || t.$2 == 'Bamboo Chimes';
+                      }
+                      return true;
+                    }).length,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
