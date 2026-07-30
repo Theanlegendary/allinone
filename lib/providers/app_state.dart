@@ -241,6 +241,65 @@ class AppState extends ChangeNotifier {
     return '${activeTracks.first} + ${activeTracks.length - 1} more';
   }
 
+  // ─── Premium / Subscription State ─────────────────────────────────────────
+  bool _isPremium = false;
+  bool _trialActive = false;
+  int _trialDaysLeft = 7;
+  DateTime? _trialStartDate;
+
+  bool get isPremium => _isPremium;
+  bool get trialActive => _trialActive;
+  int get trialDaysLeft => _trialDaysLeft;
+  // Free users can access the first 5 sessions; premium unlocks all
+  bool get hasFullAccess => _isPremium || _trialActive;
+
+  /// Simulate a successful purchase (replace with real IAP receipt verification)
+  Future<void> purchasePremium() async {
+    _isPremium = true;
+    _trialActive = false;
+    await _prefs?.setBool('is_premium', true);
+    await _prefs?.setBool('trial_active', false);
+    notifyListeners();
+  }
+
+  /// Start a 7-day free trial
+  Future<void> startFreeTrial() async {
+    if (_isPremium || _trialActive) return;
+    _trialActive = true;
+    _trialStartDate = DateTime.now();
+    _trialDaysLeft = 7;
+    await _prefs?.setBool('trial_active', true);
+    await _prefs?.setString('trial_start', _trialStartDate!.toIso8601String());
+    notifyListeners();
+  }
+
+  /// Restore purchase (e.g., user reinstalled app)
+  Future<void> restorePurchase() async {
+    // In production, verify with Apple/Google receipt. Here we just read prefs.
+    final saved = _prefs?.getBool('is_premium') ?? false;
+    if (saved) {
+      _isPremium = true;
+      notifyListeners();
+    }
+  }
+
+  void _loadPremiumState() {
+    _isPremium = _prefs?.getBool('is_premium') ?? false;
+    _trialActive = _prefs?.getBool('trial_active') ?? false;
+    final trialStartStr = _prefs?.getString('trial_start');
+    if (trialStartStr != null && _trialActive) {
+      _trialStartDate = DateTime.tryParse(trialStartStr);
+      if (_trialStartDate != null) {
+        final elapsed = DateTime.now().difference(_trialStartDate!).inDays;
+        _trialDaysLeft = (7 - elapsed).clamp(0, 7);
+        if (_trialDaysLeft <= 0) {
+          _trialActive = false;
+          _prefs?.setBool('trial_active', false);
+        }
+      }
+    }
+  }
+
   // Tab
   AppTab _tab = AppTab.home;
   AppTab get tab => _tab;
@@ -625,6 +684,7 @@ class AppState extends ChangeNotifier {
       _favoriteSounds = savedFavs.toSet();
     }
 
+    _loadPremiumState();
     notifyListeners();
   }
 

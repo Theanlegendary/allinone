@@ -12,6 +12,7 @@ import 'package:relax_mindfulness/screens/sleep_screen.dart';
 import 'package:relax_mindfulness/screens/mindfulness_screen.dart';
 import 'package:relax_mindfulness/screens/ai_studio_screen.dart';
 import 'package:relax_mindfulness/screens/admin_dashboard_screen.dart';
+import 'package:relax_mindfulness/screens/premium_screen.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
 
 void main() async {
@@ -159,6 +160,60 @@ class _BottomNavBar extends StatelessWidget {
               _NavItem(tab: AppTab.breathe, icon: Icons.air_rounded, label: 'Breathe', state: state),
               _NavItem(tab: AppTab.sounds, icon: Icons.equalizer_rounded, label: 'Sounds', state: state),
               _NavItem(tab: AppTab.sleep, icon: Icons.nightlight_round, label: 'Sleep', state: state),
+              // Premium crown button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      fullscreenDialog: true,
+                      builder: (_) => const PremiumScreen(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: state.isPremium
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
+                                )
+                              : null,
+                          color: state.isPremium ? null : Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: state.isPremium
+                              ? [BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 10)]
+                              : [],
+                        ),
+                        child: Icon(
+                          Icons.workspace_premium_rounded,
+                          color: state.isPremium
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.5),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        state.isPremium ? 'Premium' : 'Upgrade',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.normal,
+                          color: state.isPremium
+                              ? const Color(0xFFFFD700)
+                              : Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         );
