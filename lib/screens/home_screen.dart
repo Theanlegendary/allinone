@@ -187,8 +187,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
+                      // ── 0. Daily Affirmation & Mindfulness Inspiration ──
+                      const _DailyAffirmationBanner(),
                       const SizedBox(height: 20),
 
                       // ── 1. Hero Featured Sanctuary Card (Tall 240px & Alive Motion) ──
@@ -370,7 +372,15 @@ class HomeScreen extends StatelessWidget {
                           }).toList(),
                         ),
                       ),
+                      const SizedBox(height: 18),
+
+                      // ── 2b. Dynamic Curated Recommendations for Selected Mood ──
+                      const _DynamicMoodRecommendations(),
                       const SizedBox(height: 24),
+
+                      // ── 2c. Embedded Instant 1-Minute Calm Breathing Widget ──
+                      const _HomeQuickBreathWidget(),
+                      const SizedBox(height: 26),
 
                       // ── 3. FEATURED AMBIENT CAROUSEL (Large 240px Cards) ──
                       Row(
@@ -973,6 +983,478 @@ class _SpotifyAmbientCard extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w500,
               color: Colors.white.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 0. Daily Affirmation Banner ──────────────────────────────────────────────
+class _DailyAffirmationBanner extends StatefulWidget {
+  const _DailyAffirmationBanner();
+
+  @override
+  State<_DailyAffirmationBanner> createState() => _DailyAffirmationBannerState();
+}
+
+class _DailyAffirmationBannerState extends State<_DailyAffirmationBanner> {
+  int _quoteIndex = 0;
+
+  static const List<Map<String, String>> _quotes = [
+    {
+      'quote': '“In the midst of movement and chaos, keep stillness inside of you.”',
+      'author': 'Deepak Chopra',
+    },
+    {
+      'quote': '“Peace comes from within. Do not seek it without.”',
+      'author': 'Buddha',
+    },
+    {
+      'quote': '“Breath is the finest gift of nature. Be grateful for this marvelous gift.”',
+      'author': 'Amit Ray',
+    },
+    {
+      'quote': '“Quiet the mind, and the soul will speak.”',
+      'author': 'Ma Jaya Sati Bhagavati',
+    },
+    {
+      'quote': '“Rest is not idleness, but a restorative sanctuary for your spirit.”',
+      'author': 'Sanctuary Mind',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final current = _quotes[_quoteIndex];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tealPrimary.withOpacity(0.25), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: tealPrimary.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.format_quote_rounded, color: tealPrimary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  current['quote']!,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '— ${current['author']!}',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: tealPrimary.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _quoteIndex = (_quoteIndex + 1) % _quotes.length;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 2b. Dynamic Mood Intent Recommendations ────────────────────────────────
+class _DynamicMoodRecommendations extends StatelessWidget {
+  const _DynamicMoodRecommendations();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppState>(
+      builder: (context, state, _) {
+        final mood = state.selectedMoodFilter;
+
+        final Map<String, List<Map<String, dynamic>>> moodData = {
+          'Calm': [
+            {'title': 'Peaceful Haven Journey', 'desc': '15 min • Soft River Stream', 'type': 'Guided', 'icon': Icons.spa_rounded, 'color': tealPrimary, 'action': () => state.playGuidedSession('Peaceful Haven Journey', 15)},
+            {'title': 'Resonance 5-5 Coherence', 'desc': '5 min • Heart Coherence', 'type': 'Breathe', 'icon': Icons.air_rounded, 'color': mintAccent, 'action': () => state.setTab(AppTab.breathe)},
+            {'title': '432Hz Healing Chimes', 'desc': '20 min • Solfeggio Tones', 'type': 'Sounds', 'icon': Icons.graphic_eq_rounded, 'color': purpleAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
+          ],
+          'Stressed': [
+            {'title': 'Deep Stress Release', 'desc': '12 min • Body Tension Melt', 'type': 'Guided', 'icon': Icons.self_improvement_rounded, 'color': coralAccent, 'action': () => state.playGuidedSession('Gentle Relief & Comfort', 12)},
+            {'title': 'Box Breathing 4-4-4-4', 'desc': '4 min • Calm Nervous System', 'type': 'Breathe', 'icon': Icons.air_rounded, 'color': tealPrimary, 'action': () => state.setTab(AppTab.breathe)},
+            {'title': 'Cozy Rainfall Cabin', 'desc': 'Soft Downpour & Hearth', 'type': 'Sounds', 'icon': Icons.thunderstorm_rounded, 'color': mintAccent, 'action': () => state.applyCuratedPreset('🌧️ Rainy Cabin')},
+          ],
+          'Sleepy': [
+            {'title': 'Midnight Alpine Forest', 'desc': '25 min • Sleep Story', 'type': 'Sleep', 'icon': Icons.bedtime_rounded, 'color': purpleAccent, 'action': () => state.setTab(AppTab.sleep)},
+            {'title': '4-7-8 Sleep Breath', 'desc': '7 min • Dr. Weil Method', 'type': 'Breathe', 'icon': Icons.air_rounded, 'color': coralAccent, 'action': () => state.setTab(AppTab.breathe)},
+            {'title': 'Cosmic Deep Space Waves', 'desc': 'Delta Wave Slumber', 'type': 'Sounds', 'icon': Icons.nights_stay_rounded, 'color': tealPrimary, 'action': () => state.applyCuratedPreset('🌌 Deep Space')},
+          ],
+          'Focus': [
+            {'title': 'Morning Clarity & Focus', 'desc': '10 min • Crisp Awareness', 'type': 'Guided', 'icon': Icons.wb_sunny_rounded, 'color': mintAccent, 'action': () => state.playGuidedSession('Peaceful Morning Start', 10)},
+            {'title': 'Power 6-2-6 Breath', 'desc': '5 min • Clean Mental Energy', 'type': 'Breathe', 'icon': Icons.bolt_rounded, 'color': tealPrimary, 'action': () => state.setTab(AppTab.breathe)},
+            {'title': 'Alpine Forest Stream', 'desc': 'Focus Soundscape', 'type': 'Sounds', 'icon': Icons.forest_rounded, 'color': purpleAccent, 'action': () => state.applyCuratedPreset('🌲 Forest Walk')},
+          ],
+          'Anxiety': [
+            {'title': 'Warm Heart Comfort', 'desc': '15 min • Gentle Relief', 'type': 'Guided', 'icon': Icons.favorite_rounded, 'color': coralAccent, 'action': () => state.playGuidedSession('Warm Heart Comfort', 15)},
+            {'title': 'Quiet Mind Sanctuary', 'desc': '12 min • Silent Center', 'type': 'Guided', 'icon': Icons.spa_rounded, 'color': tealPrimary, 'action': () => state.playGuidedSession('Quiet Mind Sanctuary', 12)},
+            {'title': 'Singing Bowls 432Hz', 'desc': 'Harmonic Healing', 'type': 'Sounds', 'icon': Icons.graphic_eq_rounded, 'color': mintAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
+          ],
+          'Nature': [
+            {'title': 'Forest Bathing Journey', 'desc': '20 min • Woodland Sanctuary', 'type': 'Guided', 'icon': Icons.park_rounded, 'color': mintAccent, 'action': () => state.playGuidedSession('Peaceful Haven Journey', 20)},
+            {'title': 'Mountain Stream Flow', 'desc': 'Nature Soundscape', 'type': 'Sounds', 'icon': Icons.water_drop_rounded, 'color': tealPrimary, 'action': () => state.applyCuratedPreset('🌲 Forest Walk')},
+            {'title': 'Starlit Ocean Voyage', 'desc': '30 min • Bedtime Story', 'type': 'Sleep', 'icon': Icons.tsunami_rounded, 'color': purpleAccent, 'action': () => state.setTab(AppTab.sleep)},
+          ],
+        };
+
+        final recs = moodData[mood] ?? moodData['Calm']!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.auto_awesome_rounded, color: tealPrimary, size: 15),
+                const SizedBox(width: 6),
+                Text(
+                  'CURATED FOR YOUR "$mood" MOOD',
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: tealPrimary,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            Column(
+              children: recs.map((item) {
+                final Color color = item['color'] as Color;
+                final VoidCallback onTap = item['action'] as VoidCallback;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: GestureDetector(
+                    onTap: onTap,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: color.withOpacity(0.3), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(item['icon'] as IconData, color: color, size: 22),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['title'] as String,
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  item['desc'] as String,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.65),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.play_arrow_rounded, color: color, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Begin',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ── 2c. Embedded Instant 1-Minute Calm Breathing Widget ──────────────────────
+class _HomeQuickBreathWidget extends StatefulWidget {
+  const _HomeQuickBreathWidget();
+
+  @override
+  State<_HomeQuickBreathWidget> createState() => _HomeQuickBreathWidgetState();
+}
+
+class _HomeQuickBreathWidgetState extends State<_HomeQuickBreathWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animCtrl;
+  bool _isActive = false;
+  String _phaseLabel = 'Tap to start 1-min calm breath';
+  int _secondsLeft = 60;
+  dynamic _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _toggleBreathing() {
+    if (_isActive) {
+      _stopBreathing();
+    } else {
+      _startBreathing();
+    }
+  }
+
+  void _startBreathing() {
+    setState(() {
+      _isActive = true;
+      _secondsLeft = 60;
+      _phaseLabel = 'Inhale deeply...';
+    });
+    _animCtrl.repeat(reverse: true);
+
+    _timer?.cancel();
+    _timer = Stream.periodic(const Duration(seconds: 1)).listen((_) {
+      if (!mounted) return;
+      if (_secondsLeft <= 1) {
+        _stopBreathing();
+      } else {
+        setState(() {
+          _secondsLeft--;
+          final cycleSec = _secondsLeft % 8;
+          if (cycleSec >= 4) {
+            _phaseLabel = 'Exhale softly...';
+          } else {
+            _phaseLabel = 'Inhale deeply...';
+          }
+        });
+      }
+    });
+  }
+
+  void _stopBreathing() {
+    _timer?.cancel();
+    _animCtrl.stop();
+    _animCtrl.reset();
+    if (mounted) {
+      setState(() {
+        _isActive = false;
+        _phaseLabel = 'Tap to start 1-min calm breath';
+        _secondsLeft = 60;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0C2226),
+            Color(0xFF091720),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: mintAccent.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Animated Glowing Breathing Circle
+          AnimatedBuilder(
+            animation: _animCtrl,
+            builder: (_, __) {
+              final scale = _isActive ? 0.75 + (0.35 * _animCtrl.value) : 1.0;
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        mintAccent.withOpacity(0.8),
+                        tealPrimary.withOpacity(0.4),
+                        Colors.transparent,
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: mintAccent.withOpacity(_isActive ? 0.6 : 0.2),
+                        blurRadius: _isActive ? 20 : 8,
+                        spreadRadius: _isActive ? 4 : 1,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _isActive ? Icons.air_rounded : Icons.spa_rounded,
+                      color: Colors.black,
+                      size: 26,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'INSTANT 1-MIN CALM',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: mintAccent,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                    if (_isActive) ...[
+                      const Spacer(),
+                      Text(
+                        '00:${_secondsLeft.toString().padLeft(2, '0')}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _phaseLabel,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          GestureDetector(
+            onTap: _toggleBreathing,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: _isActive ? coralAccent : mintAccent,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_isActive ? coralAccent : mintAccent).withOpacity(0.4),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Text(
+                _isActive ? 'Stop' : 'Start',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
             ),
           ),
         ],
