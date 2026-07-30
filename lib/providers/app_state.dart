@@ -22,6 +22,16 @@ enum BreathingPattern {
 
 enum BreathPhase { inhale, hold, exhale, holdOut }
 
+enum SanctuaryThemeMode {
+  midnightNavy('Midnight Navy', Color(0xFF050D15), Color(0xFF0A1622)),
+  forestDusk('Forest Dusk', Color(0xFF061412), Color(0xFF0D2522)),
+  twilightLavender('Twilight Lavender', Color(0xFF0E0A17), Color(0xFF191228));
+
+  const SanctuaryThemeMode(this.displayName, this.bgDark, this.bgMid);
+  final String displayName;
+  final Color bgDark, bgMid;
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 class SessionRecord {
   final String id, title, type;
@@ -103,6 +113,27 @@ class AppState extends ChangeNotifier {
     'Yoga Nidra Sleep Prep': 'https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3',
     'Calm Mountain Horizon': 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
   };
+
+  // Theme Mode
+  SanctuaryThemeMode _themeMode = SanctuaryThemeMode.midnightNavy;
+  SanctuaryThemeMode get themeMode => _themeMode;
+  void setThemeMode(SanctuaryThemeMode mode) {
+    _themeMode = mode;
+    _prefs?.setString('theme_mode', mode.name);
+    notifyListeners();
+  }
+
+  // Active Audio Status for Floating Mini-Player
+  bool get isAnyAudioPlaying => _isGuidedPlaying || _targetVolumes.values.any((v) => v > 0);
+  String get activePlayingLabel {
+    if (_isGuidedPlaying && _currentGuidedTitle != null) {
+      return _currentGuidedTitle!;
+    }
+    final activeTracks = _targetVolumes.entries.where((e) => e.value > 0).map((e) => e.key).toList();
+    if (activeTracks.isEmpty) return 'No Audio Playing';
+    if (activeTracks.length == 1) return activeTracks.first;
+    return '${activeTracks.first} + ${activeTracks.length - 1} more';
+  }
 
   // Tab
   AppTab _tab = AppTab.home;

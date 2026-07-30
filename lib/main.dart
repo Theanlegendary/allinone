@@ -81,7 +81,13 @@ class AppShell extends StatelessWidget {
                   child: _buildScreen(state.tab),
                 ),
               ),
-              bottomNavigationBar: const _BottomNavBar(),
+              bottomNavigationBar: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  SanctuaryMiniPlayer(),
+                  _BottomNavBar(),
+                ],
+              ),
             ),
 
             if (state.showMoodDialog)
