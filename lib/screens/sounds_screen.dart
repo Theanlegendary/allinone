@@ -15,6 +15,63 @@ class _SoundsScreenState extends State<SoundsScreen> {
   bool _isPlaying = false;
   String _selectedCategory = '🌧️ Rain';
 
+  static const Map<String, String> soundImages = {
+    // Rain
+    'Soft Rain': 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=300&q=80',
+    'Thunderstorm': 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=300&q=80',
+    'Heavy Rain': 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?auto=format&fit=crop&w=300&q=80',
+    'Rain on Window': 'https://images.unsplash.com/photo-1438449805896-28a666819a20?auto=format&fit=crop&w=300&q=80',
+    'Rain on Roof': 'https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=300&q=80',
+    'Rain on Umbrella': 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=300&q=80',
+    'Rain on Tent': 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=300&q=80',
+    'Rain on Leaves': 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=300&q=80',
+
+    // Nature
+    'Ocean Waves': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80',
+    'Mountain Stream': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=300&q=80',
+    'Forest Birds': 'https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&q=80',
+    'Campfire': 'https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=300&q=80',
+    'Wind in Trees': 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=300&q=80',
+    'Howling Wind': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80',
+    'Crickets': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80',
+    'Waterfall': 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=300&q=80',
+    'Frogs': 'https://images.unsplash.com/photo-1550853024-fae8cd4be47f?auto=format&fit=crop&w=300&q=80',
+    'Jungle Day': 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=300&q=80',
+    'Water Droplets': 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=300&q=80',
+    'Walking in Snow': 'https://images.unsplash.com/photo-1483921020237-2ff51e5e4bfe?auto=format&fit=crop&w=300&q=80',
+    'Walking on Gravel': 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=300&q=80',
+    'Walking on Leaves': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80',
+    'Owl Hooting': 'https://images.unsplash.com/photo-1543549790-8b5f4a028cfb?auto=format&fit=crop&w=300&q=80',
+
+    // Places
+    'Coffee Shop': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=300&q=80',
+    'Library': 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=300&q=80',
+    'Office Ambience': 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=300&q=80',
+    'Church Interior': 'https://images.unsplash.com/photo-1548625361-18567117e335?auto=format&fit=crop&w=300&q=80',
+    'Temple': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=300&q=80',
+    'Restaurant': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80',
+    'Crowded Bar': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=300&q=80',
+    'Night Village': 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=300&q=80',
+    'Supermarket': 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=300&q=80',
+    'Airport': 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=300&q=80',
+
+    // Transport
+    'Train Ride': 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=300&q=80',
+    'Inside a Train': 'https://images.unsplash.com/photo-1515165562839-978bbcf18277?auto=format&fit=crop&w=300&q=80',
+    'Airplane Cabin': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=300&q=80',
+    'Submarine': 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80',
+    'Rowing Boat': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=300&q=80',
+    'Sailing Ship': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=80',
+    'Highway Traffic': 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=300&q=80',
+    'Busy Street': 'https://images.unsplash.com/photo-1477959858617-67f30ac72604?auto=format&fit=crop&w=300&q=80',
+
+    // Animals
+    'Cat Purring': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=300&q=80',
+    'Seagulls': 'https://images.unsplash.com/photo-1498637841888-108c6b723fc2?auto=format&fit=crop&w=300&q=80',
+    'Whale Song': 'https://images.unsplash.com/photo-1568430460464-5237c8b417c8?auto=format&fit=crop&w=300&q=80',
+    'Wolf Howling': 'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=300&q=80',
+  };
+
   // 75 Sound Volumes State Map
   final Map<String, double> _volumes = {
     // Rain (12)
@@ -321,14 +378,32 @@ class _SoundsScreenState extends State<SoundsScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: soundImages.containsKey(name)
+                        ? Image.network(
+                            soundImages[name]!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (ctx, err, stack) => Center(
+                              child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                            ),
+                          )
+                        : Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
                   ),
-                  child: Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
                 ),
                 const SizedBox(width: 14),
 
