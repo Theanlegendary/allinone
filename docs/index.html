@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/allinone/">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+
+  <!-- ── Primary SEO Meta Tags ── -->
+  <title>Relax & Mindfulness – Guided Meditation, Sleep Stories & Ambient Sounds</title>
+  <meta name="description" content="Find your calm with Relax & Mindfulness – guided meditation sessions, sleep stories, breathing exercises, and a 11-track ambient sound mixer. Start your daily mindfulness journey today.">
+  <meta name="keywords" content="meditation app, mindfulness, sleep stories, guided meditation, breathing exercises, ambient sounds, relax, calm, stress relief, anxiety relief, sleep music">
+  <meta name="author" content="Relax & Mindfulness">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0E1B22">
+
+  <!-- ── Open Graph / Facebook ── -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://theanlegendary.github.io/allinone/">
+  <meta property="og:title" content="Relax & Mindfulness – Guided Meditation, Sleep Stories & Ambient Sounds">
+  <meta property="og:description" content="Find your calm with guided meditation, sleep stories, breathing exercises, and ambient sound mixing. A sanctuary for peace and restful sleep.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Relax & Mindfulness">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ── Twitter Card ── -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://theanlegendary.github.io/allinone/">
+  <meta property="twitter:title" content="Relax & Mindfulness – Find Your Calm">
+  <meta property="twitter:description" content="Guided meditation, sleep stories, breathing exercises and ambient sound mixer. Your personal sanctuary for peace and better sleep.">
+  <meta property="twitter:image" content="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80">
+
+  <!-- ── Canonical URL ── -->
+  <link rel="canonical" href="https://theanlegendary.github.io/allinone/">
+
+  <!-- ── iOS Meta Tags & Icons ── -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Relax & Mindfulness">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- ── PWA Manifest ── -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- ── Structured Data (JSON-LD) ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Relax & Mindfulness",
+    "description": "Guided meditation sessions, sleep stories, breathing exercises, and ambient sound mixing for stress relief, better sleep, and daily mindfulness.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "iOS, Android, Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "1024"
+    },
+    "featureList": [
+      "Guided Meditation Sessions",
+      "Sleep Stories",
+      "Breathing Exercises",
+      "Ambient Sound Mixer",
+      "Daily Streak Tracking",
+      "Mood Check-In",
+      "AI Sound Studio"
+    ]
+  }
+  </script>
+
+  <!-- ── Google Fonts (Inter + Outfit) ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { 
+      height: 100%; 
+      background-color: #080F16; 
+      font-family: 'Inter', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Loading splash screen */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #0B1A24 0%, #080F16 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+    .splash-icon {
+      width: 80px; height: 80px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #2DD4BF, #14B8A6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 8px 32px rgba(45, 212, 191, 0.4);
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .splash-title {
+      color: #F0F6F8;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .splash-sub {
+      color: rgba(176, 207, 215, 0.6);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(45, 212, 191, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 12px 48px rgba(45, 212, 191, 0.6); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Branded Loading Splash -->
+  <div id="splash">
+    <div class="splash-icon">🪷</div>
+    <div class="splash-title">Relax & Mindfulness</div>
+    <div class="splash-sub">Your sanctuary for peace & calm</div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Hide splash when Flutter app is ready
+    window.addEventListener('flutter-first-frame', function() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.classList.add('hidden');
+        setTimeout(function() { splash.remove(); }, 600);
+      }
+    });
+  </script>
+</body>
+</html>
