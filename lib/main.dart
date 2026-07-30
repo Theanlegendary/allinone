@@ -78,10 +78,7 @@ class AppShell extends StatelessWidget {
                 ),
                 child: KeyedSubtree(
                   key: ValueKey(state.tab),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 75),
-                    child: _buildScreen(state.tab),
-                  ),
+                  child: _buildScreen(state.tab),
                 ),
               ),
               bottomNavigationBar: const _BottomNavBar(),
@@ -135,23 +132,31 @@ class _BottomNavBar extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, state, _) {
         return Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           padding: EdgeInsets.only(
+            top: 6,
             bottom: MediaQuery.of(context).padding.bottom > 0
                 ? MediaQuery.of(context).padding.bottom
-                : 8,
+                : 6,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xD90E1B22),
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: glassBorder, width: 1),
+            color: const Color(0xF00A151E),
+            borderRadius: BorderRadius.circular(36),
+            border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.45),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(tab: AppTab.home, icon: Icons.home_rounded, label: 'Home', state: state),
-              _NavItem(tab: AppTab.meditate, icon: Icons.self_improvement, label: 'Meditate', state: state),
-              _NavItem(tab: AppTab.breathe, icon: Icons.air, label: 'Breathe', state: state),
+              _NavItem(tab: AppTab.meditate, icon: Icons.self_improvement_rounded, label: 'Meditate', state: state),
+              _NavItem(tab: AppTab.breathe, icon: Icons.air_rounded, label: 'Breathe', state: state),
               _NavItem(tab: AppTab.sounds, icon: Icons.equalizer_rounded, label: 'Sounds', state: state),
               _NavItem(tab: AppTab.sleep, icon: Icons.nightlight_round, label: 'Sleep', state: state),
             ],
@@ -178,6 +183,8 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelected = state.tab == tab;
+    final activeColor = tab == AppTab.sleep ? purpleAccent : tealPrimary;
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -185,21 +192,20 @@ class _NavItem extends StatelessWidget {
       },
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 32,
-              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: isSelected ? tealPrimary.withOpacity(0.25) : Colors.transparent,
-                shape: BoxShape.circle,
+                color: isSelected ? activeColor.withOpacity(0.2) : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? tealPrimary : Colors.white.withOpacity(0.6),
+                color: isSelected ? activeColor : Colors.white.withOpacity(0.5),
                 size: 20,
               ),
             ),
@@ -208,10 +214,20 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? tealPrimary : Colors.white.withOpacity(0.6),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? activeColor : Colors.white.withOpacity(0.5),
               ),
               child: Text(label),
+            ),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isSelected ? 4 : 0,
+              height: isSelected ? 4 : 0,
+              decoration: BoxDecoration(
+                color: activeColor,
+                shape: BoxShape.circle,
+              ),
             ),
           ],
         ),
