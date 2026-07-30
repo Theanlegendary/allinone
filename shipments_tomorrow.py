@@ -67,12 +67,34 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         except (ValueError, TypeError):
             cod = 0.0
 
+        # Date Filter: Current date (today) only
+        today_str = datetime.now().strftime("%Y%m%d")
+        val_created = ws_src.cell(r, ci_created).value
+        row_date_str = ""
+        if isinstance(val_created, datetime):
+            row_date_str = val_created.strftime("%Y%m%d")
+        elif val_created:
+            s = str(val_created).strip()
+            import re
+            m_d = re.search(r"(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})", s)
+            if m_d:
+                day, month, year = m_d.group(1), m_d.group(2), m_d.group(3)
+                row_date_str = f"{int(year):04d}{int(month):02d}{int(day):02d}"
+            else:
+                m_iso = re.search(r"(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})", s)
+                if m_iso:
+                    year, month, day = m_iso.group(1), m_iso.group(2), m_iso.group(3)
+                    row_date_str = f"{int(year):04d}{int(month):02d}{int(day):02d}"
+
+        if row_date_str and row_date_str != today_str:
+            continue
+
         # Filter active transit orders (Status 306, 309, 302, 310, 311)
         sc = status.split(" - ")[0].split()[0] if status else ""
         if sc not in ("306", "309", "302", "310", "311"):
             continue
 
-        # Zone or Branch Filter
+        # Zone, Branch, or Specific Post Office Target Filtering
         tgt = target_label.upper().replace(" ", "")
         zone_by_prefix = {
             "KAN": "ZONE1", "PNP": "ZONE1", "PRE": "ZONE1", "SVA": "ZONE1",
@@ -88,9 +110,15 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
             if item_zone != target_zone_name:
                 continue
 
-        elif tgt not in ("ALL", "TOTAL"):
+        elif len(tgt) >= 7 or (len(tgt) > 3 and tgt[3:4] in ("P", "A", "S")):
+            # Specific Post Office handle (e.g. PNPP014, PNPP010, SVAP001) -> MUST match dest_po exactly!
+            if dest_po != tgt:
+                continue
+
+        elif tgt not in ("ALL", "TOTAL", "MEGA"):
+            # 3-Letter Branch code (e.g. PNP, PRE, SVA, BAT)
             branch_prefix = tgt[:3]
-            if dest_prov != branch_prefix and dest_po != tgt:
+            if dest_prov != branch_prefix and not dest_po.startswith(branch_prefix):
                 continue
 
 
