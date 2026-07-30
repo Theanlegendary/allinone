@@ -246,6 +246,22 @@ class AppState extends ChangeNotifier {
   Map<String, String> _renamedPresets = {};
   Map<String, String> get renamedPresets => Map.unmodifiable(_renamedPresets);
 
+  // Favorites State (Retention Engine)
+  Set<String> _favoriteSounds = {'Soft Rain', 'Ocean Waves', 'Campfire'};
+  Set<String> get favoriteSounds => Set.unmodifiable(_favoriteSounds);
+
+  bool isFavorite(String name) => _favoriteSounds.contains(name);
+
+  void toggleFavoriteSound(String name) {
+    if (_favoriteSounds.contains(name)) {
+      _favoriteSounds.remove(name);
+    } else {
+      _favoriteSounds.add(name);
+    }
+    _prefs?.setStringList('favorite_sounds', _favoriteSounds.toList());
+    notifyListeners();
+  }
+
   void renameCuratedPreset(String oldName, String newName) {
     _renamedPresets[oldName] = newName;
     _prefs?.setString('renamed_presets', jsonEncode(_renamedPresets));
@@ -600,6 +616,11 @@ class AppState extends ChangeNotifier {
       try {
         _renamedPresets = Map<String, String>.from(jsonDecode(rawRenamed) as Map);
       } catch (_) {}
+    }
+
+    final savedFavs = _prefs!.getStringList('favorite_sounds');
+    if (savedFavs != null) {
+      _favoriteSounds = savedFavs.toSet();
     }
 
     notifyListeners();

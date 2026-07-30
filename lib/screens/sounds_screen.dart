@@ -477,6 +477,17 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                       ),
                                     ),
                                   ),
+                                  GestureDetector(
+                                    onTap: () => state.toggleFavoriteSound(name),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 6),
+                                      child: Icon(
+                                        state.isFavorite(name) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                        color: state.isFavorite(name) ? coralAccent : textSecondary.withOpacity(0.4),
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
                                   if (isActive) ...[
                                     const SizedBox(width: 8),
                                     AnimatedSoundWave(accentColor: color),
@@ -745,15 +756,20 @@ class _SoundsScreenState extends State<SoundsScreen> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: soundCategories.keys.map((catKey) {
+                        children: ['❤️ Favorites', ...soundCategories.keys].map((catKey) {
                           final isSelected = _selectedCategory == catKey;
-                          final soundCount = soundCategories[catKey]?.length ?? 0;
+                          int soundCount = 0;
+                          if (catKey == '❤️ Favorites') {
+                            soundCount = state.favoriteSounds.length;
+                          } else {
+                            soundCount = soundCategories[catKey]?.length ?? 0;
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: GlassChip(
-                              label: '$catKey ($soundCount)',
+                              label: catKey == '❤️ Favorites' ? '❤️ Favorites ($soundCount)' : '$catKey ($soundCount)',
                               isSelected: isSelected,
-                              selectedColor: tealPrimary,
+                              selectedColor: isSelected && catKey == '❤️ Favorites' ? coralAccent : tealPrimary,
                               onTap: () {
                                 setState(() {
                                   _selectedCategory = catKey;
@@ -773,15 +789,57 @@ class _SoundsScreenState extends State<SoundsScreen> {
             // LIST OF SOUND CARDS FOR SELECTED CATEGORY
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final currentList = soundCategories[_selectedCategory] ?? [];
-                    if (i >= currentList.length) return const SizedBox.shrink();
-                    return _buildTrackCard(currentList[i], state);
-                  },
-                  childCount: (soundCategories[_selectedCategory] ?? []).length,
-                ),
+              sliver: Builder(
+                builder: (context) {
+                  List<(String, String, String, Color)> currentList = [];
+                  if (_selectedCategory == '❤️ Favorites') {
+                    for (final catList in soundCategories.values) {
+                      for (final item in catList) {
+                        if (state.isFavorite(item.$2)) {
+                          currentList.add(item);
+                        }
+                      }
+                    }
+                    if (currentList.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: GlassCard(
+                          cornerRadius: 22,
+                          child: Padding(
+                            padding: const EdgeInsets.all(28),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.favorite_border_rounded, color: coralAccent, size: 40),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No Favorite Sounds Saved Yet',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap the ❤️ heart icon on any sound card to build your top favorites list!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12.5, color: textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    currentList = soundCategories[_selectedCategory] ?? [];
+                  }
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) {
+                        if (i >= currentList.length) return const SizedBox.shrink();
+                        return _buildTrackCard(currentList[i], state);
+                      },
+                      childCount: currentList.length,
+                    ),
+                  );
+                },
               ),
             ),
           ],
