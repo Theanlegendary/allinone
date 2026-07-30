@@ -403,6 +403,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> pauseGuidedSession() async {
+    _guidedTimer?.cancel();
+    await _guidedPlayer.pause();
+    _isGuidedPlaying = false;
+    notifyListeners();
+  }
+
   Future<void> stopGuidedSession({bool completed = false, int durationMins = 10}) async {
     _guidedTimer?.cancel();
     await _guidedPlayer.stop();
