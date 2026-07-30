@@ -438,6 +438,8 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  double getTrackVolume(String name) => _targetVolumes[name] ?? 0.0;
+
   // ── Audio Control (Clean, Full Volume Audio Streams) ──────────────────────
   Future<void> updateSoundTrackVolume(String name, double volume) async {
     final url = soundStreamUrls[name] ?? 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg';

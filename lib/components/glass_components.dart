@@ -784,11 +784,8 @@ class SanctuaryMiniPlayer extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: tealPrimary.withOpacity(0.4)),
                     ),
-                    child: AnimatedSoundWave(
+                    child: const AnimatedSoundWave(
                       accentColor: tealPrimary,
-                      amplitude: state.guidanceGuidedAmplitude > 0
-                          ? state.guidanceGuidedAmplitude
-                          : state.activeMixAmplitude,
                     ),
                   ),
                   const SizedBox(width: 14),
