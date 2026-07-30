@@ -568,11 +568,11 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-        );
-      },
-    );
+            ),
+          );
+        },
+      );
+    }
   }
 }
 
