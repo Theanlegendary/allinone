@@ -424,13 +424,16 @@ class _SoundsScreenState extends State<SoundsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final isClay = state.themeMode.isLight;
+    final activeTextColor = isClay ? clayText : textPrimary;
+    final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [bgDark, bgMid, bgDark],
+          colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
         ),
       ),
       child: SafeArea(
@@ -444,7 +447,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -453,7 +456,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: tealPrimary,
+                                  color: isClay ? clayAccent : tealPrimary,
                                   letterSpacing: 1.8,
                                 ),
                               ),
@@ -462,7 +465,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: textPrimary,
+                                  color: activeTextColor,
                                 ),
                               ),
                             ],

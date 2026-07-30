@@ -199,7 +199,7 @@ class AppState extends ChangeNotifier {
   };
 
   // Theme Mode
-  SanctuaryThemeMode _themeMode = SanctuaryThemeMode.midnightNavy;
+  SanctuaryThemeMode _themeMode = SanctuaryThemeMode.claymorphism;
   SanctuaryThemeMode get themeMode => _themeMode;
   void setThemeMode(SanctuaryThemeMode mode) {
     _themeMode = mode;
