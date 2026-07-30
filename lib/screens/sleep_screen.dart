@@ -687,6 +687,110 @@ class _SleepScreenState extends State<SleepScreen> {
                         }).toList(),
                       ),
                     ),
+                    const SizedBox(height: 28),
+
+                    // ── 5. SLEEP STORIES SECTION (Pixel-Perfect to Screenshot) ──
+                    const Text(
+                      'Sleep Stories',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Filter Pill Bar (All / My Stories / Downloaded)
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: purpleAccent.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'All',
+                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: const Center(
+                                child: Text(
+                                  'My Stories',
+                                  style: TextStyle(fontSize: 12.5, color: Colors.white60),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: const Center(
+                                child: Text(
+                                  'Downloaded',
+                                  style: TextStyle(fontSize: 12.5, color: Colors.white60),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Story Card 1: The Starry Night
+                    _buildSleepStoryCard(
+                      title: 'The Starry Night',
+                      narrator: 'Emma Wallace',
+                      duration: '35 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('The Starry Night', 35),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 2: Journey to Dreamland
+                    _buildSleepStoryCard(
+                      title: 'Journey to Dreamland',
+                      narrator: 'James Harrington',
+                      duration: '42 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('Journey to Dreamland', 42),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 3: The Hidden Waterfall
+                    _buildSleepStoryCard(
+                      title: 'The Hidden Waterfall',
+                      narrator: 'Luna Harmony',
+                      duration: '38 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('The Hidden Waterfall', 38),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 4: The Lighthouse Keeper
+                    _buildSleepStoryCard(
+                      title: 'The Lighthouse Keeper',
+                      narrator: 'Oliver M.',
+                      duration: '40 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('The Lighthouse Keeper', 40),
+                    ),
                   ],
                 ),
               ),
@@ -697,5 +801,96 @@ class _SleepScreenState extends State<SleepScreen> {
     ),
   ],
 );
+  }
+
+  Widget _buildSleepStoryCard({
+    required String title,
+    required String narrator,
+    required String duration,
+    required String imageUrl,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: GlassCard(
+        cornerRadius: 22,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            // 80x80 Square Rounded Artwork Badge
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    narrator,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    duration,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: purpleAccent.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.12)),
+              ),
+              child: const Icon(
+                Icons.cloud_download_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
