@@ -191,20 +191,19 @@ class AppState extends ChangeNotifier {
     'Deep Space Drone': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-gamma.wav',
   };
 
-  // Guided Healing Audio Streams (Mixkit Direct Audio Streams)
-  // Keys MUST match MeditationScreen _sessions titles exactly.
+  // Ultra-Soft & Soothing Guided Healing Audio Streams (Comforting CC0 Streams)
   static const Map<String, String> guidedAudioUrls = {
-    'Morning Clarity & Energy': 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
-    'Deep Stress Release': 'https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3',
-    'Inner Calm & Serenity': 'https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3',
-    'Evening Gratitude Unwind': 'https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3',
-    'Body Scan Relaxation': 'https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3',
-    'Loving-Kindness Meditation': 'https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3',
-    'Mindful Breath Awareness': 'https://assets.mixkit.co/active_storage/sfx/2517/2517-preview.mp3',
-    'Visualization Journey': 'https://assets.mixkit.co/active_storage/sfx/1188/1188-preview.mp3',
-    'Chakra Balancing Tones': 'https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3',
-    'Yoga Nidra Sleep Prep': 'https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3',
-    'Calm Mountain Horizon': 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    'Gentle Relief & Comfort': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
+    'Soft Body Rest & Ease': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
+    'Peaceful Morning Awakening': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/birds.mp3',
+    'Quiet Mind Sanctuary': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Cozy Bedtime Slumber': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/light-rain.mp3',
+    'Warm Heart Comfort': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/campfire.mp3',
+    'Gentle Breeze Rest': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
+    'Peaceful Haven Journey': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
+    'Healing Crystal Chimes': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
+    'Loving Warmth & Peace': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/cat-purring.mp3',
+    'Soft Sanctuary Horizon': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
   };
 
   // Theme Mode

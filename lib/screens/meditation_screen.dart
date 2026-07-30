@@ -15,16 +15,16 @@ class _MeditationScreenState extends State<MeditationScreen> {
   String _selectedCategory = 'All';
 
   static const _sessions = [
-    ('🌊', 'Deep Stress Release', '15', 'Stress', 'Let go of body tension through guided breath and body scan'),
-    ('💆', 'Body Scan Relaxation', '18', 'Stress', 'Release tension progressively from head to toe'),
-    ('🌅', 'Morning Clarity & Energy', '10', 'Morning', 'Start your day with peaceful awareness of the present'),
-    ('🫁', 'Mindful Breath Awareness', '8', 'Morning', 'Anchor your full attention to the rhythm of breath'),
-    ('🌸', 'Evening Gratitude Unwind', '20', 'Sleep', 'Softly transition into a restful, grateful sleep state'),
-    ('🌙', 'Yoga Nidra Sleep Prep', '35', 'Sleep', 'Full body-mind relaxation for deep restorative sleep'),
-    ('🕊️', 'Inner Calm & Serenity', '12', 'Focus', 'Find your silent quiet center beneath all the noise'),
-    ('🌄', 'Visualization Journey', '25', 'Focus', 'A guided imagery trip to your own peaceful safe place'),
-    ('🔮', 'Chakra Balancing Tones', '30', 'Healing', 'Align your energy centers with healing sound frequencies'),
-    ('💗', 'Loving-Kindness Meditation', '15', 'Healing', 'Cultivate deep compassion for yourself and others'),
+    ('🌸', 'Gentle Relief & Comfort', '15', 'Comfort', 'Soft wind chimes and gentle rain to soothe your heart & mind'),
+    ('🌿', 'Soft Body Rest & Ease', '18', 'Comfort', 'Warm ocean waves to help your body feel completely weightless and safe'),
+    ('🌅', 'Peaceful Morning Awakening', '10', 'Morning', 'Gentle morning birds and soft warmth to welcome a brand new day'),
+    ('🕊️', 'Quiet Mind Sanctuary', '8', 'Morning', 'A soft quiet space to rest your thoughts without any pressure'),
+    ('🌙', 'Cozy Bedtime Slumber', '20', 'Sleep', 'Gentle bedtime lullaby to help you drift off into sweet, easy sleep'),
+    ('✨', 'Healing Crystal Chimes', '35', 'Sleep', 'Deep peaceful harmonic chimes for uninterrupted night rest'),
+    ('💗', 'Warm Heart Comfort', '15', 'Healing', 'Feel safe, loved, and held in a soft, gentle sanctuary of warmth'),
+    ('🌄', 'Peaceful Haven Journey', '25', 'Focus', 'Drift along a quiet forest stream into your own peaceful safe place'),
+    ('🔮', 'Gentle Breeze Rest', '30', 'Healing', 'Soft whispering pine trees to wash away heavy thoughts effortless'),
+    ('🐈', 'Loving Warmth & Peace', '15', 'Healing', 'Cozy companion warmth and soft purrs to bring peace to your day'),
   ];
 
   static const _colorPairs = [
@@ -210,7 +210,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: ['All', 'Stress', 'Morning', 'Sleep', 'Focus', 'Healing'].map((cat) {
+                        children: ['All', 'Comfort', 'Morning', 'Sleep', 'Focus', 'Healing'].map((cat) {
                           final isSelected = _selectedCategory == cat;
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
@@ -267,16 +267,16 @@ class _SessionCard extends StatelessWidget {
   final Color accentColor, bgColor;
 
   static const Map<String, String> sessionImages = {
-    'Deep Stress Release': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80',
-    'Body Scan Relaxation': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=400&q=80',
-    'Morning Clarity & Energy': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
-    'Mindful Breath Awareness': 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80',
-    'Evening Gratitude Unwind': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
-    'Yoga Nidra Sleep Prep': 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
-    'Inner Calm & Serenity': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-    'Visualization Journey': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
-    'Chakra Balancing Tones': 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=400&q=80',
-    'Loving-Kindness Meditation': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80',
+    'Gentle Relief & Comfort': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80',
+    'Soft Body Rest & Ease': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=400&q=80',
+    'Peaceful Morning Awakening': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
+    'Quiet Mind Sanctuary': 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80',
+    'Cozy Bedtime Slumber': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
+    'Healing Crystal Chimes': 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
+    'Warm Heart Comfort': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+    'Peaceful Haven Journey': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
+    'Gentle Breeze Rest': 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=400&q=80',
+    'Loving Warmth & Peace': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80',
   };
 
   const _SessionCard({
