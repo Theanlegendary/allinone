@@ -259,7 +259,11 @@ class GlassChip extends StatelessWidget {
 // ─── AnimatedSoundWave ────────────────────────────────────────────────────────
 class AnimatedSoundWave extends StatefulWidget {
   final Color accentColor;
-  const AnimatedSoundWave({super.key, required this.accentColor});
+  // Optional 0..1 — bar amplitude scales with this (e.g. the master volume
+  // or the dominant track's volume). Falls back to a constant envelope
+  // when null.
+  final double? amplitude;
+  const AnimatedSoundWave({super.key, required this.accentColor, this.amplitude});
 
   @override
   State<AnimatedSoundWave> createState() => _AnimatedSoundWaveState();
@@ -282,6 +286,7 @@ class _AnimatedSoundWaveState extends State<AnimatedSoundWave>
 
   @override
   Widget build(BuildContext context) {
+    final amp = (widget.amplitude ?? 0.7).clamp(0.0, 1.0);
     return AnimatedBuilder(
       animation: _ctrl,
       builder: (_, __) {
@@ -290,7 +295,9 @@ class _AnimatedSoundWaveState extends State<AnimatedSoundWave>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [1.0, 1.8, 0.6].asMap().entries.map((e) {
-            final h = 4 + 10 * (0.5 + 0.5 * sin(t + e.key * 1.2)) * e.value;
+            // Amplitude is now driven by the actual track volume, so a quiet
+            // mix shows small bars and a loud mix shows tall ones.
+            final h = 3 + 12 * amp * (0.5 + 0.5 * sin(t + e.key * 1.2)) * e.value;
             return Container(
               width: 3,
               height: h,

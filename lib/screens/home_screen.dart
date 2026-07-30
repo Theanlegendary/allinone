@@ -10,9 +10,9 @@ class HomeScreen extends StatelessWidget {
 
   String _greeting() {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (h < 12) return 'Good Morning, Welcome 🌸';
+    if (h < 17) return 'Good Afternoon, Soft Rest 🌿';
+    return 'Good Evening, Rest Easy 🌙';
   }
 
   static const _featured = [
@@ -102,7 +102,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Find your silent quiet center',
+                            'Take a deep breath. You are safe and at peace here.',
                             style: TextStyle(
                               fontSize: 13.5,
                               color: activeSubtextColor,
