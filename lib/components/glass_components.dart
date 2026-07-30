@@ -544,7 +544,7 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
   }
 }
 
-// ─── GuidedPlayerOverlay (Soft 432Hz Healing Audio Player) ────────────────────
+// ─── GuidedPlayerOverlay (Soft Healing Audio Player) ─────────────────────
 class GuidedPlayerOverlay extends StatefulWidget {
   const GuidedPlayerOverlay({super.key});
 
@@ -579,164 +579,265 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
 
         final mins = state.guidedRemainingSec ~/ 60;
         final secs = state.guidedRemainingSec % 60;
+        final title = state.currentGuidedTitle ?? 'Peaceful Haven Journey';
+
+        final Map<String, String> sessionArtworks = {
+          'Peaceful Haven Journey': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80',
+          'Gentle Relief & Comfort': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80',
+          'Soft Body Rest & Ease': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
+          'Calm Mountain Horizon': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+          'Peaceful Morning Awakening': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=80',
+          'Peaceful Morning Start': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=80',
+          'Quiet Mind Sanctuary': 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80',
+          'Cozy Bedtime Slumber': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+          'Warm Heart Comfort': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80',
+          'Healing Crystal Chimes': 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80',
+          'Loving Warmth & Peace': 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=800&q=80',
+        };
+
+        final artworkUrl = sessionArtworks[title] ?? 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80';
 
         return Material(
           color: Colors.transparent,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF071118), Color(0xFF0E2230), Color(0xFF060E15)],
+          child: Stack(
+            children: [
+              // 🖼️ 1. HD Organic Blurred Artwork Background
+              Positioned.fill(
+                child: Image.network(
+                  artworkUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Container(color: const Color(0xFF071118)),
+                ),
               ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: tealPrimary.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: tealPrimary.withOpacity(0.4)),
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF050C12).withOpacity(0.75),
+                          const Color(0xFF091822).withOpacity(0.85),
+                          const Color(0xFF04080D).withOpacity(0.95),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 🌿 2. Full Player Content Interface
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Column(
+                    children: [
+                      // Top Navigation Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withOpacity(0.2)),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.graphic_eq_rounded, color: tealPrimary, size: 16),
+                                SizedBox(width: 6),
+                                Text(
+                                  'NATURAL SOOTHING AUDIO STREAM',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          child: const Row(
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 32),
+                            onPressed: () => state.stopGuidedSession(completed: false),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+
+                      // 🖼️ 3. Centerpiece HD Artwork Card with Animated Breathing Glow Aura
+                      AnimatedBuilder(
+                        animation: _pulseCtrl,
+                        builder: (_, __) {
+                          final auraScale = 1.0 + (0.06 * _pulseCtrl.value);
+                          return Stack(
+                            alignment: Alignment.center,
                             children: [
-                              Icon(Icons.graphic_eq_rounded, color: tealPrimary, size: 16),
-                              SizedBox(width: 6),
-                              Text(
-                                '432Hz Healing Tone Active',
-                                style: TextStyle(
-                                  color: tealPrimary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                              // Pulsing Aura Ring 1
+                              Transform.scale(
+                                scale: auraScale * 1.15,
+                                child: Container(
+                                  width: 210,
+                                  height: 210,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: tealPrimary.withOpacity(0.12 * _pulseCtrl.value),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: tealPrimary.withOpacity(0.3 * _pulseCtrl.value),
+                                        blurRadius: 50,
+                                        spreadRadius: 15,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Pulsing Aura Ring 2
+                              Transform.scale(
+                                scale: auraScale,
+                                child: Container(
+                                  width: 200,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(36),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: mintAccent.withOpacity(0.25),
+                                        blurRadius: 30,
+                                        spreadRadius: 5,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // High Definition Artwork Image Container
+                              Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(32),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Image.network(
+                                    artworkUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (c, e, s) => Container(
+                                      color: tealPrimary.withOpacity(0.2),
+                                      child: const Icon(Icons.spa_rounded, color: Colors.white, size: 64),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 28),
-                          onPressed: () => state.stopGuidedSession(completed: false),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32),
 
-                    // Animated Glowing Lotus Pulse Circle
-                    AnimatedBuilder(
-                      animation: _pulseCtrl,
-                      builder: (_, __) {
-                        final size = 180 + (30 * _pulseCtrl.value);
-                        return Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                tealPrimary.withOpacity(0.5),
-                                mintAccent.withOpacity(0.2),
-                                Colors.transparent,
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: tealPrimary.withOpacity(0.3 * _pulseCtrl.value),
-                                blurRadius: 40,
-                                spreadRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.spa_rounded,
+                      // Title & Description
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      Text(
+                        'Soft continuous natural soundscape • Deep stress relief',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.65),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ⏱️ Large Glowing Timer
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const AnimatedSoundWave(accentColor: tealPrimary),
+                          const SizedBox(width: 14),
+                          Text(
+                            '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              size: 64,
+                              letterSpacing: 1.5,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 36),
-
-                    Text(
-                      state.currentGuidedTitle ?? 'Guided Healing Practice',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -0.3,
+                          const SizedBox(width: 14),
+                          const AnimatedSoundWave(accentColor: tealPrimary),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 20),
 
-                    Text(
-                      'Soft continuous Solfeggio soundscape • Deep stress relief',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withOpacity(0.6),
+                      // Interactive Live Playback Controls (+10m, Loop ♾️, Restart 🔄)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GlassChip(
+                            label: '+10 Min',
+                            isSelected: false,
+                            onTap: () => state.extendGuidedSession(10),
+                          ),
+                          const SizedBox(width: 12),
+                          GlassChip(
+                            label: state.isGuidedLooping ? 'Loop ♾️ On' : 'Loop Off',
+                            isSelected: state.isGuidedLooping,
+                            selectedColor: tealPrimary,
+                            onTap: () => state.toggleGuidedLoop(),
+                          ),
+                          const SizedBox(width: 12),
+                          GlassChip(
+                            label: 'Restart 🔄',
+                            isSelected: false,
+                            onTap: () => state.restartGuidedSession(10),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 24),
 
-                    Text(
-                      '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontSize: 44,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      const Spacer(),
+
+                      // Complete Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: GlassPillButton(
+                          text: 'Complete & End Session',
+                          icon: Icons.check_circle_outline_rounded,
+                          containerColor: tealPrimary,
+                          contentColor: Colors.black,
+                          onTap: () => state.stopGuidedSession(completed: true),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Interactive Live Playback Controls (+10m, Loop ♾️, Restart 🔄)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GlassChip(
-                          label: '+10 Min',
-                          isSelected: false,
-                          onTap: () => state.extendGuidedSession(10),
-                        ),
-                        const SizedBox(width: 10),
-                        GlassChip(
-                          label: state.isGuidedLooping ? 'Loop ♾️ On' : 'Loop Off',
-                          isSelected: state.isGuidedLooping,
-                          selectedColor: tealPrimary,
-                          onTap: () => state.toggleGuidedLoop(),
-                        ),
-                        const SizedBox(width: 10),
-                        GlassChip(
-                          label: 'Restart 🔄',
-                          isSelected: false,
-                          onTap: () => state.restartGuidedSession(10),
-                        ),
-                      ],
-                    ),
-
-                    const Spacer(),
-
-                    GlassPillButton(
-                      text: 'Complete & End Session',
-                      icon: Icons.check_circle_outline_rounded,
-                      containerColor: tealPrimary,
-                      contentColor: Colors.black,
-                      onTap: () => state.stopGuidedSession(completed: true),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: 12),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
