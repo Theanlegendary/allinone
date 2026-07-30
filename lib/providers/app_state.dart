@@ -300,6 +300,58 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // Onboarding
+  bool _onboardingDone = false;
+  bool get onboardingDone => _onboardingDone;
+  void completeOnboarding() {
+    _onboardingDone = true;
+    _prefs?.setBool('onboarding_done', true);
+    notifyListeners();
+  }
+
+  // Streak & Practice Tracking
+  int _streak = 0;
+  int _longestStreak = 0;
+  bool _practicedToday = false;
+  int get streak => _streak;
+  int get longestStreak => _longestStreak;
+  bool get practicedToday => _practicedToday;
+
+  // Session Records
+  List<SessionRecord> _sessions = [];
+  List<SessionRecord> get sessions => List.unmodifiable(_sessions);
+
+  int get totalMinutes => _sessions.fold(0, (sum, s) => sum + s.durationMinutes);
+
+  double get avgMood {
+    final rated = _sessions.where((s) => s.moodRating > 0);
+    if (rated.isEmpty) return 0.0;
+    final total = rated.fold(0, (sum, s) => sum + s.moodRating);
+    return total / rated.length;
+  }
+
+  List<MapEntry<String, int>> get weeklyMinutes {
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+
+    return days.asMap().entries.map((e) {
+      final dayDate = startOfWeek.add(Duration(days: e.key));
+      final dayMins = _sessions
+          .where((s) => _sameDay(s.timestamp, dayDate))
+          .fold(0, (sum, s) => sum + s.durationMinutes);
+      return MapEntry(e.value, dayMins);
+    }).toList();
+  }
+
+  Map<String, int> get categoryBreakdown {
+    final map = <String, int>{};
+    for (final s in _sessions) {
+      map[s.type] = (map[s.type] ?? 0) + s.durationMinutes;
+    }
+    return map;
+  }
+
   // Tab
   AppTab _tab = AppTab.home;
   AppTab get tab => _tab;
