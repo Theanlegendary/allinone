@@ -25,6 +25,10 @@ class _MeditationScreenState extends State<MeditationScreen> {
     ('🌄', 'Peaceful Haven Journey', '25', 'Focus', 'Drift along a quiet forest stream into your own peaceful safe place'),
     ('🔮', 'Gentle Breeze Rest', '30', 'Healing', 'Soft whispering pine trees to wash away heavy thoughts effortless'),
     ('🐈', 'Loving Warmth & Peace', '15', 'Healing', 'Cozy companion warmth and soft purrs to bring peace to your day'),
+    ('🌊', 'Ocean Horizon Slumber', '25', 'Sleep', 'Lapping tide under moonlight for effortless deep sleep'),
+    ('🧘', 'Chakra Solfeggio Alignment', '30', 'Healing', 'Harmonic 432Hz crystal frequencies to align energy'),
+    ('🌲', 'Pine Forest Bathing', '20', 'Comfort', 'Walk among whispering pines and fresh mountain air'),
+    ('⚡', 'Release Anxious Tension', '12', 'Comfort', 'Soft breath guidance to melt muscle tightness and anxiety'),
   ];
 
   static const _colorPairs = [

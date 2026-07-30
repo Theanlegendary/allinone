@@ -791,6 +791,46 @@ class _SleepScreenState extends State<SleepScreen> {
                       imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
                       onTap: () => state.playGuidedSession('The Lighthouse Keeper', 40),
                     ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 5: Moonlit Japanese Garden
+                    _buildSleepStoryCard(
+                      title: 'Moonlit Japanese Garden',
+                      narrator: 'Mei Lin',
+                      duration: '35 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('Moonlit Japanese Garden', 35),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 6: Whispering Pine Forest
+                    _buildSleepStoryCard(
+                      title: 'Whispering Pine Forest',
+                      narrator: 'Julian Ross',
+                      duration: '28 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('Whispering Pine Forest', 28),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 7: Desert Stargazing
+                    _buildSleepStoryCard(
+                      title: 'Desert Stargazing',
+                      narrator: 'Kai Thompson',
+                      duration: '32 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('Desert Stargazing', 32),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Story Card 8: Ancient Temple Bells
+                    _buildSleepStoryCard(
+                      title: 'Ancient Temple Bells',
+                      narrator: 'Ravi Sharma',
+                      duration: '45 min',
+                      imageUrl: 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=400&q=80',
+                      onTap: () => state.playGuidedSession('Ancient Temple Bells', 45),
+                    ),
                   ],
                 ),
               ),

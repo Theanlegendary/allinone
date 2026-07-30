@@ -206,6 +206,18 @@ class AppState extends ChangeNotifier {
     'Healing Crystal Chimes': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
     'Loving Warmth & Peace': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
     'Soft Sanctuary Horizon': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
+    'Ocean Horizon Slumber': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
+    'Chakra Solfeggio Alignment': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Pine Forest Bathing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
+    'Release Anxious Tension': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
+    'The Starry Night': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-theta.wav',
+    'Journey to Dreamland': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
+    'The Hidden Waterfall': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
+    'The Lighthouse Keeper': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
+    'Moonlit Japanese Garden': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
+    'Whispering Pine Forest': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
+    'Desert Stargazing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Ancient Temple Bells': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
   };
 
   // Theme Mode
