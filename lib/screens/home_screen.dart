@@ -568,11 +568,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      );
-    }
+            );
+          },
+        );
+      }
   }
 
 // ── Soft Quick Action Pill ───────────────────────────────────────────────────
