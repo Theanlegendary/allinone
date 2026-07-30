@@ -70,21 +70,48 @@ class HomeScreen extends StatelessWidget {
         final activeTextColor = isClay ? clayText : textPrimary;
         final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
-            ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        return Stack(
+          children: [
+            // 🌿 Soft Nature Aurora Backdrop for Home Header
+            if (!isClay)
+              Positioned(
+                top: 0, left: 0, right: 0,
+                height: 260,
+                child: ShaderMask(
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black, Colors.transparent],
+                  ).createShader(rect),
+                  blendMode: BlendMode.dstIn,
+                  child: Image.network(
+                    'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isClay
+                      ? [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark]
+                      : [
+                          const Color(0xFF071810).withOpacity(0.72),
+                          state.themeMode.bgDark,
+                          state.themeMode.bgMid,
+                        ],
+                ),
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   // ── Soothing Header ────────────────────────────────
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -653,11 +680,13 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            );
-          },
-        );
-      }
+            ),   // ← Container ends (Stack child)
+          ],     // ← Stack children end
+        );       // ← Stack end (returned by Consumer builder)
+      },         // ← Consumer builder lambda end
+    );           // ← Consumer widget end
   }
+}
 
 // ── Soft Quick Action Pill ───────────────────────────────────────────────────
 class _QuickAction extends StatelessWidget {
