@@ -434,10 +434,33 @@ class AppState extends ChangeNotifier {
   String? get selectedStory => _selectedStory;
   void setStory(String? s) {
     _selectedStory = s;
+    stopAllAudio();
+
     if (s != null) {
-      updateSoundTrackVolume('Ocean Waves', 0.8);
-    } else {
-      updateSoundTrackVolume('Ocean Waves', 0.0);
+      if (s.contains('Cabin') || s.contains('Rainfall')) {
+        updateSoundTrackVolume('Soft Rain', 0.7);
+        updateSoundTrackVolume('Cozy Hearth', 0.35);
+      } else if (s.contains('Alpine') || s.contains('Forest')) {
+        updateSoundTrackVolume('Forest Birds', 0.6);
+        updateSoundTrackVolume('Soothing Breeze', 0.3);
+      } else if (s.contains('Ocean') || s.contains('Voyage')) {
+        updateSoundTrackVolume('Ocean Waves', 0.7);
+        updateSoundTrackVolume('Soothing Breeze', 0.3);
+      } else if (s.contains('Japanese') || s.contains('Garden')) {
+        updateSoundTrackVolume('Bamboo Chimes', 0.5);
+        updateSoundTrackVolume('Mountain Stream', 0.4);
+      } else if (s.contains('Stargazing') || s.contains('Desert')) {
+        updateSoundTrackVolume('Deep Space Drone', 0.6);
+        updateSoundTrackVolume('Soothing Breeze', 0.3);
+      } else if (s.contains('Cloud') || s.contains('Floating')) {
+        updateSoundTrackVolume('Ambient Piano', 0.6);
+        updateSoundTrackVolume('Singing Bowls', 0.3);
+      } else if (s.contains('Temple') || s.contains('Bells')) {
+        updateSoundTrackVolume('Singing Bowls', 0.6);
+        updateSoundTrackVolume('Bamboo Chimes', 0.4);
+      } else {
+        updateSoundTrackVolume('Soft Rain', 0.6);
+      }
     }
     notifyListeners();
   }
