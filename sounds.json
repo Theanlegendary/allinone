@@ -1,0 +1,133 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-07-30T08:35:00Z",
+  "github_cdn_base": "https://raw.githubusercontent.com/Theanlegendary/allinone/main/sounds/",
+  "categories": [
+    {
+      "id": "rain",
+      "name": "🌧️ Rain",
+      "count": 12,
+      "sounds": [
+        {"id": "soft_rain", "name": "Soft Rain", "desc": "Gentle Downpour", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "thunderstorm", "name": "Thunderstorm", "desc": "Distant Low Rumble", "url": "https://actions.google.com/sounds/v1/weather/thunderstorm.ogg"},
+        {"id": "rain_window", "name": "Rain on Window", "desc": "Soft Drops on Glass", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "rain_roof", "name": "Rain on Roof", "desc": "Cozy Attic Downpour", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "rain_umbrella", "name": "Rain on Umbrella", "desc": "Rhythmic Pitter Patter", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "rain_tent", "name": "Rain on Tent", "desc": "Wilderness Camping Rain", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "rain_leaves", "name": "Rain on Leaves", "desc": "Forest Canopy Drizzle", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "urban_rain", "name": "Urban Rain", "desc": "City Street Rainfall", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "heavy_rain", "name": "Heavy Rain", "desc": "Continuous Pouring Storm", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "light_drizzle", "name": "Light Drizzle", "desc": "Gentle Atmospheric Mist", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "rain_cave", "name": "Rain Cave", "desc": "Echoing Cavern Drops", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "tropical_storm", "name": "Tropical Storm", "desc": "Warm Rainforest Gale", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"}
+      ]
+    },
+    {
+      "id": "nature",
+      "name": "🌲 Nature",
+      "count": 15,
+      "sounds": [
+        {"id": "ocean_waves", "name": "Ocean Waves", "desc": "Rolling Pacific Tide", "url": "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"},
+        {"id": "mountain_stream", "name": "Mountain Stream", "desc": "Flowing Crystal Creek", "url": "https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3"},
+        {"id": "forest_birds", "name": "Forest Birds", "desc": "Morning Canopy Chirp", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"},
+        {"id": "campfire", "name": "Campfire", "desc": "Warm Crackling Wood Logs", "url": "https://assets.mixkit.co/active_storage/sfx/2678/2678-preview.mp3"},
+        {"id": "wind_trees", "name": "Wind in Trees", "desc": "Calm Mountain Breeze", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "crickets", "name": "Crickets", "desc": "Night Meadow Symphony", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"},
+        {"id": "waterfall", "name": "Waterfall", "desc": "Majestic Cascade Spray", "url": "https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3"},
+        {"id": "frogs", "name": "Frogs", "desc": "Serene Marshland Night", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"},
+        {"id": "waves_pebbles", "name": "Waves on Pebbles", "desc": "Gentle Shoreline Shimmer", "url": "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"},
+        {"id": "underwater", "name": "Underwater", "desc": "Deep Ocean Submersion", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "meadow_breeze", "name": "Meadow Breeze", "desc": "Soft Grasslands Whispers", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "desert_wind", "name": "Desert Wind", "desc": "Solitary Dune Sweep", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "jungle_night", "name": "Jungle Night", "desc": "Nocturnal Rainforest", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"},
+        {"id": "leaves_rustling", "name": "Leaves Rustling", "desc": "Autumn Footsteps", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "mountain_echo", "name": "Mountain Echo", "desc": "Resonant Valley Stillness", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"}
+      ]
+    },
+    {
+      "id": "places",
+      "name": "☕ Places",
+      "count": 10,
+      "sounds": [
+        {"id": "coffee_shop", "name": "Coffee Shop", "desc": "Gentle Ambient Chatter", "url": "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"},
+        {"id": "library", "name": "Library", "desc": "Silent Study Sanctuary", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "office_ambience", "name": "Office Ambience", "desc": "Low Productivity Hum", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "church_bells", "name": "Church Bells", "desc": "Distant Resonant Chimes", "url": "https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3"},
+        {"id": "quiet_park", "name": "Quiet Park", "desc": "Peaceful Bench Retreat", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"},
+        {"id": "street_market", "name": "Street Market", "desc": "Soft Bustling Market", "url": "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"},
+        {"id": "temple_bowl", "name": "Temple Bowl", "desc": "Zen Monastery Gong", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "zen_garden", "name": "Zen Garden", "desc": "Raked Sand Fountain", "url": "https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3"},
+        {"id": "harbor", "name": "Harbor", "desc": "Gentle Boat Dock Lapping", "url": "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"},
+        {"id": "farmyard", "name": "Farmyard", "desc": "Rural Countryside", "url": "https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3"}
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "🚆 Transport",
+      "count": 8,
+      "sounds": [
+        {"id": "train_track", "name": "Train Track", "desc": "Rhythmic Iron Rail Clicker", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "airplane_cabin", "name": "Airplane Cabin", "desc": "Soothing White Noise Cruise", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "driving_rain_car", "name": "Driving Rain Car", "desc": "Highway Windshield Rain", "url": "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"},
+        {"id": "boat_deck", "name": "Boat Deck", "desc": "Creaking Wooden Hull Waves", "url": "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"},
+        {"id": "subway_train", "name": "Subway Train", "desc": "Low Underground Metro", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "bicycle_ride", "name": "Bicycle Ride", "desc": "Gentle Coasting Wind", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "sailing_ship", "name": "Sailing Ship", "desc": "Rigging Breeze & Swell", "url": "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg"},
+        {"id": "highway_traffic", "name": "Highway Traffic", "desc": "Distant Asphalt Roll", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"}
+      ]
+    },
+    {
+      "id": "things",
+      "name": "⚙️ Things",
+      "count": 10,
+      "sounds": [
+        {"id": "clock_ticking", "name": "Clock Ticking", "desc": "Steady Rhythmic Pendulum", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "fan_noise", "name": "Fan Noise", "desc": "Cooling Air Circulation", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "keyboard_typing", "name": "Keyboard Typing", "desc": "Soft Mechanical Keys", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "washing_machine", "name": "Washing Machine", "desc": "Gentle Laundry Rinsing", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "vinyl_crackle", "name": "Vinyl Crackle", "desc": "Warm Analog Nostalgia", "url": "https://assets.mixkit.co/active_storage/sfx/2678/2678-preview.mp3"},
+        {"id": "boiling_kettle", "name": "Boiling Kettle", "desc": "Cozy Teatime Whistle", "url": "https://assets.mixkit.co/active_storage/sfx/2678/2678-preview.mp3"},
+        {"id": "bamboo_chimes", "name": "Bamboo Chimes", "desc": "Pentatonic Wind Chimes", "url": "https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3"},
+        {"id": "page_turning", "name": "Page Turning", "desc": "Book Study Leaf", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "pendulum", "name": "Pendulum", "desc": "Hypnotic Second Beat", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "wind_generator", "name": "Wind Generator", "desc": "Constant Turbine Sweep", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"}
+      ]
+    },
+    {
+      "id": "noise",
+      "name": "🔊 Noise",
+      "count": 6,
+      "sounds": [
+        {"id": "white_noise", "name": "White Noise", "desc": "Full Spectrum Flat Noise", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "pink_noise", "name": "Pink Noise", "desc": "Balanced Waterfall Spectrum", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "brown_noise", "name": "Brown Noise", "desc": "Deep Low Frequency Rumble", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "blue_noise", "name": "Blue Noise", "desc": "High Pitch Crisp Hiss", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "violet_noise", "name": "Violet Noise", "desc": "Ultra Crisp Shimmer", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"},
+        {"id": "grey_noise", "name": "Grey Noise", "desc": "Equal Perception Contour", "url": "https://actions.google.com/sounds/v1/weather/wind.ogg"}
+      ]
+    },
+    {
+      "id": "solfeggio",
+      "name": "🔮 Solfeggio",
+      "count": 14,
+      "sounds": [
+        {"id": "singing_bowls", "name": "Singing Bowls", "desc": "432Hz Solfeggio Tones", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_432", "name": "432Hz Healing", "desc": "Natural Harmony Tone", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_528", "name": "528Hz Transformation", "desc": "Miracle Healing Frequency", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_639", "name": "639Hz Harmonics", "desc": "Heart Relationship Harmony", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "theta_108", "name": "108Hz Theta Drone", "desc": "Deep Meditation State", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "space_drone", "name": "Deep Space Drone", "desc": "108Hz Delta Frequency", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "delta_sleep", "name": "Delta Deep Sleep", "desc": "Restful Subconscious Waves", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "alpha_focus", "name": "Alpha Focus Flow", "desc": "Peak Concentration Alpha", "url": "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"},
+        {"id": "beta_energy", "name": "Beta Energy Boost", "desc": "Active Consciousness", "url": "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"},
+        {"id": "gamma_insight", "name": "Gamma Insight", "desc": "High Cognitive Transcendence", "url": "https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3"},
+        {"id": "solfeggio_174", "name": "174Hz Pain Relief", "desc": "Physical Comfort Frequency", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_285", "name": "285Hz Cellular", "desc": "Vitality & Tissue Renewal", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_396", "name": "396Hz Liberation", "desc": "Liberating Guilt & Fear", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_741", "name": "741Hz Intuition", "desc": "Awakening Inner Intuition", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_852", "name": "852Hz Awakening", "desc": "Spiritual Order & Light", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"},
+        {"id": "solfeggio_963", "name": "963Hz Crown State", "desc": "Divine Unity Consciousness", "url": "https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"}
+      ]
+    }
+  ]
+}
