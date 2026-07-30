@@ -598,6 +598,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
       ),
       child: SafeArea(
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(

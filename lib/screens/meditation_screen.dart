@@ -56,6 +56,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
       ),
       child: SafeArea(
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
             // ── Header ─────────────────────────────────────────────────────
             SliverToBoxAdapter(

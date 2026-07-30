@@ -80,6 +80,7 @@ class HomeScreen extends StatelessWidget {
           ),
           child: SafeArea(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
