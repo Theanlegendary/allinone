@@ -181,14 +181,23 @@ class AppState extends ChangeNotifier {
     'Cows Mooing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/cows.mp3',
     'Dog Barking': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/dog-barking.mp3',
     'Beehive Hum': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/beehive.mp3',
+
+    // Curated Preset Aliases (6 ADDED — mapping brand names to real Moodist tracks)
+    'Cozy Hearth': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/campfire.mp3',
+    'Singing Bowls': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Ambient Piano': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Bamboo Chimes': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
+    'Soothing Breeze': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
+    'Deep Space Drone': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-gamma.wav',
   };
 
   // Guided Healing Audio Streams (Mixkit Direct Audio Streams)
+  // Keys MUST match MeditationScreen _sessions titles exactly.
   static const Map<String, String> guidedAudioUrls = {
-    'Morning Clarity': 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    'Morning Clarity & Energy': 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
     'Deep Stress Release': 'https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3',
     'Inner Calm & Serenity': 'https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3',
-    'Evening Gratitude': 'https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3',
+    'Evening Gratitude Unwind': 'https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3',
     'Body Scan Relaxation': 'https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3',
     'Loving-Kindness Meditation': 'https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3',
     'Mindful Breath Awareness': 'https://assets.mixkit.co/active_storage/sfx/2517/2517-preview.mp3',

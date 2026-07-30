@@ -266,6 +266,19 @@ class _SessionCard extends StatelessWidget {
   final String emoji, title, duration, category, description;
   final Color accentColor, bgColor;
 
+  static const Map<String, String> sessionImages = {
+    'Deep Stress Release': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=80',
+    'Body Scan Relaxation': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=400&q=80',
+    'Morning Clarity & Energy': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
+    'Mindful Breath Awareness': 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80',
+    'Evening Gratitude Unwind': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
+    'Yoga Nidra Sleep Prep': 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
+    'Inner Calm & Serenity': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+    'Visualization Journey': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
+    'Chakra Balancing Tones': 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=400&q=80',
+    'Loving-Kindness Meditation': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80',
+  };
+
   const _SessionCard({
     required this.emoji,
     required this.title,
@@ -278,92 +291,200 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (ctx, state, _) => GestureDetector(
-        onTap: () {
-          state.playGuidedSession(title, int.parse(duration));
-        },
-        child: GlassCard(
-          cornerRadius: 22,
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
-              ),
-              const SizedBox(width: 14),
+    final imgUrl = sessionImages[title];
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return Consumer<AppState>(
+      builder: (ctx, state, _) {
+        final isPlayingThis = state.isGuidedPlaying && state.currentGuidedTitle == title;
+
+        return GestureDetector(
+          onTap: () {
+            if (isPlayingThis) {
+              state.pauseGuidedSession();
+            } else {
+              state.playGuidedSession(title, int.parse(duration));
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: isPlayingThis ? accentColor.withOpacity(0.9) : Colors.white.withOpacity(0.08),
+                    width: isPlayingThis ? 1.8 : 0.8,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isPlayingThis ? accentColor.withOpacity(0.35) : Colors.black.withOpacity(0.35),
+                      blurRadius: isPlayingThis ? 18 : 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Stack(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w600,
-                              color: textPrimary,
-                            ),
-                          ),
+                    // 🖼️ High-Definition Artwork Background
+                    if (imgUrl != null) ...[
+                      Positioned.fill(
+                        child: Image.network(
+                          imgUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => const SizedBox.shrink(),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      ),
+                      Positioned.fill(
+                        child: Container(
                           decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.14),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: accentColor,
-                              fontWeight: FontWeight.bold,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFF09141D).withOpacity(0.82),
+                                const Color(0xFF050D15).withOpacity(0.94),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(fontSize: 12, color: textSecondary),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.schedule_rounded, size: 13, color: textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$duration min • Guided',
-                          style: TextStyle(fontSize: 11, color: textSecondary),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Begin →',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: accentColor,
+                      ),
+                    ],
+
+                    // 🎨 Card Content
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          // 3D Artwork Badge Container
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isPlayingThis ? accentColor : Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withOpacity(0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: imgUrl != null
+                                  ? Image.network(
+                                      imgUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (c, e, s) => Center(
+                                        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                                      ),
+                                    )
+                                  : Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        title,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: isPlayingThis ? accentColor : textPrimary,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: accentColor.withOpacity(0.18),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: accentColor.withOpacity(0.3)),
+                                      ),
+                                      child: Text(
+                                        category,
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          color: accentColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  description,
+                                  style: TextStyle(fontSize: 12.5, color: textSecondary),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Icon(Icons.schedule_rounded, size: 14, color: textSecondary),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$duration min • Guided Session',
+                                      style: TextStyle(fontSize: 11.5, color: textSecondary),
+                                    ),
+                                    if (isPlayingThis) ...[
+                                      const SizedBox(width: 8),
+                                      AnimatedSoundWave(accentColor: accentColor),
+                                    ],
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isPlayingThis ? accentColor : accentColor.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isPlayingThis ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                            size: 15,
+                                            color: isPlayingThis ? Colors.black : accentColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isPlayingThis ? 'Pause' : 'Begin',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: isPlayingThis ? Colors.black : accentColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
