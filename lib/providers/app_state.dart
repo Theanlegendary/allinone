@@ -84,15 +84,15 @@ class AppState extends ChangeNotifier {
   String? get currentGuidedTitle => _currentGuidedTitle;
   int get guidedRemainingSec => _guidedRemainingSec;
   
-  // 11 DISTINCT, AUTHENTIC Mixkit Direct Audio Streams (CORS Allowed, 100% Web Playback Guarantee)
+  // 11 DISTINCT, AUTHENTIC Sound Effect Streams (Google Actions & Mixkit CORS-Allowed Streams)
   static const Map<String, String> soundStreamUrls = {
-    'Soft Rain': 'https://assets.mixkit.co/active_storage/sfx/2517/2517-preview.mp3',
-    'Ocean Waves': 'https://assets.mixkit.co/active_storage/sfx/1188/1188-preview.mp3',
+    'Soft Rain': 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg',
+    'Ocean Waves': 'https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg',
     'Mountain Stream': 'https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3',
-    'Soothing Breeze': 'https://assets.mixkit.co/active_storage/sfx/2528/2528-preview.mp3',
+    'Soothing Breeze': 'https://actions.google.com/sounds/v1/weather/wind.ogg',
     'Singing Bowls': 'https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3',
     'Cozy Hearth': 'https://assets.mixkit.co/active_storage/sfx/2678/2678-preview.mp3',
-    'Thunderstorm': 'https://assets.mixkit.co/active_storage/sfx/2390/2390-preview.mp3',
+    'Thunderstorm': 'https://actions.google.com/sounds/v1/weather/thunderstorm.ogg',
     'Forest Birds': 'https://assets.mixkit.co/active_storage/sfx/2434/2434-preview.mp3',
     'Bamboo Chimes': 'https://assets.mixkit.co/active_storage/sfx/2435/2435-preview.mp3',
     'Deep Space Drone': 'https://assets.mixkit.co/active_storage/sfx/2659/2659-preview.mp3',
