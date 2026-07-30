@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
+import 'package:relax_mindfulness/components/review_prompt_dialog.dart';
+import 'package:relax_mindfulness/services/notification_service.dart';
 
 class MindfulnessScreen extends StatelessWidget {
   const MindfulnessScreen({super.key});
@@ -296,12 +298,154 @@ class MindfulnessScreen extends StatelessWidget {
                         ),
                       );
                     }),
+
+                  const SizedBox(height: 24),
+                  const _DailyRemindersCard(),
+                  const SizedBox(height: 16),
+                  const _RateAppCard(),
                 ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _DailyRemindersCard extends StatefulWidget {
+  const _DailyRemindersCard();
+
+  @override
+  State<_DailyRemindersCard> createState() => _DailyRemindersCardState();
+}
+
+class _DailyRemindersCardState extends State<_DailyRemindersCard> {
+  final _service = NotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+    _service.init();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      cornerRadius: 24,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🔔', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('DAILY HABIT REMINDERS',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mintAccent, letterSpacing: 1.5)),
+                  const Text('Stay Consistent',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Morning Meditation (8:00 AM)',
+                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: Text('Start your day with gentle clarity & breath',
+                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+            value: _service.morningReminderEnabled,
+            activeColor: tealPrimary,
+            onChanged: (val) async {
+              await _service.setMorningReminder(val);
+              setState(() {});
+            },
+          ),
+          const Divider(color: Colors.white10),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Bedtime Wind-down (9:30 PM)',
+                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: Text('Sleep story & ocean waves for deep slumber',
+                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+            value: _service.eveningReminderEnabled,
+            activeColor: purpleAccent,
+            onChanged: (val) async {
+              await _service.setEveningReminder(val);
+              setState(() {});
+            },
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton.icon(
+              onPressed: () async {
+                await _service.sendInstantTestNotification();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('🔔 Test notification sent! Check your notification tray.'),
+                    backgroundColor: tealPrimary.withOpacity(0.9),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.notifications_active_rounded, color: tealPrimary, size: 18),
+              label: const Text('Test Notification Now', style: TextStyle(color: tealPrimary, fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RateAppCard extends StatelessWidget {
+  const _RateAppCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      cornerRadius: 24,
+      child: Row(
+        children: [
+          const Text('⭐', style: TextStyle(fontSize: 32)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Enjoying Sanctuary?',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Support us with a 5-star rating on the App Store',
+                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => const ReviewPromptDialog(),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 10)],
+              ),
+              child: const Text('Rate 5★',
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
