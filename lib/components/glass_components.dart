@@ -48,20 +48,26 @@ class GlassCard extends StatelessWidget {
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(cornerRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.white.withOpacity(0.035),
-            borderRadius: BorderRadius.circular(cornerRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.06), width: 0.8),
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: backgroundColor ?? const Color(0xFF0C1924).withOpacity(0.92),
+        borderRadius: BorderRadius.circular(cornerRadius),
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.45),
+            offset: const Offset(6, 6),
+            blurRadius: 18,
           ),
-          child: child,
-        ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.04),
+            offset: const Offset(-4, -4),
+            blurRadius: 12,
+          ),
+        ],
       ),
+      child: child,
     );
   }
 }
