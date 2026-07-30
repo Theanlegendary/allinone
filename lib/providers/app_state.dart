@@ -316,6 +316,11 @@ class AppState extends ChangeNotifier {
   };
 
   Future<void> applyCuratedPreset(String presetName) async {
+    // ✋ Auto-pause any running guided session when applying an ambient sound preset
+    if (_isGuidedPlaying) {
+      await pauseGuidedSession();
+    }
+
     final volumes = curatedPresets[presetName];
     if (volumes == null) return;
 
@@ -325,49 +330,26 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // Onboarding
-  bool _onboardingDone = false;
-  bool get onboardingDone => _onboardingDone;
-  void completeOnboarding() {
-    _onboardingDone = true;
-    _prefs?.setBool('onboarding_done', true);
-    notifyListeners();
-  }
-
-  // Streak
-  int _streak = 0, _longestStreak = 0;
-  bool _practicedToday = false;
-  int get streak => _streak;
-  int get longestStreak => _longestStreak;
-  bool get practicedToday => _practicedToday;
-
-  // Sessions
-  List<SessionRecord> _sessions = [];
-  List<SessionRecord> get sessions => List.unmodifiable(_sessions);
-  int get totalMinutes => _sessions.fold(0, (s, r) => s + r.durationMinutes);
-  Map<String, int> get categoryBreakdown {
-    final m = <String, int>{};
-    for (final s in _sessions) { m[s.type] = (m[s.type] ?? 0) + s.durationMinutes; }
-    return m;
-  }
-  double get avgMood {
-    final rated = _sessions.where((s) => s.moodRating > 0).toList();
-    if (rated.isEmpty) return 0;
-    return rated.map((s) => s.moodRating).reduce((a, b) => a + b) / rated.length;
-  }
-  List<MapEntry<String, int>> get weeklyMinutes {
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final now = DateTime.now();
-    return List.generate(7, (i) {
-      final day = now.subtract(Duration(days: 6 - i));
-      final label = days[day.weekday - 1];
-      final mins = _sessions.where((s) => _sameDay(s.timestamp, day)).fold(0, (sum, s) => sum + s.durationMinutes);
-      return MapEntry(label, mins);
-    });
+  // Helper: Pause all ambient sound tracks
+  Future<void> pauseAllAmbientSoundTracks() async {
+    for (final name in _targetVolumes.keys.toList()) {
+      _targetVolumes[name] = 0.0;
+    }
+    for (final entry in _audioPlayers.entries) {
+      try {
+        await entry.value.setVolume(0);
+        await entry.value.pause();
+      } catch (e) {
+        debugPrint('Error pausing ambient track ${entry.key}: $e');
+      }
+    }
   }
 
   // ── Guided Healing Session Audio Player ─────────────────────────────────
   Future<void> playGuidedSession(String title, int durationMins) async {
+    // ✋ Auto-pause any active ambient soundscape tracks so audio streams never clash
+    await pauseAllAmbientSoundTracks();
+
     _guidedTimer?.cancel();
     _currentGuidedTitle = title;
     _guidedRemainingSec = durationMins * 60;
@@ -444,6 +426,11 @@ class AppState extends ChangeNotifier {
 
   // ── Audio Control (Clean, Full Volume Audio Streams) ──────────────────────
   Future<void> updateSoundTrackVolume(String name, double volume) async {
+    // ✋ Auto-pause any active guided session when starting ambient sounds
+    if (volume > 0 && _isGuidedPlaying) {
+      await pauseGuidedSession();
+    }
+
     final url = soundStreamUrls[name] ?? 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg';
 
     final effectiveVolume = volume.clamp(0.0, 1.0);
