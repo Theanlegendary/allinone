@@ -66,89 +66,99 @@ class HomeScreen extends StatelessWidget {
 
     return Consumer<AppState>(
       builder: (context, state, _) {
+        final isClay = state.themeMode.isLight;
+        final activeTextColor = isClay ? clayText : textPrimary;
+        final activeSubtextColor = isClay ? claySubtext : textSecondary;
+
         return Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [bgDark, bgMid, bgDark],
+              colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
             ),
           ),
-          child: Stack(
-            children: [
-              // Ultra-Soft Ambient Mist Orbs
-              Positioned(
-                top: -50,
-                right: -40,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: tealPrimary.withOpacity(0.06),
-                        blurRadius: 100,
-                        spreadRadius: 40,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 340,
-                left: -50,
-                child: Container(
-                  width: 260,
-                  height: 260,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: coralAccent.withOpacity(0.05),
-                        blurRadius: 90,
-                        spreadRadius: 30,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Soothing Header ────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // ── Soothing Header ────────────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _greeting(),
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w600,
-                                  color: textPrimary,
-                                  letterSpacing: -0.4,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Find your silent quiet center',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: textSecondary,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            _greeting(),
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              color: activeTextColor,
+                              letterSpacing: -0.4,
+                            ),
                           ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Find your silent quiet center',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              color: activeSubtextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                              boxShadow: isClay
+                                  ? const [
+                                      BoxShadow(color: Color(0x33B89679), blurRadius: 8, offset: Offset(4, 4)),
+                                      BoxShadow(color: Colors.white, blurRadius: 6, offset: Offset(-3, -3)),
+                                    ]
+                                  : null,
+                            ),
+                            child: PopupMenuButton<SanctuaryThemeMode>(
+                              icon: Icon(
+                                Icons.palette_rounded,
+                                color: isClay ? clayText : textPrimary,
+                                size: 22,
+                              ),
+                              onSelected: (mode) => state.setThemeMode(mode),
+                              itemBuilder: (ctx) => SanctuaryThemeMode.values.map((mode) {
+                                return PopupMenuItem(
+                                  value: mode,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        mode == state.themeMode ? Icons.check_circle_rounded : Icons.circle_outlined,
+                                        color: mode.isLight ? clayAccent : tealPrimary,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        mode.displayName,
+                                        style: TextStyle(
+                                          fontWeight: mode == state.themeMode ? FontWeight.bold : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           if (state.streak > 0) StreakBadge(streakCount: state.streak),
                         ],
                       ),
+                    ],
+                  ),
                       const SizedBox(height: 24),
 
                       // ── 1. Hero Featured Sanctuary Card (Real Nature Photography) ──

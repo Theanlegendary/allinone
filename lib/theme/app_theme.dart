@@ -18,6 +18,14 @@ const Color glassBorder     = Color(0x1AFFFFFF); // Soft 0.1 border contour
 const Color textPrimary     = Color(0xFFF4F8FA); // Warm Editorial Off-White (#f4f8fa)
 const Color textSecondary   = Color(0xFF8BA0B2); // Editorial Slate Blue Mist (#8ba0b2)
 
+// ─── Claymorphism Soft UI Theme Palette ──────────────────────────────────────
+const Color clayAccent       = Color(0xFFD4A574); // Warm Sand Clay Accent (#d4a574)
+const Color clayText         = Color(0xFF5D4037); // Deep Roasted Espresso (#5d4037)
+const Color claySubtext      = Color(0xFF8D6E63); // Terracotta Soil (#8d6e63)
+const Color claySurface      = Color(0xFFF9F4EF); // Soft Cream Clay Surface (#f9f4ef)
+const Color clayCardBg       = Color(0xFFEADBC8); // Warm Sand Card Background (#eadbc8)
+const Color clayDarkCardBg   = Color(0xFFDFCCB7);
+
 // ─── Theme ────────────────────────────────────────────────────────────────────
 ThemeData buildAppTheme() {
   return ThemeData(

@@ -23,13 +23,15 @@ enum BreathingPattern {
 enum BreathPhase { inhale, hold, exhale, holdOut }
 
 enum SanctuaryThemeMode {
+  claymorphism('Claymorphism Soft UI', Color(0xFFF9F4EF), Color(0xFFEADBC8), isLight: true),
   midnightNavy('Midnight Navy', Color(0xFF050D15), Color(0xFF0A1622)),
   forestDusk('Forest Dusk', Color(0xFF061412), Color(0xFF0D2522)),
   twilightLavender('Twilight Lavender', Color(0xFF0E0A17), Color(0xFF191228));
 
-  const SanctuaryThemeMode(this.displayName, this.bgDark, this.bgMid);
+  const SanctuaryThemeMode(this.displayName, this.bgDark, this.bgMid, {this.isLight = false});
   final String displayName;
   final Color bgDark, bgMid;
+  final bool isLight;
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────

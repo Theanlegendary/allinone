@@ -22,6 +22,32 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final isClay = state.themeMode.isLight;
+
+    if (isClay) {
+      return Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: backgroundColor ?? clayCardBg,
+          borderRadius: BorderRadius.circular(cornerRadius),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33B89679),
+              offset: Offset(8, 8),
+              blurRadius: 16,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-6, -6),
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: child,
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(cornerRadius),
       child: BackdropFilter(
@@ -154,6 +180,42 @@ class GlassChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final isClay = state.themeMode.isLight;
+
+    if (isClay) {
+      return GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? clayAccent : clayDarkCardBg,
+            borderRadius: BorderRadius.circular(26),
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(color: Color(0x40D4A574), blurRadius: 10, offset: Offset(3, 3)),
+                    BoxShadow(color: Colors.white, blurRadius: 8, offset: Offset(-3, -3)),
+                  ]
+                : const [
+                    BoxShadow(color: Color(0x20B89679), blurRadius: 6, offset: Offset(4, 4)),
+                    BoxShadow(color: Colors.white, blurRadius: 6, offset: Offset(-3, -3)),
+                  ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : clayText,
+              fontSize: 12.5,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              letterSpacing: -0.2,
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
