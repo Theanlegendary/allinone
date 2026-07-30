@@ -848,5 +848,4 @@ class SanctuaryMiniPlayer extends StatelessWidget {
       },
     );
   }
-  }
 }
