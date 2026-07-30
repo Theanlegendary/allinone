@@ -407,35 +407,35 @@ class _SessionCard extends StatelessWidget {
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          // 3D Artwork Badge Container
+                          // 🖼️ Tall TikTok Portrait Artwork Thumbnail Container (100x135)
                           Container(
-                            width: 56,
-                            height: 56,
+                            width: 100,
+                            height: 135,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isPlayingThis ? accentColor : Colors.white.withOpacity(0.2),
+                                color: isPlayingThis ? accentColor : Colors.white.withOpacity(0.25),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: accentColor.withOpacity(0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                                  color: accentColor.withOpacity(0.4),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(18),
                               child: imgUrl != null
                                   ? Image.network(
                                       imgUrl,
                                       fit: BoxFit.cover,
                                       errorBuilder: (c, e, s) => Center(
-                                        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                                        child: Text(emoji, style: const TextStyle(fontSize: 28)),
                                       ),
                                     )
-                                  : Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
+                                  : Center(child: Text(emoji, style: const TextStyle(fontSize: 28))),
                             ),
                           ),
                           const SizedBox(width: 14),
