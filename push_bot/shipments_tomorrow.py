@@ -180,24 +180,34 @@ def build_shipments_tomorrow_report(src_xlsx, out_xlsx, target_label="Zone 1"):
         if dest_po in district_map:
             dist_name = district_map[dest_po]
         else:
-            br_prefix = dest_prov.upper()
-            if br_prefix == 'SVA':
-
-                dist_name = 'Svay Rieng'
-            elif br_prefix == 'PNP':
-                dist_name = 'Phnom Penh'
-            elif br_prefix == 'KAN':
-                dist_name = 'General District'
-            elif br_prefix == 'BAT':
-                dist_name = 'Battambang'
-            elif br_prefix == 'PRE':
-                dist_name = 'Prey Veng'
-            elif br_prefix == 'SIE':
-                dist_name = 'Siem Reap'
-            elif br_prefix == 'SIH':
-                dist_name = 'Sihanoukville'
-            else:
-                dist_name = dest_prov if dest_prov != dest_po else 'General District'
+            prov_map = {
+                'PNP': 'Phnom Penh',
+                'KAN': 'Kandal',
+                'PRE': 'Prey Veng',
+                'SVA': 'Svay Rieng',
+                'BAT': 'Battambang',
+                'SIE': 'Siem Reap',
+                'SIH': 'Sihanoukville',
+                'KOH': 'Koh Kong',
+                'KAM': 'Kampot',
+                'TAK': 'Takeo',
+                'PUR': 'Pursat',
+                'PRH': 'Preah Vihear',
+                'TBK': 'Tbong Khmum',
+                'THO': 'Kampong Thom',
+                'CHA': 'Kampong Cham',
+                'KRA': 'Kratie',
+                'BAN': 'Banteay Meanchey',
+                'CHH': 'Kampong Chhnang',
+                'MON': 'Mondulkiri',
+                'ROT': 'Ratanakiri',
+                'STU': 'Stung Treng',
+                'ODD': 'Oddar Meanchey',
+                'KEP': 'Kep',
+                'PAI': 'Pailin',
+            }
+            br_prefix = dest_prov.upper()[:3] if dest_prov else (dest_po[:3] if dest_po else '')
+            dist_name = prov_map.get(br_prefix, dest_prov if dest_prov and dest_prov.upper() != 'NONE' else 'General District')
 
 
 

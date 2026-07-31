@@ -9,3 +9,7 @@ test_out_temp/
 *.tmp
 *.xlsx
 imports_check.txt
+web_portal/
+dashboard_tokens.json
+dashboard/node_modules/
+dashboard/.next/

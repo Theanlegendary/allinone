@@ -53,6 +53,29 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             else:
                 self.wfile.write(b"[]")
+        elif self.path == '/dashboard-data':
+            # Require valid token in Authorization header
+            auth = self.headers.get('Authorization', '')
+            token = auth.replace('Bearer ', '').strip()
+            if not self._is_token_valid(token):
+                self.send_response(401)
+                self.end_headers()
+                self.wfile.write(b'{"error":"Unauthorized"}')
+                return
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            data_path = os.path.join(HERE, "cache", "dashboard_data.json")
+            if os.path.exists(data_path):
+                with open(data_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.wfile.write(b'{"branches":{},"summary":{},"updated":null}')
+        elif self.path == '/dashboard-tokens':
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not Found")
         else:
             self.send_response(404)
             self.end_headers()
@@ -61,6 +84,26 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         # Suppress logging every single asset request to avoid cluttering the bot terminal logs
         pass
+
+    def _is_token_valid(self, token):
+        """Check if token exists and is not expired."""
+        if not token:
+            return False
+        token_path = os.path.join(HERE, "dashboard_tokens.json")
+        try:
+            if not os.path.exists(token_path):
+                return False
+            with open(token_path, encoding="utf-8") as f:
+                data = json.load(f)
+            now = datetime.now()
+            for t in data.get("tokens", []):
+                if t["token"] == token:
+                    expires = datetime.fromisoformat(t["expires"])
+                    if now < expires:
+                        return True
+        except Exception:
+            pass
+        return False
 
 def start_webapp_server():
     try:
@@ -109,6 +152,191 @@ def update_webapp_cache(result):
         log.info(f"Updated WebApp data cache with {len(items)} items.")
     except Exception as e:
         log.error(f"Failed to update WebApp data cache: {e}")
+
+def update_dashboard_cache(result):
+    """Build enriched JSON for the web dashboard with manager-friendly views.
+
+    Views per branch:
+      - all_pending: ALL bills at this PO that are NOT completed (Pickup+Delivery+Transit+Branch combined)
+      - completed: Bills completed today (410 + 520 + 201) at this PO
+      - incoming: Bills heading TO this PO from elsewhere
+      - total_today: ALL bills this PO handled today (pending + completed = full workload)
+    """
+    try:
+        type_data = result.get("type_data", {})
+        dm_all = result.get("dm_all")  # Full data including completed
+        today = datetime.now().date()
+        branches = {}
+
+        def _extract_order(row):
+            order_id = str(row.get("ORDER ID") or "").strip()
+            if not order_id or order_id.lower() == "nan":
+                return None
+            receiver = str(row.get("RECEIVER") or row.get("Cus name") or "").strip()
+            if receiver.lower() == "nan": receiver = ""
+            status_code = str(row.get("STATUS_CODE") or "").strip()
+            if status_code.lower() == "nan": status_code = ""
+            phone = str(row.get("Phone") or row.get("RECEIVER PHONE") or row.get("PHONE") or "").strip()
+            if phone.lower() == "nan": phone = ""
+            fee = 0.0
+            try: fee = float(row.get("TOTAL FEE (USD)") or 0)
+            except (ValueError, TypeError): pass
+            cod = 0.0
+            try: cod = float(row.get("COD (USD)") or 0)
+            except (ValueError, TypeError): pass
+            created_date = ""
+            cd_val = row.get("CREATED DATE")
+            if cd_val and str(cd_val).lower() != "nan":
+                try:
+                    cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                    if not pd.isna(cd):
+                        created_date = cd.strftime("%d/%m/%Y")
+                except Exception: pass
+            return {
+                "order_id": order_id,
+                "receiver": receiver,
+                "phone": phone,
+                "status_code": status_code,
+                "category": _get_category(status_code),
+                "stage": _get_stage(status_code),
+                "fee": fee,
+                "cod": cod,
+                "created_date": created_date,
+            }
+
+        def _get_category(sc):
+            """Categorize for filter checkboxes (shipped/cancelled/return/active)."""
+            if sc in ('410',):
+                return 'shipped'
+            if sc in ('201',):
+                return 'cancelled'
+            if sc in ('500', '510', '511', '512', '520', '540'):
+                return 'return'
+            return 'active'
+
+        def _get_stage(sc):
+            """Categorize for tab views (pickup/delivery/completed/transit)."""
+            if sc in ('110', '120', '200'):
+                return 'pickup'
+            if sc in ('410', '520', '201'):
+                return 'completed'
+            if sc in ('401', '402', '420', '430', '460', '472', '480', '400', '306', '309'):
+                return 'delivery'
+            # Transit/pending: 210, 300, 302, 310, 311, 500, 510, 511, 512, 540
+            return 'transit'
+
+        def _ensure_branch(b):
+            if b not in branches:
+                branches[b] = {
+                    "all_pending": [],    # All pending at this PO (all status types)
+                    "completed": [],      # Completed today (410/520/201)
+                    "incoming": [],       # Heading to this PO from elsewhere
+                    "total_today": [],    # Everything (pending + completed)
+                    "counts": {
+                        "all_pending": 0,
+                        "completed": 0,
+                        "incoming": 0,
+                        "total_today": 0,
+                    },
+                    "total_fee": 0.0,
+                    "total_cod": 0.0,
+                }
+
+        # ── 1. All Pending at Current PO (all report types: Pickup+Delivery+Transit+Branch) ──
+        seen_pending_ids = {}  # track per PO to avoid duplicates
+        for report_type in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+            df = type_data.get(report_type)
+            if df is None or df.empty:
+                continue
+            if 'CURRENT POST OFFICE' not in df.columns:
+                continue
+            for po, df_po in df.groupby('CURRENT POST OFFICE'):
+                po_str = str(po).strip().upper()
+                if not po_str:
+                    continue
+                _ensure_branch(po_str)
+                if po_str not in seen_pending_ids:
+                    seen_pending_ids[po_str] = set()
+                for _, row in df_po.iterrows():
+                    order = _extract_order(row)
+                    if not order:
+                        continue
+                    if order["order_id"] in seen_pending_ids[po_str]:
+                        continue
+                    seen_pending_ids[po_str].add(order["order_id"])
+                    order["report_type"] = report_type
+                    branches[po_str]["all_pending"].append(order)
+                    branches[po_str]["total_today"].append(order)
+                    branches[po_str]["total_fee"] += order["fee"]
+                    branches[po_str]["total_cod"] += order["cod"]
+
+        # ── 2. Incoming to PO (RECEIVE POST OFFICE = this PO, but CURRENT != this PO) ──
+        for report_type in ['Pickup', 'Delivery', 'Transit', 'Branch']:
+            df = type_data.get(report_type)
+            if df is None or df.empty:
+                continue
+            if 'RECEIVE POST OFFICE' not in df.columns or 'CURRENT POST OFFICE' not in df.columns:
+                continue
+            for _, row in df.iterrows():
+                recv_po = str(row.get("RECEIVE POST OFFICE") or "").strip().upper()
+                curr_po = str(row.get("CURRENT POST OFFICE") or "").strip().upper()
+                if not recv_po or recv_po == curr_po:
+                    continue
+                _ensure_branch(recv_po)
+                order = _extract_order(row)
+                if not order:
+                    continue
+                order["report_type"] = report_type
+                order["current_po"] = curr_po
+                branches[recv_po]["incoming"].append(order)
+
+        # ── 3. Completed Today (410 + 520 + 201 from dm_all) ──
+        if dm_all is not None and not dm_all.empty:
+            completed_mask = dm_all['STATUS_CODE'].isin(['410', '520', '201'])
+            df_completed = dm_all[completed_mask].copy()
+            if 'CURRENT POST OFFICE' in df_completed.columns:
+                for po, df_po in df_completed.groupby('CURRENT POST OFFICE'):
+                    po_str = str(po).strip().upper()
+                    if not po_str:
+                        continue
+                    _ensure_branch(po_str)
+                    for _, row in df_po.iterrows():
+                        order = _extract_order(row)
+                        if not order:
+                            continue
+                        order["report_type"] = "Completed"
+                        branches[po_str]["completed"].append(order)
+                        branches[po_str]["total_today"].append(order)
+
+        # ── Build counts ──
+        for b, b_data in branches.items():
+            b_data["counts"]["all_pending"] = len(b_data["all_pending"])
+            b_data["counts"]["completed"] = len(b_data["completed"])
+            b_data["counts"]["incoming"] = len(b_data["incoming"])
+            b_data["counts"]["total_today"] = len(b_data["total_today"])
+
+        # ── Overall summary ──
+        summary = {"all_pending": 0, "completed": 0, "incoming": 0, "total_today": 0}
+        for b_data in branches.values():
+            for k in summary:
+                summary[k] += b_data["counts"].get(k, 0)
+
+        dashboard_data = {
+            "branches": branches,
+            "summary": summary,
+            "updated": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        }
+
+        cache_dir = os.path.join(HERE, "cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        cache_path = os.path.join(cache_dir, "dashboard_data.json")
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(dashboard_data, f, ensure_ascii=False)
+        log.info(f"Updated dashboard cache: {len(branches)} branches, "
+                 f"summary={summary}")
+    except Exception as e:
+        log.error(f"Failed to update dashboard cache: {e}")
+
 
 def save_highlight_history(result):
     try:
@@ -1656,6 +1884,7 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             src, REF_PATH, tmpdir, return_metadata=True, mode=mode,
         )
         update_webapp_cache(result)
+        update_dashboard_cache(result)
         save_highlight_history(result)
 
         # ── Zone filtering ────────────────────────────────────────────────
@@ -1736,9 +1965,10 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Build final formatted caption
         result["summary_caption"] = "\n".join([
             f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-            f"Pickup: {overall['Pickup']} (U:{urgent_by_type.get('Pickup',0)})  |  "
-            f"Delivery: {overall['Delivery']} (U:{urgent_by_type.get('Delivery',0)})  |  "
-            f"Transit: {overall.get('Transit',0)} (U:{urgent_by_type.get('Transit',0)})  |  Branch: {overall.get('Branch',0)} (U:{urgent_by_type.get('Branch',0)})",
+            f"Delivery: {overall.get('Delivery',0)} (U:{urgent_by_type.get('Delivery',0)})  |  "
+            f"Not Assign: {overall.get('Branch',0)} (U:{urgent_by_type.get('Branch',0)})  |  "
+            f"Pickup: {overall.get('Pickup',0)} (U:{urgent_by_type.get('Pickup',0)})  |  "
+            f"Send Mega: {overall.get('Transit',0)} (U:{urgent_by_type.get('Transit',0)})",
             f"Grand Total: {grand_total}  |  Total Urgent: {total_urgent_sum}",
         ])
 
@@ -4691,6 +4921,7 @@ async def run_push(
             src, REF_PATH, tmpdir, return_metadata=True, mode=mode, target_handles=target_handles
         )
         update_webapp_cache(result)
+        update_dashboard_cache(result)
         save_highlight_history(result)
 
         # ── Apply handle filters ──────────────────────────────────────────
@@ -4711,7 +4942,7 @@ async def run_push(
             label = f"{zone_mode} " if zone_mode else ""
             result["summary_caption"] = "\n".join([
                 f"📋 {label}Daily Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                f"Pickup: {overall['Pickup']}  |  Delivery: {overall['Delivery']}  |  Transit: {overall.get('Transit',0)}  |  Branch: {overall.get('Branch',0)}",
+                f"Delivery: {overall.get('Delivery',0)}  |  Not Assign: {overall.get('Branch',0)}  |  Pickup: {overall.get('Pickup',0)}  |  Send Mega: {overall.get('Transit',0)}",
                 f"Grand Total: {grand_total}",
             ])
 
@@ -4909,7 +5140,7 @@ async def run_push(
 
                 zone_caption = "\n".join([
                     f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-                    f"Pickup: {zone_overall['Pickup']}  |  Delivery: {zone_overall['Delivery']}  |  Transit: {zone_overall.get('Transit',0)}  |  Branch: {zone_overall.get('Branch',0)}",
+                    f"Delivery: {zone_overall.get('Delivery',0)}  |  Not Assign: {zone_overall.get('Branch',0)}  |  Pickup: {zone_overall.get('Pickup',0)}  |  Send Mega: {zone_overall.get('Transit',0)}",
                     f"Grand Total: {zone_grand}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
                 ])
                 if inline_remark:
@@ -5881,6 +6112,64 @@ async def cmd_notice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+DASHBOARD_TOKENS_PATH = os.path.join(HERE, "dashboard_tokens.json")
+
+def generate_dashboard_token():
+    """Generate a random 8-char alphanumeric token and save it with 24h expiry."""
+    import secrets
+    import string
+    alphabet = string.ascii_uppercase + string.digits
+    token = ''.join(secrets.choice(alphabet) for _ in range(8))
+
+    now = datetime.now()
+    expires = now + timedelta(hours=24)
+
+    # Load existing tokens
+    data = {"tokens": []}
+    if os.path.exists(DASHBOARD_TOKENS_PATH):
+        try:
+            with open(DASHBOARD_TOKENS_PATH, encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            pass
+
+    # Prune expired tokens
+    data["tokens"] = [
+        t for t in data.get("tokens", [])
+        if datetime.fromisoformat(t["expires"]) > now
+    ]
+
+    # Add new token
+    data["tokens"].append({
+        "token": token,
+        "created": now.isoformat(),
+        "expires": expires.isoformat(),
+    })
+
+    with open(DASHBOARD_TOKENS_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return token, expires
+
+
+@user_guard
+async def cmd_adminthean(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Generate a daily rotating access key for the web dashboard."""
+    await delete_group_command(update, context)
+
+    token, expires = generate_dashboard_token()
+    expires_str = expires.strftime("%d/%m/%Y %H:%M")
+
+    await private_or_current_reply(
+        update, context,
+        f"🔑 Dashboard Access Key Generated\n\n"
+        f"Key: `{token}`\n"
+        f"Expires: {expires_str}\n\n"
+        f"Use this key to login at your dashboard URL.",
+        parse_mode="Markdown"
+    )
+
+
 def main():
     # Start the WebApp HTTP Server in a background daemon thread
     server_thread = threading.Thread(target=start_webapp_server, daemon=True)
@@ -5953,6 +6242,7 @@ def main():
     app.add_handler(CommandHandler("announce", cmd_notice))
     app.add_handler(CommandHandler("remark",   cmd_notice))
     app.add_handler(CommandHandler("sendmsg",  cmd_notice))
+    app.add_handler(CommandHandler("adminthean", cmd_adminthean))
     app.add_handler(MessageHandler(filters.CaptionRegex(r"^/(notice|announce|remark|sendmsg|msg)\b"), cmd_notice))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
 

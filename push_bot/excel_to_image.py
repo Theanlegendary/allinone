@@ -403,30 +403,73 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
             draw.rectangle([x, y, x + mw, y + mh], fill=bg)
 
             if text:
-                f = _get_font(text, FONT_SIZE, bold)
-                stroke_w = 0
-                if bold and _has_khmer(text):
-                    # Simulate bold for Khmer OS fonts using a stroke outline
-                    stroke_w = max(1, int(0.4 * SCALE))
-                try:
-                    bb = draw.textbbox((0, 0), text, font=f, stroke_width=stroke_w)
-                    tw, th = bb[2] - bb[0], bb[3] - bb[1]
-                except Exception:
-                    tw = len(text) * (FONT_SIZE - 2) + stroke_w * 2
-                    th = FONT_SIZE + stroke_w * 2
+                text_str = str(text)
+                dot_color = None
+                clean_text = text_str
+                
+                if text_str.startswith("🟢"):
+                    dot_color = "#10B981"  # Bright Vivid Green
+                    clean_text = text_str[1:].strip()
+                elif text_str.startswith("🟡"):
+                    dot_color = "#F59E0B"  # Bright Vivid Yellow
+                    clean_text = text_str[1:].strip()
+                elif text_str.startswith("🔴"):
+                    dot_color = "#EF4444"  # Bright Vivid Red
+                    clean_text = text_str[1:].strip()
 
-                ty = y + (mh - th) // 2
-                if align == 'center':
-                    tx = x + (mw - tw) // 2
-                elif align == 'right':
-                    tx = x + mw - tw - PAD_X
-                else:
-                    tx = x + PAD_X
+                if dot_color:
+                    f = _get_font(clean_text, FONT_SIZE, True)
+                    try:
+                        bb = draw.textbbox((0, 0), clean_text, font=f)
+                        tw_t, th_t = bb[2] - bb[0], bb[3] - bb[1]
+                    except Exception:
+                        tw_t = len(clean_text) * (FONT_SIZE - 2)
+                        th_t = FONT_SIZE
 
-                if stroke_w > 0:
-                    draw.text((tx, ty), text, font=f, fill=fg, stroke_width=stroke_w, stroke_fill=fg)
+                    dot_r = max(4 * SCALE, th_t // 3)
+                    dot_w = dot_r * 2
+                    gap = 5 * SCALE
+                    total_w = dot_w + gap + tw_t
+
+                    if align == 'center':
+                        start_x = x + (mw - total_w) // 2
+                    elif align == 'right':
+                        start_x = x + mw - total_w - PAD_X
+                    else:
+                        start_x = x + PAD_X
+
+                    cy = y + mh // 2
+                    # Draw solid filled color circle
+                    draw.ellipse([start_x, cy - dot_r, start_x + dot_w, cy + dot_r], fill=dot_color)
+
+                    # Draw text in matching bold color font
+                    tx = start_x + dot_w + gap
+                    ty = y + (mh - th_t) // 2
+                    draw.text((tx, ty), clean_text, font=f, fill=dot_color)
                 else:
-                    draw.text((tx, ty), text, font=f, fill=fg)
+                    f = _get_font(text, FONT_SIZE, bold)
+                    stroke_w = 0
+                    if bold and _has_khmer(text):
+                        stroke_w = max(1, int(0.4 * SCALE))
+                    try:
+                        bb = draw.textbbox((0, 0), text, font=f, stroke_width=stroke_w)
+                        tw, th = bb[2] - bb[0], bb[3] - bb[1]
+                    except Exception:
+                        tw = len(text) * (FONT_SIZE - 2) + stroke_w * 2
+                        th = FONT_SIZE + stroke_w * 2
+
+                    ty = y + (mh - th) // 2
+                    if align == 'center':
+                        tx = x + (mw - tw) // 2
+                    elif align == 'right':
+                        tx = x + mw - tw - PAD_X
+                    else:
+                        tx = x + PAD_X
+
+                    if stroke_w > 0:
+                        draw.text((tx, ty), text, font=f, fill=fg, stroke_width=stroke_w, stroke_fill=fg)
+                    else:
+                        draw.text((tx, ty), text, font=f, fill=fg)
 
             draw.rectangle([x, y, x + mw, y + mh], outline=BORDER_COL, width=1 * SCALE)
             x += cw

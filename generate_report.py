@@ -1,7 +1,8 @@
 import pandas as pd
 import os
 import json
-from datetime import datetime, timedelta
+import re
+from datetime import datetime, timedelta, date as _date
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
@@ -11,7 +12,7 @@ HEADER_KHMER_MAP = {
     'ZONE': 'តំបន់',
     'POST OFFICE HANDLE': 'ប៉ុស្តិ៍ទទួលខុសត្រូវ',
     'CURRENT POST OFFICE': 'ប៉ុស្តិ៍បច្ចុប្បន្ន',
-    'ORDER ID': 'លេខបុង / លេខកូដបញ្ជាទិញ',
+    'ORDER ID': 'លេខបុង',
     'Cus name': 'ឈ្មោះអតិថិជន',
     'Phone': 'លេខទូរស័ព្ទ',
     'RECEIVER': 'ឈ្មោះអតិថិជន',
@@ -19,12 +20,16 @@ HEADER_KHMER_MAP = {
     'NEXT_STEP': 'ជំហានបន្ទាប់',
     'REMARK': 'សកម្មភាព ត្រូវធ្វើ',
     'NEXT_ACTION': 'អ្នកគ្រប់គ្រង់ប្រតិបត្តិការ',
+    'Age': 'រយៈពេលអាយុ (Age)',
+    '10H KPI': 'គោលដៅ 10H KPI',
     'Grand Total': 'សរុប',
     'Pending': 'អីវ៉ាន់កំពុងរង់ចាំ (Pending)',
     'Pickup': 'អីវ៉ាន់ត្រូវយក (Pickup)',
     'Delivery': 'អីវ៉ាន់ត្រូវដឹក (Delivery)',
-    'Transit': 'ឡានដឹកធំ (Mega Truck)',
-    'Branch': 'ចាត់តាំងដឹក (Assign Deliver)',
+    'Transit': 'ដាក់ទៅ MEGA (Send Mega)',
+    'Branch': 'មិនទាន់ចាត់តាំង (Not Assign)',
+    'Send Mega': 'ដាក់ទៅ MEGA (Send Mega)',
+    'Not Assign': 'មិនទាន់ចាត់តាំង (Not Assign)',
     'TOTAL FEE (USD)': 'ថ្លៃដឹក (USD)',
     'COD (USD)': 'COD (USD)',
     'STATUS_CODE': 'Status',
@@ -40,20 +45,85 @@ def get_khmer_month_name(mo):
     }
     return months.get(mo, "")
 
+def compute_kpi_info(row):
+    status_code = str(row.get('STATUS_CODE', '') or row.get('CURRENT STATUS', '') or '').strip()
+    if status_code and ' ' in status_code:
+        status_code = status_code.split()[0].strip()
+
+    scan_time = None
+    for col in [
+        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+        'STATUS 306 AT STORE / AGENT (LAST TIME)',
+        'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+        'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
+        'CURRENT TIME',
+        'CREATED DATE'
+    ]:
+        val = row.get(col)
+        if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+            parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+            if pd.notna(parsed_dt):
+                scan_time = parsed_dt
+                break
+
+    if scan_time is None:
+        return '', '10h'
+
+    now = datetime.now()
+    diff = now - scan_time
+    total_seconds = max(0, diff.total_seconds())
+    total_minutes = int(total_seconds // 60)
+    hours = int(total_minutes // 60)
+    minutes = int(total_minutes % 60)
+
+    raw_age = f"{hours}h {minutes:02d}m"
+    kpi_target = "10h"
+
+    # Status 420 (Store Waiting) and 472 (Resolving Issue) are Green status rows -> ALWAYS GREEN 🟢!
+    if status_code in ('420', '472'):
+        dot = "🟢"
+    elif total_minutes <= 599:
+        dot = "🟢"
+    elif 600 <= total_minutes <= 659:
+        dot = "🟡"
+    else:
+        dot = "🔴"
+
+    age_with_dot = f"{dot} {raw_age}"
+    return age_with_dot, kpi_target
+
 # ── Status codes ───────────────────────────────────────────────────────────────
 CLASSIFY_LABEL = {'Pickup': 'Pickup', 'Delivery': 'Delivery', 'Pending': 'Pending', 'Transit': 'Transit', 'Branch': 'Branch'}
 
-# All active report tabs in order
+# All active report tabs (internal keys)
 ALL_TABS = ['Pickup', 'Delivery', 'Transit', 'Branch']
 
+# CEO Sheet Order for Excel Workbook
+CEO_SHEET_ORDER = ['Delivery', 'Branch', 'Pickup', 'Transit']
+
+# CEO Display Titles for Excel Tabs & Headers
+CEO_DISPLAY_TITLES = {
+    'Delivery': 'Delivery',
+    'Branch':   'Not Assign',
+    'Pickup':   'Pickup',
+    'Transit':  'Send Mega',
+}
+
+CEO_HEADER_KHMER = {
+    'Delivery': 'អីវ៉ាន់ត្រូវដឹក (Delivery)',
+    'Branch':   'មិនទាន់ចាត់តាំង (Not Assign)',
+    'Pickup':   'អីវ៉ាន់ត្រូវយក (Pickup)',
+    'Transit':  'ដាក់ទៅ MEGA (Send Mega)',
+}
+
 # Max index cols across all report types (for stacked/long alignment)
-MAX_INDEX = 8  # Delivery has most with Fee+COD
+MAX_INDEX = 9  # Delivery and Branch have 9 index columns before Fee+COD
 
 REPORT_COLS = {
     'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'Cus name', 'Phone'],
-    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'ACTION', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)'],
-    'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'ACTION', 'NEXT_STEP'],
-    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'ACTION', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)'],
+    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+    'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
+    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
 }
 
 REPORT_FILTER_COLS = {
@@ -102,21 +172,24 @@ DELIVERY_ACTION_MAP = {
     '500': ('ត្រឡប់', 'ផ្ញើត្រឡប់ទៅហាងផ្ញើ'),
 }
 
+# Transit (Send Mega) — next step is always "Send to Mega" regardless of status
 TRANSIT_ACTION_MAP = {
-    '210': ('ពិនិត្យ', 'ផ្ទេរទៅឡានដឹក'),
-    '230': ('ពិនិត្យ', 'ចាកចេញពីស្ថានីយ៍រង'),
-    '300': ('ពិនិត្យ', 'ទទួលការផ្ទេរ'),
-    '302': ('ពិនិត្យ', 'ទទួលការផ្ទេរ'),
-    '306': ('ពិនិត្យ', 'បញ្ជូនទៅឃ្លាំងធំ'),
-    '310': ('ពិនិត្យ', 'ទទួលការផ្ទេរ'),
-    '311': ('ពិនិត្យ', 'ទទួលការបញ្ជូន'),
+    '210': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '230': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '300': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '302': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '306': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '310': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
+    '311': ('ដាក់ទៅ', 'ដាក់ទៅ MEGA'),
 }
 
-BRANCH_ACTION_MAP = {
+# Branch (Not Assign) — parcels received at branch but not yet assigned to rider
+NOT_ASSIGN_ACTION_MAP = {
     '306': ('ដឹកជញ្ជូន', 'ចាត់អ្នកដឹក'),
     '309': ('ដឹកជញ្ជូន', 'ចាត់អ្នកដឹក'),
     '400': ('ដឹកជញ្ជូន', 'ចាត់អ្នកដឹក'),
 }
+BRANCH_ACTION_MAP = NOT_ASSIGN_ACTION_MAP  # backward compat alias
 
 
 
@@ -476,18 +549,19 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
         is_total = str(row_dict.get(index_cols[0], '')).strip() == 'Grand Total'
 
         # Check overdue and status code
-        is_overdue = False
-        is_overdue_7days = False
+        is_overdue = bool(row_dict.get('_is_overdue', False))
+        is_overdue_7days = bool(row_dict.get('_is_overdue_7days', False))
         status_code = None
         if not is_total:
             order_id = normalize_id(row_dict.get('ORDER ID', ''))
-            if order_created_map:
-                created_date = order_created_map.get(order_id)
-                if created_date:
-                    age_days = (today - created_date).days
-                    if age_days > HIGHLIGHT_OVER_DAYS:
+            if not is_overdue:
+                age_str = str(row_dict.get('Age', '') or '')
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+                if match:
+                    h_val = int(match.group(1))
+                    if h_val >= 24:
                         is_overdue = True
-                    if age_days > 7:
+                    if h_val >= 168:
                         is_overdue_7days = True
             if order_status_map:
                 status_code = order_status_map.get(order_id)
@@ -497,51 +571,50 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell = ws.cell(r, start_col + ci, val if val != '' else None)
             cell.border = bdr
 
-            # Row-level fill (overdue / status-based only — boss wants 3 colors: orange, red, white)
+            # Row-level fill (original system: 420/472 light green row, overdue/return light red row)
             row_fill = None
             if is_total:
                 row_fill = _fill(tot_bg)
-            elif status_code in ("420", "472") and is_overdue_7days:
-                row_fill = _fill("FFEBEB")  # Light red
             elif status_code in ("420", "472"):
-                row_fill = _fill("E2EFDA")  # Light green (store waiting)
-            elif is_overdue:
-                row_fill = _fill("FFEBEB")  # Light orange (overdue)
-            elif status_code in ("500", "510", "511", "512", "520", "540"):
-                row_fill = _fill("FFEBEB")  # Light red/pink (return)
+                row_fill = _fill("E2EFDA")  # Light green row fill
+            elif is_overdue or status_code in ("500", "510", "511", "512", "520", "540"):
+                row_fill = _fill("FFEBEB")  # Light red row fill
+
+            cell_fill = row_fill
+            cell_font = _font(fn, '1E293B', bold=False)
+            cell_align = _align('center')
 
             if is_total:
                 if row_fill:
                     cell.fill = row_fill
-                cell.font      = _font(fn, RED, bold=True)
-                cell.alignment = _align('center')
-            elif status_code in ("420", "472") or is_overdue or status_code in ("500", "510", "511", "512", "520", "540"):
-                if row_fill:
-                    cell.fill = row_fill
-                cell.font      = _font(fn, '000000', bold=False)
-                cell.alignment = _align('center')
-            elif col_name == index_cols[0]:
-                cell.fill      = _fill(z_bg)
-                cell.font      = _font(fn, z_fg, bold=False)
-                cell.alignment = _align('center')
-            elif len(index_cols) > 1 and col_name == index_cols[1]:
-                cell.fill      = _fill(g_bg)
-                cell.font      = _font(fn, g_fg, bold=False)
-                cell.alignment = _align('center')
-            elif col_name in index_cols:
-                # All other index columns (CURRENT POST OFFICE, ORDER ID, etc.) → center
-                if col_name == 'ORDER ID' and not is_total:
-                    cell.font      = _font(fn, '1E293B', bold=False)
-                cell.alignment = _align('center')
-            elif col_name in active_days:
-                cell.font      = _font(fn, '1E293B', bold=False)
-                cell.alignment = _align('center')
+                cell.font      = _font(fn, RED if col_name == 'Grand Total' or col_name in index_cols else '0F172A', bold=True)
+            elif col_name == 'Age':
+                val_str = str(val or '').strip()
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', val_str, re.IGNORECASE)
+                if match:
+                    h_val = int(match.group(1))
+                    m_val = int(match.group(2)) if match.group(2) else 0
+                    t_mins = h_val * 60 + m_val
+                    if t_mins <= 599:
+                        cell_fill = _fill("D1FAE5")  # 🟢 Green (0-10h)
+                        cell_font = _font(fn, "065F46", bold=True)
+                    elif 600 <= t_mins <= 1439:
+                        cell_fill = _fill("FEF08A")  # 🟡 Yellow (10-24h)
+                        cell_font = _font(fn, "92400E", bold=True)
+                    else:
+                        cell_fill = _fill("FEE2E2")  # 🔴 Red (>24h)
+                        cell_font = _font(fn, "991B1B", bold=True)
+                else:
+                    if row_fill:
+                        cell_fill = row_fill
+                    cell_font = _font(fn, '1E293B', bold=True)
             elif col_name == 'Grand Total':
-                cell.font      = _font(fn, RED, bold=True)
-                cell.alignment = _align('center')
-            else:
-                cell.font      = _font(fn, '1E293B', bold=False)
-                cell.alignment = _align('center')
+                cell_font = _font(fn, RED, bold=True)
+
+            if cell_fill:
+                cell.fill = cell_fill
+            cell.font      = cell_font
+            cell.alignment = cell_align
         r += 1
 
     return r, end_col + 1  # (next_free_row, next_free_col)
@@ -600,7 +673,7 @@ def _set_col_widths(ws):
             header_val = ''
             for r_scan in range(1, min(10, ws.max_row + 1)):
                 cell_v = str(ws.cell(r_scan, c).value or '').strip()
-                if cell_v in ('Cus name', 'RECEIVER', 'Phone', 'ORDER ID', 'CURRENT POST OFFICE', 'POST OFFICE HANDLE', 'REMARK'):
+                if cell_v in ('Cus name', 'RECEIVER', 'Phone', 'ORDER ID', 'CURRENT POST OFFICE', 'POST OFFICE HANDLE', 'REMARK', 'Age', 'KPI TIME: 10', 'KPI Status'):
                     header_val = cell_v
                     break
             
@@ -664,7 +737,8 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
     from collections import defaultdict
     wb = Workbook()
     
-    report_types = ALL_TABS
+    # Render sheets in CEO order: Delivery > Not Assign (Branch) > Pickup > Send Mega (Transit)
+    report_types = CEO_SHEET_ORDER
     
     # Global shared days across ALL handles
     shared_days = sorted(set(
@@ -684,11 +758,12 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
             combined_data[rn].extend(non_footer_rows)
 
     for idx, rn in enumerate(report_types):
+        display_title = CEO_DISPLAY_TITLES.get(rn, rn)
         if idx == 0:
             ws = wb.active
-            ws.title = rn
+            ws.title = display_title
         else:
-            ws = wb.create_sheet(title=rn)
+            ws = wb.create_sheet(title=display_title)
             
         rows = combined_data[rn]
         icols = index_cols_map.get(rn)
@@ -703,32 +778,35 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
             rows = [footer]
             combined_active_days = []
         else:
-            # Sort the combined rows
-            if rn in ('Delivery', 'Transit', 'Branch') and 'ACTION' in icols:
-                def get_combined_sort_key(row):
-                    zone = str(row.get('ZONE', '') or '').strip().upper()
-                    action = str(row.get('ACTION', '') or '').strip()
-                    if 'ដឹកជញ្ជូន' in action:
-                        act_w = 1
-                    elif 'ពិនិត្យ' in action:
-                        act_w = 2
-                    elif 'ត្រឡប់' in action:
-                        act_w = 3
-                    else:
-                        act_w = 4
-                    
+            # Sort the combined rows — latest date first (newest timestamp at top)
+            def get_combined_sort_key(row):
+                zone = str(row.get('ZONE', '') or '').strip().upper()
+                dt = None
+                for col in [
+                    'CURRENT TIME',
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+                    'CREATED DATE'
+                ]:
+                    val = row.get(col)
+                    if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+                        parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+                        if pd.notna(parsed_dt):
+                            dt = parsed_dt
+                            break
+                if dt is None:
                     oid = str(row.get('ORDER ID', '') or '').strip()
                     dt = order_created_map.get(oid) if order_created_map else None
-                    if dt is None:
-                        import datetime as dt_mod
-                        dt = dt_mod.date.max
-                    return (zone, act_w, dt)
-                rows = sorted(rows, key=get_combined_sort_key)
-            else:
-                sort_keys = [c for c in ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID'] if c in icols]
-                def get_sort_key(row):
-                    return tuple(str(row.get(k, '') or '').strip().upper() for k in sort_keys)
-                rows = sorted(rows, key=get_sort_key)
+                if isinstance(dt, datetime):
+                    ts = dt.timestamp()
+                elif isinstance(dt, _date):
+                    ts = datetime.combine(dt, datetime.min.time()).timestamp()
+                else:
+                    ts = 0.0
+                return (zone, -ts)  # negative ts for descending (latest/newest date first)
+
+            rows = sorted(rows, key=get_combined_sort_key)
             
             combined_active_days = shared_days
 
@@ -789,10 +867,10 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 continue
     df = xl.parse(sheet)
 
-    # Date column for day-of-month grouping
+    # Date column for day-of-month grouping (prioritize CURRENT TIME over CREATED DATE as requested)
     date_col = (
-        'CREATED DATE' if 'CREATED DATE' in df.columns else
-        'CURRENT TIME' if 'CURRENT TIME' in df.columns else None
+        'CURRENT TIME' if 'CURRENT TIME' in df.columns else
+        'CREATED DATE' if 'CREATED DATE' in df.columns else None
     )
 
     order_created_map = {}
@@ -807,7 +885,6 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             for order_id, status_val in zip(df['ORDER ID'], df['CURRENT STATUS']):
                 if pd.notna(order_id) and pd.notna(status_val):
                     sc_val = str(status_val).strip()
-                    import re
                     match = re.match(r'^(-?\d+)', sc_val)
                     if match:
                         order_status_map[normalize_id(order_id)] = match.group(1)
@@ -942,6 +1019,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             status_map[str(sc).strip()] = label
 
     # Globally drop completed/done statuses from all reports
+    dm_all = dm.copy()  # Keep full data for dashboard (includes completed)
     if 'STATUS_CODE' in dm.columns:
         dm = dm[~dm['STATUS_CODE'].isin(['99', '100', '410', '201', '520'])].copy()
 
@@ -969,8 +1047,15 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
 
     # Filter per report type
     type_data = {}
+    norm_class_map = {
+        'Send Mega': 'Transit',
+        'Send To MEGA': 'Transit',
+        'Send To Mega': 'Transit',
+        'Not Assign': 'Branch',
+        'Not Assigned': 'Branch',
+    }
     if classify_col:
-        dm["_report_class"] = dm[classify_col].astype(str).str.strip()
+        dm["_report_class"] = dm[classify_col].astype(str).str.strip().replace(norm_class_map)
     else:
         dm["_report_class"] = dm['STATUS_CODE'].map(status_map).fillna("Unknown")
 
@@ -987,34 +1072,26 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         if rn in ('Transit', 'Branch') and 'CURRENT POST OFFICE' in df_t.columns:
             mega_mask = df_t['CURRENT POST OFFICE'].str.contains('MEGA|HUB|DVC', case=False, na=False)
             df_t = df_t[~mega_mask].copy()
-        # Add ACTION columns
+        # Add NEXT_STEP and KPI columns
         if rn == 'Delivery' and 'STATUS_CODE' in df_t.columns:
-            def _delivery_action(row):
-                sc = str(row.get('STATUS_CODE', '')).strip()
-                return DELIVERY_ACTION_MAP.get(sc, ('', ''))[0]
             def _delivery_next_step(row):
                 sc = str(row.get('STATUS_CODE', '')).strip()
                 return DELIVERY_ACTION_MAP.get(sc, ('', ''))[1]
-            df_t['ACTION'] = df_t.apply(_delivery_action, axis=1)
             df_t['NEXT_STEP'] = df_t.apply(_delivery_next_step, axis=1)
-        if rn == 'Transit' and 'STATUS_CODE' in df_t.columns:
-            def _transit_action(row):
-                sc = str(row.get('STATUS_CODE', '')).strip()
-                return TRANSIT_ACTION_MAP.get(sc, ('', ''))[0]
-            def _transit_next_step(row):
-                sc = str(row.get('STATUS_CODE', '')).strip()
-                return TRANSIT_ACTION_MAP.get(sc, ('', ''))[1]
-            df_t['ACTION'] = df_t.apply(_transit_action, axis=1)
-            df_t['NEXT_STEP'] = df_t.apply(_transit_next_step, axis=1)
+            kpi_res = df_t.apply(compute_kpi_info, axis=1)
+            df_t['Age'] = [r[0] for r in kpi_res]
+            df_t['10H KPI'] = [r[1] for r in kpi_res]
+        if rn == 'Transit':
+            # Transit tab next step is always 'ដាក់ទៅ MEGA'
+            df_t['NEXT_STEP'] = 'ដាក់ទៅ MEGA'
         if rn == 'Branch' and 'STATUS_CODE' in df_t.columns:
-            def _branch_action(row):
-                sc = str(row.get('STATUS_CODE', '')).strip()
-                return BRANCH_ACTION_MAP.get(sc, ('', ''))[0]
             def _branch_next_step(row):
                 sc = str(row.get('STATUS_CODE', '')).strip()
                 return BRANCH_ACTION_MAP.get(sc, ('', ''))[1]
-            df_t['ACTION'] = df_t.apply(_branch_action, axis=1)
             df_t['NEXT_STEP'] = df_t.apply(_branch_next_step, axis=1)
+            kpi_res = df_t.apply(compute_kpi_info, axis=1)
+            df_t['Age'] = [r[0] for r in kpi_res]
+            df_t['10H KPI'] = [r[1] for r in kpi_res]
         type_data[rn] = df_t
 
     # Gather all handles
@@ -1052,40 +1129,63 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 counts[rn] = 0
                 continue
                 
-            if rn in ('Delivery', 'Transit', 'Branch') and 'ACTION' in df_h.columns:
-                def get_action_weight(val):
-                    val_str = str(val)
-                    if 'ដឹកជញ្ជូន' in val_str:
-                        return 1
-                    elif 'ពិនិត្យ' in val_str:
-                        return 2
-                    elif 'ត្រឡប់' in val_str:
-                        return 3
-                    return 4
-                df_h = df_h.copy()
-                df_h['_action_weight'] = df_h['ACTION'].apply(get_action_weight)
-                
-                created_col = 'CREATED DATE'
-                if created_col in df_h.columns:
-                    df_h['_created_dt'] = pd.to_datetime(df_h[created_col], dayfirst=True, format='mixed', errors='coerce')
-                else:
-                    df_h['_created_dt'] = pd.NaT
-                
-                sort_by = []
-                ascending = []
-                if 'ZONE' in df_h.columns:
-                    sort_by.append('ZONE')
-                    ascending.append(True)
-                sort_by.extend(['_action_weight', '_created_dt'])
-                ascending.extend([True, True])
-                
-                df_h = df_h.sort_values(by=sort_by, ascending=ascending)
-            else:
-                sort_cols = [c for c in ['ZONE', filter_col, 'ORDER ID'] if c in df_h.columns]
-                if sort_cols:
-                    df_h = df_h.sort_values(by=sort_cols)
+            # Calculate overdue flags for row highlighting (48h / 2 days for Send Mega / Transit, 24h for others)
+            threshold_hours = 48 if rn in ('Transit', 'Send Mega') else 24
+            def calc_overdue(row):
+                age_str = str(row.get('Age', '') or '')
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+                if match:
+                    h_val = int(match.group(1))
+                    return (h_val >= threshold_hours, h_val >= 168)
+                for col in [
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+                    'CURRENT TIME',
+                    'CREATED DATE'
+                ]:
+                    val = row.get(col)
+                    if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+                        parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+                        if pd.notna(parsed_dt):
+                            diff_h = (datetime.now() - parsed_dt).total_seconds() / 3600
+                            return (diff_h >= threshold_hours, diff_h >= 168)
+                return (False, False)
 
-            rows, total, active_days = build_section_rows(df_h, icols, day_cols, date_col)
+            res_ov = df_h.apply(calc_overdue, axis=1)
+            df_h['_is_overdue'] = [r[0] for r in res_ov]
+            df_h['_is_overdue_7days'] = [r[1] for r in res_ov]
+
+            # Sort rows by latest timestamp first (newest date at top) across ALL tabs
+            def get_row_ts(row):
+                for col in [
+                    'CURRENT TIME',
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+                    'CREATED DATE'
+                ]:
+                    val = row.get(col)
+                    if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+                        parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+                        if pd.notna(parsed_dt):
+                            return parsed_dt.timestamp()
+                return 0.0
+
+            df_h = df_h.copy()
+            df_h['_row_ts'] = df_h.apply(get_row_ts, axis=1)
+            
+            sort_cols = []
+            ascending = []
+            if 'ZONE' in df_h.columns:
+                sort_cols.append('ZONE')
+                ascending.append(True)
+            sort_cols.append('_row_ts')
+            ascending.append(False)  # Newest date / latest timestamp first!
+            
+            df_h = df_h.sort_values(by=sort_cols, ascending=ascending)
+
+            rows, total, active_days = build_section_rows(df_h, icols + ['_is_overdue', '_is_overdue_7days'], day_cols, date_col)
             counts[rn] = total
             overall[rn] += total
             if total > 0:
@@ -1143,7 +1243,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     grand_total = sum(overall.values())
     summary = "\n".join([
         f"📋 Daily Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-        f"Pickup: {overall.get('Pickup',0)}  |  Delivery: {overall.get('Delivery',0)}  |  Transit: {overall.get('Transit',0)}  |  Branch: {overall.get('Branch',0)}",
+        f"Delivery: {overall.get('Delivery',0)}  |  Not Assign: {overall.get('Not Assign',0)}  |  Pickup: {overall.get('Pickup',0)}  |  Send Mega: {overall.get('Send Mega',0)}",
         f"Grand Total: {grand_total}",
     ])
 
@@ -1153,6 +1253,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         'summary_caption': summary,
         'overall_counts':  overall,
         'type_data':       type_data,
+        'dm_all':          dm_all,
         'day_cols':        day_cols,
         'cur_time_col':    date_col,
         'order_status_map': order_status_map,

@@ -9,6 +9,7 @@ Builds a zone push summary image with the layout:
 """
 
 import io
+import re
 import calendar as _calendar
 from datetime import datetime, date as _date
 from PIL import Image, ImageDraw, ImageFont
@@ -18,15 +19,17 @@ SUMMARY_HEADER_KHMER = {
     "Pickup": "ត្រូវយក",
     "Delivery": "ត្រូវដឹក",
     "Pending": "កំពុងរង់ចាំ",
-    "Transit": "ឡានដឹក",
-    "Branch": "ចាត់ដឹក",
+    "Transit": "ដាក់ទៅ MEGA",
+    "Branch": "មិនទាន់ចាត់",
+    "Send Mega": "ដាក់ទៅ MEGA",
+    "Not Assign": "មិនទាន់ចាត់",
     "TOTAL": "សរុប",
     "URGENT": "ប្រញាប់",
     "U.Pickup": "ប្រញាប់.យក",
     "U.Delivery": "ប្រញាប់.ដឹក",
     "U.Pending": "ប្រញាប់.រង់ចាំ",
-    "U.Transit": "ប្រញាប់.ឡាន",
-    "U.Branch": "ប្រញាប់.ចាត់",
+    "U.Transit": "ប្រញាប់.MEGA",
+    "U.Branch": "ប្រញាប់.មិនចាត់",
     "GRAND TOTAL": "សរុបទាំងអស់"
 }
 
@@ -545,6 +548,57 @@ def build_summary_image(
     return buf
 
 
+def compute_kpi_info(row):
+    import pandas as pd
+    from datetime import datetime
+
+    status_code = str(row.get('STATUS_CODE', '') or row.get('CURRENT STATUS', '') or '').strip()
+    if status_code and ' ' in status_code:
+        status_code = status_code.split()[0].strip()
+
+    scan_time = None
+    for col in [
+        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+        'STATUS 306 AT STORE / AGENT (LAST TIME)',
+        'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+        'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
+        'CURRENT TIME',
+        'CREATED DATE'
+    ]:
+        val = row.get(col)
+        if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+            parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+            if pd.notna(parsed_dt):
+                scan_time = parsed_dt
+                break
+
+    if scan_time is None:
+        return '', '10h'
+
+    now = datetime.now()
+    diff = now - scan_time
+    total_seconds = max(0, diff.total_seconds())
+    total_minutes = int(total_seconds // 60)
+    hours = int(total_minutes // 60)
+    minutes = int(total_minutes % 60)
+
+    raw_age = f"{hours}h {minutes:02d}m"
+    kpi_target = "10h"
+
+    # Status 420 (Store Waiting) and 472 (Resolving Issue) are Green status rows -> ALWAYS GREEN 🟢!
+    if status_code in ('420', '472'):
+        dot = "🟢"
+    elif total_minutes <= 599:
+        dot = "🟢"
+    elif 600 <= total_minutes <= 659:
+        dot = "🟡"
+    else:
+        dot = "🔴"
+
+    age_with_dot = f"{dot} {raw_age}"
+    return age_with_dot, kpi_target
+
+
 # ── Total Excel builder ────────────────────────────────────────────────────────
 
 def build_total_excel(result, out_path, lang='kh'):
@@ -554,12 +608,12 @@ def build_total_excel(result, out_path, lang='kh'):
     from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
     from openpyxl.utils import get_column_letter
 
-    REPORT_ORDER = ['Pickup', 'Delivery', 'Transit', 'Branch']
+    REPORT_ORDER = ['Delivery', 'Not Assign', 'Pickup', 'Send Mega']
     REPORT_COLS = {
         'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'Cus name', 'Phone'],
-        'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'ACTION', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)'],
-        'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'ACTION', 'NEXT_STEP'],
-        'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'ACTION', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)'],
+        'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+        'Send Mega':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
+        'Not Assign': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
     }
 
     ACTION_TRANSLATIONS_EN = {
@@ -618,16 +672,25 @@ def build_total_excel(result, out_path, lang='kh'):
         ws.views.sheetView[0].showGridLines = True
         current_row = 1
 
-        df = type_data.get(rn)
+        internal_key_map = {
+            'Not Assign': 'Branch',
+            'Send Mega': 'Transit',
+            'Delivery': 'Delivery',
+            'Pickup': 'Pickup',
+        }
+        internal_key = internal_key_map.get(rn, rn)
+        df = type_data.get(internal_key)
         if df is None:
-            df = pd.DataFrame(columns=REPORT_COLS[rn])
+            df = type_data.get(rn)
+        if df is None:
+            df = pd.DataFrame(columns=REPORT_COLS.get(rn, REPORT_COLS.get(internal_key, [])))
         elif df.empty:
             df = df.copy()
-            for col in REPORT_COLS[rn]:
+            for col in REPORT_COLS.get(rn, REPORT_COLS.get(internal_key, [])):
                 if col not in df.columns:
                     df[col] = ''
 
-        idx_cols = REPORT_COLS[rn]
+        idx_cols = REPORT_COLS.get(rn, REPORT_COLS.get(internal_key, []))
         for col in idx_cols:
             if col not in df.columns:
                 df[col] = ''
@@ -645,39 +708,83 @@ def build_total_excel(result, out_path, lang='kh'):
         dates_present.add(datetime.now().date())
         active_days = [d for d in day_cols if d in dates_present]
 
+        if rn in ('Delivery', 'Not Assign'):
+            kpi_res = df.apply(compute_kpi_info, axis=1)
+            df['Age'] = [r[0] for r in kpi_res]
+            df['10H KPI'] = [r[1] for r in kpi_res]
+
+        threshold_hours = 48 if rn in ('Transit', 'Send Mega') else 24
+        def calc_overdue_row(r):
+            age_str = str(r.get('Age', '') or '')
+            m = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+            if m:
+                h = int(m.group(1))
+                return (h >= threshold_hours, h >= 168)
+            for col in [
+                'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+                'CURRENT TIME',
+                'CREATED DATE'
+            ]:
+                val = r.get(col)
+                if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+                    parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+                    if pd.notna(parsed_dt):
+                        diff_h = (datetime.now() - parsed_dt).total_seconds() / 3600
+                        return (diff_h >= threshold_hours, diff_h >= 168)
+            return (False, False)
+
+        ov_flags = df.apply(calc_overdue_row, axis=1)
+        df['_is_overdue'] = [f[0] for f in ov_flags]
+        df['_is_overdue_7days'] = [f[1] for f in ov_flags]
+
+        idx_cols_with_flags = idx_cols + ['_is_overdue', '_is_overdue_7days']
+
         for d in active_days:
             df[d] = (df['_date'] == d).astype(int)
         df['Grand Total'] = 1
 
-        agg = df.groupby(idx_cols, sort=False, dropna=False)[
+        agg = df.groupby(idx_cols_with_flags, sort=False, dropna=False)[
             active_days + ['Grand Total']
         ].sum().reset_index()
 
         for d in active_days:
             agg[d] = agg[d].apply(lambda v: int(v) if v > 0 else '')
 
-        if rn in ('Delivery', 'Transit', 'Branch') and 'ACTION' in agg.columns:
-            order_created_map = {}
-            if 'ORDER ID' in df.columns and 'CREATED DATE' in df.columns:
-                parsed_created = pd.to_datetime(df['CREATED DATE'], dayfirst=True, format='mixed', errors='coerce')
-                for order_id, dt in zip(df['ORDER ID'].astype(str).str.strip(), parsed_created):
-                    if pd.notna(dt):
-                        order_created_map[order_id] = dt.date()
-            agg = agg.copy()
-            agg['_act_w'] = agg['ACTION'].apply(lambda x: 1 if 'ដឹកជញ្ជូន' in str(x) or 'Deliver' in str(x) else (2 if 'ពិនិត្យ' in str(x) or 'Check' in str(x) else (3 if 'ត្រឡប់' in str(x) or 'Return' in str(x) else 4)))
-            from datetime import date as _dt_date
-            agg['_created_dt'] = agg['ORDER ID'].apply(lambda x: order_created_map.get(str(x).strip(), _dt_date.max))
-            
+        if rn in ('Delivery', 'Send Mega', 'Not Assign'):
+            def get_age_minutes(row):
+                scan_time = None
+                for col in [
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+                    'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
+                    'CURRENT TIME',
+                    'CREATED DATE'
+                ]:
+                    val = row.get(col)
+                    if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
+                        parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
+                        if pd.notna(parsed_dt):
+                            scan_time = parsed_dt
+                            break
+                if scan_time is None:
+                    return 0
+                now = datetime.now()
+                diff = now - scan_time
+                return max(0, int(diff.total_seconds() // 60))
+
+            agg['_age_mins'] = agg.apply(get_age_minutes, axis=1)
             sort_by = []
             ascending = []
             if 'ZONE' in agg.columns:
                 sort_by.append('ZONE')
                 ascending.append(True)
-            sort_by.extend(['_act_w', '_created_dt'])
-            ascending.extend([True, True])
-            
+            sort_by.append('_age_mins')
+            ascending.append(False)  # Oldest age first!
             agg = agg.sort_values(by=sort_by, ascending=ascending).reset_index(drop=True)
-            agg = agg.drop(columns=['_act_w', '_created_dt'])
+            agg = agg.drop(columns=['_age_mins'])
         else:
             sort_cols = [c for c in ['POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID']
                          if c in agg.columns]
@@ -762,48 +869,60 @@ def build_total_excel(result, out_path, lang='kh'):
             gt_val = int(row.get('Grand Total', 0))
             grand_total += gt_val
 
-            is_overdue = False
-            is_overdue_7days = False
+            is_overdue = bool(row.get('_is_overdue', False))
+            is_overdue_7days = bool(row.get('_is_overdue_7days', False))
             status_code = None
             if 'ORDER ID' in row:
                 oid = str(row['ORDER ID']).strip()
-                if oid in order_created_map:
-                    age_days = (datetime.now().date() - order_created_map[oid]).days
-                    if age_days > 1:
-                        is_overdue = True
-                    if age_days > 7:
-                        is_overdue_7days = True
                 status_code = order_status_map.get(oid)
+
+            if not is_overdue:
+                age_str = str(row.get('Age', '') or '')
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+                if match:
+                    h_val = int(match.group(1))
+                    if h_val >= 24:
+                        is_overdue = True
+                    if h_val >= 168:
+                        is_overdue_7days = True
+
+            row_fill = None
+            if status_code in ('420', '472'):
+                row_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
+            elif is_overdue or status_code in ('500', '510', '511', '512', '520', '540'):
+                row_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
 
             for ci, col in enumerate(all_cols, start=1):
                 val  = _translate_val(row.get(col, ''))
                 cell = ws.cell(r, ci, val if val != '' else None)
                 cell.border = bdr
                 
-                cell_fill = None
-                if col == 'ACTION':
-                    act_str = str(val)
-                    if 'ដឹកជញ្ជូន' in act_str or 'Deliver' in act_str:
-                        cell_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-                    elif 'ពិនិត្យ' in act_str or 'Check' in act_str:
-                        cell_fill = PatternFill(start_color='FFF2CC', end_color='FFF2CC', fill_type='solid')
-                    elif 'ត្រឡប់' in act_str or 'Return' in act_str:
-                        cell_fill = PatternFill(start_color='FCE4D6', end_color='FCE4D6', fill_type='solid')
-                    cell.font = Font(name=fn, size=10, bold=False)
-                elif status_code in ('420', '472') and is_overdue_7days:
-                    cell_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
-                    cell.font = Font(name=fn, size=10, bold=True)
-                elif status_code in ('420', '472'):
-                    cell_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-                    cell.font = Font(name=fn, size=10, bold=True)
-                elif is_overdue:
-                    cell_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
-                    cell.font = Font(name=fn, size=10, bold=True)
-                else:
-                    cell.font = Font(name=fn, size=10)
+                cell_fill = row_fill
+                cell_font = Font(name=fn, size=10)
+
+                # AGE Column (3 Status Colors: 🟢 Green 0-10h, 🟡 Yellow 10-24h, 🔴 Red >24h)
+                if col == 'Age':
+                    val_str = str(val or '').strip()
+                    match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', val_str, re.IGNORECASE)
+                    if match:
+                        h_val = int(match.group(1))
+                        m_val = int(match.group(2)) if match.group(2) else 0
+                        t_mins = h_val * 60 + m_val
+                        if t_mins <= 599:
+                            cell_fill = PatternFill(start_color='D1FAE5', end_color='D1FAE5', fill_type='solid')
+                            cell_font = Font(name=fn, size=10, bold=True, color='065F46')
+                        elif 600 <= t_mins <= 1439:
+                            cell_fill = PatternFill(start_color='FEF08A', end_color='FEF08A', fill_type='solid')
+                            cell_font = Font(name=fn, size=10, bold=True, color='92400E')
+                        else:
+                            cell_fill = PatternFill(start_color='FEE2E2', end_color='FEE2E2', fill_type='solid')
+                            cell_font = Font(name=fn, size=10, bold=True, color='991B1B')
+                    else:
+                        cell_font = Font(name=fn, size=10, bold=True)
 
                 if cell_fill:
                     cell.fill = cell_fill
+                cell.font = cell_font
 
                 if col in active_days:
                     cell.alignment = Alignment(horizontal='center', vertical='center')
