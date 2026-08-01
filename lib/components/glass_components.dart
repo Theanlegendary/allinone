@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
@@ -163,9 +164,16 @@ class _GlassPillButtonState extends State<GlassPillButton>
     final hPad = isCompact(context) ? 20.0 : (isMedium(context) ? 22.0 : 24.0);
     final vPad = isCompact(context) ? 11.0 : (isMedium(context) ? 12.0 : 13.0);
 
-    return GestureDetector(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
+      onTapUp: (_) {
+        _ctrl.reverse();
+        HapticFeedback.lightImpact();
+        widget.onTap();
+      },
       onTapCancel: () => _ctrl.reverse(),
       child: ScaleTransition(
         scale: _scale,
@@ -209,7 +217,7 @@ class _GlassPillButtonState extends State<GlassPillButton>
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -234,8 +242,11 @@ class GlassChip extends StatelessWidget {
     final isClay = state.themeMode.isLight;
 
     if (isClay) {
-      return GestureDetector(
-        onTap: onTap,
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () { HapticFeedback.selectionClick(); onTap(); },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
@@ -266,11 +277,14 @@ class GlassChip extends StatelessWidget {
             ),
           ),
         ),
-      );
+      ));
     }
 
-    return GestureDetector(
-      onTap: onTap,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () { HapticFeedback.selectionClick(); onTap(); },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
@@ -302,7 +316,7 @@ class GlassChip extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

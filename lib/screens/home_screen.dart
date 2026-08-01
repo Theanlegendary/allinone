@@ -209,15 +209,15 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(height: 16),
 
                       // ── 0. Daily Affirmation & Mindfulness Inspiration ──
-                      const _DailyAffirmationBanner(),
+                      const RepaintBoundary(child: _DailyAffirmationBanner()),
                       const SizedBox(height: 16),
 
                       // ── 🆘 1-Tap Emergency Panic & Stress SOS Relief ──
-                      const _InstantStressSOSWidget(),
+                      const RepaintBoundary(child: _InstantStressSOSWidget()),
                       const SizedBox(height: 16),
 
                       // ── 📊 Daily Calm & Stress Reduction Index ──
-                      const _StressReductionMeter(),
+                      const RepaintBoundary(child: _StressReductionMeter()),
                       const SizedBox(height: 20),
 
                       // ── 1. Hero Featured Sanctuary Card (Tall 240px & Alive Motion) ──
@@ -232,6 +232,10 @@ class HomeScreen extends StatelessWidget {
                                 child: Image.network(
                                   'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
                                   fit: BoxFit.cover,
+                                  // GPU-accelerated: decode once at display size, never re-decode on scroll
+                                  cacheWidth: 800,
+                                  filterQuality: FilterQuality.medium,
+                                  gaplessPlayback: true,
                                 ),
                               ),
                               Positioned.fill(

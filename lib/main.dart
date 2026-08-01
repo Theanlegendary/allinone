@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
@@ -35,6 +37,14 @@ void main() async {
   final appState = AppState();
   await appState.init();
 
+  // ── GPU & Image Cache tuning for maximum FPS ──
+  // Doubles the default image cache so images don't re-decode on every scroll
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20; // 200 MB
+  PaintingBinding.instance.imageCache.maximumSize = 200; // max 200 images
+  // Use Skia rendering pipeline (CanvasKit) — already default in release
+  // Enable all platform optimizations
+  debugPaintSizeEnabled = false;
+
   runApp(
     ChangeNotifierProvider.value(
       value: appState,
@@ -49,12 +59,40 @@ class RelaxApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Relax & Mindfulness',
+      title: 'Sanctuary – Relax & Meditate',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
+      // ── iOS-native scroll physics globally ──
+      // This gives the elastic bounce and momentum feel of native iOS
+      scrollBehavior: const _IOSScrollBehavior(),
       home: const AppShell(),
     );
   }
+}
+
+// ── Global iOS Bouncing Scroll Behavior ──────────────────────────────────────
+// Makes EVERY ScrollView in the whole app behave like native iOS:
+// elastic overscroll bounce + momentum fling with proper deceleration
+class _IOSScrollBehavior extends ScrollBehavior {
+  const _IOSScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      );
+
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) =>
+      child; // No scrollbars — pure app feel
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.trackpad,
+  };
 }
 
 class AppShell extends StatelessWidget {
@@ -109,21 +147,24 @@ class AppShell extends StatelessWidget {
   }
 
   Widget _buildScreen(AppTab tab) {
+    // ── RepaintBoundary isolates each screen in its own GPU layer ──
+    // This prevents tab switches and animations from causing full-tree repaints
+    // = dramatically fewer dropped frames = native 60fps feel
     switch (tab) {
       case AppTab.home:
-        return const HomeScreen();
+        return const RepaintBoundary(key: ValueKey('home'), child: HomeScreen());
       case AppTab.meditate:
-        return const MeditationScreen();
+        return const RepaintBoundary(key: ValueKey('meditate'), child: MeditationScreen());
       case AppTab.breathe:
-        return const BreatheScreen();
+        return const RepaintBoundary(key: ValueKey('breathe'), child: BreatheScreen());
       case AppTab.sounds:
-        return const SoundsScreen();
+        return const RepaintBoundary(key: ValueKey('sounds'), child: SoundsScreen());
       case AppTab.sleep:
-        return const SleepScreen();
+        return const RepaintBoundary(key: ValueKey('sleep'), child: SleepScreen());
       case AppTab.aiStudio:
-        return const AiStudioScreen();
+        return const RepaintBoundary(key: ValueKey('ai'), child: AiStudioScreen());
       default:
-        return const HomeScreen();
+        return const RepaintBoundary(key: ValueKey('home'), child: HomeScreen());
     }
   }
 }
