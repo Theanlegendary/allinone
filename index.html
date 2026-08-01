@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=./docs/">
+  <title>Sanctuary — Relax & Mindfulness</title>
+  <script>
+    // Instant JavaScript redirect fallback for fast loading
+    window.location.replace('./docs/');
+  </script>
+  <style>
+    body {
+      background: #050D15;
+      color: #74C69D;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .loader { text-align: center; }
+    .spinner {
+      width: 40px; height: 40px; border: 3px solid rgba(116,198,157,0.2);
+      border-top-color: #74C69D; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Opening Sanctuary App...</p>
+  </div>
+</body>
+</html>
