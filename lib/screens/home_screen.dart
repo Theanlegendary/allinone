@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -209,6 +210,14 @@ class HomeScreen extends StatelessWidget {
 
                       // ── 0. Daily Affirmation & Mindfulness Inspiration ──
                       const _DailyAffirmationBanner(),
+                      const SizedBox(height: 16),
+
+                      // ── 🆘 1-Tap Emergency Panic & Stress SOS Relief ──
+                      const _InstantStressSOSWidget(),
+                      const SizedBox(height: 16),
+
+                      // ── 📊 Daily Calm & Stress Reduction Index ──
+                      const _StressReductionMeter(),
                       const SizedBox(height: 20),
 
                       // ── 1. Hero Featured Sanctuary Card (Tall 240px & Alive Motion) ──
@@ -1473,6 +1482,235 @@ class _HomeQuickBreathWidgetState extends State<_HomeQuickBreathWidget>
                   color: Colors.black,
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 🆘 Instant Stress SOS Widget (1-Tap Emergency Panic & Stress Relief) ─────
+class _InstantStressSOSWidget extends StatefulWidget {
+  const _InstantStressSOSWidget();
+
+  @override
+  State<_InstantStressSOSWidget> createState() => _InstantStressSOSWidgetState();
+}
+
+class _InstantStressSOSWidgetState extends State<_InstantStressSOSWidget> {
+  bool _isSOSActive = false;
+  int _secondsLeft = 60;
+  Timer? _timer;
+
+  void _triggerSOS(AppState state) {
+    if (_isSOSActive) {
+      _timer?.cancel();
+      setState(() => _isSOSActive = false);
+      state.stopAllAudio();
+      return;
+    }
+
+    setState(() {
+      _isSOSActive = true;
+      _secondsLeft = 60;
+    });
+
+    // Start soothing audio stream
+    state.playGuidedSession('Gentle Relief & Comfort', 1);
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_secondsLeft <= 1) {
+        t.cancel();
+        setState(() => _isSOSActive = false);
+        state.recordSession('60s Emergency Stress SOS', 'Breathing', 1);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✨ Stress SOS Complete. Take a deep breath. You are safe. 🌿'),
+            backgroundColor: tealPrimary.withOpacity(0.95),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        );
+      } else {
+        setState(() => _secondsLeft--);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return GlassCard(
+      cornerRadius: 24,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: coralAccent.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Text('🆘', style: TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'EMERGENCY STRESS RESET',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: coralAccent,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    Text(
+                      _isSOSActive
+                          ? 'Releasing tension... ($_secondsLeft s)'
+                          : 'Feeling Overwhelmed or Anxious?',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            _isSOSActive
+                ? 'Follow your breath. Inhale slowly... release all tension.'
+                : 'Tap below for an instant 60-second calm audio & breathing reset.',
+            style: TextStyle(
+              fontSize: 12.5,
+              color: Colors.white.withOpacity(0.7),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          GestureDetector(
+            onTap: () => _triggerSOS(state),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: _isSOSActive
+                      ? [coralAccent, const Color(0xFFD946EF)]
+                      : [tealPrimary, mintAccent],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_isSOSActive ? coralAccent : tealPrimary).withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _isSOSActive ? Icons.pause_circle_filled_rounded : Icons.favorite_rounded,
+                      color: Colors.black,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isSOSActive ? 'Stop SOS Session ($_secondsLeft s)' : '1-Tap Emergency Stress Relief 🌿',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 📊 Stress Reduction Meter Widget ─────────────────────────────────────────
+class _StressReductionMeter extends StatelessWidget {
+  const _StressReductionMeter();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final minutesToday = state.weeklyMinutes.isNotEmpty
+        ? state.weeklyMinutes.last.value
+        : 0;
+
+    final score = (50 + (minutesToday * 3)).clamp(50, 98);
+    final statusText = score >= 85 ? 'Serene & Calm 🌿' : score >= 70 ? 'Balanced 🧘' : 'Rest Needed 😴';
+
+    return GlassCard(
+      cornerRadius: 22,
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: mintAccent.withOpacity(0.18),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Text('✨', style: TextStyle(fontSize: 22)),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('DAILY CALM INDEX',
+                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: mintAccent, letterSpacing: 1.4)),
+                    Text(statusText,
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: score / 100,
+                    minHeight: 6,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(mintAccent),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text('$minutesToday minutes practiced today · Stress level reduced',
+                  style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.6))),
+              ],
             ),
           ),
         ],
