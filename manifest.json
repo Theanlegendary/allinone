@@ -1,25 +1,31 @@
 {
-    "name": "Relax & Mindfulness",
-    "short_name": "Relax",
-    "description": "Guided meditation, sleep stories, breathing exercises and ambient sounds for stress relief and better sleep.",
-    "start_url": ".",
+    "name": "Sanctuary: Relax & Meditate",
+    "short_name": "Sanctuary",
+    "description": "Guided meditation, sleep stories, breathing exercises and ambient nature sounds. Beat stress instantly, sleep deeply. Free forever.",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
-    "background_color": "#080F16",
+    "display_override": ["standalone", "minimal-ui"],
+    "background_color": "#071018",
     "theme_color": "#2DD4BF",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
-    "categories": ["health", "lifestyle", "music"],
+    "categories": ["health", "lifestyle", "music", "productivity"],
     "lang": "en",
+    "dir": "ltr",
+    "id": "sanctuary-relax-mindfulness",
     "icons": [
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-maskable-192.png",
@@ -38,7 +44,32 @@
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Sanctuary Home Screen"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Start Meditation",
+            "short_name": "Meditate",
+            "description": "Launch a guided meditation session",
+            "url": "./#meditate",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Sleep Stories",
+            "short_name": "Sleep",
+            "description": "Play soothing sleep stories",
+            "url": "./#sleep",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Breathing Exercise",
+            "short_name": "Breathe",
+            "description": "Start a breathing exercise",
+            "url": "./#breathe",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
         }
     ]
 }
