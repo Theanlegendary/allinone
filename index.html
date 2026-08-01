@@ -233,6 +233,13 @@
         padding-right: env(safe-area-inset-right);
       }
     }
+    /* ── Touch & Tap Optimizations for iOS PWA Standalone Mode ── */
+    html, body, flt-glass-pane, flt-scene-host, canvas {
+      touch-action: manipulation !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
   </style>
 </head>
 <body>
@@ -261,22 +268,26 @@
       }
     });
 
-    // ── iOS Standalone mode: prevent link navigation out of PWA ──
-    if (window.navigator.standalone) {
-      document.addEventListener('click', function(e) {
-        var a = e.target.closest('a');
-        if (a && a.href && a.href.startsWith(window.location.origin)) {
-          e.preventDefault();
-        }
-      }, false);
-    }
+    // ── Native PWA Install Prompt Handler ──
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      window.isPwaInstallable = true;
+    });
 
-    // ── Prevent iOS rubber-band scroll on the document ──
-    document.addEventListener('touchmove', function(e) {
-      if (e.target === document.body || e.target === document.documentElement) {
-        e.preventDefault();
+    window.triggerPwaInstall = function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the PWA install prompt');
+          }
+          deferredPrompt = null;
+        });
       }
-    }, { passive: false });
+    };
   </script>
 </body>
 </html>
+
