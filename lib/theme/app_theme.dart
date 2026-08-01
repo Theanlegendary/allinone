@@ -26,6 +26,14 @@ const Color claySurface      = Color(0xFFF9F4EF); // Soft Cream Clay Surface (#f
 const Color clayCardBg       = Color(0xFFEADBC8); // Warm Sand Card Background (#eadbc8)
 const Color clayDarkCardBg   = Color(0xFFDFCCB7);
 
+// ─── Neumorphism Soft UI Theme Palette (2019-2020 Classic) ───────────────────
+const Color neuSurface       = Color(0xFFE0E5EC); // Soft Slate-Blue Off-White Surface (#e0e5ec)
+const Color neuAccent        = Color(0xFF6C757D); // Soft Slate Grey Accent (#6c757d)
+const Color neuText          = Color(0xFF3D3D3D); // Charcoal Dark Text (#3d3d3d)
+const Color neuSubtext       = Color(0xFF888888); // Slate Subtext (#888888)
+const Color neuLightShadow   = Color(0xFFFFFFFF); // Top-left soft highlight shadow
+const Color neuDarkShadow    = Color(0xFFA3B1C6); // Bottom-right soft depth shadow
+
 // ─── Theme ────────────────────────────────────────────────────────────────────
 ThemeData buildAppTheme() {
   return ThemeData(

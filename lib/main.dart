@@ -14,6 +14,7 @@ import 'package:relax_mindfulness/screens/ai_studio_screen.dart';
 import 'package:relax_mindfulness/screens/admin_dashboard_screen.dart';
 import 'package:relax_mindfulness/screens/premium_screen.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
+import 'package:relax_mindfulness/theme/responsive.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

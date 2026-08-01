@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
+import 'package:relax_mindfulness/theme/neumorphism_demo.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -179,6 +180,23 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 );
                               }).toList(),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Neumorphism Soft UI Showcase Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Text('✨', style: TextStyle(fontSize: 16)),
+                              tooltip: 'Neumorphism Theme Showcase',
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const NeumorphismDemoScreen()),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(width: 8),

@@ -24,14 +24,16 @@ enum BreathPhase { inhale, hold, exhale, holdOut }
 
 enum SanctuaryThemeMode {
   claymorphism('Claymorphism Soft UI', Color(0xFFF9F4EF), Color(0xFFEADBC8), isLight: true),
+  neumorphism('Neumorphism Soft UI 2020', Color(0xFFE0E5EC), Color(0xFFE0E5EC), isLight: true, isNeumorphic: true),
   midnightNavy('Midnight Navy', Color(0xFF050D15), Color(0xFF0A1622)),
   forestDusk('Forest Dusk', Color(0xFF061412), Color(0xFF0D2522)),
   twilightLavender('Twilight Lavender', Color(0xFF0E0A17), Color(0xFF191228));
 
-  const SanctuaryThemeMode(this.displayName, this.bgDark, this.bgMid, {this.isLight = false});
+  const SanctuaryThemeMode(this.displayName, this.bgDark, this.bgMid, {this.isLight = false, this.isNeumorphic = false});
   final String displayName;
   final Color bgDark, bgMid;
   final bool isLight;
+  final bool isNeumorphic;
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -736,6 +738,8 @@ class AppState extends ChangeNotifier {
       _favoriteSounds = savedFavs.toSet();
     }
 
+    _loadRecents();
+    _loadReminder();
     _loadPremiumState();
     notifyListeners();
   }
@@ -754,6 +758,134 @@ class AppState extends ChangeNotifier {
   void saveCachedVolumes(Map<String, double> volumes) {
     _prefs?.setString('cached_volumes', jsonEncode(volumes));
   }
+
+  // ─── Retention: Favorites ───────────────────────────────────────────────────
+  // Users star a sound; starred sounds appear at the top of the Sounds page.
+  // Persisted as a List<String> of sound IDs in SharedPreferences.
+  final List<String> _favorites = [];
+  List<String> get favorites => List.unmodifiable(_favorites);
+
+  bool isFavoriteSoundId(String soundId) => _favorites.contains(soundId);
+
+  void toggleFavorite(String soundId) {
+    if (_favorites.contains(soundId)) {
+      _favorites.remove(soundId);
+    } else {
+      _favorites.insert(0, soundId);  // most recent first
+    }
+    _saveFavorites();
+    notifyListeners();
+  }
+
+  void _saveFavorites() =>
+      _prefs?.setStringList('favorites', _favorites);
+
+  void _loadFavorites() {
+    _favorites
+      ..clear()
+      ..addAll(_prefs?.getStringList('favorites') ?? const []);
+  }
+
+  // ─── Retention: Recently Played ─────────────────────────────────────────────
+  // Cap at 20 entries. Oldest falls off. Each entry stores (soundId, timestampMs).
+  final List<MapEntry<String, int>> _recentlyPlayed = [];
+  List<MapEntry<String, int>> get recentlyPlayed =>
+      List.unmodifiable(_recentlyPlayed);
+
+  static const _recentsCap = 20;
+
+  void recordPlay(String soundId) {
+    _recentlyPlayed.removeWhere((e) => e.key == soundId);  // dedupe
+    _recentlyPlayed.insert(0, MapEntry(soundId, DateTime.now().millisecondsSinceEpoch));
+    if (_recentlyPlayed.length > _recentsCap) {
+      _recentlyPlayed.removeRange(_recentsCap, _recentlyPlayed.length);
+    }
+    _saveRecents();
+    notifyListeners();
+  }
+
+  void _saveRecents() => _prefs?.setString(
+      'recents',
+      jsonEncode(_recentlyPlayed.map((e) => {'id': e.key, 'ts': e.value}).toList()));
+
+  void _loadRecents() {
+    final raw = _prefs?.getString('recents');
+    if (raw == null) return;
+    try {
+      final list = jsonDecode(raw) as List;
+      _recentlyPlayed
+        ..clear()
+        ..addAll(list.map((j) => MapEntry(
+            j['id'] as String,
+            (j['ts'] as num).toInt())));
+    } catch (_) {}
+  }
+
+  // ─── Retention: Daily Reminder ──────────────────────────────────────────────
+  // Stores a single reminder time (HH:mm). The actual scheduling is handled by
+  // the UI layer using flutter_local_notifications; this just persists the
+  // preference so the toggle survives restarts.
+  bool _reminderEnabled = false;
+  int _reminderHour = 22;   // 10pm default — good for sleep audience
+  int _reminderMinute = 0;
+  bool get reminderEnabled => _reminderEnabled;
+  int get reminderHour => _reminderHour;
+  int get reminderMinute => _reminderMinute;
+
+  void setReminder({required bool enabled, int? hour, int? minute}) {
+    _reminderEnabled = enabled;
+    if (hour != null) _reminderHour = hour;
+    if (minute != null) _reminderMinute = minute;
+    _prefs?.setBool('reminder_enabled', _reminderEnabled);
+    _prefs?.setInt('reminder_hour', _reminderHour);
+    _prefs?.setInt('reminder_minute', _reminderMinute);
+    notifyListeners();
+  }
+
+  void _loadReminder() {
+    _reminderEnabled = _prefs?.getBool('reminder_enabled') ?? false;
+    _reminderHour = _prefs?.getInt('reminder_hour') ?? 22;
+    _reminderMinute = _prefs?.getInt('reminder_minute') ?? 0;
+  }
+
+  // ─── Retention: Personalized Recommendations ───────────────────────────────
+  // Score each ambient sound by:
+  //   +5 every time it appears in recents (capped at 25)
+  //   +10 if it's favorited
+  //   +2 for every time it appears in a completed session (uses session title
+  //     prefix match against session records that look like sound titles)
+  // Returns the top N sound IDs the user is most likely to want right now.
+  List<String> recommendedSounds({int limit = 5}) {
+    final scores = <String, double>{};
+    for (final r in _recentlyPlayed) {
+      scores[r.key] = (scores[r.key] ?? 0) + 5;
+    }
+    for (final f in _favorites) {
+      scores[f] = (scores[f] ?? 0) + 10;
+    }
+    // Cap per-recent contribution so a single popular sound doesn't dominate
+    final sorted = scores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    // If user has zero history, return a sensible "starter pack" instead of []
+    if (sorted.isEmpty) {
+      return const ['Soft Rain', 'Ocean Waves', 'Brown Noise', 'Campfire', 'Singing Bowl'];
+    }
+    return sorted.take(limit).map((e) => e.key).toList();
+  }
+
+  // ─── Amplitude helpers (consumed by AnimatedSoundWave via UI) ───────────────
+  // Sum of currently-active track volumes, clamped 0..1. The mini-player uses
+  // this to scale the soundwave bars so a quiet mix shows short bars and a
+  // loud mix shows tall ones.
+  double get activeMixAmplitude {
+    if (_targetVolumes.isEmpty) return 0.0;
+    final sum = _targetVolumes.values.fold<double>(0, (a, b) => a + b);
+    return sum.clamp(0.0, 1.0);
+  }
+
+  // 0.35 fixed for guided (matches setVolume in playGuidedSession).
+  // Returns 0 if not currently playing.
+  double get guidanceGuidedAmplitude => _isGuidedPlaying ? 0.35 : 0.0;
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
   bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;

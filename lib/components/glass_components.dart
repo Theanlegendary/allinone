@@ -4,33 +4,72 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
+import 'package:relax_mindfulness/theme/responsive.dart';
 
 // ─── GlassCard ───────────────────────────────────────────────────────────────
 class GlassCard extends StatelessWidget {
   final Widget child;
   final double cornerRadius;
   final Color? backgroundColor;
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
+  final EdgeInsets? margin;
 
   const GlassCard({
     super.key,
     required this.child,
     this.cornerRadius = 28,
     this.backgroundColor,
-    this.padding = const EdgeInsets.all(20),
+    this.padding,
+    this.margin,
   });
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final isClay = state.themeMode.isLight;
+    final spacing = Spacing.of(context);
+    // Padding scales with screen size — phones get 16, tablets get 22.
+    final effectivePadding = padding ?? EdgeInsets.all(spacing.lg);
+    // Radius scales subtly with screen width so it doesn't look pinched on tablets.
+    final effectiveRadius = cornerRadius == 28
+        ? (isCompact(context) ? 22.0 : isMedium(context) ? 26.0 : 30.0)
+        : cornerRadius;
+
+    final isNeu = state.themeMode.isNeumorphic;
+    if (isNeu) {
+      return Container(
+        margin: margin,
+        padding: effectivePadding,
+        decoration: BoxDecoration(
+          color: backgroundColor ?? neuSurface,
+          borderRadius: BorderRadius.circular(effectiveRadius),
+          boxShadow: const [
+            BoxShadow(
+              color: neuDarkShadow,
+              offset: Offset(9, 9),
+              blurRadius: 16,
+            ),
+            BoxShadow(
+              color: neuLightShadow,
+              offset: Offset(-9, -9),
+              blurRadius: 16,
+            ),
+          ],
+        ),
+        child: DefaultTextStyle.merge(
+          style: const TextStyle(color: neuText),
+          child: child,
+        ),
+      );
+    }
 
     if (isClay) {
       return Container(
-        padding: padding,
+        margin: margin,
+        padding: effectivePadding,
         decoration: BoxDecoration(
           color: backgroundColor ?? clayCardBg,
-          borderRadius: BorderRadius.circular(cornerRadius),
+          borderRadius: BorderRadius.circular(effectiveRadius),
           boxShadow: const [
             BoxShadow(
               color: Color(0x33B89679),
@@ -49,10 +88,11 @@ class GlassCard extends StatelessWidget {
     }
 
     return Container(
-      padding: padding,
+      margin: margin,
+      padding: effectivePadding,
       decoration: BoxDecoration(
         color: backgroundColor ?? const Color(0xFF0C1924).withOpacity(0.92),
-        borderRadius: BorderRadius.circular(cornerRadius),
+        borderRadius: BorderRadius.circular(effectiveRadius),
         border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.8),
         boxShadow: [
           BoxShadow(
@@ -118,6 +158,10 @@ class _GlassPillButtonState extends State<GlassPillButton>
     final gradientColors = isTeal
         ? [const Color(0xFF64DFDF), const Color(0xFF48CAE4)]
         : [widget.containerColor.withOpacity(0.9), widget.containerColor.withOpacity(0.7)];
+    // Padding scales with screen size — compact 20/11, medium 22/12, expanded 24/13
+    final spacing = Spacing.of(context);
+    final hPad = isCompact(context) ? 20.0 : (isMedium(context) ? 22.0 : 24.0);
+    final vPad = isCompact(context) ? 11.0 : (isMedium(context) ? 12.0 : 13.0);
 
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
@@ -127,7 +171,7 @@ class _GlassPillButtonState extends State<GlassPillButton>
         scale: _scale,
         child: Container(
           width: widget.width,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -195,7 +239,10 @@ class GlassChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact(context) ? 16.0 : (isMedium(context) ? 18.0 : 20.0),
+            vertical:   isCompact(context) ? 10.0 : (isMedium(context) ? 11.0 : 12.0),
+          ),
           decoration: BoxDecoration(
             color: isSelected ? clayAccent : clayDarkCardBg,
             borderRadius: BorderRadius.circular(26),
@@ -213,7 +260,7 @@ class GlassChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : clayText,
-              fontSize: 12.5,
+              fontSize: isCompact(context) ? 12.5 : 13.0,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               letterSpacing: -0.2,
             ),
@@ -227,7 +274,10 @@ class GlassChip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: isCompact(context) ? 16.0 : (isMedium(context) ? 18.0 : 20.0),
+          vertical:   isCompact(context) ? 10.0 : (isMedium(context) ? 11.0 : 12.0),
+        ),
         decoration: BoxDecoration(
           color: isSelected ? selectedColor : Colors.white.withOpacity(0.04),
           borderRadius: BorderRadius.circular(26),
@@ -246,7 +296,7 @@ class GlassChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected ? Colors.black : Colors.white.withOpacity(0.9),
-            fontSize: 12.5,
+            fontSize: isCompact(context) ? 12.5 : 13.0,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: -0.2,
           ),
@@ -885,8 +935,11 @@ class SanctuaryMiniPlayer extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: tealPrimary.withOpacity(0.4)),
                     ),
-                    child: const AnimatedSoundWave(
+                    child: AnimatedSoundWave(
                       accentColor: tealPrimary,
+                      amplitude: state.isGuidedPlaying
+                          ? state.guidanceGuidedAmplitude
+                          : state.activeMixAmplitude,
                     ),
                   ),
                   const SizedBox(width: 14),
