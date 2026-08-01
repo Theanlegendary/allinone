@@ -595,18 +595,15 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                     h_val = int(match.group(1))
                     m_val = int(match.group(2)) if match.group(2) else 0
                     t_mins = h_val * 60 + m_val
-                    if t_mins <= 599:
-                        cell_fill = _fill("D1FAE5")  # 🟢 Green (0-10h)
+                    if status_code in ("420", "472"):
+                        cell_font = _font(fn, "065F46", bold=True)
+                    elif t_mins <= 599:
                         cell_font = _font(fn, "065F46", bold=True)
                     elif 600 <= t_mins <= 1439:
-                        cell_fill = _fill("FEF08A")  # 🟡 Yellow (10-24h)
                         cell_font = _font(fn, "92400E", bold=True)
                     else:
-                        cell_fill = _fill("FEE2E2")  # 🔴 Red (>24h)
                         cell_font = _font(fn, "991B1B", bold=True)
                 else:
-                    if row_fill:
-                        cell_fill = row_fill
                     cell_font = _font(fn, '1E293B', bold=True)
             elif col_name == 'Grand Total':
                 cell_font = _font(fn, RED, bold=True)

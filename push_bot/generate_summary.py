@@ -908,14 +908,13 @@ def build_total_excel(result, out_path, lang='kh'):
                         h_val = int(match.group(1))
                         m_val = int(match.group(2)) if match.group(2) else 0
                         t_mins = h_val * 60 + m_val
-                        if t_mins <= 599:
-                            cell_fill = PatternFill(start_color='D1FAE5', end_color='D1FAE5', fill_type='solid')
+                        if status_code in ('420', '472'):
+                            cell_font = Font(name=fn, size=10, bold=True, color='065F46')
+                        elif t_mins <= 599:
                             cell_font = Font(name=fn, size=10, bold=True, color='065F46')
                         elif 600 <= t_mins <= 1439:
-                            cell_fill = PatternFill(start_color='FEF08A', end_color='FEF08A', fill_type='solid')
                             cell_font = Font(name=fn, size=10, bold=True, color='92400E')
                         else:
-                            cell_fill = PatternFill(start_color='FEE2E2', end_color='FEE2E2', fill_type='solid')
                             cell_font = Font(name=fn, size=10, bold=True, color='991B1B')
                     else:
                         cell_font = Font(name=fn, size=10, bold=True)

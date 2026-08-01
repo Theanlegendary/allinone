@@ -1336,6 +1336,8 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "`push zone5` — Push to zone 5 only\n"
         "`/total` — Summary image + Excel (all data)\n"
         "`/total zone5` — Summary image + Excel (zone5 only)\n"
+        "`/tpg` — TPG Branch Operational Summary (Pickup/Delivery/Branch/Transit)\n"
+        "`/totalkpi` — Total KPI performance report & hit % summary\n"
         "`/deletereport` — Delete a report (reply to the bot's report message)\n"
         "\n"
         "📥 *Export*\n"
@@ -2035,6 +2037,417 @@ def get_highlighted_order_ids(df_t, today_date):
             highlighted.add(oid)
             
     return highlighted
+
+
+@pm_required_handler
+async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/kpi or /totalkpi — Generates overall KPI performance summary report."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+    msg = await send_requester_text(update, context, "⏳ Fetching data for Total KPI Performance Report...")
+
+    tmpdir = tempfile.mkdtemp(prefix="kpi_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import generate_report
+        res = generate_report.generate_reports_from_data(
+            src,
+            "post_office_lookup.csv",
+            tmpdir,
+            return_metadata=True,
+            mode="wide"
+        )
+        
+        # Combine type data
+        type_data = res.get("type_data", {})
+        df_del = type_data.get("Delivery", pd.DataFrame())
+        df_br  = type_data.get("Branch", pd.DataFrame())
+        dfs = [d for d in [df_del, df_br] if isinstance(d, pd.DataFrame) and not d.empty]
+        df_all = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+
+        if df_all.empty:
+            await edit_or_send_requester_text(msg, update, context, "⚠️ No active orders found for KPI report.")
+            return
+
+        total_orders = len(df_all)
+        hits_10h = 0
+        special_green = 0
+        warning_10_24h = 0
+        overdue_24h = 0
+
+        now = datetime.now()
+
+        for _, row in df_all.iterrows():
+            sc = str(row.get("STATUS_CODE", "") or "").strip()
+            if sc in ("420", "472"):
+                # 7-day rule for 420 / 472 special condition
+                cd_val = row.get("CREATED DATE")
+                is_over_7d = False
+                if pd.notna(cd_val):
+                    cd = pd.to_datetime(cd_val, dayfirst=True, format="mixed", errors="coerce")
+                    if pd.notna(cd) and (now.date() - cd.date()).days > 7:
+                        is_over_7d = True
+                
+                if is_over_7d:
+                    overdue_24h += 1
+                else:
+                    special_green += 1
+            else:
+                age_str = str(row.get("Age", "") or "")
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+                if match:
+                    h_val = int(match.group(1))
+                    m_val = int(match.group(2)) if match.group(2) else 0
+                    t_mins = h_val * 60 + m_val
+                    if t_mins <= 599:
+                        hits_10h += 1
+                    elif 600 <= t_mins <= 1439:
+                        warning_10_24h += 1
+                    else:
+                        overdue_24h += 1
+                else:
+                    hits_10h += 1
+
+        deliv_pct   = (hits_10h / total_orders) * 100
+        special_pct = (special_green / total_orders) * 100
+        warn_pct    = (warning_10_24h / total_orders) * 100
+        overdue_pct = (overdue_24h / total_orders) * 100
+        overall_pct = ((hits_10h + special_green) / total_orders) * 100
+
+        caption = (
+            f"📊 *TOTAL KPI PERFORMANCE REPORT — {now.strftime('%d/%m/%Y %H:%M')}*\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📦 *Total Active Orders* : `{total_orders:,}`\n\n"
+            f"🟢 *Delivery KPI (<=10h)*  : `{hits_10h:,}` ({deliv_pct:.1f}%)\n"
+            f"🟢 *Special Hold (420/472)*: `{special_green:,}` ({special_pct:.1f}%)\n"
+            f"🟡 *Warning (10h–24h)*      : `{warning_10_24h:,}` ({warn_pct:.1f}%)\n"
+            f"🔴 *Overdue (>24h / >7d)*  : `{overdue_24h:,}` ({overdue_pct:.1f}%)\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"🎯 *OVERALL KPI HIT RATE*  : `{overall_pct:.1f}%` 🟢\n"
+            f"  ↳ Courier Delivery KPI: `{deliv_pct:.1f}%`\n"
+            f"  ↳ Store Pickup Rate   : `{special_pct:.1f}%`\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
+
+        out_xlsx = res.get("final_xlsx")
+        if out_xlsx and os.path.exists(out_xlsx):
+            await edit_or_send_requester_text(msg, update, context, caption, parse_mode="Markdown")
+            await send_requester_document(update, context, out_xlsx, filename=os.path.basename(out_xlsx), caption="📄 Detailed KPI Report Excel")
+        else:
+            await edit_or_send_requester_text(msg, update, context, caption, parse_mode="Markdown")
+
+    except Exception as e:
+        log.exception("Error generating KPI report: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate KPI report: {e}")
+
+
+def build_tpg_excel(branch_counts, type_data, out_path):
+    """Builds a dedicated, beautifully formatted Excel workbook for /tpg command."""
+    import pandas as pd
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws_sum = wb.active
+    ws_sum.title = "TPG Summary"
+
+    font_family = "Calibri"
+    f_title = Font(name=font_family, size=14, bold=True, color="FFFFFF")
+    f_header = Font(name=font_family, size=11, bold=True, color="FFFFFF")
+    f_data = Font(name=font_family, size=10)
+    f_tot = Font(name=font_family, size=11, bold=True, color="991B1B")
+
+    fill_title = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+    fill_hdr = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
+    fill_tot = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
+    fill_alt = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+
+    thin = Side(border_style="thin", color="CBD5E1")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    # Title row
+    ws_sum.merge_cells("A1:F1")
+    t_cell = ws_sum.cell(1, 1, "TPG BRANCH DAILY vs WEEKLY COMPARISON REPORT")
+    t_cell.font = f_title
+    t_cell.fill = fill_title
+    t_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws_sum.row_dimensions[1].height = 30
+
+    # Headers
+    headers = ["POST OFFICE HANDLE", "DAILY VOLUME", "WEEKLY VOLUME", "SPECIAL HOLD (420/472)", "OVERDUE (>24h)", "DAILY SHARE (%)"]
+    ws_sum.row_dimensions[3].height = 24
+
+    for c_idx, h_text in enumerate(headers, 1):
+        cell = ws_sum.cell(3, c_idx, h_text)
+        cell.font = f_header
+        cell.fill = fill_hdr
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = border
+
+    r_idx = 4
+    tot_d = tot_w = tot_h = tot_o = 0
+
+    for h, counts in sorted(branch_counts.items(), key=lambda x: x[1]["Weekly"], reverse=True):
+        d = counts["Daily"]
+        w = counts["Weekly"]
+        sh = counts["Hold"]
+        o = counts["Overdue"]
+        pct = (d / w * 100) if w > 0 else 0.0
+
+        tot_d += d; tot_w += w; tot_h += sh; tot_o += o
+
+        row_fill = fill_alt if r_idx % 2 == 0 else None
+        row_vals = [h, d, w, sh, o, f"{pct:.1f}%"]
+        ws_sum.row_dimensions[r_idx].height = 20
+
+        for c_idx, val in enumerate(row_vals, 1):
+            cell = ws_sum.cell(r_idx, c_idx, val)
+            cell.font = f_data
+            cell.border = border
+            if row_fill:
+                cell.fill = row_fill
+            cell.alignment = Alignment(horizontal="left" if c_idx == 1 else "center", vertical="center")
+
+        r_idx += 1
+
+    # Totals Row
+    tot_pct = (tot_d / tot_w * 100) if tot_w > 0 else 0.0
+    tot_vals = ["GRAND TOTAL", tot_d, tot_w, tot_h, tot_o, f"{tot_pct:.1f}%"]
+    ws_sum.row_dimensions[r_idx].height = 22
+
+    for c_idx, val in enumerate(tot_vals, 1):
+        cell = ws_sum.cell(r_idx, c_idx, val)
+        cell.font = f_tot
+        cell.fill = fill_tot
+        cell.border = border
+        cell.alignment = Alignment(horizontal="left" if c_idx == 1 else "center", vertical="center")
+
+    # Sheet 2: Itemized Data
+    ws_item = wb.create_sheet(title="Itemized Orders")
+    item_headers = ["TYPE", "POST OFFICE HANDLE", "ORDER ID", "RECEIVER", "STATUS CODE", "AGE", "TOTAL FEE (USD)", "COD (USD)"]
+    ws_item.row_dimensions[1].height = 24
+
+    for c_idx, h_text in enumerate(item_headers, 1):
+        cell = ws_item.cell(1, c_idx, h_text)
+        cell.font = f_header
+        cell.fill = fill_hdr
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    item_r = 2
+    for t_name, df_type in type_data.items():
+        if not isinstance(df_type, pd.DataFrame) or df_type.empty:
+            continue
+        handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df_type.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df_type.columns else None)
+        if not handle_col:
+            continue
+        
+        for _, r in df_type.iterrows():
+            h_val = str(r.get(handle_col, "") or "").strip().upper()
+            if not h_val or h_val in ("NAN", "GRAND TOTAL"):
+                continue
+            
+            oid = str(r.get("ORDER ID", "") or "").strip()
+            rec = str(r.get("RECEIVER", "") or r.get("Cus name", "") or "").strip()
+            sc  = str(r.get("STATUS_CODE", "") or "").strip()
+            age = str(r.get("Age", "") or "").strip()
+            fee = r.get("TOTAL FEE (USD)", 0)
+            cod = r.get("COD (USD)", 0)
+
+            ws_item.append([t_name, h_val, oid, rec, sc, age, fee, cod])
+            item_r += 1
+
+    # Auto-adjust column widths
+    for ws in [ws_sum, ws_item]:
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or "")) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = max(max_len + 4, 12)
+
+    wb.save(out_path)
+
+
+@pm_required_handler
+async def cmd_tpg(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/tpg — TPG Branch Operational Summary comparing Daily & Weekly volume per branch with Excel attachment."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+    msg = await send_requester_text(update, context, "⏳ Fetching data for TPG Daily & Weekly Branch Comparison...")
+
+    tmpdir = tempfile.mkdtemp(prefix="tpg_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import generate_report
+        res = generate_report.generate_reports_from_data(
+            src,
+            "post_office_lookup.csv",
+            tmpdir,
+            return_metadata=True,
+            mode="wide"
+        )
+
+        type_data = res.get("type_data", {})
+        branch_counts = {}
+        now = datetime.now()
+
+        for t_name, df_type in type_data.items():
+            if not isinstance(df_type, pd.DataFrame) or df_type.empty:
+                continue
+            
+            handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df_type.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df_type.columns else None)
+            if not handle_col:
+                continue
+            
+            for _, r in df_type.iterrows():
+                h_val = str(r.get(handle_col, "") or "").strip().upper()
+                if not h_val or h_val in ("NAN", "GRAND TOTAL"):
+                    continue
+                
+                if h_val not in branch_counts:
+                    branch_counts[h_val] = {
+                        "Daily": 0, "Weekly": 0, "Hold": 0, "Overdue": 0
+                    }
+                
+                # All active items count towards Weekly total
+                branch_counts[h_val]["Weekly"] += 1
+
+                # Check age for Daily (<=24h)
+                age_str = str(r.get("Age", "") or "")
+                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+                h_val_num = int(match.group(1)) if match else 0
+                
+                if h_val_num <= 24:
+                    branch_counts[h_val]["Daily"] += 1
+
+                sc = str(r.get("STATUS_CODE", "") or "").strip()
+                if sc in ("420", "472"):
+                    branch_counts[h_val]["Hold"] += 1
+                elif h_val_num > 24:
+                    branch_counts[h_val]["Overdue"] += 1
+
+        if not branch_counts:
+            await edit_or_send_requester_text(msg, update, context, "⚠️ No active TPG branch data found.")
+            return
+
+        lines = [
+            f"🏬 *TPG BRANCH DAILY vs WEEKLY COMPARISON*",
+            f"📅 `{now.strftime('%d/%m/%Y %H:%M')}`",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"`BRANCH   │ DAILY │ WEEKLY│ HOLD │ OVERDUE│ DAILY %`",
+            f"─────────┼───────┼───────┼──────┼────────┼────────"
+        ]
+
+        tot_d = tot_w = tot_h = tot_o = 0
+
+        # Sort by Weekly volume descending
+        for h, counts in sorted(branch_counts.items(), key=lambda x: x[1]["Weekly"], reverse=True):
+            d = counts["Daily"]
+            w = counts["Weekly"]
+            sh = counts["Hold"]
+            o = counts["Overdue"]
+            pct = (d / w * 100) if w > 0 else 0.0
+
+            tot_d += d
+            tot_w += w
+            tot_h += sh
+            tot_o += o
+
+            lines.append(f"`{h:<9}│ {d:<6}│ {w:<6}│ {sh:<5}│ {o:<7}│ {pct:>5.1f}%`")
+
+        tot_pct = (tot_d / tot_w * 100) if tot_w > 0 else 0.0
+        lines.append(f"─────────┼───────┼───────┼──────┼────────┼────────")
+        lines.append(f"`TOTAL    │ {tot_d:<6}│ {tot_w:<6}│ {tot_h:<5}│ {tot_o:<7}│ {tot_pct:>5.1f}%`")
+        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        # Chunk text if lines are very long (> 3800 chars) to prevent Telegram length limit errors
+        full_text = "\n".join(lines)
+        if len(full_text) > 3800:
+            chunks = []
+            cur_chunk = []
+            cur_len = 0
+            for line in lines:
+                if cur_len + len(line) + 1 > 3800:
+                    chunks.append("\n".join(cur_chunk))
+                    cur_chunk = [line]
+                    cur_len = len(line)
+                else:
+                    cur_chunk.append(line)
+                    cur_len += len(line) + 1
+            if cur_chunk:
+                chunks.append("\n".join(cur_chunk))
+            
+            first = True
+            for ch in chunks:
+                if first:
+                    msg = await edit_or_send_requester_text(msg, update, context, ch, parse_mode="Markdown")
+                    first = False
+                else:
+                    await send_requester_text(update, context, ch, parse_mode="Markdown")
+        else:
+            await edit_or_send_requester_text(msg, update, context, full_text, parse_mode="Markdown")
+
+        # Build dedicated TPG Excel file matching the summary table + itemized orders
+        tpg_excel_path = os.path.join(tmpdir, f"TPG_Daily_vs_Weekly_Comparison_{stamp}.xlsx")
+        build_tpg_excel(branch_counts, type_data, tpg_excel_path)
+
+        # Render high-resolution PNG summary image for instant Telegram mobile viewing
+        try:
+            import excel_to_image
+            img_buf = excel_to_image.excel_to_image(tpg_excel_path)
+            img_buf.name = f"TPG_Summary_{stamp}.png"
+            await send_requester_photo(update, context, img_buf)
+        except Exception as e_img:
+            log.warning("Could not render TPG summary image: %s", e_img)
+
+        if os.path.exists(tpg_excel_path):
+            await send_requester_document(update, context, tpg_excel_path, filename=os.path.basename(tpg_excel_path), caption="📄 TPG Daily vs Weekly Comparison Excel Report")
+
+    except Exception as e:
+        log.exception("Error in /tpg command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate TPG summary: {e}")
+
+
+@pm_required_handler
+async def cmd_export_logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/exportlogs or /logs — Exports complete ALL-TIME status-by-status tracking logs report (BILL ID | S110 UNIT | S110 TIME | S200 UNIT | S200 TIME ...), excluding test/trainer/global."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+    msg = await send_requester_text(update, context, "⏳ Extracting ALL-TIME status-by-status tracking logs for all bills (excluding test/trainer/global)...")
+
+    tmpdir = tempfile.mkdtemp(prefix="logs_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M")
+    src = os.path.join(tmpdir, f"export_all_time_{stamp}.xlsx")
+    out_xlsx = os.path.join(tmpdir, f"All_Time_Bill_Tracking_Status_Logs_{stamp}.xlsx")
+
+    try:
+        today_str = datetime.now().strftime("%Y%m%d")
+        downloader.download_detail(cfg["api"], src, from_date="20250101", to_date=today_str, force_refresh=True)
+        import generate_tracking_logs_report
+        generate_tracking_logs_report.generate_tracking_logs(src, out_xlsx)
+
+        if os.path.exists(out_xlsx):
+            await edit_or_send_requester_text(msg, update, context, "✅ ALL-TIME status-by-status tracking logs generated successfully! Attaching Excel file...")
+            await send_requester_document(
+                update,
+                context,
+                out_xlsx,
+                filename=os.path.basename(out_xlsx),
+                caption="📄 ALL-TIME Bill Tracking Status Logs Excel Report"
+            )
+        else:
+            await edit_or_send_requester_text(msg, update, context, "❌ Could not generate tracking logs file.")
+    except Exception as e:
+        log.exception("Error in /exportlogs command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate tracking logs: {e}")
 
 
 async def run_time_vs(update: Update, context: ContextTypes.DEFAULT_TYPE, start_hour: int, end_hour: int, command_label: str):
@@ -6201,6 +6614,11 @@ def main():
     app.add_handler(CommandHandler("app",        cmd_app))
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
+    app.add_handler(CommandHandler("tpg",        cmd_tpg))
+    app.add_handler(CommandHandler("exportlogs", cmd_export_logs))
+    app.add_handler(CommandHandler("logs",       cmd_export_logs))
+    app.add_handler(CommandHandler("totalkpi",   cmd_total_kpi))
+    app.add_handler(CommandHandler("kpi",        cmd_total_kpi))
     app.add_handler(CommandHandler("tomorrow",   cmd_tomorrow))
     app.add_handler(CommandHandler("today",       cmd_today))
     app.add_handler(CommandHandler("daily",       cmd_today))
