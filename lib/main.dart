@@ -284,53 +284,63 @@ class _NavItem extends StatelessWidget {
     final isSelected = state.tab == tab;
     final activeColor = tab == AppTab.sleep ? purpleAccent : tealPrimary;
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        state.setTab(tab);
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: isSelected ? activeColor.withOpacity(0.2) : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          state.setTab(tab);
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── 🍎 iPhone Liquid Nav Rule: Active = Filled Circle with Pure White Icon, Inactive = Dark/Gray No Fill ──
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? activeColor : Colors.transparent,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: activeColor.withOpacity(0.45),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: isSelected ? Colors.white : Colors.white38,
+                    size: 20,
+                  ),
+                ),
               ),
-              child: Icon(
-                icon,
-                color: isSelected ? activeColor : Colors.white.withOpacity(0.5),
-                size: 20,
+              const SizedBox(height: 3),
+              // ── Crisp Readable Label ──
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? activeColor : Colors.white60,
+                  letterSpacing: -0.2,
+                ),
+                child: Text(label),
               ),
-            ),
-            const SizedBox(height: 2),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? activeColor : Colors.white.withOpacity(0.5),
-              ),
-              child: Text(label),
-            ),
-            const SizedBox(height: 2),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isSelected ? 4 : 0,
-              height: isSelected ? 4 : 0,
-              decoration: BoxDecoration(
-                color: activeColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
