@@ -133,6 +133,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
                             onTap: () => context.read<AppState>().completeOnboarding(),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),

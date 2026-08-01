@@ -86,12 +86,13 @@ class AppShell extends StatelessWidget {
               bottomNavigationBar: const _BottomNavBar(),
             ),
 
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 68,
-              child: SanctuaryMiniPlayer(),
-            ),
+            if (state.isAnyAudioPlaying)
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 68,
+                child: SanctuaryMiniPlayer(),
+              ),
 
             if (state.showMoodDialog)
               MoodCheckInDialog(
@@ -99,7 +100,8 @@ class AppShell extends StatelessWidget {
                 onSkip: () => state.dismissMood(),
               ),
 
-            const GuidedPlayerOverlay(),
+            if (state.isGuidedPlaying)
+              const GuidedPlayerOverlay(),
           ],
         );
       },
