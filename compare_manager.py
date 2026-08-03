@@ -1,6 +1,5 @@
 import os
 import json
-import re
 import glob
 import pandas as pd
 from datetime import datetime, timedelta
@@ -12,10 +11,7 @@ COMPARE_DIR = "compare"
 os.makedirs(COMPARE_DIR, exist_ok=True)
 
 SNAPSHOT_FILE = os.path.join(COMPARE_DIR, "compare_snapshots.json")
-EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST"]
-
-CATEGORIES = ["Pickup", "Delivery", "Transit", "Not Assign"]
-SHIFTS = ["9AM", "2PM", "5PM"]
+EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST", "CENTER02", "DVCZ"]
 
 PREFIX_ZONE_MAP = {
     "PNP": "Phnom Penh",
@@ -97,29 +93,6 @@ def resolve_post_office_handle(raw_po):
     if not po or po == "NAN" or any(kw in po for kw in EXCLUDE_KEYWORDS):
         return None
 
-    SPECIAL_MAP = {
-        "STU": "STUP001",
-        "MON": "MONP001",
-        "PAI": "PAIP001",
-        "ROT": "RATP001",
-        "PRH": "PREP001",
-        "TBO": "TBKP001",
-        "MOS": "MONP001",
-        "CHA": "KCPC001",
-        "CHH": "KCPC001",
-    }
-
-    prefix3 = po[:3]
-    if prefix3 in SPECIAL_MAP:
-        return SPECIAL_MAP[prefix3]
-
-    m = re.match(r'^([A-Z]{3,4})[AS](\d{1,4})$', po)
-    if m:
-        prefix, num = m.groups()
-        if len(num) == 3:
-            return f"{prefix}P{num}"
-        return f"{prefix}P001"
-
     global PO_LOOKUP_MAP
     if not PO_LOOKUP_MAP:
         PO_LOOKUP_MAP = load_post_office_lookup_map()
@@ -131,18 +104,6 @@ def resolve_post_office_handle(raw_po):
 
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
-
-    if df_detail is not None:
-        df = df_detail.copy()
-        df.columns = [str(c).strip().upper() for c in df.columns]
-        h_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
-        z_col = "ZONE" if "ZONE" in df.columns else ("RECEIVE PROVINCE" if "RECEIVE PROVINCE" in df.columns else None)
-        if h_col and z_col:
-            m = df[df[h_col].astype(str).str.strip().str.upper() == b_code]
-            if not m.empty:
-                zv = str(m.iloc[0][z_col]).strip()
-                if zv and zv.lower() != "nan":
-                    return zv
 
     if os.path.exists("post_office_lookup.csv"):
         try:
@@ -163,48 +124,6 @@ def resolve_branch_zone(branch_code, df_detail=None):
 
     return "Other Zone"
 
-def get_all_known_branches(df_detail=None):
-    branches = set()
-    if os.path.exists("post_office_lookup.csv"):
-        try:
-            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
-            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
-            if "post_office_handle" in df_po.columns:
-                for h in df_po["post_office_handle"].dropna().unique():
-                    h_str = str(h).strip().upper()
-                    if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
-                        branches.add(h_str)
-        except Exception:
-            pass
-
-    if df_detail is not None:
-        df = df_detail.copy()
-        df.columns = [str(c).strip().upper() for c in df.columns]
-        handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
-        if handle_col:
-            for h in df[handle_col].dropna().unique():
-                h_str = resolve_post_office_handle(h)
-                if h_str:
-                    branches.add(h_str)
-
-    return sorted(list(branches))
-
-def determine_shift(now=None):
-    """
-    7:00 AM - 11:59 AM -> 9AM
-    12:00 PM - 3:59 PM -> 2PM
-    4:00 PM onwards    -> 5PM
-    """
-    if now is None:
-        now = datetime.now()
-    hour = now.hour
-    if hour < 12:
-        return "9AM"
-    elif hour < 16:
-        return "2PM"
-    else:
-        return "5PM"
-
 def load_snapshots():
     clean_cache_3_times_daily()
     if os.path.exists(SNAPSHOT_FILE):
@@ -219,101 +138,62 @@ def save_snapshots(data):
     with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def is_urgent_bill(r):
-    sc = ""
-    for sc_cand in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATUS NAME", "STATE_CODE", "STATE", "CODE"]:
-        if sc_cand in r and pd.notna(r[sc_cand]):
-            sc_val = str(r[sc_cand]).lstrip("S").strip()
-            if sc_val:
-                sc = sc_val.split()[0].strip()
-                break
-
-    if sc in ("99", "100", "201", "410", "420", "472", "520"):
-        return False
-
-    if "_IS_OVERDUE" in r and pd.notna(r["_IS_OVERDUE"]):
-        return bool(r["_IS_OVERDUE"])
-
-    age_val = str(r.get("AGE", "") or "")
-    if "🔴" in age_val:
-        return True
-
-    cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or "").upper()
-    is_transit = ("TRANSIT" in cat_raw or "MEGA" in cat_raw or sc in ("306", "309"))
-    threshold = 48 if is_transit else 24
-
-    scan_time = ""
-    for tc in ["CURRENT TIME", "STATUS 306 AT STORE / AGENT (LAST TIME)", "STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)", "SCAN TIME", "CREATED DATE"]:
-        if tc in r and pd.notna(r[tc]):
-            val_str = str(r[tc]).strip()
-            if val_str and val_str.lower() != "nan":
-                scan_time = val_str
-                break
-
-    if scan_time:
-        match = re.search(r'(\d+)\s*h', scan_time, re.IGNORECASE)
-        if match:
-            return float(match.group(1)) >= threshold
-        try:
-            parsed_dt = pd.to_datetime(scan_time, dayfirst=True, format='mixed', errors='coerce')
-            if pd.notna(parsed_dt):
-                return ((datetime.now() - parsed_dt).total_seconds() / 3600.0) >= threshold
-        except Exception:
-            pass
-
-    return True
-
 def extract_total_report_counts(df_detail):
-    """Extracts urgent counts and section counts per post office handle exactly like /total."""
+    """Extracts exact urgent counts per post office handle using generate_report engine."""
+    import generate_report
     df = df_detail.copy()
-    df.columns = [str(c).strip().upper() for c in df.columns]
-
-    handle_col = None
-    for cand in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE", "CURRENT_POST_OFFICE", "POST_OFFICE_HANDLE", "POST OFFICE", "HANDLE"]:
-        if cand in df.columns:
-            handle_col = cand
-            break
-
-    sc_col = None
-    for cand in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATUS NAME", "STATE_CODE", "STATE", "CODE"]:
-        if cand in df.columns:
-            sc_col = cand
-            break
-
+    
     handle_map = {}
-    if not handle_col:
-        return handle_map
+    try:
+        tmp_out = os.path.join(COMPARE_DIR, "tmp_gen_report")
+        os.makedirs(tmp_out, exist_ok=True)
+        res = generate_report.generate_reports_from_data(df, target_handles=None, output_dir=tmp_out)
+        h_results = res.get("handle_results", [])
+        
+        for hr in h_results:
+            raw_h = str(hr.get("handle", "")).strip().upper()
+            if not raw_h or raw_h == "NAN" or any(kw in raw_h for kw in EXCLUDE_KEYWORDS):
+                continue
+            
+            urgent_cnt = 0
+            for sec_name, sec_rows, sec_tot, sec_icols, active_days in hr.get("sections", []):
+                urgent_cnt += len(sec_rows)
+                
+            handle_map[raw_h] = {
+                "urgent": urgent_cnt,
+                "pickup": hr.get("handle_counts", {}).get("Pickup", 0),
+                "delivery": hr.get("handle_counts", {}).get("Delivery", 0),
+                "transit": hr.get("handle_counts", {}).get("Send Mega", 0),
+                "branch": hr.get("handle_counts", {}).get("Not Assign", 0)
+            }
+    except Exception as e:
+        pass
 
-    for _, r in df.iterrows():
-        raw_h = str(r.get(handle_col, "") or "").strip()
-        hnd = resolve_post_office_handle(raw_h)
-        if not hnd:
-            continue
-
-        sc = ""
-        if sc_col:
-            sc = str(r.get(sc_col, "") or "").lstrip("S").strip()
-            if sc and " " in sc:
-                sc = sc.split()[0].strip()
-
-        if sc in ("99", "100", "201", "410", "420", "520"):
-            continue
-
-        if hnd not in handle_map:
-            handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
-
-        if is_urgent_bill(r):
-            handle_map[hnd]["urgent"] += 1
-
-        cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or r.get("_REPORT_CLASS", "") or "").upper()
-        if "PICKUP" in cat_raw or sc in ("200", "210", "302", "310"):
-            handle_map[hnd]["pickup"] += 1
-        elif "DELIVERY" in cat_raw or sc in ("311", "401", "402", "470", "472", "480", "500"):
-            handle_map[hnd]["delivery"] += 1
-        elif "TRANSIT" in cat_raw or "MEGA" in cat_raw or sc in ("306", "309"):
-            handle_map[hnd]["transit"] += 1
-        else:
-            handle_map[hnd]["branch"] += 1
+    if not handle_map:
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        h_col = None
+        for c in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE", "POST OFFICE", "HANDLE"]:
+            if c in df.columns:
+                h_col = c
+                break
+        sc_col = None
+        for c in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATE_CODE"]:
+            if c in df.columns:
+                sc_col = c
+                break
+                
+        if h_col:
+            for _, r in df.iterrows():
+                raw_h = str(r.get(h_col, "") or "").strip()
+                hnd = resolve_post_office_handle(raw_h)
+                if not hnd or any(kw in hnd for kw in EXCLUDE_KEYWORDS):
+                    continue
+                sc = str(r.get(sc_col, "") or "").lstrip("S").strip().split()[0] if sc_col and str(r.get(sc_col, "")) else ""
+                if sc in ("99", "100", "201", "410", "420", "520"):
+                    continue
+                if hnd not in handle_map:
+                    handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
+                handle_map[hnd]["urgent"] += 1
 
     return handle_map
 
@@ -327,7 +207,7 @@ def get_next_shift_to_record(date_str):
     else:
         return "5PM"
 
-def record_total_snapshot(date_str, shift_name, df_detail):
+def record_total_snapshot(date_str, df_detail):
     snapshots = load_snapshots()
     if date_str not in snapshots:
         snapshots[date_str] = {}
@@ -346,8 +226,7 @@ def record_total_snapshot(date_str, shift_name, df_detail):
 
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
-        target_shift = get_next_shift_to_record(date_str)
-        record_total_snapshot(date_str, target_shift, df_detail)
+        record_total_snapshot(date_str, df_detail)
 
     snapshots = load_snapshots()
     day_data = snapshots.get(date_str, {})
@@ -359,7 +238,7 @@ def build_comparison_summary(date_str, df_detail=None):
     has_2pm = bool(h_2pm)
     has_5pm = bool(h_5pm)
 
-    all_handles = get_all_known_branches(df_detail)
+    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()))))
 
     rows = []
     tot_urg_9am = tot_urg_2pm = tot_urg_5pm = 0
@@ -376,7 +255,6 @@ def build_comparison_summary(date_str, df_detail=None):
         u2 = h_2pm.get(h, {}).get("urgent", 0) if has_2pm else 0
         u5 = h_5pm.get(h, {}).get("urgent", 0) if has_5pm else 0
 
-        # Filter out inactive handles with 0 0 0 urgent items
         if u9 == 0 and u2 == 0 and u5 == 0:
             continue
 
