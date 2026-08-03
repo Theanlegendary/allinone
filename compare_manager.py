@@ -258,6 +258,13 @@ def is_red_highlight_bill(row_dict):
     if sc in ("420", "472") or sc in EXCLUDE_STATUSES:
         return False
 
+    if "_IS_OVERDUE" in row_dict and pd.notna(row_dict["_IS_OVERDUE"]):
+        return bool(row_dict["_IS_OVERDUE"])
+
+    age_val = str(row_dict.get("AGE", "") or "")
+    if "🔴" in age_val:
+        return True
+
     cat = classify_category(row_dict)
     threshold = 48 if cat == "Transit" else 24
 
@@ -438,6 +445,10 @@ def build_comparison_summary(date_str, df_detail=None):
         r9 = branch_counts[br]["RED_9AM"]
         d2 = branch_counts[br]["DISAPPEARED_2PM"]
         d5 = branch_counts[br]["DISAPPEARED_5PM"]
+
+        # Omit branches with 0 Red Highlight bills at 9 AM and 0 disappeared
+        if r9 == 0 and d2 == 0 and d5 == 0:
+            continue
 
         rem_red = max(0, r9 - d5)
         clear_pct = (d5 / r9 * 100.0) if r9 > 0 else 100.0
