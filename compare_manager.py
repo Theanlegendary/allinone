@@ -361,6 +361,10 @@ def build_comparison_summary(date_str, df_detail=None):
         u2 = h_2pm.get(h, {}).get("urgent", 0) if has_2pm else 0
         u5 = h_5pm.get(h, {}).get("urgent", 0) if has_5pm else 0
 
+        # Filter out inactive handles with 0 0 0 urgent items
+        if u9 == 0 and u2 == 0 and u5 == 0:
+            continue
+
         if has_5pm:
             urg_change = u5 - u9
             clear_pct = ((u9 - u5) / u9 * 100.0) if u9 > 0 else 100.0
