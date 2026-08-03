@@ -446,6 +446,9 @@ def build_comparison_summary(date_str, df_detail=None):
                 "RESOLUTION TIME": final_info.get("resolved_at", "")
             })
 
+    has_2pm = bool(s_2pm)
+    has_5pm = bool(s_5pm)
+
     rows = []
     sorted_branch_tuples = []
     for br in branch_counts.keys():
@@ -459,20 +462,27 @@ def build_comparison_summary(date_str, df_detail=None):
 
     for z, br in sorted_branch_tuples:
         u9 = urgent_counts[br]["URG_9AM"]
-        u2 = urgent_counts[br]["URG_2PM"]
-        u5 = urgent_counts[br]["URG_5PM"]
+        u2 = urgent_counts[br]["URG_2PM"] if has_2pm else 0
+        u5 = urgent_counts[br]["URG_5PM"] if has_5pm else 0
 
         t9 = sum(branch_counts[br][c]["9AM"] for c in CATEGORIES)
-        t2 = sum(branch_counts[br][c]["2PM"] for c in CATEGORIES)
-        t5 = sum(branch_counts[br][c]["5PM"] for c in CATEGORIES)
+        t2 = sum(branch_counts[br][c]["2PM"] for c in CATEGORIES) if has_2pm else 0
+        t5 = sum(branch_counts[br][c]["5PM"] for c in CATEGORIES) if has_5pm else 0
 
         if t9 == 0 and t2 == 0 and t5 == 0 and u9 == 0 and u2 == 0 and u5 == 0:
             continue
 
-        urg_change = u5 - u9 if u5 > 0 or u9 > 0 else (u2 - u9)
-        urg_change_str = f"{urg_change}" if urg_change == 0 else (f"+{urg_change}" if urg_change > 0 else f"{urg_change}")
+        if has_5pm:
+            urg_change = u5 - u9
+            clear_pct = ((u9 - u5) / u9 * 100.0) if u9 > 0 else 100.0
+        elif has_2pm:
+            urg_change = u2 - u9
+            clear_pct = ((u9 - u2) / u9 * 100.0) if u9 > 0 else 100.0
+        else:
+            urg_change = 0
+            clear_pct = 0.0
 
-        clear_pct = ((u9 - u5) / u9 * 100.0) if u9 > 0 else 100.0
+        urg_change_str = f"{urg_change}" if urg_change == 0 else (f"+{urg_change}" if urg_change > 0 else f"{urg_change}")
 
         row = {
             "ZONE": z,
@@ -486,11 +496,11 @@ def build_comparison_summary(date_str, df_detail=None):
 
         for c in CATEGORIES:
             row[f"{c}_9AM"] = branch_counts[br][c]["9AM"]
-            row[f"{c}_2PM"] = branch_counts[br][c]["2PM"]
-            row[f"{c}_5PM"] = branch_counts[br][c]["5PM"]
+            row[f"{c}_2PM"] = branch_counts[br][c]["2PM"] if has_2pm else 0
+            row[f"{c}_5PM"] = branch_counts[br][c]["5PM"] if has_5pm else 0
             tot_cols[c]["9AM"] += branch_counts[br][c]["9AM"]
-            tot_cols[c]["2PM"] += branch_counts[br][c]["2PM"]
-            tot_cols[c]["5PM"] += branch_counts[br][c]["5PM"]
+            tot_cols[c]["2PM"] += (branch_counts[br][c]["2PM"] if has_2pm else 0)
+            tot_cols[c]["5PM"] += (branch_counts[br][c]["5PM"] if has_5pm else 0)
 
         rows.append(row)
 
@@ -498,7 +508,16 @@ def build_comparison_summary(date_str, df_detail=None):
         tot_urg["2PM"] += u2
         tot_urg["5PM"] += u5
 
-    grand_urg_change = tot_urg["5PM"] - tot_urg["9AM"] if tot_urg["5PM"] > 0 else (tot_urg["2PM"] - tot_urg["9AM"])
+    if has_5pm:
+        grand_urg_change = tot_urg["5PM"] - tot_urg["9AM"]
+        grand_clear_pct = ((tot_urg["9AM"] - tot_urg["5PM"]) / tot_urg["9AM"] * 100.0) if tot_urg["9AM"] > 0 else 100.0
+    elif has_2pm:
+        grand_urg_change = tot_urg["2PM"] - tot_urg["9AM"]
+        grand_clear_pct = ((tot_urg["9AM"] - tot_urg["2PM"]) / tot_urg["9AM"] * 100.0) if tot_urg["9AM"] > 0 else 100.0
+    else:
+        grand_urg_change = 0
+        grand_clear_pct = 0.0
+
     grand_urg_change_str = f"{grand_urg_change}" if grand_urg_change == 0 else (f"+{grand_urg_change}" if grand_urg_change > 0 else f"{grand_urg_change}")
     grand_clear_pct = ((tot_urg["9AM"] - tot_urg["5PM"]) / tot_urg["9AM"] * 100.0) if tot_urg["9AM"] > 0 else 100.0
 
