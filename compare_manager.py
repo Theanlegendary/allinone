@@ -197,6 +197,18 @@ def extract_total_report_counts(df_detail):
 
     return handle_map
 
+def determine_shift(now=None):
+    """Determines active shift: 9AM (Morning), 2PM (Afternoon), or 5PM (Evening)."""
+    if now is None:
+        now = datetime.now()
+    hour = now.hour
+    if hour < 12:
+        return "9AM"
+    elif hour < 16:
+        return "2PM"
+    else:
+        return "5PM"
+
 def get_next_shift_to_record(date_str):
     snapshots = load_snapshots()
     day_data = snapshots.get(date_str, {})
