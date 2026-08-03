@@ -2478,35 +2478,58 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         current_shift = compare_manager.determine_shift()
         lines = [
-            f"📊 *URGENT BILL SHIFT COMPARISON (12-COL MATRIX)*",
+            f"📊 *URGENT BILL SHIFT COMPARISON SUMMARY*",
             f"📅 `{today_str}` | Active Shift: `{current_shift}`",
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"`BRANCH   │ PICKUP (9|2|5) │ DELIV (9|2|5)  │ TRANS (9|2|5)  │ UNASN (9|2|5)  │ TOT(9|2|5)  │ CLEAR %`",
-            f"─────────┼────────────────┼────────────────┼────────────────┼────────────────┼─────────────┼────────"
+            f"`BRANCH   │ 9 AM │ 2 PM │ 5 PM │ CLEAR %`",
+            f"─────────┼──────┼──────┼──────┼────────"
         ]
 
-        for r in rows:
+        # Sort branches by 9 AM urgent volume descending, but include all branches
+        for r in sorted(rows, key=lambda x: x["TOTAL_9AM"], reverse=True):
             b = r["BRANCH"]
-            pk = f"{r['Pickup_9AM']}|{r['Pickup_2PM']}|{r['Pickup_5PM']}"
-            dl = f"{r['Delivery_9AM']}|{r['Delivery_2PM']}|{r['Delivery_5PM']}"
-            tr = f"{r['Transit_9AM']}|{r['Transit_2PM']}|{r['Transit_5PM']}"
-            na = f"{r['Not Assign_9AM']}|{r['Not Assign_2PM']}|{r['Not Assign_5PM']}"
-            tot = f"{r['TOTAL_9AM']}|{r['TOTAL_2PM']}|{r['TOTAL_5PM']}"
+            u9 = r["TOTAL_9AM"]
+            u2 = r["TOTAL_2PM"]
+            u5 = r["TOTAL_5PM"]
             pct = r["CLEARANCE_PCT"]
-            lines.append(f"`{b:<9}│ {pk:<15}│ {dl:<15}│ {tr:<15}│ {na:<15}│ {tot:<12}│ {pct:>5.1f}%`")
+            dot = "🟢" if pct >= 80 else ("🟡" if pct >= 50 else "🔴")
+            lines.append(f"`{b:<9}│ {u9:<5}│ {u2:<5}│ {u5:<5}│ {dot} {pct:>5.1f}%`")
 
-        lines.append(f"─────────┼────────────────┼────────────────┼────────────────┼────────────────┼─────────────┼────────")
-        tot_pk = f"{totals['Pickup_9AM']}|{totals['Pickup_2PM']}|{totals['Pickup_5PM']}"
-        tot_dl = f"{totals['Delivery_9AM']}|{totals['Delivery_2PM']}|{totals['Delivery_5PM']}"
-        tot_tr = f"{totals['Transit_9AM']}|{totals['Transit_2PM']}|{totals['Transit_5PM']}"
-        tot_na = f"{totals['Not Assign_9AM']}|{totals['Not Assign_2PM']}|{totals['Not Assign_5PM']}"
-        grand_tot = f"{totals['TOTAL_9AM']}|{totals['TOTAL_2PM']}|{totals['TOTAL_5PM']}"
-        grand_pct = totals["CLEARANCE_PCT"]
-        lines.append(f"`TOTAL    │ {tot_pk:<15}│ {tot_dl:<15}│ {tot_tr:<15}│ {tot_na:<15}│ {grand_tot:<12}│ {grand_pct:>5.1f}%`")
+        lines.append(f"─────────┼──────┼──────┼──────┼────────")
+        tot_u9 = totals["TOTAL_9AM"]
+        tot_u2 = totals["TOTAL_2PM"]
+        tot_u5 = totals["TOTAL_5PM"]
+        tot_pct = totals["CLEARANCE_PCT"]
+        tot_dot = "🟢" if tot_pct >= 80 else ("🟡" if tot_pct >= 50 else "🔴")
+        lines.append(f"`TOTAL    │ {tot_u9:<5}│ {tot_u2:<5}│ {tot_u5:<5}│ {tot_dot} {tot_pct:>5.1f}%`")
         lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        lines.append(f"📄 *Full 12-Column Category Matrix & Itemized Transitions attached below!*")
 
         full_text = "\n".join(lines)
-        await edit_or_send_requester_text(msg, update, context, full_text, parse_mode="Markdown")
+        if len(full_text) > 3800:
+            chunks = []
+            cur_chunk = []
+            cur_len = 0
+            for line in lines:
+                if cur_len + len(line) + 1 > 3800:
+                    chunks.append("\n".join(cur_chunk))
+                    cur_chunk = [line]
+                    cur_len = len(line)
+                else:
+                    cur_chunk.append(line)
+                    cur_len += len(line) + 1
+            if cur_chunk:
+                chunks.append("\n".join(cur_chunk))
+            
+            first = True
+            for ch in chunks:
+                if first:
+                    msg = await edit_or_send_requester_text(msg, update, context, ch, parse_mode="Markdown")
+                    first = False
+                else:
+                    await send_requester_text(update, context, ch, parse_mode="Markdown")
+        else:
+            await edit_or_send_requester_text(msg, update, context, full_text, parse_mode="Markdown")
 
         # Excel report
         out_excel = os.path.join(tmpdir, f"Urgent_Clearance_Compare_{stamp}.xlsx")

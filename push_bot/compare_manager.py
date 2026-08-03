@@ -25,6 +25,31 @@ def load_test_bills():
                     test_bills.add(b)
     return test_bills
 
+def get_all_known_branches(df_detail=None):
+    branches = set()
+    if os.path.exists("post_office_lookup.csv"):
+        try:
+            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
+            if "post_office_handle" in df_po.columns:
+                for h in df_po["post_office_handle"].dropna().unique():
+                    h_str = str(h).strip().upper()
+                    if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                        branches.add(h_str)
+        except Exception:
+            pass
+
+    if df_detail is not None:
+        df = df_detail.copy()
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
+        if handle_col:
+            for h in df[handle_col].dropna().unique():
+                h_str = str(h).strip().upper()
+                if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                    branches.add(h_str)
+
+    return sorted(list(branches))
+
 def determine_shift(now=None):
     if now is None:
         now = datetime.now()
@@ -50,9 +75,6 @@ def save_snapshots(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def classify_category(row_dict):
-    """
-    Classify a bill into Pickup, Delivery, Transit, or Not Assign.
-    """
     cat_raw = str(row_dict.get("REPORT TYPE", "") or row_dict.get("TYPE", "") or row_dict.get("_REPORT_CLASS", "") or "").upper()
     if "PICKUP" in cat_raw:
         return "Pickup"
@@ -196,8 +218,12 @@ def build_comparison_summary(date_str, df_detail=None):
     t_2pm = day_data.get("2PM", {}).get("transitions", {})
     t_5pm = day_data.get("5PM", {}).get("transitions", {})
 
-    # branch -> category -> {9AM, 2PM, 5PM}
-    branch_matrix = {}
+    # Gather ALL known branches so no branch is missing
+    all_known_branches = get_all_known_branches(df_detail)
+    baseline_branches = set(b.get("branch", "") for b in baseline.values() if b.get("branch"))
+    all_branches = sorted(list(set(all_known_branches).union(baseline_branches)))
+
+    branch_matrix = {br: {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES} for br in all_branches}
     itemized_transitions = []
 
     for oid, base_info in baseline.items():
@@ -237,7 +263,7 @@ def build_comparison_summary(date_str, df_detail=None):
                 "RESOLUTION TIME": t_5pm.get(oid, {}).get("resolved_at") or t_2pm.get(oid, {}).get("resolved_at") or base_info.get("captured_at", "")
             })
 
-    # Build per-branch row metrics (12 columns + total + clear %)
+    # Build per-branch row metrics (only include branches with >0 items in 9AM baseline or overall active)
     rows = []
     tot_cols = {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES}
 
