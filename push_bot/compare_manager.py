@@ -13,6 +13,52 @@ os.makedirs(COMPARE_DIR, exist_ok=True)
 SNAPSHOT_FILE = os.path.join(COMPARE_DIR, "compare_snapshots.json")
 EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST", "CENTER02", "DVCZ"]
 
+ALL_COMPANY_BRANCHES = [
+    # Zone 1
+    ("Zone 1", "KANP001"),
+    ("Zone 1", "PNPP001"),
+    ("Zone 1", "PNPP002"),
+    ("Zone 1", "PNPP003"),
+    ("Zone 1", "PNPP004"),
+    ("Zone 1", "PNPP005"),
+    ("Zone 1", "PNPP006"),
+    ("Zone 1", "PNPP007"),
+    ("Zone 1", "PNPP008"),
+    ("Zone 1", "PNPP009"),
+    ("Zone 1", "PNPP010"),
+    ("Zone 1", "PNPP011"),
+    ("Zone 1", "PNPP012"),
+    ("Zone 1", "PNPP013"),
+    ("Zone 1", "PNPP014"),
+    ("Zone 1", "PREP001"),
+    ("Zone 1", "SVAP001"),
+    # Zone 2
+    ("Zone 2", "SIHP001"),
+    ("Zone 2", "KAMP001"),
+    ("Zone 2", "SPEP001"),
+    ("Zone 2", "TAKP001"),
+    ("Zone 2", "KOHP001"),
+    ("Zone 2", "KEPP001"),
+    # Zone 3
+    ("Zone 3", "BANP001"),
+    ("Zone 3", "BATP001"),
+    ("Zone 3", "CHHP001"),
+    ("Zone 3", "PURP001"),
+    # Zone 4
+    ("Zone 4", "SIEP001"),
+    ("Zone 4", "ODDP001"),
+    ("Zone 4", "THOP001"),
+    ("Zone 4", "PRHP001"),
+    # Zone 5
+    ("Zone 5", "KRAP001"),
+    ("Zone 5", "TBKP001"),
+    ("Zone 5", "STUP001"),
+    ("Zone 5", "ROTP001"),
+    ("Zone 5", "MONP001"),
+    ("Zone 5", "CHAP001"),
+    ("Zone 5", "PAIP001")
+]
+
 def clean_cache_3_times_daily():
     """Cleans old files in compare/ folder 3 times per day."""
     try:
@@ -87,8 +133,11 @@ def load_config_zone_mapping():
 
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
+    for z_name, h_code in ALL_COMPANY_BRANCHES:
+        if h_code == b_code:
+            return z_name
+
     zm = load_config_zone_mapping()
-    
     by_po = zm.get("by_post_office", {})
     if b_code in by_po:
         return by_po[b_code]
@@ -220,25 +269,13 @@ def build_comparison_summary(date_str, df_detail=None):
     has_2pm = bool(h_2pm)
     has_5pm = bool(h_5pm)
 
-    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()))))
-
     rows = []
     tot_urg_9am = tot_urg_2pm = tot_urg_5pm = 0
 
-    sorted_branch_tuples = []
-    for h in all_handles:
-        z = resolve_branch_zone(h, df_detail)
-        sorted_branch_tuples.append((z, h))
-
-    sorted_branch_tuples.sort(key=lambda x: (x[0], x[1]))
-
-    for z, h in sorted_branch_tuples:
+    for z, h in ALL_COMPANY_BRANCHES:
         u9 = h_9am.get(h, {}).get("urgent", 0) if has_9am else 0
         u2 = h_2pm.get(h, {}).get("urgent", 0) if has_2pm else 0
         u5 = h_5pm.get(h, {}).get("urgent", 0) if has_5pm else 0
-
-        if u9 == 0 and u2 == 0 and u5 == 0:
-            continue
 
         if has_5pm and has_9am:
             urg_change = u5 - u9
