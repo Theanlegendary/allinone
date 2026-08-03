@@ -236,8 +236,17 @@ def record_total_snapshot(date_str, df_detail):
     save_snapshots(snapshots)
     return snapshots
 
+DEFAULT_MAIN_HANDLES = [
+    "BANP001", "BATP001", "KANP001", "KPCP001", "SPEP001", "THOP001", "KAMP001",
+    "KEPP001", "KOHP001", "KRAP001", "MONP001", "ODDP001", "PAIP001", "PNPP001",
+    "PNPP002", "PNPP003", "PNPP004", "PNPP005", "PNPP006", "PNPP007", "PNPP008",
+    "PNPP009", "PNPP010", "PNPP011", "PNPP012", "PNPP013", "PNPP014", "SIHP001",
+    "PREP001", "PVGP001", "PURP001", "RATP001", "SIEP001", "STUP001", "SVAP001",
+    "TAKP001", "TBKP001"
+]
+
 def get_all_known_branches(df_detail=None):
-    branches = set()
+    branches = set(DEFAULT_MAIN_HANDLES)
     if os.path.exists("post_office_lookup.csv"):
         try:
             df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
