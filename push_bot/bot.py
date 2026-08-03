@@ -2478,32 +2478,38 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         current_shift = compare_manager.determine_shift()
         lines = [
-            f"📊 *URGENT BILL SHIFT COMPARISON SUMMARY*",
+            f"📊 *URGENT BILL SHIFT COMPARISON (BY ZONE)*",
             f"📅 `{today_str}` | Active Shift: `{current_shift}`",
+            f"💡 *P=Pickup | D=Delivery | T=Transit | N=NotAssign (1=9AM, 2=2PM, 3=5PM)*",
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"`BRANCH   │ 9 AM │ 2 PM │ 5 PM │ CLEAR %`",
-            f"─────────┼──────┼──────┼──────┼────────"
+            f"`ZONE        │ BRANCH   │ P1|2|3 │ D1|2|3 │ T1|2|3 │ N1|2|3 │ TOT1|2|3 │ CLEAR %`",
+            f"─────────────┼──────────┼────────┼────────┼────────┼────────┼──────────┼────────"
         ]
 
-        # Sort branches by 9 AM urgent volume descending, but include all branches
-        for r in sorted(rows, key=lambda x: x["TOTAL_9AM"], reverse=True):
+        # Group and display all branches by ZONE
+        for r in rows:
+            z = r["ZONE"][:11]
             b = r["BRANCH"]
-            u9 = r["TOTAL_9AM"]
-            u2 = r["TOTAL_2PM"]
-            u5 = r["TOTAL_5PM"]
+            pk = f"{r['Pickup_9AM']}|{r['Pickup_2PM']}|{r['Pickup_5PM']}"
+            dl = f"{r['Delivery_9AM']}|{r['Delivery_2PM']}|{r['Delivery_5PM']}"
+            tr = f"{r['Transit_9AM']}|{r['Transit_2PM']}|{r['Transit_5PM']}"
+            na = f"{r['Not Assign_9AM']}|{r['Not Assign_2PM']}|{r['Not Assign_5PM']}"
+            tot = f"{r['TOTAL_9AM']}|{r['TOTAL_2PM']}|{r['TOTAL_5PM']}"
             pct = r["CLEARANCE_PCT"]
             dot = "🟢" if pct >= 80 else ("🟡" if pct >= 50 else "🔴")
-            lines.append(f"`{b:<9}│ {u9:<5}│ {u2:<5}│ {u5:<5}│ {dot} {pct:>5.1f}%`")
+            lines.append(f"`{z:<12}│ {b:<8}│ {pk:<6}│ {dl:<6}│ {tr:<6}│ {na:<6}│ {tot:<8}│ {dot}{pct:>5.1f}%`")
 
-        lines.append(f"─────────┼──────┼──────┼──────┼────────")
-        tot_u9 = totals["TOTAL_9AM"]
-        tot_u2 = totals["TOTAL_2PM"]
-        tot_u5 = totals["TOTAL_5PM"]
-        tot_pct = totals["CLEARANCE_PCT"]
-        tot_dot = "🟢" if tot_pct >= 80 else ("🟡" if tot_pct >= 50 else "🔴")
-        lines.append(f"`TOTAL    │ {tot_u9:<5}│ {tot_u2:<5}│ {tot_u5:<5}│ {tot_dot} {tot_pct:>5.1f}%`")
+        lines.append(f"─────────────┼──────────┼────────┼────────┼────────┼────────┼──────────┼────────")
+        tot_pk = f"{totals['Pickup_9AM']}|{totals['Pickup_2PM']}|{totals['Pickup_5PM']}"
+        tot_dl = f"{totals['Delivery_9AM']}|{totals['Delivery_2PM']}|{totals['Delivery_5PM']}"
+        tot_tr = f"{totals['Transit_9AM']}|{totals['Transit_2PM']}|{totals['Transit_5PM']}"
+        tot_na = f"{totals['Not Assign_9AM']}|{totals['Not Assign_2PM']}|{totals['Not Assign_5PM']}"
+        grand_tot = f"{totals['TOTAL_9AM']}|{totals['TOTAL_2PM']}|{totals['TOTAL_5PM']}"
+        grand_pct = totals["CLEARANCE_PCT"]
+        tot_dot = "🟢" if grand_pct >= 80 else ("🟡" if grand_pct >= 50 else "🔴")
+        lines.append(f"`ALL ZONES   │ TOTAL    │ {tot_pk:<6}│ {tot_dl:<6}│ {tot_tr:<6}│ {tot_na:<6}│ {grand_tot:<8}│ {tot_dot}{grand_pct:>5.1f}%`")
         lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        lines.append(f"📄 *Full 12-Column Category Matrix & Itemized Transitions attached below!*")
+        lines.append(f"📄 *Full Zone Excel & Colored Image Matrix attached below!*")
 
         full_text = "\n".join(lines)
         if len(full_text) > 3800:

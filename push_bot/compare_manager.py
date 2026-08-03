@@ -15,6 +15,70 @@ EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST"]
 CATEGORIES = ["Pickup", "Delivery", "Transit", "Not Assign"]
 SHIFTS = ["9AM", "2PM", "5PM"]
 
+PREFIX_ZONE_MAP = {
+    "PNP": "Phnom Penh",
+    "BAN": "Banteay Meanchey",
+    "BAT": "Battambang",
+    "KMP": "Kandal",
+    "TAK": "Takeo",
+    "KPC": "Kampong Cham",
+    "KPT": "Kampot",
+    "SRP": "Siem Reap",
+    "KPS": "Preah Sihanouk",
+    "KPE": "Kampong Speu",
+    "KTH": "Kampong Thom",
+    "SVR": "Svay Rieng",
+    "PVG": "Prey Veng",
+    "PUR": "Pursat",
+    "KRT": "Kratie",
+    "STU": "Stung Treng",
+    "RAT": "Ratanakiri",
+    "MON": "Mondulkiri",
+    "PRE": "Preah Vihear",
+    "ODD": "Oddar Meanchey",
+    "PVI": "Pailin",
+    "TKG": "Tbong Khmum",
+    "KEP": "Kep",
+    "KOH": "Koh Kong"
+}
+
+def resolve_branch_zone(branch_code, df_detail=None):
+    b_code = str(branch_code).strip().upper()
+
+    # Try lookup in df_detail if ZONE column exists
+    if df_detail is not None:
+        df = df_detail.copy()
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        h_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
+        z_col = "ZONE" if "ZONE" in df.columns else ("RECEIVE PROVINCE" if "RECEIVE PROVINCE" in df.columns else None)
+        if h_col and z_col:
+            m = df[df[h_col].astype(str).str.strip().str.upper() == b_code]
+            if not m.empty:
+                zv = str(m.iloc[0][z_col]).strip()
+                if zv and zv.lower() != "nan":
+                    return zv
+
+    # Try lookup in post_office_lookup.csv
+    if os.path.exists("post_office_lookup.csv"):
+        try:
+            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
+            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
+            if "post_office_handle" in df_po.columns and "zone" in df_po.columns:
+                m = df_po[df_po["post_office_handle"].astype(str).str.strip().str.upper() == b_code]
+                if not m.empty:
+                    zv = str(m.iloc[0]["zone"]).strip()
+                    if zv and zv.lower() != "nan":
+                        return zv
+        except Exception:
+            pass
+
+    # Prefix mapping fallback
+    prefix3 = b_code[:3]
+    if prefix3 in PREFIX_ZONE_MAP:
+        return PREFIX_ZONE_MAP[prefix3]
+
+    return "Other Zone"
+
 def load_test_bills():
     test_bills = set()
     if os.path.exists("test_bills.txt"):
@@ -218,7 +282,6 @@ def build_comparison_summary(date_str, df_detail=None):
     t_2pm = day_data.get("2PM", {}).get("transitions", {})
     t_5pm = day_data.get("5PM", {}).get("transitions", {})
 
-    # Gather ALL known branches so no branch is missing
     all_known_branches = get_all_known_branches(df_detail)
     baseline_branches = set(b.get("branch", "") for b in baseline.values() if b.get("branch"))
     all_branches = sorted(list(set(all_known_branches).union(baseline_branches)))
@@ -255,6 +318,7 @@ def build_comparison_summary(date_str, df_detail=None):
         if final_resolved:
             itemized_transitions.append({
                 "BILL ID": oid,
+                "ZONE": resolve_branch_zone(br, df_detail),
                 "BRANCH": br,
                 "CATEGORY": cat,
                 "STATUS 9AM": base_info["status_9am"],
@@ -263,12 +327,19 @@ def build_comparison_summary(date_str, df_detail=None):
                 "RESOLUTION TIME": t_5pm.get(oid, {}).get("resolved_at") or t_2pm.get(oid, {}).get("resolved_at") or base_info.get("captured_at", "")
             })
 
-    # Build per-branch row metrics (only include branches with >0 items in 9AM baseline or overall active)
     rows = []
     tot_cols = {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES}
 
-    for br in sorted(branch_matrix.keys()):
-        row = {"BRANCH": br}
+    # Sort branches by ZONE then BRANCH name
+    sorted_branch_tuples = []
+    for br in branch_matrix.keys():
+        z = resolve_branch_zone(br, df_detail)
+        sorted_branch_tuples.append((z, br))
+
+    sorted_branch_tuples.sort(key=lambda x: (x[0], x[1]))
+
+    for z, br in sorted_branch_tuples:
+        row = {"ZONE": z, "BRANCH": br}
         tot_9am = tot_2pm = tot_5pm = 0
 
         for cat in CATEGORIES:
@@ -304,7 +375,7 @@ def build_comparison_summary(date_str, df_detail=None):
     grand_res = grand_9am - grand_5pm
     grand_pct = (grand_res / grand_9am * 100.0) if grand_9am > 0 else 100.0
 
-    totals = {"BRANCH": "TOTAL"}
+    totals = {"ZONE": "ALL", "BRANCH": "TOTAL"}
     for cat in CATEGORIES:
         totals[f"{cat}_9AM"] = tot_cols[cat]["9AM"]
         totals[f"{cat}_2PM"] = tot_cols[cat]["2PM"]
@@ -320,35 +391,55 @@ def build_comparison_summary(date_str, df_detail=None):
 def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepath):
     wb = openpyxl.Workbook()
     ws_sum = wb.active
-    ws_sum.title = "12-Col Branch Shift Matrix"
+    ws_sum.title = "Zone Branch Shift Matrix"
 
     ws_det = wb.create_sheet(title="Itemized Status Transitions")
 
     font_family = "Segoe UI"
     f_title = Font(name=font_family, size=13, bold=True, color="FFFFFF")
     f_cat = Font(name=font_family, size=10, bold=True, color="FFFFFF")
-    f_header = Font(name=font_family, size=9, bold=True, color="FFFFFF")
     f_data = Font(name=font_family, size=9)
     f_total = Font(name=font_family, size=10, bold=True, color="0F172A")
     f_good = Font(name=font_family, size=9, bold=True, color="065F46")
 
     fill_title = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
-    fill_cat1 = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
-    fill_cat2 = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
-    fill_cat3 = PatternFill(start_color="9A3412", end_color="9A3412", fill_type="solid")
-    fill_cat4 = PatternFill(start_color="581C87", end_color="581C87", fill_type="solid")
+    fill_cat1 = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # Blue Pickup
+    fill_cat2 = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid") # Green Delivery
+    fill_cat3 = PatternFill(start_color="9A3412", end_color="9A3412", fill_type="solid") # Orange Transit
+    fill_cat4 = PatternFill(start_color="581C87", end_color="581C87", fill_type="solid") # Purple Not Assign
     fill_hdr = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
     fill_alt = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
     fill_total = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
 
-    cat_fills = [fill_cat1, fill_cat2, fill_cat3, fill_cat4]
+    # Shift Column Fills & Fonts for Shift 1 (9AM), Shift 2 (2PM), Shift 3 (5PM)
+    # 9AM Shift -> Blue Theme
+    fill_s1 = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
+    font_s1 = Font(name=font_family, size=9, bold=True, color="1E40AF")
+    hdr_s1  = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
 
+    # 2PM Shift -> Orange Theme
+    fill_s2 = PatternFill(start_color="FFEDD5", end_color="FFEDD5", fill_type="solid")
+    font_s2 = Font(name=font_family, size=9, bold=True, color="9A3412")
+    hdr_s2  = PatternFill(start_color="C2410C", end_color="C2410C", fill_type="solid")
+
+    # 5PM Shift -> Green Theme
+    fill_s3 = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+    font_s3 = Font(name=font_family, size=9, bold=True, color="065F46")
+    hdr_s3  = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+
+    shift_styles = [
+        (hdr_s1, fill_s1, font_s1), # 9AM
+        (hdr_s2, fill_s2, font_s2), # 2PM
+        (hdr_s3, fill_s3, font_s3)  # 5PM
+    ]
+
+    cat_fills = [fill_cat1, fill_cat2, fill_cat3, fill_cat4]
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    # 17 total columns: BRANCH | Pickup 9/2/5 | Delivery 9/2/5 | Transit 9/2/5 | Not Assign 9/2/5 | TOT 9/2/5 | CLEAR %
-    ws_sum.merge_cells("A1:Q1")
-    t_cell = ws_sum.cell(1, 1, f"DAILY URGENT BILL SHIFT COMPARISON MATRIX (9 AM vs 2 PM vs 5 PM) — {date_str}")
+    # 18 total columns: ZONE | BRANCH | P1 P2 P3 | D1 D2 D3 | T1 T2 T3 | N1 N2 N3 | TOT1 TOT2 TOT3 | CLEAR %
+    ws_sum.merge_cells("A1:R1")
+    t_cell = ws_sum.cell(1, 1, f"ZONE & BRANCH URGENT SHIFT MATRIX (P1..P3, D1..D3, T1..T3, N1..N3) — {date_str}")
     t_cell.font = f_title
     t_cell.fill = fill_title
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -356,40 +447,50 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
 
     # Row 2: Category Headers
     ws_sum.row_dimensions[2].height = 22
-    ws_sum.cell(2, 1, "BRANCH").fill = fill_title
-    ws_sum.cell(2, 1).font = f_header
-    ws_sum.cell(2, 1).alignment = Alignment(horizontal="center", vertical="center")
+    ws_sum.merge_cells("A2:B2")
+    z_cell = ws_sum.cell(2, 1, "ZONE & BRANCH")
+    z_cell.fill = fill_title
+    z_cell.font = Font(name=font_family, size=10, bold=True, color="FFFFFF")
+    z_cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    col_idx = 2
-    for idx, cat in enumerate(CATEGORIES):
+    col_idx = 3
+    cat_codes = [("PICKUP", "P"), ("DELIVERY", "D"), ("TRANSIT", "T"), ("NOT ASSIGN", "N")]
+    for idx, (cat_name, code) in enumerate(cat_codes):
         ws_sum.merge_cells(start_row=2, start_column=col_idx, end_row=2, end_column=col_idx+2)
-        c_cell = ws_sum.cell(2, col_idx, f"URGENT {cat.upper()}")
+        c_cell = ws_sum.cell(2, col_idx, f"URGENT {cat_name} ({code}1..3)")
         c_cell.font = f_cat
         c_cell.fill = cat_fills[idx % len(cat_fills)]
         c_cell.alignment = Alignment(horizontal="center", vertical="center")
         col_idx += 3
 
-    ws_sum.merge_cells("N2:P2")
-    tot_cell = ws_sum.cell(2, 14, "OVERALL TOTALS")
+    ws_sum.merge_cells("O2:Q2")
+    tot_cell = ws_sum.cell(2, 15, "TOTAL (TOT1..3)")
     tot_cell.font = f_cat
     tot_cell.fill = fill_hdr
     tot_cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_sum.cell(2, 17, "CLEARANCE").fill = fill_hdr
-    ws_sum.cell(2, 17).font = f_cat
-    ws_sum.cell(2, 17).alignment = Alignment(horizontal="center", vertical="center")
+    ws_sum.cell(2, 18, "CLEARANCE").fill = fill_hdr
+    ws_sum.cell(2, 18).font = f_cat
+    ws_sum.cell(2, 18).alignment = Alignment(horizontal="center", vertical="center")
 
-    # Row 3: Shift Headers
-    sub_headers = ["BRANCH"]
-    for _ in CATEGORIES:
-        sub_headers.extend(["9 AM", "2 PM", "5 PM"])
-    sub_headers.extend(["9 AM", "2 PM", "5 PM", "CLEAR %"])
-
+    # Row 3: Short Cute Sub-Headers (P1, P2, P3, D1, D2, D3, T1, T2, T3, N1, N2, N3, TOT1, TOT2, TOT3, CLEAR %)
+    sub_headers = ["ZONE", "BRANCH", "P1", "P2", "P3", "D1", "D2", "D3", "T1", "T2", "T3", "N1", "N2", "N3", "TOT1", "TOT2", "TOT3", "CLEAR %"]
     ws_sum.row_dimensions[3].height = 20
+
     for c_i, sh_text in enumerate(sub_headers, 1):
         cell = ws_sum.cell(3, c_i, sh_text)
-        cell.font = f_header
-        cell.fill = fill_hdr
+        cell.font = Font(name=font_family, size=9, bold=True, color="FFFFFF")
+
+        # Apply shift header color
+        if c_i in (3, 6, 9, 12, 15):
+            cell.fill = hdr_s1 # 9 AM
+        elif c_i in (4, 7, 10, 13, 16):
+            cell.fill = hdr_s2 # 2 PM
+        elif c_i in (5, 8, 11, 14, 17):
+            cell.fill = hdr_s3 # 5 PM
+        else:
+            cell.fill = fill_hdr
+
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
 
@@ -399,22 +500,38 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         row_fill = fill_alt if r_idx % 2 == 0 else None
         ws_sum.row_dimensions[r_idx].height = 19
 
-        vals = [r["BRANCH"]]
+        vals = [r["ZONE"], r["BRANCH"]]
         for cat in CATEGORIES:
             vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM"], r[f"{cat}_5PM"]])
         vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM"], r["TOTAL_5PM"], f"{r['CLEARANCE_PCT']:.1f}%"])
 
         for c_i, val in enumerate(vals, 1):
             cell = ws_sum.cell(r_idx, c_i, val)
-            cell.font = f_data
             cell.border = border
-            if row_fill: cell.fill = row_fill
-            cell.alignment = Alignment(horizontal="center" if c_i > 1 else "left", vertical="center")
+
+            # Distinct Shift Number Colors
+            if c_i in (3, 6, 9, 12, 15): # 9 AM Shift
+                cell.fill = fill_s1
+                cell.font = font_s1
+            elif c_i in (4, 7, 10, 13, 16): # 2 PM Shift
+                cell.fill = fill_s2
+                cell.font = font_s2
+            elif c_i in (5, 8, 11, 14, 17): # 5 PM Shift
+                cell.fill = fill_s3
+                cell.font = font_s3
+            elif c_i == 18:
+                cell.font = f_good
+                if row_fill: cell.fill = row_fill
+            else:
+                cell.font = f_data
+                if row_fill: cell.fill = row_fill
+
+            cell.alignment = Alignment(horizontal="center" if c_i > 2 else "left", vertical="center")
         r_idx += 1
 
     # Totals Row
     ws_sum.row_dimensions[r_idx].height = 22
-    tot_vals = [totals["BRANCH"]]
+    tot_vals = [totals["ZONE"], totals["BRANCH"]]
     for cat in CATEGORIES:
         tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM"], totals[f"{cat}_5PM"]])
     tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM"], totals["TOTAL_5PM"], f"{totals['CLEARANCE_PCT']:.1f}%"])
@@ -424,7 +541,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         cell.font = f_total
         cell.fill = fill_total
         cell.border = border
-        cell.alignment = Alignment(horizontal="center" if c_i > 1 else "left", vertical="center")
+        cell.alignment = Alignment(horizontal="center" if c_i > 2 else "left", vertical="center")
 
     for col in ws_sum.columns:
         max_len = max(len(str(cell.value or "")) for cell in col)
@@ -432,8 +549,8 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         ws_sum.column_dimensions[col_letter].width = max(max_len + 3, 11)
 
     # Tab 2: Itemized Transitions
-    det_headers = ["BILL ID", "BRANCH", "CATEGORY", "STATUS 9AM", "NEW STATUS", "RESOLVED SHIFT", "RESOLUTION TIME"]
-    ws_det.merge_cells("A1:G1")
+    det_headers = ["BILL ID", "ZONE", "BRANCH", "CATEGORY", "STATUS 9AM", "NEW STATUS", "RESOLVED SHIFT", "RESOLUTION TIME"]
+    ws_det.merge_cells("A1:H1")
     d_cell = ws_det.cell(1, 1, f"ITEMIZED RESOLVED URGENT BILL TRANSITIONS ({date_str})")
     d_cell.font = f_title
     d_cell.fill = fill_title
@@ -443,7 +560,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     ws_det.row_dimensions[3].height = 24
     for c_idx, h_text in enumerate(det_headers, 1):
         cell = ws_det.cell(3, c_idx, h_text)
-        cell.font = f_header
+        cell.font = Font(name=font_family, size=9, bold=True, color="FFFFFF")
         cell.fill = fill_hdr
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
@@ -452,13 +569,13 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     for item in itemized_transitions:
         row_fill = fill_alt if dr_idx % 2 == 0 else None
         ws_det.row_dimensions[dr_idx].height = 19
-        vals = [item["BILL ID"], item["BRANCH"], item["CATEGORY"], item["STATUS 9AM"], item["NEW STATUS"], item["RESOLVED SHIFT"], item["RESOLUTION TIME"]]
+        vals = [item["BILL ID"], item["ZONE"], item["BRANCH"], item["CATEGORY"], item["STATUS 9AM"], item["NEW STATUS"], item["RESOLVED SHIFT"], item["RESOLUTION TIME"]]
         for c_idx, val in enumerate(vals, 1):
             cell = ws_det.cell(dr_idx, c_idx, val)
-            cell.font = f_good if c_idx == 5 else f_data
+            cell.font = f_good if c_idx == 6 else f_data
             cell.border = border
             if row_fill: cell.fill = row_fill
-            cell.alignment = Alignment(horizontal="center" if c_idx not in (1, 2) else "left", vertical="center")
+            cell.alignment = Alignment(horizontal="center" if c_idx not in (1, 2, 3) else "left", vertical="center")
         dr_idx += 1
 
     for col in ws_det.columns:
