@@ -174,6 +174,7 @@ def extract_all_bills_map(df_detail):
         if not oid or oid in test_bills:
             continue
 
+        # Clean handle string (no extra suffixes or spaces)
         handle = str(r.get(handle_col, "") or "").strip().upper()
         if any(kw in handle for kw in EXCLUDE_KEYWORDS):
             continue
@@ -211,7 +212,6 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
     bills_map = extract_all_bills_map(df_detail)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    # Record shift active urgent items map
     shift_bills = {}
     for oid, bdata in bills_map.items():
         if bdata["is_urgent"]:
@@ -227,7 +227,6 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
         "bills": shift_bills
     }
 
-    # If 9AM baseline is set, evaluate transitions for 2PM or 5PM
     baseline = snapshots[date_str].get("9AM", {}).get("bills", {})
     if shift_name != "9AM" and baseline:
         shift_transitions = {}
@@ -288,10 +287,8 @@ def build_comparison_summary(date_str, df_detail=None):
     active_branches = set(b.get("branch", "") for b in list(s_9am.values()) + list(s_2pm.values()) + list(s_5pm.values()) if b.get("branch"))
     all_branches = sorted(list(set(all_known_branches).union(active_branches)))
 
-    # branch -> category -> {9AM, 2PM, 5PM}
     branch_matrix = {br: {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES} for br in all_branches}
 
-    # Count 9AM
     for oid, bdata in s_9am.items():
         br = bdata.get("branch", "UNKNOWN")
         cat = bdata.get("category", "Not Assign")
@@ -299,7 +296,6 @@ def build_comparison_summary(date_str, df_detail=None):
         if br in branch_matrix:
             branch_matrix[br][cat]["9AM"] += 1
 
-    # Count 2PM
     for oid, bdata in s_2pm.items():
         br = bdata.get("branch", "UNKNOWN")
         cat = bdata.get("category", "Not Assign")
@@ -307,7 +303,6 @@ def build_comparison_summary(date_str, df_detail=None):
         if br in branch_matrix:
             branch_matrix[br][cat]["2PM"] += 1
 
-    # Count 5PM
     for oid, bdata in s_5pm.items():
         br = bdata.get("branch", "UNKNOWN")
         cat = bdata.get("category", "Not Assign")
@@ -315,7 +310,6 @@ def build_comparison_summary(date_str, df_detail=None):
         if br in branch_matrix:
             branch_matrix[br][cat]["5PM"] += 1
 
-    # Build Itemized Transitions list
     itemized_transitions = []
     for oid, base_info in s_9am.items():
         br = base_info.get("branch", "UNKNOWN")
@@ -335,7 +329,7 @@ def build_comparison_summary(date_str, df_detail=None):
             itemized_transitions.append({
                 "BILL ID": oid,
                 "ZONE": resolve_branch_zone(br, df_detail),
-                "BRANCH": br,
+                "POST OFFICE HANDLE": br,
                 "CATEGORY": cat,
                 "STATUS 9AM": base_info.get("status", ""),
                 "NEW STATUS": final_status,
@@ -354,7 +348,7 @@ def build_comparison_summary(date_str, df_detail=None):
     sorted_branch_tuples.sort(key=lambda x: (x[0], x[1]))
 
     for z, br in sorted_branch_tuples:
-        row = {"ZONE": z, "BRANCH": br}
+        row = {"ZONE": z, "POST OFFICE HANDLE": br, "BRANCH": br}
         tot_9am = tot_2pm = tot_5pm = 0
 
         for cat in CATEGORIES:
@@ -393,7 +387,7 @@ def build_comparison_summary(date_str, df_detail=None):
     grand_res = grand_9am - grand_5pm
     grand_pct = (grand_res / grand_9am * 100.0) if grand_9am > 0 else 100.0
 
-    totals = {"ZONE": "ALL", "BRANCH": "TOTAL"}
+    totals = {"ZONE": "ALL", "POST OFFICE HANDLE": "TOTAL", "BRANCH": "TOTAL"}
     for cat in CATEGORIES:
         totals[f"{cat}_9AM"] = tot_cols[cat]["9AM"]
         totals[f"{cat}_2PM"] = tot_cols[cat]["2PM"]
@@ -459,7 +453,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
 
     ws_sum.row_dimensions[2].height = 22
     ws_sum.merge_cells("A2:B2")
-    z_cell = ws_sum.cell(2, 1, "ZONE & BRANCH")
+    z_cell = ws_sum.cell(2, 1, "ZONE & POST OFFICE HANDLE")
     z_cell.fill = fill_title
     z_cell.font = Font(name=font_family, size=10, bold=True, color="FFFFFF")
     z_cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -484,7 +478,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     ws_sum.cell(2, 18).font = f_cat
     ws_sum.cell(2, 18).alignment = Alignment(horizontal="center", vertical="center")
 
-    sub_headers = ["ZONE", "BRANCH", "P1", "P2 (Δ)", "P3 (Δ)", "D1", "D2 (Δ)", "D3 (Δ)", "T1", "T2 (Δ)", "T3 (Δ)", "N1", "N2 (Δ)", "N3 (Δ)", "TOT1", "TOT2 (Δ)", "TOT3 (Δ)", "CLEAR %"]
+    sub_headers = ["ZONE", "POST OFFICE HANDLE", "P1", "P2 (Δ)", "P3 (Δ)", "D1", "D2 (Δ)", "D3 (Δ)", "T1", "T2 (Δ)", "T3 (Δ)", "N1", "N2 (Δ)", "N3 (Δ)", "TOT1", "TOT2 (Δ)", "TOT3 (Δ)", "CLEAR %"]
     ws_sum.row_dimensions[3].height = 20
 
     for c_i, sh_text in enumerate(sub_headers, 1):
@@ -508,7 +502,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         row_fill = fill_alt if r_idx % 2 == 0 else None
         ws_sum.row_dimensions[r_idx].height = 19
 
-        vals = [r["ZONE"], r["BRANCH"]]
+        vals = [r["ZONE"], r["POST OFFICE HANDLE"]]
         for cat in CATEGORIES:
             vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM_STR"], r[f"{cat}_5PM_STR"]])
         vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM_STR"], r["TOTAL_5PM_STR"], f"{r['CLEARANCE_PCT']:.1f}%"])
@@ -537,7 +531,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         r_idx += 1
 
     ws_sum.row_dimensions[r_idx].height = 22
-    tot_vals = [totals["ZONE"], totals["BRANCH"]]
+    tot_vals = [totals["ZONE"], totals["POST OFFICE HANDLE"]]
     for cat in CATEGORIES:
         tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM_STR"], totals[f"{cat}_5PM_STR"]])
     tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM_STR"], totals["TOTAL_5PM_STR"], f"{totals['CLEARANCE_PCT']:.1f}%"])
@@ -554,7 +548,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         col_letter = get_column_letter(col[0].column)
         ws_sum.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
-    det_headers = ["BILL ID", "ZONE", "BRANCH", "CATEGORY", "STATUS 9AM", "NEW STATUS", "RESOLVED SHIFT", "RESOLUTION TIME"]
+    det_headers = ["BILL ID", "ZONE", "POST OFFICE HANDLE", "CATEGORY", "STATUS 9AM", "NEW STATUS", "RESOLVED SHIFT", "RESOLUTION TIME"]
     ws_det.merge_cells("A1:H1")
     d_cell = ws_det.cell(1, 1, f"ITEMIZED RESOLVED URGENT BILL TRANSITIONS ({date_str})")
     d_cell.font = f_title
@@ -574,7 +568,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     for item in itemized_transitions:
         row_fill = fill_alt if dr_idx % 2 == 0 else None
         ws_det.row_dimensions[dr_idx].height = 19
-        vals = [item["BILL ID"], item["ZONE"], item["BRANCH"], item["CATEGORY"], item["STATUS 9AM"], item["NEW STATUS"], item["RESOLVED SHIFT"], item["RESOLUTION TIME"]]
+        vals = [item["BILL ID"], item["ZONE"], item["POST OFFICE HANDLE"], item["CATEGORY"], item["STATUS 9AM"], item["NEW STATUS"], item["RESOLVED SHIFT"], item["RESOLUTION TIME"]]
         for c_idx, val in enumerate(vals, 1):
             cell = ws_det.cell(dr_idx, c_idx, val)
             cell.font = f_good if c_idx == 6 else f_data
