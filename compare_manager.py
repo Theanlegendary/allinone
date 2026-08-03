@@ -277,7 +277,7 @@ def record_total_snapshot(date_str, df_detail):
     save_snapshots(snapshots)
     return snapshots
 
-def build_comparison_summary(date_str, df_detail=None):
+def build_comparison_summary(date_str, df_detail=None, target_shift=None):
     if df_detail is not None:
         record_total_snapshot(date_str, df_detail)
 

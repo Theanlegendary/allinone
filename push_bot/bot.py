@@ -2455,6 +2455,17 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/compare — Urgent Bill Status Clearance & Shift Comparison Report (9 AM -> 2 PM -> 5 PM)."""
     await delete_group_command(update, context)
     cfg = load_config()
+    
+    shift_target = None
+    if context.args:
+        arg_val = str(context.args[0]).strip()
+        if arg_val == "1":
+            shift_target = "9AM"
+        elif arg_val == "2":
+            shift_target = "2PM"
+        elif arg_val == "3":
+            shift_target = "5PM"
+
     msg = await send_requester_text(update, context, "⏳ Fetching data and processing Urgent Bill Shift Comparison...")
 
     tmpdir = tempfile.mkdtemp(prefix="compare_")
@@ -2470,18 +2481,20 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
         df_detail = pd.read_excel(src)
         df_detail.columns = [str(c).strip().upper() for c in df_detail.columns]
 
-        rows, totals, itemized = compare_manager.build_comparison_summary(today_str, df_detail)
+        rows, totals, itemized = compare_manager.build_comparison_summary(today_str, df_detail, target_shift=shift_target)
 
         if not rows:
             await edit_or_send_requester_text(msg, update, context, "⚠️ No urgent bill comparison data found for today.")
             return
 
-        current_shift = compare_manager.determine_shift()
+        current_shift = shift_target or compare_manager.determine_shift()
+        label = "Full Day Total (5 PM)" if current_shift == "5PM" else ("Afternoon (2 PM)" if current_shift == "2PM" else "Morning (9 AM)")
+        
         out_excel = os.path.join("compare", f"Urgent_Clearance_Compare_{stamp}.xlsx")
         compare_manager.build_compare_excel(today_str, rows, totals, itemized, out_excel)
 
         if os.path.exists(out_excel):
-            await edit_or_send_requester_text(msg, update, context, f"✅ Urgent Bill Shift Comparison Report (`{today_str}` | Shift: `{current_shift}`) generated successfully! Attaching Excel file...")
+            await edit_or_send_requester_text(msg, update, context, f"✅ Urgent Bill Shift Comparison Report (`{today_str}` | Mode: `{label}`) generated successfully! Attaching Excel file...")
             await send_requester_document(
                 update,
                 context,
