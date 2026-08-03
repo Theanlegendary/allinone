@@ -2450,6 +2450,83 @@ async def cmd_export_logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate tracking logs: {e}")
 
 
+@pm_required_handler
+async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/compare — Urgent Bill Status Clearance & Shift Comparison Report (9 AM -> 2 PM -> 5 PM)."""
+    await delete_group_command(update, context)
+    cfg = load_config()
+    msg = await send_requester_text(update, context, "⏳ Fetching data and processing Urgent Bill Shift Comparison...")
+
+    tmpdir = tempfile.mkdtemp(prefix="compare_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M")
+    src = os.path.join(tmpdir, f"export_compare_{stamp}.xlsx")
+    today_str = datetime.now().strftime("%d/%m/%Y")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        import generate_report, compare_manager
+
+        df_detail = pd.read_excel(src)
+        df_detail.columns = [str(c).strip().upper() for c in df_detail.columns]
+
+        rows, totals, itemized = compare_manager.build_comparison_summary(today_str, df_detail)
+
+        if not rows:
+            await edit_or_send_requester_text(msg, update, context, "⚠️ No urgent bill comparison data found for today.")
+            return
+
+        current_shift = compare_manager.determine_shift()
+        lines = [
+            f"📊 *URGENT BILL CLEARANCE & SHIFT COMPARISON*",
+            f"📅 `{today_str}` | Active Shift: `{current_shift}`",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"`BRANCH   │ 9 AM URG│ RES 2 PM│ RES 5 PM│ REMAIN  │ CLEAR %`",
+            f"─────────┼─────────┼─────────┼─────────┼─────────┼────────"
+        ]
+
+        for r in rows:
+            b = r["BRANCH"]
+            u9 = r["URGENT_9AM"]
+            r2 = r["RESOLVED_2PM"]
+            r5 = r["RESOLVED_5PM"]
+            rem = r["REMAINING"]
+            pct = r["CLEARANCE_PCT"]
+            lines.append(f"`{b:<9}│ {u9:<8}│ {r2:<8}│ {r5:<8}│ {rem:<8}│ {pct:>5.1f}%`")
+
+        lines.append(f"─────────┼─────────┼─────────┼─────────┼─────────┼────────")
+        tot_u9 = totals["URGENT_9AM"]
+        tot_r2 = totals["RESOLVED_2PM"]
+        tot_r5 = totals["RESOLVED_5PM"]
+        tot_rem = totals["REMAINING"]
+        tot_pct = totals["CLEARANCE_PCT"]
+        lines.append(f"`TOTAL    │ {tot_u9:<8}│ {tot_r2:<8}│ {tot_r5:<8}│ {tot_rem:<8}│ {tot_pct:>5.1f}%`")
+        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        full_text = "\n".join(lines)
+        await edit_or_send_requester_text(msg, update, context, full_text, parse_mode="Markdown")
+
+        # Excel report
+        out_excel = os.path.join(tmpdir, f"Urgent_Clearance_Compare_{stamp}.xlsx")
+        compare_manager.build_compare_excel(today_str, rows, totals, itemized, out_excel)
+
+        # High-res PNG image
+        try:
+            import excel_to_image
+            img_buf = excel_to_image.excel_to_image(out_excel)
+            img_buf.name = f"Urgent_Clearance_{stamp}.png"
+            await send_requester_photo(update, context, img_buf)
+        except Exception as e_img:
+            log.warning("Could not render compare summary image: %s", e_img)
+
+        if os.path.exists(out_excel):
+            await send_requester_document(update, context, out_excel, filename=os.path.basename(out_excel), caption="📄 Urgent Bill Clearance & Shift Comparison Excel Report")
+
+    except Exception as e:
+        log.exception("Error in /compare command: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate comparison report: {e}")
+
+
 async def run_time_vs(update: Update, context: ContextTypes.DEFAULT_TYPE, start_hour: int, end_hour: int, command_label: str):
     await delete_group_command(update, context)
 
@@ -6615,6 +6692,7 @@ def main():
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
     app.add_handler(CommandHandler("tpg",        cmd_tpg))
+    app.add_handler(CommandHandler("compare",    cmd_compare))
     app.add_handler(CommandHandler("exportlogs", cmd_export_logs))
     app.add_handler(CommandHandler("logs",       cmd_export_logs))
     app.add_handler(CommandHandler("totalkpi",   cmd_total_kpi))
