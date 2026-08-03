@@ -220,9 +220,13 @@ def save_snapshots(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def is_urgent_bill(r):
-    sc = str(r.get("STATUS_CODE", "") or r.get("STATUS", "") or "").lstrip("S").strip()
-    if sc and " " in sc:
-        sc = sc.split()[0].strip()
+    sc = ""
+    for sc_cand in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATUS NAME", "STATE_CODE", "STATE", "CODE"]:
+        if sc_cand in r and pd.notna(r[sc_cand]):
+            sc_val = str(r[sc_cand]).lstrip("S").strip()
+            if sc_val:
+                sc = sc_val.split()[0].strip()
+                break
 
     if sc in ("99", "100", "201", "410", "420", "472", "520"):
         return False
@@ -264,11 +268,20 @@ def extract_total_report_counts(df_detail):
     df = df_detail.copy()
     df.columns = [str(c).strip().upper() for c in df.columns]
 
-    handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
-    sc_col = "STATUS_CODE" if "STATUS_CODE" in df.columns else ("STATUS" if "STATUS" in df.columns else None)
+    handle_col = None
+    for cand in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE", "CURRENT_POST_OFFICE", "POST_OFFICE_HANDLE", "POST OFFICE", "HANDLE"]:
+        if cand in df.columns:
+            handle_col = cand
+            break
+
+    sc_col = None
+    for cand in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATUS NAME", "STATE_CODE", "STATE", "CODE"]:
+        if cand in df.columns:
+            sc_col = cand
+            break
 
     handle_map = {}
-    if not handle_col or not sc_col:
+    if not handle_col:
         return handle_map
 
     for _, r in df.iterrows():
@@ -277,9 +290,11 @@ def extract_total_report_counts(df_detail):
         if not hnd:
             continue
 
-        sc = str(r.get(sc_col, "") or "").lstrip("S").strip()
-        if sc and " " in sc:
-            sc = sc.split()[0].strip()
+        sc = ""
+        if sc_col:
+            sc = str(r.get(sc_col, "") or "").lstrip("S").strip()
+            if sc and " " in sc:
+                sc = sc.split()[0].strip()
 
         if sc in ("99", "100", "201", "410", "420", "520"):
             continue
@@ -290,7 +305,7 @@ def extract_total_report_counts(df_detail):
         if is_urgent_bill(r):
             handle_map[hnd]["urgent"] += 1
 
-        cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or "").upper()
+        cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or r.get("_REPORT_CLASS", "") or "").upper()
         if "PICKUP" in cat_raw or sc in ("200", "210", "302", "310"):
             handle_map[hnd]["pickup"] += 1
         elif "DELIVERY" in cat_raw or sc in ("311", "401", "402", "470", "472", "480", "500"):
