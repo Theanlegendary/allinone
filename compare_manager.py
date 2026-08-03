@@ -226,15 +226,26 @@ def extract_total_report_counts(df_detail):
 
     return handle_map
 
+def get_next_shift_to_record(date_str):
+    snapshots = load_snapshots()
+    day_data = snapshots.get(date_str, {})
+    if "9AM" not in day_data:
+        return "9AM"
+    elif "2PM" not in day_data:
+        return "2PM"
+    else:
+        return "5PM"
+
 def record_total_snapshot(date_str, shift_name, df_detail):
     snapshots = load_snapshots()
     if date_str not in snapshots:
         snapshots[date_str] = {}
 
+    target_shift = get_next_shift_to_record(date_str)
     handle_map = extract_total_report_counts(df_detail)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    snapshots[date_str][shift_name] = {
+    snapshots[date_str][target_shift] = {
         "captured_at": now_str,
         "handles": handle_map
     }
@@ -244,8 +255,8 @@ def record_total_snapshot(date_str, shift_name, df_detail):
 
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
-        shift_name = determine_shift()
-        record_total_snapshot(date_str, shift_name, df_detail)
+        target_shift = get_next_shift_to_record(date_str)
+        record_total_snapshot(date_str, target_shift, df_detail)
 
     snapshots = load_snapshots()
     day_data = snapshots.get(date_str, {})
