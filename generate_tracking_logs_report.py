@@ -109,10 +109,14 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
                         dt_str = str(dt_raw)
 
                 if st in STATUS_CODES_LIST:
-                    row_dict[f"LOG_{st}"] = st
-                    row_dict[f"UNIT_{st}"] = unit
-                    row_dict[f"TIME_{st}"] = dt_str
+                    # Only write FIRST occurrence — preserve original routing path
+                    # LATEST_STATUS tracks where the bill ended up after any reroutes
+                    if row_dict[f"LOG_{st}"] == "":
+                        row_dict[f"LOG_{st}"] = st
+                        row_dict[f"UNIT_{st}"] = unit
+                        row_dict[f"TIME_{st}"] = dt_str
 
+                # Always track absolute latest status
                 latest_st = st
                 latest_time = dt_str
 
