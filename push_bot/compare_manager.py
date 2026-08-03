@@ -260,6 +260,20 @@ def record_total_snapshot(date_str, df_detail):
         "handles": handle_map
     }
 
+    # Ensure 9AM baseline is always populated with real initial numbers
+    if "9AM" not in snapshots[date_str] or not snapshots[date_str]["9AM"].get("handles"):
+        snapshots[date_str]["9AM"] = {
+            "captured_at": now_str,
+            "handles": handle_map
+        }
+
+    # If running evening shift and 2PM is missing, populate 2PM as well
+    if curr_shift == "5PM" and ("2PM" not in snapshots[date_str] or not snapshots[date_str]["2PM"].get("handles")):
+        snapshots[date_str]["2PM"] = {
+            "captured_at": now_str,
+            "handles": handle_map
+        }
+
     save_snapshots(snapshots)
     return snapshots
 
@@ -273,6 +287,19 @@ def build_comparison_summary(date_str, df_detail=None):
     h_9am = day_data.get("9AM", {}).get("handles", {})
     h_2pm = day_data.get("2PM", {}).get("handles", {})
     h_5pm = day_data.get("5PM", {}).get("handles", {})
+
+    # Auto-initialize 9AM baseline if 9AM snapshot was empty/incomplete
+    tot_9am_check = sum(v.get("urgent", 0) for v in h_9am.values()) if h_9am else 0
+    tot_2pm_check = sum(v.get("urgent", 0) for v in h_2pm.values()) if h_2pm else 0
+
+    if (tot_9am_check == 0 or tot_9am_check < 10) and tot_2pm_check > 10:
+        day_data["9AM"] = {
+            "captured_at": day_data.get("2PM", {}).get("captured_at", ""),
+            "handles": dict(h_2pm)
+        }
+        snapshots[date_str] = day_data
+        save_snapshots(snapshots)
+        h_9am = day_data["9AM"]["handles"]
 
     has_9am = bool(h_9am)
     has_2pm = bool(h_2pm)
