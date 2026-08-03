@@ -52,11 +52,11 @@ def compute_kpi_info(row):
 
     scan_time = None
     for col in [
-        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+        'CURRENT TIME',
         'STATUS 306 AT STORE / AGENT (LAST TIME)',
+        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
         'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
         'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
-        'CURRENT TIME',
         'CREATED DATE'
     ]:
         val = row.get(col)
@@ -1135,10 +1135,10 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                     h_val = int(match.group(1))
                     return (h_val >= threshold_hours, h_val >= 168)
                 for col in [
-                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
-                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
-                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
                     'CURRENT TIME',
+                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
                     'CREATED DATE'
                 ]:
                     val = row.get(col)

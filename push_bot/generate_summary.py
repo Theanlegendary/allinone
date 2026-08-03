@@ -558,11 +558,11 @@ def compute_kpi_info(row):
 
     scan_time = None
     for col in [
-        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+        'CURRENT TIME',
         'STATUS 306 AT STORE / AGENT (LAST TIME)',
+        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
         'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
         'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
-        'CURRENT TIME',
         'CREATED DATE'
     ]:
         val = row.get(col)
@@ -756,11 +756,11 @@ def build_total_excel(result, out_path, lang='kh'):
             def get_age_minutes(row):
                 scan_time = None
                 for col in [
-                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+                    'CURRENT TIME',
                     'STATUS 306 AT STORE / AGENT (LAST TIME)',
+                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
                     'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
                     'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
-                    'CURRENT TIME',
                     'CREATED DATE'
                 ]:
                     val = row.get(col)
