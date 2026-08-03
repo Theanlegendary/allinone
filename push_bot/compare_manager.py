@@ -1,6 +1,7 @@
 import os
 import json
 import glob
+import re
 import pandas as pd
 from datetime import datetime, timedelta
 import openpyxl
@@ -149,19 +150,35 @@ def resolve_branch_zone(branch_code, df_detail=None):
         
     return zm.get("default_zone", "Zone 1")
 
-def load_snapshots():
-    clean_cache_3_times_daily()
-    if os.path.exists(SNAPSHOT_FILE):
-        try:
-            with open(SNAPSHOT_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return {}
-    return {}
+def is_urgent_bill(r):
+    sc = ""
+    for sc_cand in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATUS NAME", "STATE_CODE", "STATE", "CODE"]:
+        if sc_cand in r and pd.notna(r[sc_cand]):
+            sc_val = str(r[sc_cand]).lstrip("S").strip()
+            if sc_val:
+                sc = sc_val.split()[0].strip()
+                break
 
-def save_snapshots(data):
-    with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    if sc in ("99", "100", "201", "410", "420", "472", "520"):
+        return False
+
+    if "_IS_OVERDUE" in r and pd.notna(r["_IS_OVERDUE"]):
+        return bool(r["_IS_OVERDUE"])
+
+    age_val = str(r.get("AGE", "") or r.get("CURRENT TIME", "") or r.get("SCAN TIME", "") or "")
+    if "🔴" in age_val:
+        return True
+
+    cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or r.get("_REPORT_CLASS", "") or "").upper()
+    is_transit = ("TRANSIT" in cat_raw or "MEGA" in cat_raw or sc in ("306", "309"))
+    threshold = 48 if is_transit else 24
+
+    if age_val:
+        match = re.search(r'(\d+)\s*h', age_val, re.IGNORECASE)
+        if match:
+            return float(match.group(1)) >= threshold
+
+    return False
 
 def get_row_post_office_handle(r):
     for col in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "DELIVERY POST OFFICE", "RECEIVE POST OFFICE"]:
@@ -179,8 +196,22 @@ def get_row_post_office_handle(r):
 
     return None
 
+def load_snapshots():
+    clean_cache_3_times_daily()
+    if os.path.exists(SNAPSHOT_FILE):
+        try:
+            with open(SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_snapshots(data):
+    with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
 def extract_total_report_counts(df_detail):
-    """Extracts exact urgent counts per post office handle using generate_report engine and destination attribution."""
+    """Extracts exact overdue urgent counts per post office handle using generate_report engine."""
     import generate_report
     df = df_detail.copy()
     
@@ -215,18 +246,11 @@ def extract_total_report_counts(df_detail):
 
     if not handle_map:
         df.columns = [str(c).strip().upper() for c in df.columns]
-        sc_col = None
-        for c in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATE_CODE"]:
-            if c in df.columns:
-                sc_col = c
-                break
-                
         for _, r in df.iterrows():
+            if not is_urgent_bill(r):
+                continue
             hnd = get_row_post_office_handle(r)
             if not hnd or any(kw in hnd for kw in EXCLUDE_KEYWORDS):
-                continue
-            sc = str(r.get(sc_col, "") or "").lstrip("S").strip().split()[0] if sc_col and str(r.get(sc_col, "")) else ""
-            if sc in ("99", "100", "201", "410", "420", "520"):
                 continue
             if hnd not in handle_map:
                 handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
@@ -260,14 +284,12 @@ def record_total_snapshot(date_str, df_detail):
         "handles": handle_map
     }
 
-    # Ensure 9AM baseline is always populated with real initial numbers
     if "9AM" not in snapshots[date_str] or not snapshots[date_str]["9AM"].get("handles"):
         snapshots[date_str]["9AM"] = {
             "captured_at": now_str,
             "handles": handle_map
         }
 
-    # If running evening shift and 2PM is missing, populate 2PM as well
     if curr_shift == "5PM" and ("2PM" not in snapshots[date_str] or not snapshots[date_str]["2PM"].get("handles")):
         snapshots[date_str]["2PM"] = {
             "captured_at": now_str,
@@ -287,19 +309,6 @@ def build_comparison_summary(date_str, df_detail=None, target_shift=None):
     h_9am = day_data.get("9AM", {}).get("handles", {})
     h_2pm = day_data.get("2PM", {}).get("handles", {})
     h_5pm = day_data.get("5PM", {}).get("handles", {})
-
-    # Auto-initialize 9AM baseline if 9AM snapshot was empty/incomplete
-    tot_9am_check = sum(v.get("urgent", 0) for v in h_9am.values()) if h_9am else 0
-    tot_2pm_check = sum(v.get("urgent", 0) for v in h_2pm.values()) if h_2pm else 0
-
-    if (tot_9am_check == 0 or tot_9am_check < 10) and tot_2pm_check > 10:
-        day_data["9AM"] = {
-            "captured_at": day_data.get("2PM", {}).get("captured_at", ""),
-            "handles": dict(h_2pm)
-        }
-        snapshots[date_str] = day_data
-        save_snapshots(snapshots)
-        h_9am = day_data["9AM"]["handles"]
 
     has_9am = bool(h_9am)
     has_2pm = bool(h_2pm)
