@@ -2478,29 +2478,31 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         current_shift = compare_manager.determine_shift()
         lines = [
-            f"📊 *URGENT BILL CLEARANCE & SHIFT COMPARISON*",
+            f"📊 *URGENT BILL SHIFT COMPARISON (12-COL MATRIX)*",
             f"📅 `{today_str}` | Active Shift: `{current_shift}`",
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"`BRANCH   │ 9 AM URG│ RES 2 PM│ RES 5 PM│ REMAIN  │ CLEAR %`",
-            f"─────────┼─────────┼─────────┼─────────┼─────────┼────────"
+            f"`BRANCH   │ PICKUP (9|2|5) │ DELIV (9|2|5)  │ TRANS (9|2|5)  │ UNASN (9|2|5)  │ TOT(9|2|5)  │ CLEAR %`",
+            f"─────────┼────────────────┼────────────────┼────────────────┼────────────────┼─────────────┼────────"
         ]
 
         for r in rows:
             b = r["BRANCH"]
-            u9 = r["URGENT_9AM"]
-            r2 = r["RESOLVED_2PM"]
-            r5 = r["RESOLVED_5PM"]
-            rem = r["REMAINING"]
+            pk = f"{r['Pickup_9AM']}|{r['Pickup_2PM']}|{r['Pickup_5PM']}"
+            dl = f"{r['Delivery_9AM']}|{r['Delivery_2PM']}|{r['Delivery_5PM']}"
+            tr = f"{r['Transit_9AM']}|{r['Transit_2PM']}|{r['Transit_5PM']}"
+            na = f"{r['Not Assign_9AM']}|{r['Not Assign_2PM']}|{r['Not Assign_5PM']}"
+            tot = f"{r['TOTAL_9AM']}|{r['TOTAL_2PM']}|{r['TOTAL_5PM']}"
             pct = r["CLEARANCE_PCT"]
-            lines.append(f"`{b:<9}│ {u9:<8}│ {r2:<8}│ {r5:<8}│ {rem:<8}│ {pct:>5.1f}%`")
+            lines.append(f"`{b:<9}│ {pk:<15}│ {dl:<15}│ {tr:<15}│ {na:<15}│ {tot:<12}│ {pct:>5.1f}%`")
 
-        lines.append(f"─────────┼─────────┼─────────┼─────────┼─────────┼────────")
-        tot_u9 = totals["URGENT_9AM"]
-        tot_r2 = totals["RESOLVED_2PM"]
-        tot_r5 = totals["RESOLVED_5PM"]
-        tot_rem = totals["REMAINING"]
-        tot_pct = totals["CLEARANCE_PCT"]
-        lines.append(f"`TOTAL    │ {tot_u9:<8}│ {tot_r2:<8}│ {tot_r5:<8}│ {tot_rem:<8}│ {tot_pct:>5.1f}%`")
+        lines.append(f"─────────┼────────────────┼────────────────┼────────────────┼────────────────┼─────────────┼────────")
+        tot_pk = f"{totals['Pickup_9AM']}|{totals['Pickup_2PM']}|{totals['Pickup_5PM']}"
+        tot_dl = f"{totals['Delivery_9AM']}|{totals['Delivery_2PM']}|{totals['Delivery_5PM']}"
+        tot_tr = f"{totals['Transit_9AM']}|{totals['Transit_2PM']}|{totals['Transit_5PM']}"
+        tot_na = f"{totals['Not Assign_9AM']}|{totals['Not Assign_2PM']}|{totals['Not Assign_5PM']}"
+        grand_tot = f"{totals['TOTAL_9AM']}|{totals['TOTAL_2PM']}|{totals['TOTAL_5PM']}"
+        grand_pct = totals["CLEARANCE_PCT"]
+        lines.append(f"`TOTAL    │ {tot_pk:<15}│ {tot_dl:<15}│ {tot_tr:<15}│ {tot_na:<15}│ {grand_tot:<12}│ {grand_pct:>5.1f}%`")
         lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         full_text = "\n".join(lines)
