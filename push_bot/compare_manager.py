@@ -368,10 +368,6 @@ def build_comparison_summary(date_str, df_detail=None):
             tot_2pm += v2
             tot_5pm += v5
 
-        # Exclude empty 0-volume branches to keep report clean & readable
-        if tot_9am == 0 and tot_2pm == 0 and tot_5pm == 0:
-            continue
-
         row["TOTAL_9AM"] = tot_9am
         row["TOTAL_2PM"] = tot_2pm
         row["TOTAL_5PM"] = tot_5pm
