@@ -2477,71 +2477,10 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         current_shift = compare_manager.determine_shift()
-        lines = [
-            f"📊 *URGENT BILL SHIFT COMPARISON (BY ZONE)*",
-            f"📅 `{today_str}` | Active Shift: `{current_shift}`",
-            f"💡 *P=Pickup | D=Delivery | T=Transit | N=NotAssign (1=9AM, 2=2PM, 3=5PM)*",
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"`ZONE        │ BRANCH   │ P1|2|3 │ D1|2|3 │ T1|2|3 │ N1|2|3 │ TOT1|2|3 │ CLEAR %`",
-            f"─────────────┼──────────┼────────┼────────┼────────┼────────┼──────────┼────────"
-        ]
-
-        # Group and display all branches by ZONE
-        for r in rows:
-            z = r["ZONE"][:11]
-            b = r["BRANCH"]
-            pk = f"{r['Pickup_9AM']}|{r['Pickup_2PM']}|{r['Pickup_5PM']}"
-            dl = f"{r['Delivery_9AM']}|{r['Delivery_2PM']}|{r['Delivery_5PM']}"
-            tr = f"{r['Transit_9AM']}|{r['Transit_2PM']}|{r['Transit_5PM']}"
-            na = f"{r['Not Assign_9AM']}|{r['Not Assign_2PM']}|{r['Not Assign_5PM']}"
-            tot = f"{r['TOTAL_9AM']}|{r['TOTAL_2PM']}|{r['TOTAL_5PM']}"
-            pct = r["CLEARANCE_PCT"]
-            dot = "🟢" if pct >= 80 else ("🟡" if pct >= 50 else "🔴")
-            lines.append(f"`{z:<12}│ {b:<8}│ {pk:<6}│ {dl:<6}│ {tr:<6}│ {na:<6}│ {tot:<8}│ {dot}{pct:>5.1f}%`")
-
-        lines.append(f"─────────────┼──────────┼────────┼────────┼────────┼────────┼──────────┼────────")
-        tot_pk = f"{totals['Pickup_9AM']}|{totals['Pickup_2PM']}|{totals['Pickup_5PM']}"
-        tot_dl = f"{totals['Delivery_9AM']}|{totals['Delivery_2PM']}|{totals['Delivery_5PM']}"
-        tot_tr = f"{totals['Transit_9AM']}|{totals['Transit_2PM']}|{totals['Transit_5PM']}"
-        tot_na = f"{totals['Not Assign_9AM']}|{totals['Not Assign_2PM']}|{totals['Not Assign_5PM']}"
-        grand_tot = f"{totals['TOTAL_9AM']}|{totals['TOTAL_2PM']}|{totals['TOTAL_5PM']}"
-        grand_pct = totals["CLEARANCE_PCT"]
-        tot_dot = "🟢" if grand_pct >= 80 else ("🟡" if grand_pct >= 50 else "🔴")
-        lines.append(f"`ALL ZONES   │ TOTAL    │ {tot_pk:<6}│ {tot_dl:<6}│ {tot_tr:<6}│ {tot_na:<6}│ {grand_tot:<8}│ {tot_dot}{grand_pct:>5.1f}%`")
-        lines.append(f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        lines.append(f"📄 *Full Zone Excel & Colored Image Matrix attached below!*")
-
-        full_text = "\n".join(lines)
-        if len(full_text) > 3800:
-            chunks = []
-            cur_chunk = []
-            cur_len = 0
-            for line in lines:
-                if cur_len + len(line) + 1 > 3800:
-                    chunks.append("\n".join(cur_chunk))
-                    cur_chunk = [line]
-                    cur_len = len(line)
-                else:
-                    cur_chunk.append(line)
-                    cur_len += len(line) + 1
-            if cur_chunk:
-                chunks.append("\n".join(cur_chunk))
-            
-            first = True
-            for ch in chunks:
-                if first:
-                    msg = await edit_or_send_requester_text(msg, update, context, ch, parse_mode="Markdown")
-                    first = False
-                else:
-                    await send_requester_text(update, context, ch, parse_mode="Markdown")
-        else:
-            await edit_or_send_requester_text(msg, update, context, full_text, parse_mode="Markdown")
-
-        # Excel report
         out_excel = os.path.join(tmpdir, f"Urgent_Clearance_Compare_{stamp}.xlsx")
         compare_manager.build_compare_excel(today_str, rows, totals, itemized, out_excel)
 
-        # High-res PNG image
+        # Render high-resolution PNG summary image for instant Telegram mobile viewing
         try:
             import excel_to_image
             img_buf = excel_to_image.excel_to_image(out_excel)
@@ -2551,7 +2490,16 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
             log.warning("Could not render compare summary image: %s", e_img)
 
         if os.path.exists(out_excel):
-            await send_requester_document(update, context, out_excel, filename=os.path.basename(out_excel), caption="📄 Urgent Bill Clearance & Shift Comparison Excel Report")
+            await edit_or_send_requester_text(msg, update, context, f"✅ Urgent Bill Shift Comparison Report (`{today_str}` | Shift: `{current_shift}`) generated successfully! Attaching Excel file...")
+            await send_requester_document(
+                update,
+                context,
+                out_excel,
+                filename=os.path.basename(out_excel),
+                caption=f"📄 Urgent Bill Shift Comparison Excel Report ({today_str} | Shift {current_shift})"
+            )
+        else:
+            await edit_or_send_requester_text(msg, update, context, "❌ Could not generate comparison report file.")
 
     except Exception as e:
         log.exception("Error in /compare command: %s", e)
