@@ -90,6 +90,7 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
                 row_dict[f"TIME_{sc}"] = ""
 
             latest_st = ""
+            latest_unit = ""
             latest_time = ""
 
             for t in trips_sorted:
@@ -109,18 +110,18 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
                         dt_str = str(dt_raw)
 
                 if st in STATUS_CODES_LIST:
-                    # Only write FIRST occurrence — preserve original routing path
-                    # LATEST_STATUS tracks where the bill ended up after any reroutes
-                    if row_dict[f"LOG_{st}"] == "":
-                        row_dict[f"LOG_{st}"] = st
-                        row_dict[f"UNIT_{st}"] = unit
-                        row_dict[f"TIME_{st}"] = dt_str
+                    # Always use LATEST scan unit and time for each status
+                    row_dict[f"LOG_{st}"] = st
+                    row_dict[f"UNIT_{st}"] = unit
+                    row_dict[f"TIME_{st}"] = dt_str
 
-                # Always track absolute latest status
+                # Always track absolute latest scan
                 latest_st = st
+                latest_unit = unit
                 latest_time = dt_str
 
             row_dict["LATEST_STATUS"] = latest_st
+            row_dict["LATEST_UNIT"] = latest_unit
             row_dict["LATEST_TIME"] = latest_time
             return row_dict
         except Exception:
@@ -161,7 +162,7 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     headers = ["BILL ID"]
     for sc in STATUS_CODES_LIST:
         headers.extend([f"LOG {sc}", f"UNIT {sc}", f"TIME {sc}"])
-    headers.extend(["LATEST STATUS", "LATEST TIME"])
+    headers.extend(["LATEST STATUS", "LATEST UNIT", "LATEST TIME"])
 
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(headers))
     t_cell = ws.cell(1, 1, "BILL TRACKING LOGS BY STATUS CODE REPORT (01/07/2026 - 03/08/2026)")
@@ -220,13 +221,13 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
             c_time.alignment = Alignment(horizontal="center", vertical="center")
             col_pos += 1
 
-        # Latest Status & Time
-        for val in [r_data.get("LATEST_STATUS", ""), r_data.get("LATEST_TIME", "")]:
-            cell = ws.cell(r_idx, col_pos, val)
-            cell.font = f_data
-            cell.border = border
-            if row_fill: cell.fill = row_fill
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+        # Latest Status, Latest Unit & Latest Time
+        for val in [r_data.get("LATEST_STATUS", ""), r_data.get("LATEST_UNIT", ""), r_data.get("LATEST_TIME", "")]:
+            c_last = ws.cell(r_idx, col_pos, val)
+            c_last.font = f_data
+            c_last.border = border
+            if row_fill: c_last.fill = row_fill
+            c_last.alignment = Alignment(horizontal="center", vertical="center")
             col_pos += 1
 
         r_idx += 1
