@@ -76,6 +76,50 @@ def clean_cache_3_times_daily():
     except Exception:
         pass
 
+def load_post_office_lookup_map():
+    po_map = {}
+    if os.path.exists("post_office_lookup.csv"):
+        try:
+            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
+            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
+            if "current_post_office" in df_po.columns and "post_office_handle" in df_po.columns:
+                for _, r in df_po.iterrows():
+                    cur = str(r["current_post_office"]).strip().upper()
+                    hnd = str(r["post_office_handle"]).strip().upper()
+                    if cur and hnd and cur != "NAN" and hnd != "NAN":
+                        po_map[cur] = hnd
+        except Exception:
+            pass
+    return po_map
+
+PO_LOOKUP_MAP = load_post_office_lookup_map()
+
+def resolve_post_office_handle(raw_po):
+    po = str(raw_po).strip().upper()
+    if not po or po == "NAN":
+        return None
+    if any(kw in po for kw in EXCLUDE_KEYWORDS):
+        return None
+
+    global PO_LOOKUP_MAP
+    if not PO_LOOKUP_MAP:
+        PO_LOOKUP_MAP = load_post_office_lookup_map()
+
+    if po in PO_LOOKUP_MAP:
+        return PO_LOOKUP_MAP[po]
+
+    # Strip leading 'A' or 'S' (agent / showroom codes like aTBKA008 or TBKS004)
+    if po.startswith("A") or po.startswith("S"):
+        po_s = po[1:]
+        if po_s in PO_LOOKUP_MAP:
+            return PO_LOOKUP_MAP[po_s]
+
+    prefix = po[:3] + "P001" if len(po) >= 3 else po
+    if prefix in PO_LOOKUP_MAP.values():
+        return prefix
+
+    return po
+
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
 
@@ -139,8 +183,8 @@ def get_all_known_branches(df_detail=None):
         handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
         if handle_col:
             for h in df[handle_col].dropna().unique():
-                h_str = str(h).strip().upper()
-                if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                h_str = resolve_post_office_handle(h)
+                if h_str:
                     branches.add(h_str)
 
     return sorted(list(branches))
@@ -246,8 +290,9 @@ def extract_all_bills_map(df_detail):
         if not oid or oid in test_bills:
             continue
 
-        handle = str(r.get(handle_col, "") or "").strip().upper()
-        if any(kw in handle for kw in EXCLUDE_KEYWORDS):
+        raw_h = str(r.get(handle_col, "") or "").strip()
+        handle = resolve_post_office_handle(raw_h)
+        if not handle:
             continue
 
         sc = str(r.get(sc_col, "") or "").lstrip("S").strip()
@@ -283,13 +328,11 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
     bills_map = extract_all_bills_map(df_detail)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    # Store current snapshot
     snapshots[date_str][shift_name] = {
         "captured_at": now_str,
         "bills": bills_map
     }
 
-    # If 9AM baseline exists, evaluate disappeared RED HIGHLIGHT bills for 2PM or 5PM
     baseline_map = snapshots[date_str].get("9AM", {}).get("bills", {})
     if shift_name != "9AM" and baseline_map:
         shift_disappeared = {}
@@ -299,7 +342,6 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
 
             curr_info = bills_map.get(oid)
             if not curr_info:
-                # Bill disappeared from active inventory (delivered / closed)
                 shift_disappeared[oid] = {
                     "branch": base_info["branch"],
                     "category": base_info["category"],
@@ -333,42 +375,31 @@ def build_comparison_summary(date_str, df_detail=None):
     day_data = snapshots.get(date_str, {})
 
     s_9am = day_data.get("9AM", {}).get("bills", {})
-
     d_2pm = day_data.get("2PM_disappeared_red", {})
     d_5pm = day_data.get("5PM_disappeared_red", {})
 
     all_known_branches = get_all_known_branches(df_detail)
 
-    # branch -> category -> {RED_9AM, DISAPPEARED_2PM, DISAPPEARED_5PM}
-    branch_matrix = {br: {c: {"RED_9AM": 0, "DISAPPEARED_2PM": 0, "DISAPPEARED_5PM": 0} for c in CATEGORIES} for br in all_known_branches}
+    # branch -> {RED_9AM, DISAPPEARED_2PM, DISAPPEARED_5PM}
+    branch_counts = {br: {"RED_9AM": 0, "DISAPPEARED_2PM": 0, "DISAPPEARED_5PM": 0} for br in all_known_branches}
 
-    # Count 9AM RED HIGHLIGHT bills
     for oid, bdata in s_9am.items():
         if not bdata.get("is_red", False):
             continue
         br = bdata.get("branch", "UNKNOWN")
-        cat = bdata.get("category", "Not Assign")
-        if cat not in CATEGORIES: cat = "Not Assign"
-        if br in branch_matrix:
-            branch_matrix[br][cat]["RED_9AM"] += 1
+        if br in branch_counts:
+            branch_counts[br]["RED_9AM"] += 1
 
-    # Count 2PM DISAPPEARED RED bills
     for oid, ddata in d_2pm.items():
         br = ddata.get("branch", "UNKNOWN")
-        cat = ddata.get("category", "Not Assign")
-        if cat not in CATEGORIES: cat = "Not Assign"
-        if br in branch_matrix:
-            branch_matrix[br][cat]["DISAPPEARED_2PM"] += 1
+        if br in branch_counts:
+            branch_counts[br]["DISAPPEARED_2PM"] += 1
 
-    # Count 5PM DISAPPEARED RED bills
     for oid, ddata in d_5pm.items():
         br = ddata.get("branch", "UNKNOWN")
-        cat = ddata.get("category", "Not Assign")
-        if cat not in CATEGORIES: cat = "Not Assign"
-        if br in branch_matrix:
-            branch_matrix[br][cat]["DISAPPEARED_5PM"] += 1
+        if br in branch_counts:
+            branch_counts[br]["DISAPPEARED_5PM"] += 1
 
-    # Build Itemized Disappeared Red Bills list
     itemized_transitions = []
     for oid, base_info in s_9am.items():
         if not base_info.get("is_red", False):
@@ -394,65 +425,49 @@ def build_comparison_summary(date_str, df_detail=None):
             })
 
     rows = []
-    tot_cols = {c: {"RED_9AM": 0, "DISAPPEARED_2PM": 0, "DISAPPEARED_5PM": 0} for c in CATEGORIES}
-
     sorted_branch_tuples = []
-    for br in branch_matrix.keys():
+    for br in branch_counts.keys():
         z = resolve_branch_zone(br, df_detail)
         sorted_branch_tuples.append((z, br))
 
     sorted_branch_tuples.sort(key=lambda x: (x[0], x[1]))
 
+    tot_red_9am = tot_dis_2pm = tot_dis_5pm = 0
+
     for z, br in sorted_branch_tuples:
-        row = {"ZONE": z, "POST OFFICE HANDLE": br, "BRANCH": br}
-        tot_red_9am = tot_dis_2pm = tot_dis_5pm = 0
+        r9 = branch_counts[br]["RED_9AM"]
+        d2 = branch_counts[br]["DISAPPEARED_2PM"]
+        d5 = branch_counts[br]["DISAPPEARED_5PM"]
 
-        for cat in CATEGORIES:
-            r9 = branch_matrix[br][cat]["RED_9AM"]
-            d2 = branch_matrix[br][cat]["DISAPPEARED_2PM"]
-            d5 = branch_matrix[br][cat]["DISAPPEARED_5PM"]
+        rem_red = max(0, r9 - d5)
+        clear_pct = (d5 / r9 * 100.0) if r9 > 0 else 100.0
 
-            row[f"{cat}_RED_9AM"] = r9
-            row[f"{cat}_DIS_2PM"] = d2
-            row[f"{cat}_DIS_5PM"] = d5
+        rows.append({
+            "ZONE": z,
+            "POST OFFICE HANDLE": br,
+            "P1_RED_9AM": r9,
+            "P2_DIS_2PM": d2,
+            "P3_DIS_5PM": d5,
+            "REMAINING_RED": rem_red,
+            "CLEARANCE_PCT": clear_pct
+        })
 
-            tot_cols[cat]["RED_9AM"] += r9
-            tot_cols[cat]["DISAPPEARED_2PM"] += d2
-            tot_cols[cat]["DISAPPEARED_5PM"] += d5
+        tot_red_9am += r9
+        tot_dis_2pm += d2
+        tot_dis_5pm += d5
 
-            tot_red_9am += r9
-            tot_dis_2pm += d2
-            tot_dis_5pm += d5
+    grand_rem_red = max(0, tot_red_9am - tot_dis_5pm)
+    grand_clear_pct = (tot_dis_5pm / tot_red_9am * 100.0) if tot_red_9am > 0 else 100.0
 
-        row["TOTAL_RED_9AM"] = tot_red_9am
-        row["TOTAL_DIS_2PM"] = tot_dis_2pm
-        row["TOTAL_DIS_5PM"] = tot_dis_5pm
-
-        rem_red = max(0, tot_red_9am - tot_dis_5pm)
-        row["REMAINING_RED"] = rem_red
-
-        clear_pct = (tot_dis_5pm / tot_red_9am * 100.0) if tot_red_9am > 0 else 100.0
-        row["CLEARANCE_PCT"] = clear_pct
-
-        rows.append(row)
-
-    grand_red_9am = sum(tot_cols[c]["RED_9AM"] for c in CATEGORIES)
-    grand_dis_2pm = sum(tot_cols[c]["DISAPPEARED_2PM"] for c in CATEGORIES)
-    grand_dis_5pm = sum(tot_cols[c]["DISAPPEARED_5PM"] for c in CATEGORIES)
-    grand_rem_red = max(0, grand_red_9am - grand_dis_5pm)
-    grand_clear_pct = (grand_dis_5pm / grand_red_9am * 100.0) if grand_red_9am > 0 else 100.0
-
-    totals = {"ZONE": "ALL", "POST OFFICE HANDLE": "TOTAL", "BRANCH": "TOTAL"}
-    for cat in CATEGORIES:
-        totals[f"{cat}_RED_9AM"] = tot_cols[cat]["RED_9AM"]
-        totals[f"{cat}_DIS_2PM"] = tot_cols[cat]["DISAPPEARED_2PM"]
-        totals[f"{cat}_DIS_5PM"] = tot_cols[cat]["DISAPPEARED_5PM"]
-
-    totals["TOTAL_RED_9AM"] = grand_red_9am
-    totals["TOTAL_DIS_2PM"] = grand_dis_2pm
-    totals["TOTAL_DIS_5PM"] = grand_dis_5pm
-    totals["REMAINING_RED"] = grand_rem_red
-    totals["CLEARANCE_PCT"] = grand_clear_pct
+    totals = {
+        "ZONE": "ALL ZONES",
+        "POST OFFICE HANDLE": "TOTAL",
+        "P1_RED_9AM": tot_red_9am,
+        "P2_DIS_2PM": tot_dis_2pm,
+        "P3_DIS_5PM": tot_dis_5pm,
+        "REMAINING_RED": grand_rem_red,
+        "CLEARANCE_PCT": grand_clear_pct
+    }
 
     return rows, totals, itemized_transitions
 
@@ -463,100 +478,60 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
 
     wb = openpyxl.Workbook()
     ws_sum = wb.active
-    ws_sum.title = "Zone Branch Red Shift Matrix"
+    ws_sum.title = "Red Shift Clearance Matrix"
 
     ws_det = wb.create_sheet(title="Itemized Disappeared Red Bills")
 
     font_family = "Segoe UI"
     f_title = Font(name=font_family, size=13, bold=True, color="FFFFFF")
-    f_cat = Font(name=font_family, size=10, bold=True, color="FFFFFF")
+    f_hdr = Font(name=font_family, size=10, bold=True, color="FFFFFF")
     f_data = Font(name=font_family, size=9)
     f_total = Font(name=font_family, size=10, bold=True, color="0F172A")
     f_good = Font(name=font_family, size=9, bold=True, color="065F46")
 
     fill_title = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
-    fill_cat1 = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
-    fill_cat2 = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
-    fill_cat3 = PatternFill(start_color="9A3412", end_color="9A3412", fill_type="solid")
-    fill_cat4 = PatternFill(start_color="581C87", end_color="581C87", fill_type="solid")
     fill_hdr = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
     fill_alt = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
     fill_total = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
 
-    fill_s1 = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid") # Red 9AM Fill
-    font_s1 = Font(name=font_family, size=9, bold=True, color="991B1B") # Red 9AM Font
-    hdr_s1  = PatternFill(start_color="991B1B", end_color="991B1B", fill_type="solid") # Red Header
+    fill_s1 = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid") # Red 9AM
+    font_s1 = Font(name=font_family, size=9, bold=True, color="991B1B")
+    hdr_s1  = PatternFill(start_color="991B1B", end_color="991B1B", fill_type="solid")
 
-    fill_s2 = PatternFill(start_color="FFEDD5", end_color="FFEDD5", fill_type="solid") # Orange 2PM Disappeared Fill
+    fill_s2 = PatternFill(start_color="FFEDD5", end_color="FFEDD5", fill_type="solid") # Orange 2PM Disappeared
     font_s2 = Font(name=font_family, size=9, bold=True, color="9A3412")
     hdr_s2  = PatternFill(start_color="C2410C", end_color="C2410C", fill_type="solid")
 
-    fill_s3 = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid") # Green 5PM Disappeared Fill
+    fill_s3 = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid") # Green 5PM Disappeared
     font_s3 = Font(name=font_family, size=9, bold=True, color="065F46")
     hdr_s3  = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
 
-    cat_fills = [fill_cat1, fill_cat2, fill_cat3, fill_cat4]
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    ws_sum.merge_cells("A1:S1")
-    t_cell = ws_sum.cell(1, 1, f"RED HIGHLIGHT DISAPPEARED SHIFT MATRIX (P1..3, D1..3, T1..3, N1..3) — {date_str}")
+    ws_sum.merge_cells("A1:G1")
+    t_cell = ws_sum.cell(1, 1, f"RED HIGHLIGHT SHIFT CLEARANCE MATRIX — {date_str}")
     t_cell.font = f_title
     t_cell.fill = fill_title
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
     ws_sum.row_dimensions[1].height = 30
 
-    ws_sum.row_dimensions[2].height = 22
-    ws_sum.merge_cells("A2:B2")
-    z_cell = ws_sum.cell(2, 1, "ZONE & POST OFFICE HANDLE")
-    z_cell.fill = fill_title
-    z_cell.font = Font(name=font_family, size=10, bold=True, color="FFFFFF")
-    z_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    col_idx = 3
-    cat_codes = [("PICKUP", "P"), ("DELIVERY", "D"), ("TRANSIT", "T"), ("NOT ASSIGN", "N")]
-    for idx, (cat_name, code) in enumerate(cat_codes):
-        ws_sum.merge_cells(start_row=2, start_column=col_idx, end_row=2, end_column=col_idx+2)
-        c_cell = ws_sum.cell(2, col_idx, f"RED {cat_name} ({code}1..3)")
-        c_cell.font = f_cat
-        c_cell.fill = cat_fills[idx % len(cat_fills)]
-        c_cell.alignment = Alignment(horizontal="center", vertical="center")
-        col_idx += 3
-
-    ws_sum.merge_cells("O2:Q2")
-    tot_cell = ws_sum.cell(2, 15, "TOTAL RED (TOT1..3)")
-    tot_cell.font = f_cat
-    tot_cell.fill = fill_hdr
-    tot_cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    ws_sum.cell(2, 18, "REMAIN RED").fill = fill_hdr
-    ws_sum.cell(2, 18).font = f_cat
-    ws_sum.cell(2, 18).alignment = Alignment(horizontal="center", vertical="center")
-
-    ws_sum.cell(2, 19, "CLEARANCE").fill = fill_hdr
-    ws_sum.cell(2, 19).font = f_cat
-    ws_sum.cell(2, 19).alignment = Alignment(horizontal="center", vertical="center")
-
-    sub_headers = [
+    headers = [
         "ZONE", "POST OFFICE HANDLE",
         "P1 (RED 9AM)", "P2 (DIS 2PM)", "P3 (DIS 5PM)",
-        "D1 (RED 9AM)", "D2 (DIS 2PM)", "D3 (DIS 5PM)",
-        "T1 (RED 9AM)", "T2 (DIS 2PM)", "T3 (DIS 5PM)",
-        "N1 (RED 9AM)", "N2 (DIS 2PM)", "N3 (DIS 5PM)",
-        "TOT1 (RED 9AM)", "TOT2 (DIS 2PM)", "TOT3 (DIS 5PM)",
         "REMAIN RED", "CLEAR %"
     ]
-    ws_sum.row_dimensions[3].height = 20
+    ws_sum.row_dimensions[2].height = 24
 
-    for c_i, sh_text in enumerate(sub_headers, 1):
-        cell = ws_sum.cell(3, c_i, sh_text)
-        cell.font = Font(name=font_family, size=9, bold=True, color="FFFFFF")
+    for c_i, h_text in enumerate(headers, 1):
+        cell = ws_sum.cell(2, c_i, h_text)
+        cell.font = f_hdr
 
-        if c_i in (3, 6, 9, 12, 15):
+        if c_i == 3:
             cell.fill = hdr_s1 # Red 9AM
-        elif c_i in (4, 7, 10, 13, 16):
+        elif c_i == 4:
             cell.fill = hdr_s2 # Orange 2PM Disappeared
-        elif c_i in (5, 8, 11, 14, 17):
+        elif c_i == 5:
             cell.fill = hdr_s3 # Green 5PM Disappeared
         else:
             cell.fill = fill_hdr
@@ -564,30 +539,31 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
 
-    r_idx = 4
+    r_idx = 3
     for r in rows:
         row_fill = fill_alt if r_idx % 2 == 0 else None
         ws_sum.row_dimensions[r_idx].height = 19
 
-        vals = [r["ZONE"], r["POST OFFICE HANDLE"]]
-        for cat in CATEGORIES:
-            vals.extend([r[f"{cat}_RED_9AM"], r[f"{cat}_DIS_2PM"], r[f"{cat}_DIS_5PM"]])
-        vals.extend([r["TOTAL_RED_9AM"], r["TOTAL_DIS_2PM"], r["TOTAL_DIS_5PM"], r["REMAINING_RED"], f"{r['CLEARANCE_PCT']:.1f}%"])
+        vals = [
+            r["ZONE"], r["POST OFFICE HANDLE"],
+            r["P1_RED_9AM"], r["P2_DIS_2PM"], r["P3_DIS_5PM"],
+            r["REMAINING_RED"], f"{r['CLEARANCE_PCT']:.1f}%"
+        ]
 
         for c_i, val in enumerate(vals, 1):
             cell = ws_sum.cell(r_idx, c_i, val)
             cell.border = border
 
-            if c_i in (3, 6, 9, 12, 15):
+            if c_i == 3:
                 cell.fill = fill_s1
                 cell.font = font_s1
-            elif c_i in (4, 7, 10, 13, 16):
+            elif c_i == 4:
                 cell.fill = fill_s2
                 cell.font = font_s2
-            elif c_i in (5, 8, 11, 14, 17):
+            elif c_i == 5:
                 cell.fill = fill_s3
                 cell.font = font_s3
-            elif c_i in (18, 19):
+            elif c_i in (6, 7):
                 cell.font = f_good
                 if row_fill: cell.fill = row_fill
             else:
@@ -598,10 +574,11 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         r_idx += 1
 
     ws_sum.row_dimensions[r_idx].height = 22
-    tot_vals = [totals["ZONE"], totals["POST OFFICE HANDLE"]]
-    for cat in CATEGORIES:
-        tot_vals.extend([totals[f"{cat}_RED_9AM"], totals[f"{cat}_DIS_2PM"], totals[f"{cat}_DIS_5PM"]])
-    tot_vals.extend([totals["TOTAL_RED_9AM"], totals["TOTAL_DIS_2PM"], totals["TOTAL_DIS_5PM"], totals["REMAINING_RED"], f"{totals['CLEARANCE_PCT']:.1f}%"])
+    tot_vals = [
+        totals["ZONE"], totals["POST OFFICE HANDLE"],
+        totals["P1_RED_9AM"], totals["P2_DIS_2PM"], totals["P3_DIS_5PM"],
+        totals["REMAINING_RED"], f"{totals['CLEARANCE_PCT']:.1f}%"
+    ]
 
     for c_i, val in enumerate(tot_vals, 1):
         cell = ws_sum.cell(r_idx, c_i, val)
@@ -613,7 +590,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     for col in ws_sum.columns:
         max_len = max(len(str(cell.value or "")) for cell in col)
         col_letter = get_column_letter(col[0].column)
-        ws_sum.column_dimensions[col_letter].width = max(max_len + 3, 12)
+        ws_sum.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
     det_headers = ["BILL ID", "ZONE", "POST OFFICE HANDLE", "CATEGORY", "STATUS 9AM", "NEW STATUS", "DISAPPEARED SHIFT", "DISAPPEARED TIME"]
     ws_det.merge_cells("A1:H1")
