@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import glob
 import pandas as pd
 from datetime import datetime, timedelta
@@ -93,10 +94,31 @@ PO_LOOKUP_MAP = load_post_office_lookup_map()
 
 def resolve_post_office_handle(raw_po):
     po = str(raw_po).strip().upper()
-    if not po or po == "NAN":
+    if not po or po == "NAN" or any(kw in po for kw in EXCLUDE_KEYWORDS):
         return None
-    if any(kw in po for kw in EXCLUDE_KEYWORDS):
-        return None
+
+    SPECIAL_MAP = {
+        "STU": "STUP001",
+        "MON": "MONP001",
+        "PAI": "PAIP001",
+        "ROT": "RATP001",
+        "PRH": "PREP001",
+        "TBO": "TBKP001",
+        "MOS": "MONP001",
+        "CHA": "KCPC001",
+        "CHH": "KCPC001",
+    }
+
+    prefix3 = po[:3]
+    if prefix3 in SPECIAL_MAP:
+        return SPECIAL_MAP[prefix3]
+
+    m = re.match(r'^([A-Z]{3,4})[AS](\d{1,4})$', po)
+    if m:
+        prefix, num = m.groups()
+        if len(num) == 3:
+            return f"{prefix}P{num}"
+        return f"{prefix}P001"
 
     global PO_LOOKUP_MAP
     if not PO_LOOKUP_MAP:
@@ -104,15 +126,6 @@ def resolve_post_office_handle(raw_po):
 
     if po in PO_LOOKUP_MAP:
         return PO_LOOKUP_MAP[po]
-
-    if po.startswith("A") or po.startswith("S"):
-        po_s = po[1:]
-        if po_s in PO_LOOKUP_MAP:
-            return PO_LOOKUP_MAP[po_s]
-
-    prefix = po[:3] + "P001" if len(po) >= 3 else po
-    if prefix in PO_LOOKUP_MAP.values():
-        return prefix
 
     return po
 
