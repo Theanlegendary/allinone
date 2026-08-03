@@ -1,13 +1,17 @@
 import os
 import json
 import re
+import glob
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-SNAPSHOT_FILE = "compare_snapshots.json"
+COMPARE_DIR = "compare"
+os.makedirs(COMPARE_DIR, exist_ok=True)
+
+SNAPSHOT_FILE = os.path.join(COMPARE_DIR, "compare_snapshots.json")
 EXCLUDE_STATUSES = {"99", "100", "201", "410", "520"}
 RESOLVED_STATUSES = {"99", "100", "201", "410", "420", "520"}
 EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST"]
@@ -41,6 +45,38 @@ PREFIX_ZONE_MAP = {
     "KEP": "Kep",
     "KOH": "Koh Kong"
 }
+
+def clean_cache_3_times_daily():
+    """Cleans up old cache and report files in compare/ directory 3 times daily."""
+    try:
+        # Clean snapshot file entries older than 3 days
+        if os.path.exists(SNAPSHOT_FILE):
+            with open(SNAPSHOT_FILE, "r", encoding="utf-8") as f:
+                snapshots = json.load(f)
+            
+            cutoff_date = datetime.now() - timedelta(days=3)
+            cleaned = {}
+            for d_str, val in snapshots.items():
+                try:
+                    dt = datetime.strptime(d_str, "%d/%m/%Y")
+                    if dt >= cutoff_date:
+                        cleaned[d_str] = val
+                except Exception:
+                    cleaned[d_str] = val
+
+            with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
+                json.dump(cleaned, f, ensure_ascii=False, indent=2)
+
+        # Clean old exported Excel files in compare/
+        for fpath in glob.glob(os.path.join(COMPARE_DIR, "*.xlsx")):
+            try:
+                mtime = datetime.fromtimestamp(os.path.getmtime(fpath))
+                if datetime.now() - mtime > timedelta(hours=24):
+                    os.remove(fpath)
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
@@ -123,6 +159,7 @@ def determine_shift(now=None):
         return "5PM"
 
 def load_snapshots():
+    clean_cache_3_times_daily()
     if os.path.exists(SNAPSHOT_FILE):
         try:
             with open(SNAPSHOT_FILE, "r", encoding="utf-8") as f:
@@ -174,7 +211,6 @@ def extract_all_bills_map(df_detail):
         if not oid or oid in test_bills:
             continue
 
-        # Clean handle string (no extra suffixes or spaces)
         handle = str(r.get(handle_col, "") or "").strip().upper()
         if any(kw in handle for kw in EXCLUDE_KEYWORDS):
             continue
@@ -256,17 +292,6 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
 
     save_snapshots(snapshots)
     return snapshots
-
-def format_delta_val(val_shift, val_9am):
-    if val_shift is None or val_9am is None:
-        return f"{val_shift or 0}"
-    diff = val_shift - val_9am
-    if diff == 0:
-        return f"{val_shift}"
-    elif diff > 0:
-        return f"{val_shift} (+{diff})"
-    else:
-        return f"{val_shift} ({diff})"
 
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
@@ -391,19 +416,19 @@ def build_comparison_summary(date_str, df_detail=None):
         totals[f"{cat}_9AM"] = tot_cols[cat]["9AM"]
         totals[f"{cat}_2PM"] = tot_cols[cat]["2PM"]
         totals[f"{cat}_5PM"] = tot_cols[cat]["5PM"]
-        totals[f"{cat}_2PM_STR"] = format_delta_val(tot_cols[cat]["2PM"], tot_cols[cat]["9AM"])
-        totals[f"{cat}_5PM_STR"] = format_delta_val(tot_cols[cat]["5PM"], tot_cols[cat]["9AM"])
 
     totals["TOTAL_9AM"] = grand_9am
     totals["TOTAL_2PM"] = grand_2pm
     totals["TOTAL_5PM"] = grand_5pm
-    totals["TOTAL_2PM_STR"] = format_delta_val(grand_2pm, grand_9am)
-    totals["TOTAL_5PM_STR"] = format_delta_val(grand_5pm, grand_9am)
     totals["CLEARANCE_PCT"] = grand_pct
 
     return rows, totals, itemized_transitions
 
-def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepath):
+def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepath=None):
+    if out_filepath is None:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M")
+        out_filepath = os.path.join(COMPARE_DIR, f"Urgent_Clearance_Compare_{stamp}.xlsx")
+
     wb = openpyxl.Workbook()
     ws_sum = wb.active
     ws_sum.title = "Zone Branch Shift Matrix"

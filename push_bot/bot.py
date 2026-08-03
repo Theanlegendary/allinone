@@ -2477,17 +2477,8 @@ async def cmd_compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         current_shift = compare_manager.determine_shift()
-        out_excel = os.path.join(tmpdir, f"Urgent_Clearance_Compare_{stamp}.xlsx")
+        out_excel = os.path.join("compare", f"Urgent_Clearance_Compare_{stamp}.xlsx")
         compare_manager.build_compare_excel(today_str, rows, totals, itemized, out_excel)
-
-        # Render high-resolution PNG summary image for instant Telegram mobile viewing
-        try:
-            import excel_to_image
-            img_buf = excel_to_image.excel_to_image(out_excel)
-            img_buf.name = f"Urgent_Clearance_{stamp}.png"
-            await send_requester_photo(update, context, img_buf)
-        except Exception as e_img:
-            log.warning("Could not render compare summary image: %s", e_img)
 
         if os.path.exists(out_excel):
             await edit_or_send_requester_text(msg, update, context, f"✅ Urgent Bill Shift Comparison Report (`{today_str}` | Shift: `{current_shift}`) generated successfully! Attaching Excel file...")
