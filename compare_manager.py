@@ -13,33 +13,6 @@ os.makedirs(COMPARE_DIR, exist_ok=True)
 SNAPSHOT_FILE = os.path.join(COMPARE_DIR, "compare_snapshots.json")
 EXCLUDE_KEYWORDS = ["TRAINER", "GLOBAL", "EXTERNAL", "TEST", "CENTER02", "DVCZ"]
 
-PREFIX_ZONE_MAP = {
-    "PNP": "Phnom Penh",
-    "BAN": "Banteay Meanchey",
-    "BAT": "Battambang",
-    "KMP": "Kandal",
-    "TAK": "Takeo",
-    "KPC": "Kampong Cham",
-    "KPT": "Kampot",
-    "SRP": "Siem Reap",
-    "KPS": "Preah Sihanouk",
-    "KPE": "Kampong Speu",
-    "KTH": "Kampong Thom",
-    "SVR": "Svay Rieng",
-    "PVG": "Prey Veng",
-    "PUR": "Pursat",
-    "KRT": "Kratie",
-    "STU": "Stung Treng",
-    "RAT": "Ratanakiri",
-    "MON": "Mondulkiri",
-    "PRE": "Preah Vihear",
-    "ODD": "Oddar Meanchey",
-    "PVI": "Pailin",
-    "TKG": "Tbong Khmum",
-    "KEP": "Kep",
-    "KOH": "Koh Kong"
-}
-
 def clean_cache_3_times_daily():
     """Cleans old files in compare/ folder 3 times per day."""
     try:
@@ -102,27 +75,30 @@ def resolve_post_office_handle(raw_po):
 
     return po
 
+def load_config_zone_mapping():
+    try:
+        if os.path.exists("config.json"):
+            with open("config.json", "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+            return cfg.get("zone_mapping", {})
+    except Exception:
+        pass
+    return {}
+
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
-
-    if os.path.exists("post_office_lookup.csv"):
-        try:
-            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
-            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
-            if "post_office_handle" in df_po.columns and "zone" in df_po.columns:
-                m = df_po[df_po["post_office_handle"].astype(str).str.strip().str.upper() == b_code]
-                if not m.empty:
-                    zv = str(m.iloc[0]["zone"]).strip()
-                    if zv and zv.lower() != "nan":
-                        return zv
-        except Exception:
-            pass
-
+    zm = load_config_zone_mapping()
+    
+    by_po = zm.get("by_post_office", {})
+    if b_code in by_po:
+        return by_po[b_code]
+        
+    by_prefix = zm.get("by_prefix", {})
     prefix3 = b_code[:3]
-    if prefix3 in PREFIX_ZONE_MAP:
-        return PREFIX_ZONE_MAP[prefix3]
-
-    return "Other Zone"
+    if prefix3 in by_prefix:
+        return by_prefix[prefix3]
+        
+    return zm.get("default_zone", "Zone 1")
 
 def load_snapshots():
     clean_cache_3_times_daily()
@@ -152,14 +128,17 @@ def extract_total_report_counts(df_detail):
         
         for hr in h_results:
             raw_h = str(hr.get("handle", "")).strip().upper()
-            if not raw_h or raw_h == "NAN" or any(kw in raw_h for kw in EXCLUDE_KEYWORDS):
+            hnd = resolve_post_office_handle(raw_h)
+            if not hnd:
+                hnd = raw_h
+            if any(kw in hnd for kw in EXCLUDE_KEYWORDS):
                 continue
             
             urgent_cnt = 0
             for sec_name, sec_rows, sec_tot, sec_icols, active_days in hr.get("sections", []):
                 urgent_cnt += len(sec_rows)
                 
-            handle_map[raw_h] = {
+            handle_map[hnd] = {
                 "urgent": urgent_cnt,
                 "pickup": hr.get("handle_counts", {}).get("Pickup", 0),
                 "delivery": hr.get("handle_counts", {}).get("Delivery", 0),
@@ -198,7 +177,7 @@ def extract_total_report_counts(df_detail):
     return handle_map
 
 def determine_shift(now=None):
-    """Determines active shift: 9AM (Morning), 2PM (Afternoon), or 5PM (Evening)."""
+    """Determines shift based on exact clock hours: 9AM (7-11 AM), 2PM (12-3 PM), 5PM (4 PM+)."""
     if now is None:
         now = datetime.now()
     hour = now.hour
@@ -209,67 +188,22 @@ def determine_shift(now=None):
     else:
         return "5PM"
 
-def get_next_shift_to_record(date_str):
-    snapshots = load_snapshots()
-    day_data = snapshots.get(date_str, {})
-    if "9AM" not in day_data:
-        return "9AM"
-    elif "2PM" not in day_data:
-        return "2PM"
-    else:
-        return "5PM"
-
 def record_total_snapshot(date_str, df_detail):
     snapshots = load_snapshots()
     if date_str not in snapshots:
         snapshots[date_str] = {}
 
-    target_shift = get_next_shift_to_record(date_str)
+    curr_shift = determine_shift()
     handle_map = extract_total_report_counts(df_detail)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    snapshots[date_str][target_shift] = {
+    snapshots[date_str][curr_shift] = {
         "captured_at": now_str,
         "handles": handle_map
     }
 
     save_snapshots(snapshots)
     return snapshots
-
-DEFAULT_MAIN_HANDLES = [
-    "BANP001", "BATP001", "KANP001", "KPCP001", "SPEP001", "THOP001", "KAMP001",
-    "KEPP001", "KOHP001", "KRAP001", "MONP001", "ODDP001", "PAIP001", "PNPP001",
-    "PNPP002", "PNPP003", "PNPP004", "PNPP005", "PNPP006", "PNPP007", "PNPP008",
-    "PNPP009", "PNPP010", "PNPP011", "PNPP012", "PNPP013", "PNPP014", "SIHP001",
-    "PREP001", "PVGP001", "PURP001", "RATP001", "SIEP001", "STUP001", "SVAP001",
-    "TAKP001", "TBKP001"
-]
-
-def get_all_known_branches(df_detail=None):
-    branches = set(DEFAULT_MAIN_HANDLES)
-    if os.path.exists("post_office_lookup.csv"):
-        try:
-            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
-            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
-            if "post_office_handle" in df_po.columns:
-                for h in df_po["post_office_handle"].dropna().unique():
-                    h_str = resolve_post_office_handle(h)
-                    if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
-                        branches.add(h_str)
-        except Exception:
-            pass
-
-    if df_detail is not None:
-        df = df_detail.copy()
-        df.columns = [str(c).strip().upper() for c in df.columns]
-        for candidate in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE"]:
-            if candidate in df.columns:
-                for h in df[candidate].dropna().unique():
-                    h_str = resolve_post_office_handle(h)
-                    if h_str and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
-                        branches.add(h_str)
-
-    return sorted(list(branches))
 
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
@@ -282,11 +216,11 @@ def build_comparison_summary(date_str, df_detail=None):
     h_2pm = day_data.get("2PM", {}).get("handles", {})
     h_5pm = day_data.get("5PM", {}).get("handles", {})
 
+    has_9am = bool(h_9am)
     has_2pm = bool(h_2pm)
     has_5pm = bool(h_5pm)
 
-    known_branches = get_all_known_branches(df_detail)
-    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()) + known_branches)))
+    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()))))
 
     rows = []
     tot_urg_9am = tot_urg_2pm = tot_urg_5pm = 0
@@ -299,18 +233,17 @@ def build_comparison_summary(date_str, df_detail=None):
     sorted_branch_tuples.sort(key=lambda x: (x[0], x[1]))
 
     for z, h in sorted_branch_tuples:
-        u9 = h_9am.get(h, {}).get("urgent", 0)
+        u9 = h_9am.get(h, {}).get("urgent", 0) if has_9am else 0
         u2 = h_2pm.get(h, {}).get("urgent", 0) if has_2pm else 0
         u5 = h_5pm.get(h, {}).get("urgent", 0) if has_5pm else 0
 
-        # Absolutely ELIMINATE any row with 0 0 0 urgent items!
         if u9 == 0 and u2 == 0 and u5 == 0:
             continue
 
-        if has_5pm:
+        if has_5pm and has_9am:
             urg_change = u5 - u9
             clear_pct = ((u9 - u5) / u9 * 100.0) if u9 > 0 else 100.0
-        elif has_2pm:
+        elif has_2pm and has_9am:
             urg_change = u2 - u9
             clear_pct = ((u9 - u2) / u9 * 100.0) if u9 > 0 else 100.0
         else:
@@ -333,10 +266,10 @@ def build_comparison_summary(date_str, df_detail=None):
         tot_urg_2pm += u2
         tot_urg_5pm += u5
 
-    if has_5pm:
+    if has_5pm and has_9am:
         grand_change = tot_urg_5pm - tot_urg_9am
         grand_pct = ((tot_urg_9am - tot_urg_5pm) / tot_urg_9am * 100.0) if tot_urg_9am > 0 else 100.0
-    elif has_2pm:
+    elif has_2pm and has_9am:
         grand_change = tot_urg_2pm - tot_urg_9am
         grand_pct = ((tot_urg_9am - tot_urg_2pm) / tot_urg_9am * 100.0) if tot_urg_9am > 0 else 100.0
     else:
