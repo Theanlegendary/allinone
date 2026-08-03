@@ -163,8 +163,24 @@ def save_snapshots(data):
     with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def get_row_post_office_handle(r):
+    for col in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "DELIVERY POST OFFICE", "RECEIVE POST OFFICE"]:
+        val = str(r.get(col, "") or "").strip()
+        hnd = resolve_post_office_handle(val)
+        if hnd and hnd != "NAN" and not any(kw in hnd for kw in EXCLUDE_KEYWORDS):
+            if "MEGA" not in hnd and "DVC" not in hnd:
+                return hnd
+
+    for col in ["DELIVERY POST OFFICE", "RECEIVE POST OFFICE", "CURRENT POST OFFICE"]:
+        val = str(r.get(col, "") or "").strip()
+        hnd = resolve_post_office_handle(val)
+        if hnd and hnd != "NAN" and not any(kw in hnd for kw in EXCLUDE_KEYWORDS):
+            return hnd
+
+    return None
+
 def extract_total_report_counts(df_detail):
-    """Extracts exact urgent counts per post office handle using generate_report engine."""
+    """Extracts exact urgent counts per post office handle using generate_report engine and destination attribution."""
     import generate_report
     df = df_detail.copy()
     
@@ -199,29 +215,22 @@ def extract_total_report_counts(df_detail):
 
     if not handle_map:
         df.columns = [str(c).strip().upper() for c in df.columns]
-        h_col = None
-        for c in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE", "POST OFFICE", "HANDLE"]:
-            if c in df.columns:
-                h_col = c
-                break
         sc_col = None
         for c in ["STATUS_CODE", "STATUS CODE", "STATUS", "STATUS_NAME", "STATE_CODE"]:
             if c in df.columns:
                 sc_col = c
                 break
                 
-        if h_col:
-            for _, r in df.iterrows():
-                raw_h = str(r.get(h_col, "") or "").strip()
-                hnd = resolve_post_office_handle(raw_h)
-                if not hnd or any(kw in hnd for kw in EXCLUDE_KEYWORDS):
-                    continue
-                sc = str(r.get(sc_col, "") or "").lstrip("S").strip().split()[0] if sc_col and str(r.get(sc_col, "")) else ""
-                if sc in ("99", "100", "201", "410", "420", "520"):
-                    continue
-                if hnd not in handle_map:
-                    handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
-                handle_map[hnd]["urgent"] += 1
+        for _, r in df.iterrows():
+            hnd = get_row_post_office_handle(r)
+            if not hnd or any(kw in hnd for kw in EXCLUDE_KEYWORDS):
+                continue
+            sc = str(r.get(sc_col, "") or "").lstrip("S").strip().split()[0] if sc_col and str(r.get(sc_col, "")) else ""
+            if sc in ("99", "100", "201", "410", "420", "520"):
+                continue
+            if hnd not in handle_map:
+                handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
+            handle_map[hnd]["urgent"] += 1
 
     return handle_map
 
