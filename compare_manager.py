@@ -150,6 +150,32 @@ def resolve_branch_zone(branch_code, df_detail=None):
 
     return "Other Zone"
 
+def get_all_known_branches(df_detail=None):
+    branches = set()
+    if os.path.exists("post_office_lookup.csv"):
+        try:
+            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
+            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
+            if "post_office_handle" in df_po.columns:
+                for h in df_po["post_office_handle"].dropna().unique():
+                    h_str = str(h).strip().upper()
+                    if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                        branches.add(h_str)
+        except Exception:
+            pass
+
+    if df_detail is not None:
+        df = df_detail.copy()
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        handle_col = "POST OFFICE HANDLE" if "POST OFFICE HANDLE" in df.columns else ("CURRENT POST OFFICE" if "CURRENT POST OFFICE" in df.columns else None)
+        if handle_col:
+            for h in df[handle_col].dropna().unique():
+                h_str = resolve_post_office_handle(h)
+                if h_str:
+                    branches.add(h_str)
+
+    return sorted(list(branches))
+
 def determine_shift(now=None):
     """
     7:00 AM - 11:59 AM -> 9AM
@@ -268,7 +294,7 @@ def build_comparison_summary(date_str, df_detail=None):
     has_2pm = bool(h_2pm)
     has_5pm = bool(h_5pm)
 
-    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()))))
+    all_handles = get_all_known_branches(df_detail)
 
     rows = []
     tot_urg_9am = tot_urg_2pm = tot_urg_5pm = 0
@@ -284,9 +310,6 @@ def build_comparison_summary(date_str, df_detail=None):
         u9 = h_9am.get(h, {}).get("urgent", 0)
         u2 = h_2pm.get(h, {}).get("urgent", 0) if has_2pm else 0
         u5 = h_5pm.get(h, {}).get("urgent", 0) if has_5pm else 0
-
-        if u9 == 0 and u2 == 0 and u5 == 0:
-            continue
 
         if has_5pm:
             urg_change = u5 - u9
