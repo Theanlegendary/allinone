@@ -45,7 +45,6 @@ PREFIX_ZONE_MAP = {
 def resolve_branch_zone(branch_code, df_detail=None):
     b_code = str(branch_code).strip().upper()
 
-    # Try lookup in df_detail if ZONE column exists
     if df_detail is not None:
         df = df_detail.copy()
         df.columns = [str(c).strip().upper() for c in df.columns]
@@ -58,7 +57,6 @@ def resolve_branch_zone(branch_code, df_detail=None):
                 if zv and zv.lower() != "nan":
                     return zv
 
-    # Try lookup in post_office_lookup.csv
     if os.path.exists("post_office_lookup.csv"):
         try:
             df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
@@ -72,7 +70,6 @@ def resolve_branch_zone(branch_code, df_detail=None):
         except Exception:
             pass
 
-    # Prefix mapping fallback
     prefix3 = b_code[:3]
     if prefix3 in PREFIX_ZONE_MAP:
         return PREFIX_ZONE_MAP[prefix3]
@@ -214,61 +211,63 @@ def record_shift_snapshot(date_str, shift_name, df_detail):
     bills_map = extract_all_bills_map(df_detail)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    if shift_name == "9AM" or "9AM" not in snapshots[date_str]:
-        baseline_urgent = {}
-        for oid, bdata in bills_map.items():
-            if bdata["is_urgent"]:
-                baseline_urgent[oid] = {
-                    "branch": bdata["branch"],
-                    "category": bdata["category"],
-                    "status_9am": bdata["status"],
-                    "scan_time_9am": bdata["scan_time"],
-                    "captured_at": now_str
+    # Record shift active urgent items map
+    shift_bills = {}
+    for oid, bdata in bills_map.items():
+        if bdata["is_urgent"]:
+            shift_bills[oid] = {
+                "branch": bdata["branch"],
+                "category": bdata["category"],
+                "status": bdata["status"],
+                "scan_time": bdata["scan_time"]
+            }
+
+    snapshots[date_str][shift_name] = {
+        "captured_at": now_str,
+        "bills": shift_bills
+    }
+
+    # If 9AM baseline is set, evaluate transitions for 2PM or 5PM
+    baseline = snapshots[date_str].get("9AM", {}).get("bills", {})
+    if shift_name != "9AM" and baseline:
+        shift_transitions = {}
+        for oid, base_info in baseline.items():
+            curr_info = bills_map.get(oid)
+            if not curr_info:
+                shift_transitions[oid] = {
+                    "branch": base_info["branch"],
+                    "category": base_info["category"],
+                    "status_9am": base_info["status"],
+                    "new_status": "410",
+                    "is_resolved": True,
+                    "resolved_at": now_str
                 }
-
-        snapshots[date_str]["9AM"] = {
-            "captured_at": now_str,
-            "baseline_urgent": baseline_urgent
-        }
-        if "2PM" not in snapshots[date_str]:
-            snapshots[date_str]["2PM"] = {"captured_at": "", "transitions": {}}
-        if "5PM" not in snapshots[date_str]:
-            snapshots[date_str]["5PM"] = {"captured_at": "", "transitions": {}}
-
-    baseline = snapshots[date_str].get("9AM", {}).get("baseline_urgent", {})
-    shift_transitions = {}
-
-    for oid, base_info in baseline.items():
-        curr_info = bills_map.get(oid)
-        if not curr_info:
-            shift_transitions[oid] = {
-                "branch": base_info["branch"],
-                "category": base_info["category"],
-                "status_9am": base_info["status_9am"],
-                "new_status": "410",
-                "is_resolved": True,
-                "resolved_at": now_str
-            }
-        else:
-            curr_sc = curr_info["status"]
-            is_res = (curr_sc in RESOLVED_STATUSES or not curr_info["is_urgent"])
-            shift_transitions[oid] = {
-                "branch": base_info["branch"],
-                "category": base_info["category"],
-                "status_9am": base_info["status_9am"],
-                "new_status": curr_sc,
-                "is_resolved": is_res,
-                "resolved_at": curr_info["scan_time"] if is_res else ""
-            }
-
-    if shift_name != "9AM":
-        snapshots[date_str][shift_name] = {
-            "captured_at": now_str,
-            "transitions": shift_transitions
-        }
+            else:
+                curr_sc = curr_info["status"]
+                is_res = (curr_sc in RESOLVED_STATUSES or not curr_info["is_urgent"])
+                shift_transitions[oid] = {
+                    "branch": base_info["branch"],
+                    "category": base_info["category"],
+                    "status_9am": base_info["status"],
+                    "new_status": curr_sc,
+                    "is_resolved": is_res,
+                    "resolved_at": curr_info["scan_time"] if is_res else ""
+                }
+        snapshots[date_str][f"{shift_name}_transitions"] = shift_transitions
 
     save_snapshots(snapshots)
     return snapshots
+
+def format_delta_val(val_shift, val_9am):
+    if val_shift is None or val_9am is None:
+        return f"{val_shift or 0}"
+    diff = val_shift - val_9am
+    if diff == 0:
+        return f"{val_shift}"
+    elif diff > 0:
+        return f"{val_shift} (+{diff})"
+    else:
+        return f"{val_shift} ({diff})"
 
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
@@ -277,28 +276,50 @@ def build_comparison_summary(date_str, df_detail=None):
 
     snapshots = load_snapshots()
     day_data = snapshots.get(date_str, {})
-    baseline = day_data.get("9AM", {}).get("baseline_urgent", {})
 
-    t_2pm = day_data.get("2PM", {}).get("transitions", {})
-    t_5pm = day_data.get("5PM", {}).get("transitions", {})
+    s_9am = day_data.get("9AM", {}).get("bills", {})
+    s_2pm = day_data.get("2PM", {}).get("bills", {})
+    s_5pm = day_data.get("5PM", {}).get("bills", {})
+
+    t_2pm = day_data.get("2PM_transitions", {})
+    t_5pm = day_data.get("5PM_transitions", {})
 
     all_known_branches = get_all_known_branches(df_detail)
-    baseline_branches = set(b.get("branch", "") for b in baseline.values() if b.get("branch"))
-    all_branches = sorted(list(set(all_known_branches).union(baseline_branches)))
+    active_branches = set(b.get("branch", "") for b in list(s_9am.values()) + list(s_2pm.values()) + list(s_5pm.values()) if b.get("branch"))
+    all_branches = sorted(list(set(all_known_branches).union(active_branches)))
 
+    # branch -> category -> {9AM, 2PM, 5PM}
     branch_matrix = {br: {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES} for br in all_branches}
-    itemized_transitions = []
 
-    for oid, base_info in baseline.items():
+    # Count 9AM
+    for oid, bdata in s_9am.items():
+        br = bdata.get("branch", "UNKNOWN")
+        cat = bdata.get("category", "Not Assign")
+        if cat not in CATEGORIES: cat = "Not Assign"
+        if br in branch_matrix:
+            branch_matrix[br][cat]["9AM"] += 1
+
+    # Count 2PM
+    for oid, bdata in s_2pm.items():
+        br = bdata.get("branch", "UNKNOWN")
+        cat = bdata.get("category", "Not Assign")
+        if cat not in CATEGORIES: cat = "Not Assign"
+        if br in branch_matrix:
+            branch_matrix[br][cat]["2PM"] += 1
+
+    # Count 5PM
+    for oid, bdata in s_5pm.items():
+        br = bdata.get("branch", "UNKNOWN")
+        cat = bdata.get("category", "Not Assign")
+        if cat not in CATEGORIES: cat = "Not Assign"
+        if br in branch_matrix:
+            branch_matrix[br][cat]["5PM"] += 1
+
+    # Build Itemized Transitions list
+    itemized_transitions = []
+    for oid, base_info in s_9am.items():
         br = base_info.get("branch", "UNKNOWN")
         cat = base_info.get("category", "Not Assign")
-        if cat not in CATEGORIES:
-            cat = "Not Assign"
-
-        if br not in branch_matrix:
-            branch_matrix[br] = {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES}
-
-        branch_matrix[br][cat]["9AM"] += 1
 
         res_2pm = t_2pm.get(oid, {}).get("is_resolved", False)
         status_2pm = t_2pm.get(oid, {}).get("new_status", "")
@@ -306,13 +327,8 @@ def build_comparison_summary(date_str, df_detail=None):
         res_5pm = t_5pm.get(oid, {}).get("is_resolved", False)
         status_5pm = t_5pm.get(oid, {}).get("new_status", "")
 
-        if not res_2pm:
-            branch_matrix[br][cat]["2PM"] += 1
-        if not (res_2pm or res_5pm):
-            branch_matrix[br][cat]["5PM"] += 1
-
         final_resolved = res_5pm or res_2pm
-        final_status = status_5pm if status_5pm else (status_2pm if status_2pm else base_info["status_9am"])
+        final_status = status_5pm if status_5pm else (status_2pm if status_2pm else base_info.get("status", ""))
         resolved_shift = "5PM" if res_5pm else ("2PM" if res_2pm else "-")
 
         if final_resolved:
@@ -321,16 +337,15 @@ def build_comparison_summary(date_str, df_detail=None):
                 "ZONE": resolve_branch_zone(br, df_detail),
                 "BRANCH": br,
                 "CATEGORY": cat,
-                "STATUS 9AM": base_info["status_9am"],
+                "STATUS 9AM": base_info.get("status", ""),
                 "NEW STATUS": final_status,
                 "RESOLVED SHIFT": resolved_shift,
-                "RESOLUTION TIME": t_5pm.get(oid, {}).get("resolved_at") or t_2pm.get(oid, {}).get("resolved_at") or base_info.get("captured_at", "")
+                "RESOLUTION TIME": t_5pm.get(oid, {}).get("resolved_at") or t_2pm.get(oid, {}).get("resolved_at") or day_data.get("9AM", {}).get("captured_at", "")
             })
 
     rows = []
     tot_cols = {c: {"9AM": 0, "2PM": 0, "5PM": 0} for c in CATEGORIES}
 
-    # Sort branches by ZONE then BRANCH name
     sorted_branch_tuples = []
     for br in branch_matrix.keys():
         z = resolve_branch_zone(br, df_detail)
@@ -350,6 +365,8 @@ def build_comparison_summary(date_str, df_detail=None):
             row[f"{cat}_9AM"] = v9
             row[f"{cat}_2PM"] = v2
             row[f"{cat}_5PM"] = v5
+            row[f"{cat}_2PM_STR"] = format_delta_val(v2, v9)
+            row[f"{cat}_5PM_STR"] = format_delta_val(v5, v9)
 
             tot_cols[cat]["9AM"] += v9
             tot_cols[cat]["2PM"] += v2
@@ -362,13 +379,14 @@ def build_comparison_summary(date_str, df_detail=None):
         row["TOTAL_9AM"] = tot_9am
         row["TOTAL_2PM"] = tot_2pm
         row["TOTAL_5PM"] = tot_5pm
+        row["TOTAL_2PM_STR"] = format_delta_val(tot_2pm, tot_9am)
+        row["TOTAL_5PM_STR"] = format_delta_val(tot_5pm, tot_9am)
 
         resolved_count = tot_9am - tot_5pm
         row["CLEARANCE_PCT"] = (resolved_count / tot_9am * 100.0) if tot_9am > 0 else 100.0
 
         rows.append(row)
 
-    # Totals Row
     grand_9am = sum(tot_cols[c]["9AM"] for c in CATEGORIES)
     grand_2pm = sum(tot_cols[c]["2PM"] for c in CATEGORIES)
     grand_5pm = sum(tot_cols[c]["5PM"] for c in CATEGORIES)
@@ -380,10 +398,14 @@ def build_comparison_summary(date_str, df_detail=None):
         totals[f"{cat}_9AM"] = tot_cols[cat]["9AM"]
         totals[f"{cat}_2PM"] = tot_cols[cat]["2PM"]
         totals[f"{cat}_5PM"] = tot_cols[cat]["5PM"]
+        totals[f"{cat}_2PM_STR"] = format_delta_val(tot_cols[cat]["2PM"], tot_cols[cat]["9AM"])
+        totals[f"{cat}_5PM_STR"] = format_delta_val(tot_cols[cat]["5PM"], tot_cols[cat]["9AM"])
 
     totals["TOTAL_9AM"] = grand_9am
     totals["TOTAL_2PM"] = grand_2pm
     totals["TOTAL_5PM"] = grand_5pm
+    totals["TOTAL_2PM_STR"] = format_delta_val(grand_2pm, grand_9am)
+    totals["TOTAL_5PM_STR"] = format_delta_val(grand_5pm, grand_9am)
     totals["CLEARANCE_PCT"] = grand_pct
 
     return rows, totals, itemized_transitions
@@ -398,46 +420,36 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     font_family = "Segoe UI"
     f_title = Font(name=font_family, size=13, bold=True, color="FFFFFF")
     f_cat = Font(name=font_family, size=10, bold=True, color="FFFFFF")
+    f_header = Font(name=font_family, size=9, bold=True, color="FFFFFF")
     f_data = Font(name=font_family, size=9)
     f_total = Font(name=font_family, size=10, bold=True, color="0F172A")
     f_good = Font(name=font_family, size=9, bold=True, color="065F46")
 
     fill_title = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
-    fill_cat1 = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # Blue Pickup
-    fill_cat2 = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid") # Green Delivery
-    fill_cat3 = PatternFill(start_color="9A3412", end_color="9A3412", fill_type="solid") # Orange Transit
-    fill_cat4 = PatternFill(start_color="581C87", end_color="581C87", fill_type="solid") # Purple Not Assign
+    fill_cat1 = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    fill_cat2 = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
+    fill_cat3 = PatternFill(start_color="9A3412", end_color="9A3412", fill_type="solid")
+    fill_cat4 = PatternFill(start_color="581C87", end_color="581C87", fill_type="solid")
     fill_hdr = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
     fill_alt = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
     fill_total = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
 
-    # Shift Column Fills & Fonts for Shift 1 (9AM), Shift 2 (2PM), Shift 3 (5PM)
-    # 9AM Shift -> Blue Theme
-    fill_s1 = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
+    fill_s1 = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid") # Blue 9AM
     font_s1 = Font(name=font_family, size=9, bold=True, color="1E40AF")
     hdr_s1  = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
 
-    # 2PM Shift -> Orange Theme
-    fill_s2 = PatternFill(start_color="FFEDD5", end_color="FFEDD5", fill_type="solid")
+    fill_s2 = PatternFill(start_color="FFEDD5", end_color="FFEDD5", fill_type="solid") # Orange 2PM
     font_s2 = Font(name=font_family, size=9, bold=True, color="9A3412")
     hdr_s2  = PatternFill(start_color="C2410C", end_color="C2410C", fill_type="solid")
 
-    # 5PM Shift -> Green Theme
-    fill_s3 = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+    fill_s3 = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid") # Green 5PM
     font_s3 = Font(name=font_family, size=9, bold=True, color="065F46")
     hdr_s3  = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
-
-    shift_styles = [
-        (hdr_s1, fill_s1, font_s1), # 9AM
-        (hdr_s2, fill_s2, font_s2), # 2PM
-        (hdr_s3, fill_s3, font_s3)  # 5PM
-    ]
 
     cat_fills = [fill_cat1, fill_cat2, fill_cat3, fill_cat4]
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    # 18 total columns: ZONE | BRANCH | P1 P2 P3 | D1 D2 D3 | T1 T2 T3 | N1 N2 N3 | TOT1 TOT2 TOT3 | CLEAR %
     ws_sum.merge_cells("A1:R1")
     t_cell = ws_sum.cell(1, 1, f"ZONE & BRANCH URGENT SHIFT MATRIX (P1..P3, D1..D3, T1..T3, N1..N3) — {date_str}")
     t_cell.font = f_title
@@ -445,7 +457,6 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
     ws_sum.row_dimensions[1].height = 30
 
-    # Row 2: Category Headers
     ws_sum.row_dimensions[2].height = 22
     ws_sum.merge_cells("A2:B2")
     z_cell = ws_sum.cell(2, 1, "ZONE & BRANCH")
@@ -473,15 +484,13 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     ws_sum.cell(2, 18).font = f_cat
     ws_sum.cell(2, 18).alignment = Alignment(horizontal="center", vertical="center")
 
-    # Row 3: Short Cute Sub-Headers (P1, P2, P3, D1, D2, D3, T1, T2, T3, N1, N2, N3, TOT1, TOT2, TOT3, CLEAR %)
-    sub_headers = ["ZONE", "BRANCH", "P1", "P2", "P3", "D1", "D2", "D3", "T1", "T2", "T3", "N1", "N2", "N3", "TOT1", "TOT2", "TOT3", "CLEAR %"]
+    sub_headers = ["ZONE", "BRANCH", "P1", "P2 (Δ)", "P3 (Δ)", "D1", "D2 (Δ)", "D3 (Δ)", "T1", "T2 (Δ)", "T3 (Δ)", "N1", "N2 (Δ)", "N3 (Δ)", "TOT1", "TOT2 (Δ)", "TOT3 (Δ)", "CLEAR %"]
     ws_sum.row_dimensions[3].height = 20
 
     for c_i, sh_text in enumerate(sub_headers, 1):
         cell = ws_sum.cell(3, c_i, sh_text)
         cell.font = Font(name=font_family, size=9, bold=True, color="FFFFFF")
 
-        # Apply shift header color
         if c_i in (3, 6, 9, 12, 15):
             cell.fill = hdr_s1 # 9 AM
         elif c_i in (4, 7, 10, 13, 16):
@@ -494,7 +503,6 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
 
-    # Data Rows
     r_idx = 4
     for r in rows:
         row_fill = fill_alt if r_idx % 2 == 0 else None
@@ -502,21 +510,20 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
 
         vals = [r["ZONE"], r["BRANCH"]]
         for cat in CATEGORIES:
-            vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM"], r[f"{cat}_5PM"]])
-        vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM"], r["TOTAL_5PM"], f"{r['CLEARANCE_PCT']:.1f}%"])
+            vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM_STR"], r[f"{cat}_5PM_STR"]])
+        vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM_STR"], r["TOTAL_5PM_STR"], f"{r['CLEARANCE_PCT']:.1f}%"])
 
         for c_i, val in enumerate(vals, 1):
             cell = ws_sum.cell(r_idx, c_i, val)
             cell.border = border
 
-            # Distinct Shift Number Colors
-            if c_i in (3, 6, 9, 12, 15): # 9 AM Shift
+            if c_i in (3, 6, 9, 12, 15):
                 cell.fill = fill_s1
                 cell.font = font_s1
-            elif c_i in (4, 7, 10, 13, 16): # 2 PM Shift
+            elif c_i in (4, 7, 10, 13, 16):
                 cell.fill = fill_s2
                 cell.font = font_s2
-            elif c_i in (5, 8, 11, 14, 17): # 5 PM Shift
+            elif c_i in (5, 8, 11, 14, 17):
                 cell.fill = fill_s3
                 cell.font = font_s3
             elif c_i == 18:
@@ -529,12 +536,11 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
             cell.alignment = Alignment(horizontal="center" if c_i > 2 else "left", vertical="center")
         r_idx += 1
 
-    # Totals Row
     ws_sum.row_dimensions[r_idx].height = 22
     tot_vals = [totals["ZONE"], totals["BRANCH"]]
     for cat in CATEGORIES:
-        tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM"], totals[f"{cat}_5PM"]])
-    tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM"], totals["TOTAL_5PM"], f"{totals['CLEARANCE_PCT']:.1f}%"])
+        tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM_STR"], totals[f"{cat}_5PM_STR"]])
+    tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM_STR"], totals["TOTAL_5PM_STR"], f"{totals['CLEARANCE_PCT']:.1f}%"])
 
     for c_i, val in enumerate(tot_vals, 1):
         cell = ws_sum.cell(r_idx, c_i, val)
@@ -546,9 +552,8 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     for col in ws_sum.columns:
         max_len = max(len(str(cell.value or "")) for cell in col)
         col_letter = get_column_letter(col[0].column)
-        ws_sum.column_dimensions[col_letter].width = max(max_len + 3, 11)
+        ws_sum.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
-    # Tab 2: Itemized Transitions
     det_headers = ["BILL ID", "ZONE", "BRANCH", "CATEGORY", "STATUS 9AM", "NEW STATUS", "RESOLVED SHIFT", "RESOLUTION TIME"]
     ws_det.merge_cells("A1:H1")
     d_cell = ws_det.cell(1, 1, f"ITEMIZED RESOLVED URGENT BILL TRANSITIONS ({date_str})")
