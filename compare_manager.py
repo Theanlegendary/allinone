@@ -189,6 +189,12 @@ def get_all_known_branches(df_detail=None):
     return sorted(list(branches))
 
 def determine_shift(now=None):
+    """
+    Determines shift based on exact time windows:
+    - 7:00 AM - 11:59 AM (7-9 AM morning window) -> 9AM
+    - 12:00 PM - 3:59 PM (1-3 PM afternoon window) -> 2PM
+    - 4:00 PM onwards (4-6 PM evening window) -> 5PM
+    """
     if now is None:
         now = datetime.now()
     hour = now.hour
