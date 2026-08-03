@@ -359,8 +359,6 @@ def build_comparison_summary(date_str, df_detail=None):
             row[f"{cat}_9AM"] = v9
             row[f"{cat}_2PM"] = v2
             row[f"{cat}_5PM"] = v5
-            row[f"{cat}_2PM_STR"] = format_delta_val(v2, v9)
-            row[f"{cat}_5PM_STR"] = format_delta_val(v5, v9)
 
             tot_cols[cat]["9AM"] += v9
             tot_cols[cat]["2PM"] += v2
@@ -377,8 +375,9 @@ def build_comparison_summary(date_str, df_detail=None):
         row["TOTAL_9AM"] = tot_9am
         row["TOTAL_2PM"] = tot_2pm
         row["TOTAL_5PM"] = tot_5pm
-        row["TOTAL_2PM_STR"] = format_delta_val(tot_2pm, tot_9am)
-        row["TOTAL_5PM_STR"] = format_delta_val(tot_5pm, tot_9am)
+
+        net_change = tot_5pm - tot_9am
+        row["NET_CHANGE"] = f"{net_change}" if net_change == 0 else (f"+{net_change}" if net_change > 0 else f"{net_change}")
 
         resolved_count = tot_9am - tot_5pm
         row["CLEARANCE_PCT"] = (resolved_count / tot_9am * 100.0) if tot_9am > 0 else 100.0
@@ -448,7 +447,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    ws_sum.merge_cells("A1:R1")
+    ws_sum.merge_cells("A1:S1")
     t_cell = ws_sum.cell(1, 1, f"ZONE & BRANCH URGENT SHIFT MATRIX (P1..P3, D1..D3, T1..T3, N1..N3) — {date_str}")
     t_cell.font = f_title
     t_cell.fill = fill_title
@@ -478,11 +477,15 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
     tot_cell.fill = fill_hdr
     tot_cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_sum.cell(2, 18, "CLEARANCE").fill = fill_hdr
+    ws_sum.cell(2, 18, "NET CHANGE").fill = fill_hdr
     ws_sum.cell(2, 18).font = f_cat
     ws_sum.cell(2, 18).alignment = Alignment(horizontal="center", vertical="center")
 
-    sub_headers = ["ZONE", "POST OFFICE HANDLE", "P1", "P2 (Δ)", "P3 (Δ)", "D1", "D2 (Δ)", "D3 (Δ)", "T1", "T2 (Δ)", "T3 (Δ)", "N1", "N2 (Δ)", "N3 (Δ)", "TOT1", "TOT2 (Δ)", "TOT3 (Δ)", "CLEAR %"]
+    ws_sum.cell(2, 19, "CLEARANCE").fill = fill_hdr
+    ws_sum.cell(2, 19).font = f_cat
+    ws_sum.cell(2, 19).alignment = Alignment(horizontal="center", vertical="center")
+
+    sub_headers = ["ZONE", "POST OFFICE HANDLE", "P1 (9AM)", "P2 (2PM)", "P3 (5PM)", "D1 (9AM)", "D2 (2PM)", "D3 (5PM)", "T1 (9AM)", "T2 (2PM)", "T3 (5PM)", "N1 (9AM)", "N2 (2PM)", "N3 (5PM)", "TOT1 (9AM)", "TOT2 (2PM)", "TOT3 (5PM)", "CHANGE (Δ)", "CLEAR %"]
     ws_sum.row_dimensions[3].height = 20
 
     for c_i, sh_text in enumerate(sub_headers, 1):
@@ -508,8 +511,8 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
 
         vals = [r["ZONE"], r["POST OFFICE HANDLE"]]
         for cat in CATEGORIES:
-            vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM_STR"], r[f"{cat}_5PM_STR"]])
-        vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM_STR"], r["TOTAL_5PM_STR"], f"{r['CLEARANCE_PCT']:.1f}%"])
+            vals.extend([r[f"{cat}_9AM"], r[f"{cat}_2PM"], r[f"{cat}_5PM"]])
+        vals.extend([r["TOTAL_9AM"], r["TOTAL_2PM"], r["TOTAL_5PM"], r["NET_CHANGE"], f"{r['CLEARANCE_PCT']:.1f}%"])
 
         for c_i, val in enumerate(vals, 1):
             cell = ws_sum.cell(r_idx, c_i, val)
@@ -524,7 +527,7 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
             elif c_i in (5, 8, 11, 14, 17):
                 cell.fill = fill_s3
                 cell.font = font_s3
-            elif c_i == 18:
+            elif c_i in (18, 19):
                 cell.font = f_good
                 if row_fill: cell.fill = row_fill
             else:
@@ -535,10 +538,12 @@ def build_compare_excel(date_str, rows, totals, itemized_transitions, out_filepa
         r_idx += 1
 
     ws_sum.row_dimensions[r_idx].height = 22
+    grand_change = totals["TOTAL_5PM"] - totals["TOTAL_9AM"]
+    grand_change_str = f"{grand_change}" if grand_change == 0 else (f"+{grand_change}" if grand_change > 0 else f"{grand_change}")
     tot_vals = [totals["ZONE"], totals["POST OFFICE HANDLE"]]
     for cat in CATEGORIES:
-        tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM_STR"], totals[f"{cat}_5PM_STR"]])
-    tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM_STR"], totals["TOTAL_5PM_STR"], f"{totals['CLEARANCE_PCT']:.1f}%"])
+        tot_vals.extend([totals[f"{cat}_9AM"], totals[f"{cat}_2PM"], totals[f"{cat}_5PM"]])
+    tot_vals.extend([totals["TOTAL_9AM"], totals["TOTAL_2PM"], totals["TOTAL_5PM"], grand_change_str, f"{totals['CLEARANCE_PCT']:.1f}%"])
 
     for c_i, val in enumerate(tot_vals, 1):
         cell = ws_sum.cell(r_idx, c_i, val)
