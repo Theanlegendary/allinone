@@ -219,9 +219,48 @@ def save_snapshots(data):
     with open(SNAPSHOT_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def is_urgent_bill(r):
+    sc = str(r.get("STATUS_CODE", "") or r.get("STATUS", "") or "").lstrip("S").strip()
+    if sc and " " in sc:
+        sc = sc.split()[0].strip()
+
+    if sc in ("99", "100", "201", "410", "420", "472", "520"):
+        return False
+
+    if "_IS_OVERDUE" in r and pd.notna(r["_IS_OVERDUE"]):
+        return bool(r["_IS_OVERDUE"])
+
+    age_val = str(r.get("AGE", "") or "")
+    if "🔴" in age_val:
+        return True
+
+    cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or "").upper()
+    is_transit = ("TRANSIT" in cat_raw or "MEGA" in cat_raw or sc in ("306", "309"))
+    threshold = 48 if is_transit else 24
+
+    scan_time = ""
+    for tc in ["CURRENT TIME", "STATUS 306 AT STORE / AGENT (LAST TIME)", "STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)", "SCAN TIME", "CREATED DATE"]:
+        if tc in r and pd.notna(r[tc]):
+            val_str = str(r[tc]).strip()
+            if val_str and val_str.lower() != "nan":
+                scan_time = val_str
+                break
+
+    if scan_time:
+        match = re.search(r'(\d+)\s*h', scan_time, re.IGNORECASE)
+        if match:
+            return float(match.group(1)) >= threshold
+        try:
+            parsed_dt = pd.to_datetime(scan_time, dayfirst=True, format='mixed', errors='coerce')
+            if pd.notna(parsed_dt):
+                return ((datetime.now() - parsed_dt).total_seconds() / 3600.0) >= threshold
+        except Exception:
+            pass
+
+    return True
+
 def extract_total_report_counts(df_detail):
     """Extracts urgent counts and section counts per post office handle exactly like /total."""
-    import generate_report
     df = df_detail.copy()
     df.columns = [str(c).strip().upper() for c in df.columns]
 
@@ -242,15 +281,13 @@ def extract_total_report_counts(df_detail):
         if sc and " " in sc:
             sc = sc.split()[0].strip()
 
-        if sc in ("99", "100", "201", "410", "520"):
+        if sc in ("99", "100", "201", "410", "420", "520"):
             continue
 
         if hnd not in handle_map:
             handle_map[hnd] = {"urgent": 0, "pickup": 0, "delivery": 0, "transit": 0, "branch": 0}
 
-        # Check overdue status
-        is_urg = generate_report.is_urgent_bill(r) if hasattr(generate_report, "is_urgent_bill") else True
-        if is_urg:
+        if is_urgent_bill(r):
             handle_map[hnd]["urgent"] += 1
 
         cat_raw = str(r.get("REPORT TYPE", "") or r.get("TYPE", "") or "").upper()
