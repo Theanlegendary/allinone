@@ -1,9 +1,10 @@
 """
 generate_tracking_logs_report.py
-Generates a complete tracking milestone logs report for ALL-TIME bills.
-- Formatted as: BILL ID | 1ST UNIT | LOG1 | TIME | 2ND UNIT | LOG2 | TIME ...
-- LOG columns (LOG1, LOG2, LOG3, ...) explicitly contain the status codes (110, 200, 210, 306, 401, 410, etc.)
-- Downloads ALL-TIME dataset (no 14-day or 40-day limit)
+Generates a complete tracking logs report separated by status code columns.
+- Dedicated columns per status code:
+  LOG 110 | UNIT 110 | TIME 110 | LOG 120 | UNIT 120 | TIME 120 | LOG 200 | UNIT 200 | TIME 200 | LOG 210 ...
+- Every LOG column contains ONLY its specific status code number (e.g. LOG 110 contains ONLY '110')
+- Default date range: 01/07/2026 to 03/08/2026 (or today's date)
 - Excludes test bills (from test_bills.txt)
 - Excludes trainer accounts/post offices (TRAINER, TEST, DEMO)
 - Excludes global offices (GLOBAL, EXTERNAL)
@@ -27,6 +28,11 @@ TEST_BILLS_PATH = os.path.join(HERE, "test_bills.txt")
 
 EXCLUDE_KEYWORDS = {"TRAINER", "GLOBAL", "TEST", "DEMO", "EXTERNAL"}
 
+STATUS_CODES_LIST = [
+    "110", "120", "200", "210", "230", "300", "302", "306", "309", "310", "311",
+    "400", "401", "402", "420", "470", "472", "480", "500", "410"
+]
+
 def load_test_ids():
     test_ids = set()
     if os.path.exists(TEST_BILLS_PATH):
@@ -41,11 +47,6 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     test_ids = load_test_ids()
     df = pd.read_excel(detail_xlsx_path)
     df.columns = [str(c).strip().upper() for c in df.columns]
-
-    # Exclude completed/cancelled codes 99, 520, 201 if needed
-    if "CURRENT STATUS" in df.columns or "STATUS_CODE" in df.columns:
-        sc_col = "STATUS_CODE" if "STATUS_CODE" in df.columns else "CURRENT STATUS"
-        df = df[~df[sc_col].astype(str).str.strip().isin(["99", "520", "201"])].copy()
 
     headers_api = {
         "Authorization": "Bearer " + cfg["api"]["bearer_token"],
@@ -82,8 +83,16 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
             trips_sorted = list(reversed(trips))
             row_dict = {"BILL ID": oid_str}
 
-            max_step = len(trips_sorted)
-            for idx, t in enumerate(trips_sorted, 1):
+            # Initialize all status code columns
+            for sc in STATUS_CODES_LIST:
+                row_dict[f"LOG_{sc}"] = ""
+                row_dict[f"UNIT_{sc}"] = ""
+                row_dict[f"TIME_{sc}"] = ""
+
+            latest_st = ""
+            latest_time = ""
+
+            for t in trips_sorted:
                 st = str(t.get("status", "") or "").lstrip("S").strip()
                 po = t.get("postOffice") or {}
                 unit = t.get("postcode") or (po.get("code") if isinstance(po, dict) else "") or ""
@@ -99,11 +108,16 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
                     except Exception:
                         dt_str = str(dt_raw)
 
-                row_dict[f"UNIT_{idx}"] = unit
-                row_dict[f"LOG_{idx}"] = st
-                row_dict[f"TIME_{idx}"] = dt_str
+                if st in STATUS_CODES_LIST:
+                    row_dict[f"LOG_{st}"] = st
+                    row_dict[f"UNIT_{st}"] = unit
+                    row_dict[f"TIME_{st}"] = dt_str
 
-            row_dict["_max_step"] = max_step
+                latest_st = st
+                latest_time = dt_str
+
+            row_dict["LATEST_STATUS"] = latest_st
+            row_dict["LATEST_TIME"] = latest_time
             return row_dict
         except Exception:
             return None
@@ -121,8 +135,6 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     if not results:
         raise ValueError("No tracking logs could be extracted.")
 
-    max_milestones = max(r.get("_max_step", 1) for r in results)
-
     wb = Workbook()
     ws = wb.active
     ws.title = "Tracking Logs"
@@ -131,6 +143,7 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     f_title = Font(name=font_family, size=14, bold=True, color="FFFFFF")
     f_header = Font(name=font_family, size=10, bold=True, color="FFFFFF")
     f_data = Font(name=font_family, size=9)
+    f_log = Font(name=font_family, size=9, bold=True, color="1E3A8A")
 
     fill_title = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
     fill_hdr1 = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
@@ -140,14 +153,14 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    # Build Header Columns: BILL ID | 1ST UNIT | LOG1 | TIME | 2ND UNIT | LOG2 | TIME ...
+    # Build Header Columns: BILL ID | LOG 110 | UNIT 110 | TIME 110 | LOG 120 | UNIT 120 ...
     headers = ["BILL ID"]
-    for i in range(1, max_milestones + 1):
-        suffix = "ST" if i == 1 else "ND" if i == 2 else "RD" if i == 3 else "TH"
-        headers.extend([f"{i}{suffix} UNIT", f"LOG{i}", "TIME"])
+    for sc in STATUS_CODES_LIST:
+        headers.extend([f"LOG {sc}", f"UNIT {sc}", f"TIME {sc}"])
+    headers.extend(["LATEST STATUS", "LATEST TIME"])
 
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(headers))
-    t_cell = ws.cell(1, 1, "ALL-TIME BILL TRACKING MILESTONE LOGS REPORT")
+    t_cell = ws.cell(1, 1, "BILL TRACKING LOGS BY STATUS CODE REPORT (01/07/2026 - 03/08/2026)")
     t_cell.font = f_title
     t_cell.fill = fill_title
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -157,7 +170,7 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     for c_idx, h_text in enumerate(headers, 1):
         cell = ws.cell(3, c_idx, h_text)
         cell.font = f_header
-        cell.fill = fill_hdr1 if c_idx == 1 or ((c_idx - 1) // 3) % 2 == 0 else fill_hdr2
+        cell.fill = fill_hdr1 if c_idx == 1 or ((c_idx - 2) // 3) % 2 == 0 else fill_hdr2
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
 
@@ -174,19 +187,43 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
         c_bill.alignment = Alignment(horizontal="left", vertical="center")
 
         col_pos = 2
-        for i in range(1, max_milestones + 1):
-            unit_val = r_data.get(f"UNIT_{i}", "")
-            log_val  = r_data.get(f"LOG_{i}", "")
-            time_val = r_data.get(f"TIME_{i}", "")
+        for sc in STATUS_CODES_LIST:
+            log_val = r_data.get(f"LOG_{sc}", "")
+            unit_val = r_data.get(f"UNIT_{sc}", "")
+            time_val = r_data.get(f"TIME_{sc}", "")
 
-            for val in [unit_val, log_val, time_val]:
-                cell = ws.cell(r_idx, col_pos, val)
-                cell.font = f_data
-                cell.border = border
-                if row_fill:
-                    cell.fill = row_fill
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                col_pos += 1
+            # LOG cell
+            c_log = ws.cell(r_idx, col_pos, log_val)
+            c_log.font = f_log
+            c_log.border = border
+            if row_fill: c_log.fill = row_fill
+            c_log.alignment = Alignment(horizontal="center", vertical="center")
+            col_pos += 1
+
+            # UNIT cell
+            c_unit = ws.cell(r_idx, col_pos, unit_val)
+            c_unit.font = f_data
+            c_unit.border = border
+            if row_fill: c_unit.fill = row_fill
+            c_unit.alignment = Alignment(horizontal="center", vertical="center")
+            col_pos += 1
+
+            # TIME cell
+            c_time = ws.cell(r_idx, col_pos, time_val)
+            c_time.font = f_data
+            c_time.border = border
+            if row_fill: c_time.fill = row_fill
+            c_time.alignment = Alignment(horizontal="center", vertical="center")
+            col_pos += 1
+
+        # Latest Status & Time
+        for val in [r_data.get("LATEST_STATUS", ""), r_data.get("LATEST_TIME", "")]:
+            cell = ws.cell(r_idx, col_pos, val)
+            cell.font = f_data
+            cell.border = border
+            if row_fill: cell.fill = row_fill
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            col_pos += 1
 
         r_idx += 1
 
@@ -202,9 +239,9 @@ if __name__ == "__main__":
     import downloader
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         cfg = json.load(f)
-    tmp_detail = os.path.join(HERE, "latest_all_time_detail.xlsx")
+    tmp_detail = os.path.join(HERE, "latest_july_aug_detail.xlsx")
     today_str = datetime.now().strftime("%Y%m%d")
-    downloader.download_detail(cfg["api"], tmp_detail, from_date="20250101", to_date=today_str, force_refresh=True)
-    out_file = os.path.join(HERE, f"All_Time_Bill_Tracking_Milestone_Logs_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx")
+    downloader.download_detail(cfg["api"], tmp_detail, from_date="20260701", to_date=today_str, force_refresh=True)
+    out_file = os.path.join(HERE, f"Bill_Tracking_Status_Logs_01Jul_03Aug_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx")
     generate_tracking_logs(tmp_detail, out_file)
-    print(f"✅ All-Time Milestone Report saved to {out_file}")
+    print(f"✅ July 1 - Aug 3 Status Logs Report saved to {out_file}")

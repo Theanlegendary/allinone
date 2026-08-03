@@ -2417,31 +2417,31 @@ async def cmd_tpg(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @pm_required_handler
 async def cmd_export_logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """/exportlogs or /logs — Exports complete ALL-TIME status-by-status tracking logs report (BILL ID | S110 UNIT | S110 TIME | S200 UNIT | S200 TIME ...), excluding test/trainer/global."""
+    """/exportlogs or /logs — Exports complete status-divided tracking logs report (01/07/2026 to 03/08/2026), excluding test/trainer/global."""
     await delete_group_command(update, context)
     cfg = load_config()
-    msg = await send_requester_text(update, context, "⏳ Extracting ALL-TIME status-by-status tracking logs for all bills (excluding test/trainer/global)...")
+    msg = await send_requester_text(update, context, "⏳ Extracting tracking logs divided by status code (01/07/2026 - 03/08/2026)...")
 
     tmpdir = tempfile.mkdtemp(prefix="logs_")
     track_report_dir(tmpdir)
     stamp = datetime.now().strftime("%Y%m%d_%H%M")
-    src = os.path.join(tmpdir, f"export_all_time_{stamp}.xlsx")
-    out_xlsx = os.path.join(tmpdir, f"All_Time_Bill_Tracking_Status_Logs_{stamp}.xlsx")
+    src = os.path.join(tmpdir, f"export_01Jul_03Aug_{stamp}.xlsx")
+    out_xlsx = os.path.join(tmpdir, f"Bill_Tracking_Status_Logs_01Jul_03Aug_{stamp}.xlsx")
 
     try:
         today_str = datetime.now().strftime("%Y%m%d")
-        downloader.download_detail(cfg["api"], src, from_date="20250101", to_date=today_str, force_refresh=True)
+        downloader.download_detail(cfg["api"], src, from_date="20260701", to_date=today_str, force_refresh=True)
         import generate_tracking_logs_report
         generate_tracking_logs_report.generate_tracking_logs(src, out_xlsx)
 
         if os.path.exists(out_xlsx):
-            await edit_or_send_requester_text(msg, update, context, "✅ ALL-TIME status-by-status tracking logs generated successfully! Attaching Excel file...")
+            await edit_or_send_requester_text(msg, update, context, "✅ Status-divided tracking logs generated successfully! Attaching Excel file...")
             await send_requester_document(
                 update,
                 context,
                 out_xlsx,
                 filename=os.path.basename(out_xlsx),
-                caption="📄 ALL-TIME Bill Tracking Status Logs Excel Report"
+                caption="📄 Bill Tracking Status Logs Excel Report (01/07 - 03/08)"
             )
         else:
             await edit_or_send_requester_text(msg, update, context, "❌ Could not generate tracking logs file.")
