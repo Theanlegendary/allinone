@@ -236,6 +236,32 @@ def record_total_snapshot(date_str, df_detail):
     save_snapshots(snapshots)
     return snapshots
 
+def get_all_known_branches(df_detail=None):
+    branches = set()
+    if os.path.exists("post_office_lookup.csv"):
+        try:
+            df_po = pd.read_csv("post_office_lookup.csv", encoding="utf-8-sig")
+            df_po.columns = [str(c).strip().lower() for c in df_po.columns]
+            if "post_office_handle" in df_po.columns:
+                for h in df_po["post_office_handle"].dropna().unique():
+                    h_str = resolve_post_office_handle(h)
+                    if h_str and h_str != "NAN" and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                        branches.add(h_str)
+        except Exception:
+            pass
+
+    if df_detail is not None:
+        df = df_detail.copy()
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        for candidate in ["POST OFFICE HANDLE", "CURRENT POST OFFICE", "RECEIVE POST OFFICE", "DELIVERY POST OFFICE"]:
+            if candidate in df.columns:
+                for h in df[candidate].dropna().unique():
+                    h_str = resolve_post_office_handle(h)
+                    if h_str and not any(kw in h_str for kw in EXCLUDE_KEYWORDS):
+                        branches.add(h_str)
+
+    return sorted(list(branches))
+
 def build_comparison_summary(date_str, df_detail=None):
     if df_detail is not None:
         record_total_snapshot(date_str, df_detail)
@@ -250,7 +276,8 @@ def build_comparison_summary(date_str, df_detail=None):
     has_2pm = bool(h_2pm)
     has_5pm = bool(h_5pm)
 
-    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()))))
+    known_branches = get_all_known_branches(df_detail)
+    all_handles = sorted(list(set(list(h_9am.keys()) + list(h_2pm.keys()) + list(h_5pm.keys()) + known_branches)))
 
     rows = []
     tot_urg_9am = tot_urg_2pm = tot_urg_5pm = 0
