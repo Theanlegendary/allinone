@@ -48,6 +48,20 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     df = pd.read_excel(detail_xlsx_path)
     df.columns = [str(c).strip().upper() for c in df.columns]
 
+    service_map = {}
+    svc_col = None
+    for col in df.columns:
+        if col.strip().upper() in ["SERVICE", "SERVICE TYPE", "SERVICE_TYPE", "SERVICE NAME", "SERVICETYPE"]:
+            svc_col = col
+            break
+
+    if svc_col:
+        for _, r in df.iterrows():
+            oid = str(r.get("ORDER ID", "")).strip()
+            val = str(r.get(svc_col, "") or "").strip()
+            if oid and val and val.lower() != "nan":
+                service_map[oid] = val
+
     headers_api = {
         "Authorization": "Bearer " + cfg["api"]["bearer_token"],
         "Accept": "application/json, text/plain, */*",
@@ -81,7 +95,14 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
                     return None
 
             trips_sorted = list(reversed(trips))
-            row_dict = {"BILL ID": oid_str}
+            svc_type = service_map.get(oid_str, "")
+            if not svc_type and isinstance(data, dict):
+                svc_type = str(data.get("serviceType") or data.get("serviceName") or data.get("service") or "").strip()
+
+            row_dict = {
+                "BILL ID": oid_str,
+                "SERVICE TYPE": svc_type
+            }
 
             # Initialize all status code columns
             for sc in STATUS_CODES_LIST:
@@ -158,8 +179,8 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     thin = Side(border_style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    # Build Header Columns: BILL ID | LOG 110 | UNIT 110 | TIME 110 | LOG 120 | UNIT 120 ...
-    headers = ["BILL ID"]
+    # Build Header Columns: BILL ID | SERVICE TYPE | LOG 110 | UNIT 110 | TIME 110 | LOG 120 | UNIT 120 ...
+    headers = ["BILL ID", "SERVICE TYPE"]
     for sc in STATUS_CODES_LIST:
         headers.extend([f"LOG {sc}", f"UNIT {sc}", f"TIME {sc}"])
     headers.extend(["LATEST STATUS", "LATEST UNIT", "LATEST TIME"])
@@ -175,7 +196,7 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
     for c_idx, h_text in enumerate(headers, 1):
         cell = ws.cell(3, c_idx, h_text)
         cell.font = f_header
-        cell.fill = fill_hdr1 if c_idx == 1 or ((c_idx - 2) // 3) % 2 == 0 else fill_hdr2
+        cell.fill = fill_hdr1 if c_idx in (1, 2) or ((c_idx - 3) // 3) % 2 == 0 else fill_hdr2
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = border
 
@@ -191,7 +212,13 @@ def generate_tracking_logs(detail_xlsx_path, out_path, max_workers=35):
         c_bill.border = border
         c_bill.alignment = Alignment(horizontal="left", vertical="center")
 
-        col_pos = 2
+        c_svc = ws.cell(r_idx, 2, str(r_data.get("SERVICE TYPE", "")))
+        c_svc.font = f_data
+        c_svc.border = border
+        if row_fill: c_svc.fill = row_fill
+        c_svc.alignment = Alignment(horizontal="center", vertical="center")
+
+        col_pos = 3
         for sc in STATUS_CODES_LIST:
             log_val = r_data.get(f"LOG_{sc}", "")
             unit_val = r_data.get(f"UNIT_{sc}", "")
