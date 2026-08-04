@@ -113,118 +113,141 @@ def _get_font(text: str, size: int, bold: bool = False):
     return _load_font(size, bold)
 
 
-def excel_to_image(xlsx_path: str) -> io.BytesIO:
-    # ── Try Excel COM rendering first (for perfect Khmer text shaping and native styling on Windows) ──
+def _kill_zombie_excel():
+    """Auto-terminate stuck/zombie EXCEL.EXE background processes on Windows."""
     try:
-        import win32com.client
-        import time
-        import os
-        from PIL import ImageGrab
-        
-        abs_path = os.path.abspath(xlsx_path)
+        import subprocess
+        subprocess.run(["taskkill", "/F", "/IM", "EXCEL.EXE"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+def _try_excel_com(xlsx_path: str):
+    import win32com.client
+    import time
+    import os
+    from PIL import ImageGrab
+    
+    abs_path = os.path.abspath(xlsx_path)
+    try:
+        excel = win32com.client.DispatchEx("Excel.Application")
+    except Exception:
         excel = win32com.client.Dispatch("Excel.Application")
-        excel.Visible = False
-        excel.DisplayAlerts = False
         
-        wb = None
+    try:
+        excel.Visible = False
+    except Exception:
+        pass
+        
+    try:
+        excel.DisplayAlerts = False
+    except Exception:
+        pass
+    
+    wb = None
+    try:
+        wb = excel.Workbooks.Open(abs_path)
+        ws = wb.ActiveSheet
+        
+        img = None
+        temp_png = None
+        
         try:
-            wb = excel.Workbooks.Open(abs_path)
-            ws = wb.ActiveSheet
+            rng = ws.UsedRange
+            chart_width = rng.Width
+            chart_height = rng.Height
             
+            rng.CopyPicture(1, -4147)
+            
+            chart_obj = ws.ChartObjects().Add(Left=rng.Left, Top=rng.Top, Width=chart_width, Height=chart_height)
+            chart_obj.Activate()
+            chart = chart_obj.Chart
+            chart.Paste()
+            
+            chart.ChartArea.Format.Line.Visible = 0
+            chart.ChartArea.Format.Fill.Visible = 0
+            
+            temp_png = os.path.abspath(os.path.join(os.path.dirname(xlsx_path), f"temp_excel_hd_{int(time.time())}.png"))
+            chart.Export(temp_png, "PNG")
+            chart_obj.Delete()
+            
+            if os.path.exists(temp_png):
+                img = Image.open(temp_png)
+                img.load()
+        except Exception:
             img = None
-            temp_png = None
-            
-            # --- 1. Try High Quality Chart Export Method (Crisp HD 2.0x rendering) ---
-            try:
-                rng = ws.UsedRange
-                excel_scale = 3.0  # Scale factor for HD rendering (higher = sharper text)
-                chart_width = rng.Width * excel_scale
-                chart_height = rng.Height * excel_scale
-                
-                # Copy as picture using xlScreen=1, xlPicture=-4147 for maximum vector detail
-                rng.CopyPicture(1, -4147)
-                
-                # Add temporary chart
-                chart_obj = ws.ChartObjects().Add(Left=rng.Left, Top=rng.Top, Width=chart_width, Height=chart_height)
-                chart_obj.Activate()
-                chart = chart_obj.Chart
-                chart.Paste()
-                
-                # Scale the pasted picture shape to fill the chart and position it at top-left (0,0)
-                if chart.Shapes.Count > 0:
-                    shape = chart.Shapes(1)
-                    shape.Left = 0
-                    shape.Top = 0
-                    shape.Width = chart_width
-                    shape.Height = chart_height
-                
-                # Remove chart borders and fill to prevent extra margins/background padding
-                chart.ChartArea.Format.Line.Visible = 0
-                chart.ChartArea.Format.Fill.Visible = 0
-                
-                # Export to temp PNG
-                temp_png = os.path.abspath(os.path.join(os.path.dirname(xlsx_path), f"temp_excel_hd_{int(time.time())}.png"))
-                chart.Export(temp_png, "PNG")
-                chart_obj.Delete()
-                
-                if os.path.exists(temp_png):
-                    img = Image.open(temp_png)
-                    # Load image fully into memory and then close file handle so we can delete it
-                    img.load()
-            except Exception:
-                img = None
-            finally:
-                if temp_png and os.path.exists(temp_png):
-                    try:
-                        os.remove(temp_png)
-                    except Exception:
-                        pass
-            
-            # --- 2. Clipboard Fallback Method (if Chart method failed or wasn't used) ---
-            if img is None:
-                ws.UsedRange.CopyPicture(1, 2)
-                time.sleep(0.5) # wait for clipboard
-                for _ in range(5):
-                    img = ImageGrab.grabclipboard()
-                    if img:
-                        break
-                    time.sleep(0.5)
-            
-            if img:
-                # Max dimension & aspect ratio safety check for Telegram
-                w, h = img.size
-                max_dim = 2400
-                if w > max_dim or h > max_dim:
-                    scale_factor = min(max_dim / float(w), max_dim / float(h))
-                    new_w = max(1, int(w * scale_factor))
-                    new_h = max(1, int(h * scale_factor))
-                    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-
-                w, h = img.size
-                max_ratio = 18.0
-                new_w, new_h = w, h
-                if h > 0 and w / h > max_ratio:
-                    new_h = int(w / max_ratio)
-                elif w > 0 and h / w > max_ratio:
-                    new_w = int(h / max_ratio)
-
-                if (new_w, new_h) != (w, h):
-                    padded_img = Image.new('RGB', (new_w, new_h), (255, 255, 255))
-                    padded_img.paste(img, (0, 0))
-                    img = padded_img
-
-                buf = io.BytesIO()
-                img.save(buf, format='PNG', optimize=True)
-                buf.seek(0)
-                return buf
         finally:
-            if wb:
+            if temp_png and os.path.exists(temp_png):
+                try:
+                    os.remove(temp_png)
+                except Exception:
+                    pass
+        
+        if img is None:
+            ws.UsedRange.CopyPicture(1, 2)
+            time.sleep(0.5)
+            for _ in range(5):
+                img = ImageGrab.grabclipboard()
+                if img:
+                    break
+                time.sleep(0.5)
+        
+        if img:
+            w, h = img.size
+            max_dim = 2400
+            if w > max_dim or h > max_dim:
+                scale_factor = min(max_dim / float(w), max_dim / float(h))
+                new_w = max(1, int(w * scale_factor))
+                new_h = max(1, int(h * scale_factor))
+                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+            w, h = img.size
+            max_ratio = 18.0
+            new_w, new_h = w, h
+            if h > 0 and w / h > max_ratio:
+                new_h = int(w / max_ratio)
+            elif w > 0 and h / w > max_ratio:
+                new_w = int(h / max_ratio)
+
+            if (new_w, new_h) != (w, h):
+                padded_img = Image.new('RGB', (new_w, new_h), (255, 255, 255))
+                padded_img.paste(img, (0, 0))
+                img = padded_img
+
+            buf = io.BytesIO()
+            img.save(buf, format='PNG', optimize=True)
+            buf.seek(0)
+            return buf
+    finally:
+        if wb:
+            try:
                 wb.Close(SaveChanges=False)
+            except Exception:
+                pass
+        try:
             excel.Quit()
-    except Exception as e:
-        # Fall back to Pillow rendering if Excel COM fails or is not available
-        import logging
-        logging.warning("Excel COM rendering failed, falling back to Pillow: %s", e, exc_info=True)
+        except Exception:
+            pass
+    return None
+
+def excel_to_image(xlsx_path: str) -> io.BytesIO:
+    # ── 1. Try Excel COM rendering ──
+    try:
+        buf = _try_excel_com(xlsx_path)
+        if buf:
+            return buf
+    except Exception:
+        pass
+
+    # ── 2. Auto-kill frozen/zombie EXCEL.EXE background processes and retry COM ──
+    _kill_zombie_excel()
+    import time
+    time.sleep(0.5)
+
+    try:
+        buf = _try_excel_com(xlsx_path)
+        if buf:
+            return buf
+    except Exception:
         pass
 
     wb = load_workbook(xlsx_path, data_only=True)
