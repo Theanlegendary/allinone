@@ -1927,8 +1927,8 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if df_z is None or df_z.empty:
                 continue
             date_col_z = result.get("date_col") or (
-                "CREATED DATE" if "CREATED DATE" in df_z.columns else
-                "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else None
+                "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else
+                "CREATED DATE" if "CREATED DATE" in df_z.columns else None
             )
             if date_col_z and date_col_z in df_z.columns:
                 parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
@@ -5646,8 +5646,8 @@ async def run_push(
                         if df_z is None or df_z.empty:
                             continue
                         date_col_z = result.get("date_col") or (
-                            "CREATED DATE" if "CREATED DATE" in df_z.columns else
-                            "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else None
+                            "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else
+                            "CREATED DATE" if "CREATED DATE" in df_z.columns else None
                         )
                         if date_col_z and date_col_z in df_z.columns:
                             parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
@@ -6376,8 +6376,8 @@ async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if df_z is None or df_z.empty:
                         continue
                     date_col_z = (
-                        "CREATED DATE" if "CREATED DATE" in df_z.columns else
-                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
+                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else
+                        "CREATED DATE" if "CREATED DATE" in df_z.columns else None
                     )
                     if date_col_z and date_col_z in df_z.columns:
                         parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True, format="mixed", errors="coerce")
