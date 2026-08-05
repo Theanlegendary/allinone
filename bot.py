@@ -2303,6 +2303,87 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate KPI report: {e}")
 
 
+async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Shows 10H KPI breakdown (<=10h hit rate vs >10h overdue) for today/night report."""
+    args = context.args or []
+    branch_target = args[0].strip().upper() if args else None
+    
+    msg = await send_requester_text(update, context, "📊 Calculating 10H KPI performance for branch today...")
+    
+    try:
+        cfg = load_config()
+        latest_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "latest_detail.xlsx")
+        
+        if not os.path.exists(latest_file) or (time.time() - os.path.getmtime(latest_file) > 300):
+            import downloader
+            downloader.download_detail(cfg["api"], latest_file, force_refresh=True)
+            
+        df = pd.read_excel(latest_file)
+        
+        # Exclude completed status codes
+        if 'CURRENT STATUS' in df.columns:
+            sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0]
+            df['STATUS_CODE'] = sc
+            df = df[~df['STATUS_CODE'].isin(['99', '100', '410', '201', '520'])].copy()
+            
+        po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
+        
+        # Calculate age in hours
+        date_col = 'CREATED DATE' if 'CREATED DATE' in df.columns else 'CURRENT TIME'
+        parsed_dates = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
+        now = datetime.now()
+        ages_hours = (now - parsed_dates).dt.total_seconds() / 3600.0
+        df['Age_Hours'] = ages_hours.fillna(0)
+        df['Is_Hit_10H'] = df['Age_Hours'] <= 10.0
+        
+        if branch_target and branch_target != "TOTAL":
+            df = df[df[po_col].astype(str).str.upper().str.contains(branch_target, na=False)].copy()
+            
+        total_all = len(df)
+        if total_all == 0:
+            await edit_or_send_requester_text(msg, update, context, f"ℹ️ No active pending orders found for '{branch_target or 'All Branches'}'.")
+            return
+            
+        hit_all = int(df['Is_Hit_10H'].sum())
+        miss_all = total_all - hit_all
+        rate_all = (hit_all / total_all * 100.0)
+        
+        title = f"📊 *10H KPI PERFORMANCE SUMMARY*" + (f" ({branch_target})" if branch_target else "")
+        resp = (
+            f"{title}\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📦 *Total Active Pending* : `{total_all:,}`\n"
+            f"🟢 *Hit 10H KPI (<=10h)*  : `{hit_all:,}` ({rate_all:.1f}%)\n"
+            f"🔴 *Overdue (>10h)*       : `{miss_all:,}` ({100.0 - rate_all:.1f}%)\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"🎯 *BRANCH KPI HIT RATE*  : `{rate_all:.1f}%` " + ("🟢" if rate_all >= 80 else "🔴") + "\n\n"
+        )
+        
+        if not branch_target:
+            resp += "🏢 *TOP BRANCH BREAKDOWN (10H KPI)*:\n"
+            grouped = df.groupby(po_col)
+            branch_stats = []
+            for b_name, g in grouped:
+                t = len(g)
+                h = int(g['Is_Hit_10H'].sum())
+                m = t - h
+                r = (h / t * 100.0) if t > 0 else 100.0
+                branch_stats.append((b_name, t, h, m, r))
+                
+            branch_stats.sort(key=lambda x: x[1], reverse=True)
+            for b_name, t, h, m, r in branch_stats[:15]:
+                resp += f"• `{b_name:<10}`: 🟢 `{h}` / `{t}` ({r:.0f}% hit)\n"
+                
+            if len(branch_stats) > 15:
+                resp += f"\n_Use `/kpi10h [BRANCH_CODE]` to inspect specific branch._"
+                
+        await edit_or_send_requester_text(msg, update, context, resp, parse_mode="Markdown")
+        
+    except Exception as e:
+        log.exception("Error in cmd_kpi10h: %s", e)
+        await edit_or_send_requester_text(msg, update, context, f"❌ Error computing 10H KPI: {e}")
+
+
 def build_tpg_excel(branch_counts, type_data, out_path):
     """Builds a dedicated, beautifully formatted Excel workbook for /tpg command."""
     import pandas as pd
@@ -6864,6 +6945,9 @@ def main():
     app.add_handler(CommandHandler("logs",       cmd_export_logs))
     app.add_handler(CommandHandler("totalkpi",   cmd_total_kpi))
     app.add_handler(CommandHandler("kpi",        cmd_total_kpi))
+    app.add_handler(CommandHandler("kpi10h",     cmd_kpi10h))
+    app.add_handler(CommandHandler("under10h",   cmd_kpi10h))
+    app.add_handler(CommandHandler("kpi10",      cmd_kpi10h))
     app.add_handler(CommandHandler("tomorrow",   cmd_tomorrow))
     app.add_handler(CommandHandler("today",       cmd_today))
     app.add_handler(CommandHandler("daily",       cmd_today))
