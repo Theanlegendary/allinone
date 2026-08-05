@@ -4919,10 +4919,10 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
             assigned_delivery_name, assigned_delivery_phone = extract_assigned_delivery_staff(trips)
 
         if order_data:
-            s_name = order_data.get("shipper", {}).get("name") or "N/A"
-            s_phone = order_data.get("shipper", {}).get("phone") or "N/A"
-            c_name = order_data.get("consignee", {}).get("name") or "N/A"
-            c_phone = order_data.get("consignee", {}).get("phone") or "N/A"
+            s_name = order_data.get("shipper", {}).get("name") or order_data.get("seller", {}).get("name") or "N/A"
+            s_phone = order_data.get("shipper", {}).get("phone") or order_data.get("seller", {}).get("phone") or "N/A"
+            c_name = order_data.get("consignee", {}).get("name") or order_data.get("buyer", {}).get("name") or "N/A"
+            c_phone = order_data.get("consignee", {}).get("phone") or order_data.get("buyer", {}).get("phone") or "N/A"
             
             def clean_phone(ph):
                 if not ph: return "N/A"
@@ -4948,13 +4948,31 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
             w_str = f"{w/1000.0:.2f} kg" if w >= 1000 else f"{w:.0f} g"
             
             if use_khmer:
-                shipper_info = f"👤 **អ្នកផ្ញើ:** {s_name} ({s_phone})"
-                consignee_info = f"👤 **អ្នកទទួល:** {c_name} ({c_phone})"
+                shipper_info = f"👤 **អ្នកផ្ញើ (ហាង):** {s_name} ({s_phone})"
+                consignee_info = f"📥 **អ្នកទទួល (អតិថិជន):** {c_name} ({c_phone})"
                 payment_info = f"💰 **សេវាកម្ម:** {serv} | **ទម្ងន់:** {w_str}\n💵 **COD:** {cod_val} USD | **ថ្លៃសេវា:** {fee_val} USD ({payer_val})"
             else:
-                shipper_info = f"👤 **Sender:** {s_name} ({s_phone})"
-                consignee_info = f"👤 **Consignee:** {c_name} ({c_phone})"
+                shipper_info = f"👤 **Sender (Store):** {s_name} ({s_phone})"
+                consignee_info = f"📥 **Receiver (Customer):** {c_name} ({c_phone})"
                 payment_info = f"💰 **Service:** {serv} | **Weight:** {w_str}\n💵 **COD:** {cod_val} USD | **Fee:** {fee_val} USD ({payer_val})"
+
+        # Fallback lookup in SQLite database if sender or receiver info missing
+        if not shipper_info or not consignee_info or "N/A" in shipper_info or "N/A" in consignee_info:
+            try:
+                from search_engine import search_orders
+                db_matches = search_orders(order_id, limit=1)
+                if db_matches:
+                    r_db = db_matches[0]
+                    s_n = r_db.get("sender_name") or "N/A"
+                    s_p = r_db.get("sender_phone") or "N/A"
+                    r_n = r_db.get("receiver_name") or "N/A"
+                    r_p = r_db.get("receiver_phone") or "N/A"
+                    if (not shipper_info or "N/A" in shipper_info) and (s_n != "N/A" or s_p != "N/A"):
+                        shipper_info = f"👤 **Sender (Store):** {s_n} ({s_p})" if not use_khmer else f"👤 **អ្នកផ្ញើ (ហាង):** {s_n} ({s_p})"
+                    if (not consignee_info or "N/A" in consignee_info) and (r_n != "N/A" or r_p != "N/A"):
+                        consignee_info = f"📥 **Receiver (Customer):** {r_n} ({r_p})" if not use_khmer else f"📥 **អ្នកទទួល (អតិថិជន):** {r_n} ({r_p})"
+            except Exception:
+                pass
 
         def md_escape(text):
             return str(text).replace("\\", "\\\\").replace("_", "\\_").replace("*", "\\*").replace("`", "\\`")
