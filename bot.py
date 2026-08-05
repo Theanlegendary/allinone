@@ -2355,16 +2355,16 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         rate_raw = (hit_raw / total_all * 100.0)
         rate_tom = (hit_tom / total_all * 100.0)
         
-        title = f"📊 *10H DELIVERY KPI REPORT*" + (f" ({branch_target})" if branch_target else "")
+        title = f"📊 *REAL 10H DELIVERY KPI REPORT*" + (f" ({branch_target})" if branch_target else "")
         resp = (
             f"{title}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📦 *Total Pending Delivery*   : `{total_all:,}`\n"
-            f"🟢 *Today 10H KPI (<=10h)*     : `{hit_raw:,}` ({rate_raw:.1f}%)\n"
-            f"🌙 *Tomorrow (-12h Adj KPI)*  : `{hit_tom:,}` ({rate_tom:.1f}%)\n"
-            f"🔴 *Overdue for Tomorrow (>22h)*: `{miss_tom:,}` ({100.0 - rate_tom:.1f}%)\n"
+            f"📦 *Total Pending Delivery*    : `{total_all:,}`\n"
+            f"🟢 *Real 10H KPI (Age - 12h <= 10h)*: `{hit_tom:,}` ({rate_tom:.1f}%)\n"
+            f"🔴 *Overdue (>22h Total Age)*   : `{miss_tom:,}` ({100.0 - rate_tom:.1f}%)\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🎯 *TOMORROW KPI HIT RATE*     : `{rate_tom:.1f}%` " + ("🟢" if rate_tom >= 80 else "🔴") + "\n\n"
+            f"🎯 *REAL KPI HIT RATE*         : `{rate_tom:.1f}%` " + ("🟢" if rate_tom >= 80 else "🔴") + "\n"
+            f"_Note: 12h overnight non-delivery hold subtracted (e.g., 21h total age - 12h hold = 9h active age 🟢)_ \n\n"
         )
         
         if not branch_target:
