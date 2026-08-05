@@ -359,6 +359,35 @@ def get_zone(po, zone_mapping):
             return zone
     return zone_mapping.get('default_zone', 'Zone?')
 
+
+def map_to_post_office(current_office, zone_mapping):
+    """
+    Map a current office code (like CHAA025, PREA036) to its responsible post office (like CHAP001, PREP001).
+    
+    Uses keyword/prefix matching:
+    - CHAA025 → CHAP001 (CHA prefix)
+    - PREA036 → PREP001 (PRE prefix)  
+    - KANA046 → KANP001 (KAN prefix)
+    - PNPP003 → PNPP003 (already a post office)
+    """
+    current_office = str(current_office).strip().upper()
+    
+    # If it's already a known post office, return it
+    if current_office in zone_mapping.get('by_post_office', {}):
+        return current_office
+    
+    # Extract prefix (first 3 letters)
+    if len(current_office) >= 3:
+        prefix = current_office[:3]
+        
+        # Look for matching post office with that prefix
+        for po in zone_mapping.get('by_post_office', {}).keys():
+            if po.startswith(prefix):
+                return po
+    
+    # Fallback: return current office as-is
+    return current_office
+
 def load_reference(ref_path):
     if ref_path.lower().endswith('.csv'):
         df = pd.read_csv(ref_path, dtype=str, keep_default_na=False)
@@ -1029,6 +1058,14 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         dm['POST OFFICE HANDLE'] = dm['post_office_handle'].apply(normalize_code)
         if 'CURRENT POST OFFICE' in dm.columns:
             dm.loc[dm['POST OFFICE HANDLE'] == '', 'POST OFFICE HANDLE'] = dm['CURRENT POST OFFICE']
+    
+    # ALWAYS map CURRENT POST OFFICE to the correct responsible post office
+    # This ensures agent codes (CHAA025) are mapped to main post offices (CHAP001)
+    # Example: CHAA025 → CHAP001, PREA036 → PREP001, KANA046 → KANP001
+    if 'CURRENT POST OFFICE' in dm.columns:
+        dm['POST OFFICE HANDLE'] = dm['CURRENT POST OFFICE'].apply(
+            lambda current: map_to_post_office(current, zone_mapping)
+        )
 
     if 'ZONE' not in dm.columns or dm['ZONE'].isna().all():
         dm['ZONE'] = dm['POST OFFICE HANDLE'].apply(lambda x: get_zone(x, zone_mapping))
@@ -1265,27 +1302,28 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 counts[rn] = 0
                 continue
                 
-            # Calculate overdue flags for row highlighting (48h / 2 days for Send Mega / Transit, 24h for others)
-            threshold_hours = 48 if rn in ('Transit', 'Send Mega') else 24
+            # Calculate overdue flags for row highlighting based on CREATED DATE (calendar days, not age hours)
+            # Red row = Bill created 3+ days ago (Aug 3 or earlier when today is Aug 5)
+            # Age column is for KPI only (10h threshold), not for row highlighting
             def calc_overdue(row):
-                age_str = str(row.get('Age', '') or '')
-                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
-                if match:
-                    h_val = int(match.group(1))
-                    return (h_val >= threshold_hours, h_val >= 168)
-                for col in [
-                    'CURRENT TIME',
-                    'STATUS 306 AT STORE / AGENT (LAST TIME)',
-                    'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
-                    'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
-                    'CREATED DATE'
-                ]:
+                today = datetime.now().date()
+                
+                # Try to get CREATED DATE
+                for col in ['CREATED DATE', 'CURRENT TIME']:
                     val = row.get(col)
                     if pd.notna(val) and str(val).strip() and str(val).strip().lower() != 'nan':
                         parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
                         if pd.notna(parsed_dt):
-                            diff_h = (datetime.now() - parsed_dt).total_seconds() / 3600
-                            return (diff_h >= threshold_hours, diff_h >= 168)
+                            created_date = parsed_dt.date()
+                            days_old = (today - created_date).days
+                            
+                            # Red if 3+ days old (created ≥3 days ago)
+                            is_overdue = days_old >= 3
+                            # 7+ days old
+                            is_overdue_7days = days_old >= 7
+                            
+                            return (is_overdue, is_overdue_7days)
+                
                 return (False, False)
 
             res_ov = df_h.apply(calc_overdue, axis=1)
