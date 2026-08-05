@@ -2196,16 +2196,17 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         green_pct = (n_green_pending / n_total * 100.0) if n_total > 0 else 0.0
         red_pct = (n_red_pending / n_total * 100.0) if n_total > 0 else 0.0
         
-        title = f"📊 *TOTAL KPI PERFORMANCE REPORT*" + (f" ({branch_target})" if branch_target else "")
+        title = f"📊 *10H KPI PERFORMANCE REPORT*" + (f" ({branch_target})" if branch_target else "")
         resp = (
             f"{title}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"📦 *Total Branch Orders*        : `{n_total:,}`\n\n"
-            f"✅ *Completed Deliveries (410/520)*: `{n_completed:,}` ({comp_pct:.1f}%)\n"
-            f"🟢 *Pending Green KPI (<=10h)*     : `{n_green_pending:,}` ({green_pct:.1f}%)\n"
-            f"🔴 *Pending Red Overdue (>10h)*   : `{n_red_pending:,}` ({red_pct:.1f}%)\n"
+            f"🟢 *Hit 10H KPI (Under 10h)*     : `{n_kpi_success:,}` ({hit_rate:.1f}%)\n"
+            f"   ↳ ✅ Completed (410/520)   : `{n_completed:,}` ({comp_pct:.1f}%)\n"
+            f"   ↳ 🟢 Pending On-Time (<=10h): `{n_green_pending:,}` ({green_pct:.1f}%)\n"
+            f"🔴 *Overdue (>10h)*              : `{n_red_pending:,}` ({red_pct:.1f}%)\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🎯 *OVERALL REAL KPI HIT RATE*    : `{hit_rate:.1f}%` " + ("🟢" if hit_rate >= 80 else "🔴") + "\n"
+            f"🎯 *OVERALL 10H KPI HIT RATE*   : `{hit_rate:.1f}%` " + ("🟢" if hit_rate >= 80 else "🔴") + "\n"
             f"_Note: Counts completed 410/520 + green pending with 12h overnight hold adjustment._\n\n"
         )
         
