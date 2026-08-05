@@ -2303,8 +2303,8 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate KPI report: {e}")
 
 
-def build_branch_kpi_excel(df_in, out_file):
-    """Builds a 1-row-per-branch KPI summary Excel file with Today, Yesterday, Week, Month breakdown."""
+def build_branch_kpi_excel(df_in, out_file, cfg=None):
+    """Builds a 1-row-per-branch KPI summary Excel file for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from datetime import datetime, timedelta
@@ -2336,7 +2336,7 @@ def build_branch_kpi_excel(df_in, out_file):
     
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "Branch KPI Breakdown"
+    ws.title = "Registered Main Branches KPI"
     ws.views.sheetView[0].showGridLines = True
     
     headers = [
@@ -2356,10 +2356,22 @@ def build_branch_kpi_excel(df_in, out_file):
         rate = (g / tot * 100.0) if tot > 0 else 100.0
         return g, r, rate
 
-    branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
+    # Filter for registered main post offices only
+    registered = set()
+    if cfg:
+        fm = cfg.get('telegram', {}).get('forward_mapping', {})
+        for b_list in fm.values():
+            for b in b_list:
+                if b and str(b).strip():
+                    registered.add(str(b).strip().upper())
+                    
+    if registered:
+        branches = sorted(list(registered))
+    else:
+        branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
     for b in branches:
-        b_df = df[df[po_col].astype(str) == b]
+        b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
         td_g, td_r, td_rate = get_stats(b_df[b_df['Parsed_Date'] >= today_start])
         yd_g, yd_r, yd_rate = get_stats(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
         wk_g, wk_r, wk_rate = get_stats(b_df[b_df['Parsed_Date'] >= week_start])
@@ -2445,9 +2457,9 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         ages_hours = (now - parsed_dates).dt.total_seconds() / 3600.0
         df['Age_Hours'] = ages_hours.fillna(0)
         
-        # Generate full 36-branch Excel report file
+        # Generate registered main branches Excel report file
         out_excel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "Branch_KPI_Breakdown_Report.xlsx")
-        build_branch_kpi_excel(df, out_excel)
+        build_branch_kpi_excel(df, out_excel, cfg)
         
         if branch_target and branch_target != "TOTAL":
             df = df[df[po_col].astype(str).str.upper().str.contains(branch_target, na=False)].copy()
