@@ -2142,7 +2142,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds a beautifully colorized 9-column 10H KPI summary Excel report for registered main post offices."""
+    """Builds a painted 9-column 10H KPI summary Excel report for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from datetime import datetime, timedelta
@@ -2203,12 +2203,34 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     else:
         branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
-    def get_stats_data(sub):
+    def format_period_str(sub):
         g = int(sub['Is_Green'].sum())
         r = int(sub['Is_Red'].sum())
         tot = len(sub)
         rate = (g / tot * 100.0) if tot > 0 else 100.0
-        return g, r, rate
+        return f"🟢 {g:,} | 🔴 {r:,} ({rate:.1f}% hit)", rate
+
+    green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+    green_font = Font(name="Calibri", size=10, bold=True, color="006100")
+
+    red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+    red_font = Font(name="Calibri", size=10, bold=True, color="9C0006")
+
+    header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+
+    thin_border = Border(
+        left=Side(style='thin', color='D9D9D9'),
+        right=Side(style='thin', color='D9D9D9'),
+        top=Side(style='thin', color='D9D9D9'),
+        bottom=Side(style='thin', color='D9D9D9')
+    )
+
+    for col_idx, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
 
     for b in branches:
         b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
@@ -2226,79 +2248,68 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         tot_all = len(b_df)
         overall_rate = (tot_g / tot_all * 100.0) if tot_all > 0 else 100.0
         
-        td_g, td_r, td_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= today_start])
-        yd_g, yd_r, yd_rate = get_stats_data(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
-        wk_g, wk_r, wk_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= week_start])
-        mo_g, mo_r, mo_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= month_start])
+        td_str, td_rate = format_period_str(b_df[b_df['Parsed_Date'] >= today_start])
+        yd_str, yd_rate = format_period_str(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
+        wk_str, wk_rate = format_period_str(b_df[b_df['Parsed_Date'] >= week_start])
+        mo_str, mo_rate = format_period_str(b_df[b_df['Parsed_Date'] >= month_start])
         
+        row_idx = ws.max_row + 1
         ws.append([
             b,
-            f"{comp_g:,} Green | {comp_r:,} Red",
-            f"{pend_g:,}",
-            f"{pend_r:,}",
+            f"🟢 {comp_g:,} | 🔴 {comp_r:,}",
+            f"🟢 {pend_g:,}",
+            f"🔴 {pend_r:,}",
             f"{overall_rate:.1f}%",
-            f"{td_g:,} Green | {td_r:,} Red ({td_rate:.1f}%)",
-            f"{yd_g:,} Green | {yd_r:,} Red ({yd_rate:.1f}%)",
-            f"{wk_g:,} Green | {wk_r:,} Red ({wk_rate:.1f}%)",
-            f"{mo_g:,} Green | {mo_r:,} Red ({mo_rate:.1f}%)"
+            td_str,
+            yd_str,
+            wk_str,
+            mo_str
         ])
         
-    # Fills and Fonts
-    header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
-    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-
-    green_fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
-    green_font = Font(name="Calibri", size=10, bold=True, color="375623")
-
-    red_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
-    red_font = Font(name="Calibri", size=10, bold=True, color="C00000")
-
-    thin_border = Border(
-        left=Side(style='thin', color='D9D9D9'),
-        right=Side(style='thin', color='D9D9D9'),
-        top=Side(style='thin', color='D9D9D9'),
-        bottom=Side(style='thin', color='D9D9D9')
-    )
-    
-    for col_idx, h in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col_idx)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        
-    for r_idx in range(2, ws.max_row + 1):
-        for c_idx in range(1, len(headers) + 1):
-            cell = ws.cell(row=r_idx, column=c_idx)
-            cell.border = thin_border
+        # Paint background fills and font colors
+        for c in range(1, 10):
+            ws.cell(row=row_idx, column=c).border = thin_border
+            ws.cell(row=row_idx, column=c).alignment = Alignment(horizontal="left" if c == 1 else "center", vertical="center")
             
-            if c_idx == 3: # Pending Green
-                cell.fill = green_fill
-                cell.font = green_font
-            elif c_idx == 4: # Pending Red
-                cell.fill = red_fill
-                cell.font = red_font
-            elif c_idx == 5: # Overall Rate
-                val_str = str(cell.value or '').replace('%', '')
-                try:
-                    val_num = float(val_str)
-                    if val_num >= 80.0:
-                        cell.fill = green_fill
-                        cell.font = green_font
-                    else:
-                        cell.fill = red_fill
-                        cell.font = red_font
-                except:
-                    cell.font = Font(name="Calibri", size=10, bold=True)
-            else:
-                cell.font = Font(name="Calibri", size=10, bold=(c_idx == 1))
-                
-            cell.alignment = Alignment(horizontal="left" if c_idx == 1 else "center", vertical="center")
-                
+        ws.cell(row=row_idx, column=1).font = Font(name="Calibri", size=10, bold=True)
+        
+        # Col 2: Completed 410 (Always Green)
+        ws.cell(row=row_idx, column=2).fill = green_fill
+        ws.cell(row=row_idx, column=2).font = green_font
+        
+        # Col 3: Pending Green
+        ws.cell(row=row_idx, column=3).fill = green_fill
+        ws.cell(row=row_idx, column=3).font = green_font
+        
+        # Col 4: Pending Red
+        ws.cell(row=row_idx, column=4).fill = red_fill
+        ws.cell(row=row_idx, column=4).font = red_font
+        
+        # Col 5: Overall Rate
+        ws.cell(row=row_idx, column=5).fill = green_fill if overall_rate >= 80.0 else red_fill
+        ws.cell(row=row_idx, column=5).font = green_font if overall_rate >= 80.0 else red_font
+        
+        # Col 6: Today
+        ws.cell(row=row_idx, column=6).fill = green_fill if td_rate >= 80.0 else red_fill
+        ws.cell(row=row_idx, column=6).font = green_font if td_rate >= 80.0 else red_font
+        
+        # Col 7: Yesterday
+        ws.cell(row=row_idx, column=7).fill = green_fill if yd_rate >= 80.0 else red_fill
+        ws.cell(row=row_idx, column=7).font = green_font if yd_rate >= 80.0 else red_font
+        
+        # Col 8: This Week
+        ws.cell(row=row_idx, column=8).fill = green_fill if wk_rate >= 80.0 else red_fill
+        ws.cell(row=row_idx, column=8).font = green_font if wk_rate >= 80.0 else red_font
+        
+        # Col 9: This Month
+        ws.cell(row=row_idx, column=9).fill = green_fill if mo_rate >= 80.0 else red_fill
+        ws.cell(row=row_idx, column=9).font = green_font if mo_rate >= 80.0 else red_font
+
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
         ws.column_dimensions[col_letter].width = max(max_len + 4, 18)
-        
+
     wb.save(out_file)
     return out_file
 
