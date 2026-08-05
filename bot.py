@@ -2304,12 +2304,13 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Shows 10H KPI breakdown (including completed 410/520, green pending <=10h, red pending >10h) for today/night report."""
+    """Shows concise 10H KPI breakdown (/kpi) with Today, Yesterday, This Week, and This Month stats."""
     import time
+    from datetime import datetime, timedelta
     args = context.args or []
     branch_target = args[0].strip().upper() if args else None
     
-    msg = await send_requester_text(update, context, "📊 Calculating total KPI performance including completed 410 & pending...")
+    msg = await send_requester_text(update, context, "📊 Calculating 10H KPI performance report...")
     
     try:
         cfg = load_config()
@@ -2329,9 +2330,10 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             
         po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
         
-        # Calculate age in hours
+        # Calculate age in hours and parse creation date
         date_col = 'CREATED DATE' if 'CREATED DATE' in df.columns else 'CURRENT TIME'
         parsed_dates = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
+        df['Parsed_Date'] = parsed_dates
         now = datetime.now()
         ages_hours = (now - parsed_dates).dt.total_seconds() / 3600.0
         df['Age_Hours'] = ages_hours.fillna(0)
@@ -2348,54 +2350,58 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         green_pending_mask = (~completed_mask) & ((df['Age_Hours'] - 12.0) <= 10.0)
         red_pending_mask = (~completed_mask) & ((df['Age_Hours'] - 12.0) > 10.0)
         
-        n_completed = int(completed_mask.sum())
-        n_green_pending = int(green_pending_mask.sum())
-        n_red_pending = int(red_pending_mask.sum())
-        n_kpi_success = n_completed + n_green_pending
+        # Classify overall Green vs Red
+        df['Is_Green'] = completed_mask | green_pending_mask
+        df['Is_Red'] = red_pending_mask
         
-        hit_rate = (n_kpi_success / n_total * 100.0) if n_total > 0 else 100.0
-        comp_pct = (n_completed / n_total * 100.0) if n_total > 0 else 0.0
-        green_pct = (n_green_pending / n_total * 100.0) if n_total > 0 else 0.0
-        red_pct = (n_red_pending / n_total * 100.0) if n_total > 0 else 0.0
+        comp_g = int(completed_mask.sum())
+        comp_r = 0  # Completed 410/520 delivered count as 10h hit
+        pend_g = int(green_pending_mask.sum())
+        pend_r = int(red_pending_mask.sum())
         
-        title = f"📊 *10H KPI PERFORMANCE REPORT*" + (f" ({branch_target})" if branch_target else "")
+        tot_green = comp_g + pend_g
+        tot_red = pend_r
+        overall_rate = (tot_green / n_total * 100.0) if n_total > 0 else 100.0
+        
+        # Time breakdowns
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        yesterday_start = today_start - timedelta(days=1)
+        week_start = today_start - timedelta(days=today_start.weekday())
+        month_start = today_start.replace(day=1)
+        
+        def get_period_stats(start_dt, end_dt=None):
+            if end_dt:
+                sub = df[(df['Parsed_Date'] >= start_dt) & (df['Parsed_Date'] < end_dt)]
+            else:
+                sub = df[df['Parsed_Date'] >= start_dt]
+            g = int(sub['Is_Green'].sum())
+            r = int(sub['Is_Red'].sum())
+            tot = len(sub)
+            rate = (g / tot * 100.0) if tot > 0 else 100.0
+            return g, r, tot, rate
+            
+        td_g, td_r, td_tot, td_rate = get_period_stats(today_start)
+        yd_g, yd_r, yd_tot, yd_rate = get_period_stats(yesterday_start, today_start)
+        wk_g, wk_r, wk_tot, wk_rate = get_period_stats(week_start)
+        mo_g, mo_r, mo_tot, mo_rate = get_period_stats(month_start)
+        
+        title = f"📊 *10H KPI SUMMARY REPORT*" + (f" ({branch_target})" if branch_target else "")
         resp = (
             f"{title}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📦 *Total Branch Orders*        : `{n_total:,}`\n\n"
-            f"🟢 *Hit 10H KPI (Under 10h)*     : `{n_kpi_success:,}` ({hit_rate:.1f}%)\n"
-            f"   ↳ ✅ Completed (410/520)   : `{n_completed:,}` ({comp_pct:.1f}%)\n"
-            f"   ↳ 🟢 Pending On-Time (<=10h): `{n_green_pending:,}` ({green_pct:.1f}%)\n"
-            f"🔴 *Overdue (>10h)*              : `{n_red_pending:,}` ({red_pct:.1f}%)\n"
+            f"✅ *Completed Deliveries (410)*: 🟢 <=10h: `{comp_g:,}` | 🔴 >10h: `{comp_r:,}`\n"
+            f"📦 *Pending Orders*          : 🟢 <=10h: `{pend_g:,}` | 🔴 >10h: `{pend_r:,}`\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🎯 *OVERALL 10H KPI HIT RATE*   : `{hit_rate:.1f}%` " + ("🟢" if hit_rate >= 80 else "🔴") + "\n"
-            f"_Note: Counts completed 410/520 + green pending with 12h overnight hold adjustment._\n\n"
+            f"🎯 *OVERALL 10H KPI HIT RATE*: `{overall_rate:.1f}%` " + ("🟢" if overall_rate >= 80 else "🔴") + "\n\n"
+            f"📅 *TIME PERIOD BREAKDOWN*:\n"
+            f"• *Today*      : 🟢 <=10h: `{td_g:,}` | 🔴 >10h: `{td_r:,}` (`{td_rate:.1f}%` hit)\n"
+            f"• *Yesterday*  : 🟢 <=10h: `{yd_g:,}` | 🔴 >10h: `{yd_r:,}` (`{yd_rate:.1f}%` hit)\n"
+            f"• *This Week*  : 🟢 <=10h: `{wk_g:,}` | 🔴 >10h: `{wk_r:,}` (`{wk_rate:.1f}%` hit)\n"
+            f"• *This Month* : 🟢 <=10h: `{mo_g:,}` | 🔴 >10h: `{mo_r:,}` (`{mo_rate:.1f}%` hit)\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"_Note: Counts completed 410 + pending with 12h overnight hold adjustment._"
         )
         
-        if not branch_target:
-            resp += "🏢 *TOP BRANCH BREAKDOWN (REAL KPI)*:\n"
-            grouped = df.groupby(po_col)
-            branch_stats = []
-            for b_name, g in grouped:
-                t = len(g)
-                c_mask = g['STATUS_CODE'].isin(['410', '520', '201'])
-                gp_mask = (~c_mask) & ((g['Age_Hours'] - 12.0) <= 10.0)
-                rp_mask = (~c_mask) & ((g['Age_Hours'] - 12.0) > 10.0)
-                
-                c_cnt = int(c_mask.sum())
-                gp_cnt = int(gp_mask.sum())
-                rp_cnt = int(rp_mask.sum())
-                succ = c_cnt + gp_cnt
-                r = (succ / t * 100.0) if t > 0 else 100.0
-                branch_stats.append((b_name, t, c_cnt, gp_cnt, rp_cnt, r))
-                
-            branch_stats.sort(key=lambda x: x[1], reverse=True)
-            for b_name, t, c_cnt, gp_cnt, rp_cnt, r in branch_stats[:15]:
-                resp += f"• `{b_name:<10}`: 🟢 `{succ}` / `{t}` ({r:.0f}% hit | 🔴 `{rp_cnt}` overdue)\n"
-                
-            if len(branch_stats) > 15:
-                resp += f"\n_Use `/kpi10h [BRANCH_CODE]` to inspect specific branch._"
-                
         await edit_or_send_requester_text(msg, update, context, resp, parse_mode="Markdown")
         
     except Exception as e:
@@ -7008,7 +7014,7 @@ def main():
     app.add_handler(CommandHandler("exportlogs", cmd_export_logs))
     app.add_handler(CommandHandler("logs",       cmd_export_logs))
     app.add_handler(CommandHandler("totalkpi",   cmd_total_kpi))
-    app.add_handler(CommandHandler("kpi",        cmd_total_kpi))
+    app.add_handler(CommandHandler("kpi",        cmd_kpi10h))
     app.add_handler(CommandHandler("kpi10h",     cmd_kpi10h))
     app.add_handler(CommandHandler("under10h",   cmd_kpi10h))
     app.add_handler(CommandHandler("kpi10",      cmd_kpi10h))
