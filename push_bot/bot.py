@@ -2355,7 +2355,8 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         
         # Send Excel file strictly to requester only (zero group forwarding)
         if os.path.exists(out_excel):
-            await send_requester_doc(update, context, out_excel, filename="Branch_KPI_Breakdown_Report.xlsx", caption="📊 36-Branch KPI Breakdown Report (Excel)")
+            with open(out_excel, "rb") as doc_file:
+                await send_requester_document(update, context, document=doc_file, filename="Branch_KPI_Breakdown_Report.xlsx", caption="📊 36-Branch KPI Breakdown Report (Excel)")
             
     except Exception as e:
         log.exception("Error in cmd_kpi10h: %s", e)
