@@ -4813,6 +4813,18 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
+        # Extract Origin Receiving Staff (staff who accepted package at origin branch)
+        origin_staff_info = ""
+        for t in chrono_trips:
+            if not t.get("is_synthetic"):
+                upd = t.get("updatedBy", {})
+                uname = upd.get("name")
+                uphone = clean_phone_helper(upd.get("phone"))
+                upo = t.get("postcode") or ""
+                if uname and uname.upper() != "SYSTEM" and uphone and uphone != "Unknown Phone":
+                    origin_staff_info = f"🏢 **Origin Receiving Staff ({upo}):** {uname} ({uphone})" if not use_khmer else f"🏢 **បុគ្គលិកទទួលដំបូង ({upo}):** {uname} ({uphone})"
+                    break
+
         def md_escape(text):
             return str(text).replace("\\", "\\\\").replace("_", "\\_").replace("*", "\\*").replace("`", "\\`")
 
@@ -4822,6 +4834,8 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         if shipper_info:
             out_lines.append(shipper_info)
+        if origin_staff_info:
+            out_lines.append(origin_staff_info)
         if consignee_info:
             out_lines.append(consignee_info)
         if payment_info:
