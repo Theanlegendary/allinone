@@ -2143,6 +2143,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Shows 10H KPI breakdown (<=10h hit rate vs >10h overdue) for today/night report."""
+    import time
     args = context.args or []
     branch_target = args[0].strip().upper() if args else None
     
