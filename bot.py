@@ -2321,11 +2321,11 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             
         df = pd.read_excel(latest_file)
         
-        # Exclude completed status codes
+        # Filter for active pending delivery orders (306, 309, 310, 311, 400, 401, 402, 430)
         if 'CURRENT STATUS' in df.columns:
             sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0]
             df['STATUS_CODE'] = sc
-            df = df[~df['STATUS_CODE'].isin(['99', '100', '410', '201', '520'])].copy()
+            df = df[df['STATUS_CODE'].isin(['306', '309', '310', '311', '400', '401', '402', '430'])].copy()
             
         po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
         
@@ -2335,45 +2335,53 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         now = datetime.now()
         ages_hours = (now - parsed_dates).dt.total_seconds() / 3600.0
         df['Age_Hours'] = ages_hours.fillna(0)
+        
+        # Standard 10H KPI (<=10h)
         df['Is_Hit_10H'] = df['Age_Hours'] <= 10.0
+        # Night / Tomorrow 10H KPI (-12h hold adjustment -> <=22h)
+        df['Is_Hit_10H_Tomorrow'] = (df['Age_Hours'] - 12.0) <= 10.0
         
         if branch_target and branch_target != "TOTAL":
             df = df[df[po_col].astype(str).str.upper().str.contains(branch_target, na=False)].copy()
             
         total_all = len(df)
         if total_all == 0:
-            await edit_or_send_requester_text(msg, update, context, f"ℹ️ No active pending orders found for '{branch_target or 'All Branches'}'.")
+            await edit_or_send_requester_text(msg, update, context, f"ℹ️ No active pending delivery orders found for '{branch_target or 'All Branches'}'.")
             return
             
-        hit_all = int(df['Is_Hit_10H'].sum())
-        miss_all = total_all - hit_all
-        rate_all = (hit_all / total_all * 100.0)
+        hit_raw = int(df['Is_Hit_10H'].sum())
+        hit_tom = int(df['Is_Hit_10H_Tomorrow'].sum())
+        miss_tom = total_all - hit_tom
+        rate_raw = (hit_raw / total_all * 100.0)
+        rate_tom = (hit_tom / total_all * 100.0)
         
-        title = f"📊 *10H KPI PERFORMANCE SUMMARY*" + (f" ({branch_target})" if branch_target else "")
+        title = f"📊 *10H DELIVERY KPI REPORT*" + (f" ({branch_target})" if branch_target else "")
         resp = (
             f"{title}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📦 *Total Active Pending* : `{total_all:,}`\n"
-            f"🟢 *Hit 10H KPI (<=10h)*  : `{hit_all:,}` ({rate_all:.1f}%)\n"
-            f"🔴 *Overdue (>10h)*       : `{miss_all:,}` ({100.0 - rate_all:.1f}%)\n"
+            f"📦 *Total Pending Delivery*   : `{total_all:,}`\n"
+            f"🟢 *Today 10H KPI (<=10h)*     : `{hit_raw:,}` ({rate_raw:.1f}%)\n"
+            f"🌙 *Tomorrow (-12h Adj KPI)*  : `{hit_tom:,}` ({rate_tom:.1f}%)\n"
+            f"🔴 *Overdue for Tomorrow (>22h)*: `{miss_tom:,}` ({100.0 - rate_tom:.1f}%)\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🎯 *BRANCH KPI HIT RATE*  : `{rate_all:.1f}%` " + ("🟢" if rate_all >= 80 else "🔴") + "\n\n"
+            f"🎯 *TOMORROW KPI HIT RATE*     : `{rate_tom:.1f}%` " + ("🟢" if rate_tom >= 80 else "🔴") + "\n\n"
         )
         
         if not branch_target:
-            resp += "🏢 *TOP BRANCH BREAKDOWN (10H KPI)*:\n"
+            resp += "🏢 *TOP BRANCH BREAKDOWN (TOMORROW -12H KPI)*:\n"
             grouped = df.groupby(po_col)
             branch_stats = []
             for b_name, g in grouped:
                 t = len(g)
-                h = int(g['Is_Hit_10H'].sum())
-                m = t - h
-                r = (h / t * 100.0) if t > 0 else 100.0
-                branch_stats.append((b_name, t, h, m, r))
+                h_raw = int(g['Is_Hit_10H'].sum())
+                h_tom = int(g['Is_Hit_10H_Tomorrow'].sum())
+                m_tom = t - h_tom
+                r_tom = (h_tom / t * 100.0) if t > 0 else 100.0
+                branch_stats.append((b_name, t, h_raw, h_tom, m_tom, r_tom))
                 
             branch_stats.sort(key=lambda x: x[1], reverse=True)
-            for b_name, t, h, m, r in branch_stats[:15]:
-                resp += f"• `{b_name:<10}`: 🟢 `{h}` / `{t}` ({r:.0f}% hit)\n"
+            for b_name, t, h_raw, h_tom, m_tom, r_tom in branch_stats[:15]:
+                resp += f"• `{b_name:<10}`: 🌙 `{h_tom}` / `{t}` ({r_tom:.0f}% hit)\n"
                 
             if len(branch_stats) > 15:
                 resp += f"\n_Use `/kpi10h [BRANCH_CODE]` to inspect specific branch._"
@@ -4919,9 +4927,22 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if status == "400":
             assigned_delivery_name, assigned_delivery_phone = extract_assigned_delivery_staff(trips)
 
+        # 1. Extract Store Sender from Status 310 / 210 / 110 trip first
+        s310_name, s310_phone = None, None
+        for t in reversed(trips):
+            st = str(t.get("status", "")).lstrip("S")
+            if st in ("310", "210", "110", "200"):
+                upd = t.get("updatedBy", {})
+                un = upd.get("name") or t.get("shipperName")
+                up = upd.get("phone") or upd.get("mobile")
+                if un and un.upper() != "SYSTEM":
+                    s310_name = un
+                    s310_phone = clean_phone_helper(up) if up else ""
+                    break
+
         if order_data:
-            s_name = order_data.get("shipper", {}).get("name") or order_data.get("seller", {}).get("name") or "N/A"
-            s_phone = order_data.get("shipper", {}).get("phone") or order_data.get("seller", {}).get("phone") or "N/A"
+            s_name = s310_name or order_data.get("shipper", {}).get("name") or order_data.get("seller", {}).get("name") or "N/A"
+            s_phone = s310_phone or order_data.get("shipper", {}).get("phone") or order_data.get("seller", {}).get("phone") or "N/A"
             c_name = order_data.get("consignee", {}).get("name") or order_data.get("buyer", {}).get("name") or "N/A"
             c_phone = order_data.get("consignee", {}).get("phone") or order_data.get("buyer", {}).get("phone") or "N/A"
             
