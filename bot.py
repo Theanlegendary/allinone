@@ -4242,17 +4242,42 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await private_or_current_reply(
             update,
             context,
-            "Usage: `/ask <order_id> [kh]`\n"
-            "Example: `/ask 2900492262 kh`"
+            "Usage: `/find <phone_number | order_id | name | branch>`\n"
+            "Example: `/find 0715834688` or `/find KANP001`"
         )
         return
 
     order_id = query
-    loading_msg = f"🔍 កំពុងទាញយកព័ត៌មាន និងវិភាគការបញ្ជាទិញ '{query}'..." if use_khmer else f"🔍 Fetching details and analyzing order '{query}'..."
+    loading_msg = f"🔍 កំពុងស្វែងរកព័ត៌មានអំពី '{query}'..." if use_khmer else f"🔍 Searching details for '{query}'..."
     msg = await send_requester_text(
         update, context,
         loading_msg
     )
+
+    # 1. Search SQLite database index for matching sender/receiver phone numbers, names, or branch
+    try:
+        from search_engine import search_orders
+        db_results = search_orders(query, limit=15)
+        # If searching by phone number or branch or name (returns multiple results or non-single-order-id)
+        if len(db_results) > 1 or (not query.isdigit() and len(query) < 10) or (len(query) in (9, 10, 11, 12) and not query.startswith("31") and not query.startswith("32") and not query.startswith("29")):
+            if db_results:
+                resp = f"🔍 *RESULTS FOR '{query}'* ({len(db_results)} matches):\n" + "━"*30 + "\n"
+                for res in db_results[:10]:
+                    vip_badge = " 🌟VIP" if res.get("vip") == "VIP" else ""
+                    resp += (
+                        f"📦 *Order*: `{res['order_id']}`{vip_badge}\n"
+                        f"👤 *Sender*: {res['sender_name']} (`{res['sender_phone'] or 'N/A'}`)\n"
+                        f"📥 *Receiver*: {res['receiver_name']} (`{res['receiver_phone'] or 'N/A'}`)\n"
+                        f"📍 *Branches*: Rec `{res['receive_po']}` → Cur `{res['current_po']}` → Del `{res['delivery_po']}`\n"
+                        f"📊 *Status*: `{res['current_status']}` (COD: `${res['cod']:.2f}`)\n"
+                        + "─"*30 + "\n"
+                    )
+                if len(db_results) > 10:
+                    resp += f"\n_Showing top 10 of {len(db_results)} matches._"
+                await edit_or_send_requester_text(msg, update, context, resp, parse_mode="Markdown")
+                return
+    except Exception as e_db:
+        log.warning("SQLite search engine error: %s", e_db)
 
     cfg = load_config()
     token = cfg["api"]["bearer_token"]
