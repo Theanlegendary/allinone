@@ -2142,10 +2142,10 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds a super clean 3-column KPI summary Excel file for THIS MONTH ONLY (August 1st to Present)."""
+    """Builds a comprehensive 18-column 10H KPI summary Excel report for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-    from datetime import datetime
+    from datetime import datetime, timedelta
     
     df = df_in.copy()
     po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
@@ -2154,11 +2154,8 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     if 'Parsed_Date' not in df.columns:
         df['Parsed_Date'] = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
     now = datetime.now()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    # Filter strictly for orders created THIS MONTH (August 1st to Present)
-    df = df[df['Parsed_Date'] >= month_start].copy()
-    df['Age_Hours'] = ((now - df['Parsed_Date']).dt.total_seconds() / 3600.0).fillna(0)
+    if 'Age_Hours' not in df.columns:
+        df['Age_Hours'] = ((now - df['Parsed_Date']).dt.total_seconds() / 3600.0).fillna(0)
         
     sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0] if 'CURRENT STATUS' in df.columns else df.get('STATUS_CODE', pd.Series())
     df['STATUS_CODE'] = sc
@@ -2170,17 +2167,25 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     df['Is_Green'] = completed_mask | green_pending_mask
     df['Is_Red'] = red_pending_mask
     
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    week_start = today_start - timedelta(days=today_start.weekday())
+    month_start = today_start.replace(day=1)
+    
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "This Month 10H KPI"
+    ws.title = "10H KPI Summary Report"
     ws.views.sheetView[0].showGridLines = True
     
     headers = [
         "Branch Code",
-        "🟢 Green (<=10h)",
-        "🔴 Red (>10h)",
-        "🎯 KPI Hit Rate %",
-        "Total Orders"
+        "Completed (410) <=10h", "Completed (410) >10h",
+        "Pending Green <=10h", "Pending Red >10h",
+        "🎯 Overall Hit Rate %",
+        "Today <=10h", "Today >10h", "Today Hit %",
+        "Yesterday <=10h", "Yesterday >10h", "Yesterday Hit %",
+        "This Week <=10h", "This Week >10h", "This Week Hit %",
+        "This Month <=10h", "This Month >10h", "This Month Hit %"
     ]
     ws.append(headers)
     
@@ -2197,23 +2202,91 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     else:
         branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
-    tot_g, tot_r, tot_all = 0, 0, 0
+    def get_sub_stats(sub):
+        g = int(sub['Is_Green'].sum())
+        r = int(sub['Is_Red'].sum())
+        tot = len(sub)
+        rate = (g / tot * 100.0) if tot > 0 else 100.0
+        return g, r, f"{rate:.1f}%"
+
+    tot_comp_g, tot_comp_r = 0, 0
+    tot_pend_g, tot_pend_r = 0, 0
+    tot_td_g, tot_td_r = 0, 0
+    tot_yd_g, tot_yd_r = 0, 0
+    tot_wk_g, tot_wk_r = 0, 0
+    tot_mo_g, tot_mo_r = 0, 0
+    
     for b in branches:
         b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
-        g = int(b_df['Is_Green'].sum())
-        r = int(b_df['Is_Red'].sum())
-        tot = len(b_df)
-        rate = (g / tot * 100.0) if tot > 0 else 100.0
         
-        tot_g += g
-        tot_r += r
-        tot_all += tot
+        b_comp = b_df[b_df['STATUS_CODE'].isin(['410', '520', '201'])]
+        b_pend = b_df[~b_df['STATUS_CODE'].isin(['410', '520', '201'])]
         
-        ws.append([b, g, r, f"{rate:.1f}%", tot])
+        comp_g = int(b_comp['Is_Green'].sum())
+        comp_r = int(b_comp['Is_Red'].sum())
+        pend_g = int(b_pend['Is_Green'].sum())
+        pend_r = int(b_pend['Is_Red'].sum())
+        
+        tot_g = comp_g + pend_g
+        tot_r = comp_r + pend_r
+        tot_all = len(b_df)
+        overall_rate = f"{(tot_g / tot_all * 100.0):.1f}%" if tot_all > 0 else "100.0%"
+        
+        td_g, td_r, td_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= today_start])
+        yd_g, yd_r, yd_rate = get_sub_stats(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
+        wk_g, wk_r, wk_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= week_start])
+        mo_g, mo_r, mo_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= month_start])
+        
+        tot_comp_g += comp_g
+        tot_comp_r += comp_r
+        tot_pend_g += pend_g
+        tot_pend_r += pend_r
+        tot_td_g += td_g
+        tot_td_r += td_r
+        tot_yd_g += yd_g
+        tot_yd_r += yd_r
+        tot_wk_g += wk_g
+        tot_wk_r += wk_r
+        tot_mo_g += mo_g
+        tot_mo_r += mo_r
+        
+        ws.append([
+            b,
+            comp_g, comp_r,
+            pend_g, pend_r,
+            overall_rate,
+            td_g, td_r, td_rate,
+            yd_g, yd_r, yd_rate,
+            wk_g, wk_r, wk_rate,
+            mo_g, mo_r, mo_rate
+        ])
         
     # Grand Total Row
-    tot_rate = (tot_g / tot_all * 100.0) if tot_all > 0 else 100.0
-    ws.append(["GRAND TOTAL", tot_g, tot_r, f"{tot_rate:.1f}%", tot_all])
+    tot_all_g = tot_comp_g + tot_pend_g
+    tot_all_r = tot_comp_r + tot_pend_r
+    tot_grand = tot_all_g + tot_all_r
+    grand_overall_rate = f"{(tot_all_g / tot_grand * 100.0):.1f}%" if tot_grand > 0 else "100.0%"
+    
+    td_tot = tot_td_g + tot_td_r
+    yd_tot = tot_yd_g + tot_yd_r
+    wk_tot = tot_wk_g + tot_wk_r
+    mo_tot = tot_mo_g + tot_mo_r
+    
+    gt_td_rate = f"{(tot_td_g / td_tot * 100.0):.1f}%" if td_tot > 0 else "100.0%"
+    gt_yd_rate = f"{(tot_yd_g / yd_tot * 100.0):.1f}%" if yd_tot > 0 else "100.0%"
+    gt_wk_rate = f"{(tot_wk_g / wk_tot * 100.0):.1f}%" if wk_tot > 0 else "100.0%"
+    gt_mo_rate = f"{(tot_mo_g / mo_tot * 100.0):.1f}%" if mo_tot > 0 else "100.0%"
+    
+    ws.append([
+        "GRAND TOTAL",
+        tot_comp_g, tot_comp_r,
+        tot_pend_g, tot_pend_r,
+        grand_overall_rate,
+        tot_td_g, tot_td_r, gt_td_rate,
+        tot_yd_g, tot_yd_r, gt_yd_rate,
+        tot_wk_g, tot_wk_r, gt_wk_rate,
+        tot_mo_g, tot_mo_r, gt_mo_rate
+    ])
     
     # Clean styling
     header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
@@ -2239,12 +2312,12 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
             cell.border = thin_border
             if is_total_row:
                 cell.fill = total_fill
-                cell.font = Font(name="Calibri", size=11, bold=True)
+                cell.font = Font(name="Calibri", size=10, bold=True)
             elif c_idx == 1:
                 cell.font = Font(name="Calibri", size=10, bold=True)
-            elif c_idx == 2:
+            elif c_idx in [2, 4, 7, 10, 13, 16]:
                 cell.font = Font(name="Calibri", size=10, bold=True, color="008000")
-            elif c_idx == 3:
+            elif c_idx in [3, 5, 8, 11, 14, 17]:
                 cell.font = Font(name="Calibri", size=10, bold=True, color="C00000")
             else:
                 cell.font = Font(name="Calibri", size=10)
@@ -2257,7 +2330,7 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = max(max_len + 4, 15)
+        ws.column_dimensions[col_letter].width = max(max_len + 3, 14)
         
     wb.save(out_file)
     return out_file
