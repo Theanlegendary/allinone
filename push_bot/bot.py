@@ -2142,7 +2142,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds a super clean 3-column KPI summary Excel file for registered main post offices."""
+    """Builds a super clean 3-column KPI summary Excel file for THIS MONTH ONLY (August 1st to Present)."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from datetime import datetime
@@ -2154,8 +2154,11 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     if 'Parsed_Date' not in df.columns:
         df['Parsed_Date'] = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
     now = datetime.now()
-    if 'Age_Hours' not in df.columns:
-        df['Age_Hours'] = ((now - df['Parsed_Date']).dt.total_seconds() / 3600.0).fillna(0)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Filter strictly for orders created THIS MONTH (August 1st to Present)
+    df = df[df['Parsed_Date'] >= month_start].copy()
+    df['Age_Hours'] = ((now - df['Parsed_Date']).dt.total_seconds() / 3600.0).fillna(0)
         
     sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0] if 'CURRENT STATUS' in df.columns else df.get('STATUS_CODE', pd.Series())
     df['STATUS_CODE'] = sc
@@ -2169,7 +2172,7 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "Main Branches 10H KPI"
+    ws.title = "This Month 10H KPI"
     ws.views.sheetView[0].showGridLines = True
     
     headers = [
