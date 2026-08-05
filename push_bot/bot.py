@@ -2141,6 +2141,113 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await edit_or_send_requester_text(msg, update, context, f"❌ Failed to generate KPI report: {e}")
 
 
+def build_branch_kpi_excel(df_in, out_file):
+    """Builds a 1-row-per-branch KPI summary Excel file with Today, Yesterday, Week, Month breakdown."""
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from datetime import datetime, timedelta
+    
+    df = df_in.copy()
+    po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
+    date_col = 'CREATED DATE' if 'CREATED DATE' in df.columns else 'CURRENT TIME'
+    
+    if 'Parsed_Date' not in df.columns:
+        df['Parsed_Date'] = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
+    now = datetime.now()
+    if 'Age_Hours' not in df.columns:
+        df['Age_Hours'] = ((now - df['Parsed_Date']).dt.total_seconds() / 3600.0).fillna(0)
+        
+    sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0] if 'CURRENT STATUS' in df.columns else df.get('STATUS_CODE', pd.Series())
+    df['STATUS_CODE'] = sc
+    
+    completed_mask = df['STATUS_CODE'].isin(['410', '520', '201'])
+    green_pending_mask = (~completed_mask) & ((df['Age_Hours'] - 12.0) <= 10.0)
+    red_pending_mask = (~completed_mask) & ((df['Age_Hours'] - 12.0) > 10.0)
+    
+    df['Is_Green'] = completed_mask | green_pending_mask
+    df['Is_Red'] = red_pending_mask
+    
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    week_start = today_start - timedelta(days=today_start.weekday())
+    month_start = today_start.replace(day=1)
+    
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Branch KPI Breakdown"
+    ws.views.sheetView[0].showGridLines = True
+    
+    headers = [
+        "Branch Code",
+        "Today <=10h", "Today >10h", "Today Hit %",
+        "Yesterday <=10h", "Yesterday >10h", "Yesterday Hit %",
+        "This Week <=10h", "This Week >10h", "This Week Hit %",
+        "This Month <=10h", "This Month >10h", "This Month Hit %",
+        "Total Orders"
+    ]
+    ws.append(headers)
+    
+    def get_stats(sub):
+        g = int(sub['Is_Green'].sum())
+        r = int(sub['Is_Red'].sum())
+        tot = len(sub)
+        rate = (g / tot * 100.0) if tot > 0 else 100.0
+        return g, r, rate
+
+    branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
+    
+    for b in branches:
+        b_df = df[df[po_col].astype(str) == b]
+        td_g, td_r, td_rate = get_stats(b_df[b_df['Parsed_Date'] >= today_start])
+        yd_g, yd_r, yd_rate = get_stats(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
+        wk_g, wk_r, wk_rate = get_stats(b_df[b_df['Parsed_Date'] >= week_start])
+        mo_g, mo_r, mo_rate = get_stats(b_df[b_df['Parsed_Date'] >= month_start])
+        
+        row = [
+            b,
+            td_g, td_r, f"{td_rate:.1f}%",
+            yd_g, yd_r, f"{yd_rate:.1f}%",
+            wk_g, wk_r, f"{wk_rate:.1f}%",
+            mo_g, mo_r, f"{mo_rate:.1f}%",
+            len(b_df)
+        ]
+        ws.append(row)
+        
+    header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    thin_border = Border(
+        left=Side(style='thin', color='D9D9D9'),
+        right=Side(style='thin', color='D9D9D9'),
+        top=Side(style='thin', color='D9D9D9'),
+        bottom=Side(style='thin', color='D9D9D9')
+    )
+    
+    for col_idx, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        
+    for r_idx in range(2, ws.max_row + 1):
+        for c_idx in range(1, len(headers) + 1):
+            cell = ws.cell(row=r_idx, column=c_idx)
+            cell.border = thin_border
+            if c_idx == 1:
+                cell.font = Font(name="Calibri", size=10, bold=True)
+                cell.alignment = Alignment(horizontal="left")
+            else:
+                cell.font = Font(name="Calibri", size=10)
+                cell.alignment = Alignment(horizontal="center")
+                
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        col_letter = openpyxl.utils.get_column_letter(col[0].column)
+        ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+        
+    wb.save(out_file)
+    return out_file
+
+
 async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Shows concise 10H KPI breakdown (/kpi) with Today, Yesterday, This Week, and This Month stats."""
     import time
@@ -2175,6 +2282,10 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         now = datetime.now()
         ages_hours = (now - parsed_dates).dt.total_seconds() / 3600.0
         df['Age_Hours'] = ages_hours.fillna(0)
+        
+        # Generate full 36-branch Excel report file
+        out_excel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "Branch_KPI_Breakdown_Report.xlsx")
+        build_branch_kpi_excel(df, out_excel)
         
         if branch_target and branch_target != "TOTAL":
             df = df[df[po_col].astype(str).str.upper().str.contains(branch_target, na=False)].copy()
@@ -2242,6 +2353,10 @@ async def cmd_kpi10h(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         
         await edit_or_send_requester_text(msg, update, context, resp, parse_mode="Markdown")
         
+        # Send Excel file strictly to requester only (zero group forwarding)
+        if os.path.exists(out_excel):
+            await send_requester_doc(update, context, out_excel, filename="Branch_KPI_Breakdown_Report.xlsx", caption="📊 36-Branch KPI Breakdown Report (Excel)")
+            
     except Exception as e:
         log.exception("Error in cmd_kpi10h: %s", e)
         await edit_or_send_requester_text(msg, update, context, f"❌ Error computing 10H KPI: {e}")
