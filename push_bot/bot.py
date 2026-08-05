@@ -2142,7 +2142,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds an exact 9-column 10H KPI summary Excel report for registered main post offices."""
+    """Builds a beautifully colorized 9-column 10H KPI summary Excel report for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from datetime import datetime, timedelta
@@ -2203,12 +2203,12 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     else:
         branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
-    def format_period(sub):
+    def get_stats_data(sub):
         g = int(sub['Is_Green'].sum())
         r = int(sub['Is_Red'].sum())
         tot = len(sub)
         rate = (g / tot * 100.0) if tot > 0 else 100.0
-        return f"🟢 {g:,} | 🔴 {r:,} ({rate:.1f}% hit)"
+        return g, r, rate
 
     for b in branches:
         b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
@@ -2224,28 +2224,35 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         tot_g = comp_g + pend_g
         tot_r = comp_r + pend_r
         tot_all = len(b_df)
-        overall_rate = f"{(tot_g / tot_all * 100.0):.1f}%" if tot_all > 0 else "100.0%"
+        overall_rate = (tot_g / tot_all * 100.0) if tot_all > 0 else 100.0
         
-        td_str = format_period(b_df[b_df['Parsed_Date'] >= today_start])
-        yd_str = format_period(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
-        wk_str = format_period(b_df[b_df['Parsed_Date'] >= week_start])
-        mo_str = format_period(b_df[b_df['Parsed_Date'] >= month_start])
+        td_g, td_r, td_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= today_start])
+        yd_g, yd_r, yd_rate = get_stats_data(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
+        wk_g, wk_r, wk_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= week_start])
+        mo_g, mo_r, mo_rate = get_stats_data(b_df[b_df['Parsed_Date'] >= month_start])
         
         ws.append([
             b,
-            f"🟢 {comp_g:,} | 🔴 {comp_r:,}",
-            f"🟢 {pend_g:,}",
-            f"🔴 {pend_r:,}",
-            overall_rate,
-            td_str,
-            yd_str,
-            wk_str,
-            mo_str
+            f"{comp_g:,} Green | {comp_r:,} Red",
+            f"{pend_g:,}",
+            f"{pend_r:,}",
+            f"{overall_rate:.1f}%",
+            f"{td_g:,} Green | {td_r:,} Red ({td_rate:.1f}%)",
+            f"{yd_g:,} Green | {yd_r:,} Red ({yd_rate:.1f}%)",
+            f"{wk_g:,} Green | {wk_r:,} Red ({wk_rate:.1f}%)",
+            f"{mo_g:,} Green | {mo_r:,} Red ({mo_rate:.1f}%)"
         ])
         
-    # Clean styling
+    # Fills and Fonts
     header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
     header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+
+    green_fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+    green_font = Font(name="Calibri", size=10, bold=True, color="375623")
+
+    red_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
+    red_font = Font(name="Calibri", size=10, bold=True, color="C00000")
+
     thin_border = Border(
         left=Side(style='thin', color='D9D9D9'),
         right=Side(style='thin', color='D9D9D9'),
@@ -2263,16 +2270,34 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         for c_idx in range(1, len(headers) + 1):
             cell = ws.cell(row=r_idx, column=c_idx)
             cell.border = thin_border
-            cell.font = Font(name="Calibri", size=10, bold=(c_idx == 1 or c_idx == 5))
-            if c_idx == 1:
-                cell.alignment = Alignment(horizontal="left")
+            
+            if c_idx == 3: # Pending Green
+                cell.fill = green_fill
+                cell.font = green_font
+            elif c_idx == 4: # Pending Red
+                cell.fill = red_fill
+                cell.font = red_font
+            elif c_idx == 5: # Overall Rate
+                val_str = str(cell.value or '').replace('%', '')
+                try:
+                    val_num = float(val_str)
+                    if val_num >= 80.0:
+                        cell.fill = green_fill
+                        cell.font = green_font
+                    else:
+                        cell.fill = red_fill
+                        cell.font = red_font
+                except:
+                    cell.font = Font(name="Calibri", size=10, bold=True)
             else:
-                cell.alignment = Alignment(horizontal="center")
+                cell.font = Font(name="Calibri", size=10, bold=(c_idx == 1))
+                
+            cell.alignment = Alignment(horizontal="left" if c_idx == 1 else "center", vertical="center")
                 
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = max(max_len + 4, 16)
+        ws.column_dimensions[col_letter].width = max(max_len + 4, 18)
         
     wb.save(out_file)
     return out_file
