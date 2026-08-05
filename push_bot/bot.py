@@ -2142,7 +2142,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds a comprehensive 18-column 10H KPI summary Excel report for registered main post offices."""
+    """Builds an exact 9-column 10H KPI summary Excel report for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from datetime import datetime, timedelta
@@ -2174,18 +2174,19 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "10H KPI Summary Report"
+    ws.title = "10H KPI 9-Column Report"
     ws.views.sheetView[0].showGridLines = True
     
     headers = [
         "Branch Code",
-        "Completed (410) <=10h", "Completed (410) >10h",
-        "Pending Green <=10h", "Pending Red >10h",
+        "Completed Deliveries (410)",
+        "Pending Green KPI",
+        "Pending Red Over",
         "🎯 Overall Hit Rate %",
-        "Today <=10h", "Today >10h", "Today Hit %",
-        "Yesterday <=10h", "Yesterday >10h", "Yesterday Hit %",
-        "This Week <=10h", "This Week >10h", "This Week Hit %",
-        "This Month <=10h", "This Month >10h", "This Month Hit %"
+        "Today",
+        "Yesterday",
+        "This Week",
+        "This Month"
     ]
     ws.append(headers)
     
@@ -2202,20 +2203,13 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     else:
         branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
-    def get_sub_stats(sub):
+    def format_period(sub):
         g = int(sub['Is_Green'].sum())
         r = int(sub['Is_Red'].sum())
         tot = len(sub)
         rate = (g / tot * 100.0) if tot > 0 else 100.0
-        return g, r, f"{rate:.1f}%"
+        return f"🟢 {g:,} | 🔴 {r:,} ({rate:.1f}% hit)"
 
-    tot_comp_g, tot_comp_r = 0, 0
-    tot_pend_g, tot_pend_r = 0, 0
-    tot_td_g, tot_td_r = 0, 0
-    tot_yd_g, tot_yd_r = 0, 0
-    tot_wk_g, tot_wk_r = 0, 0
-    tot_mo_g, tot_mo_r = 0, 0
-    
     for b in branches:
         b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
         
@@ -2232,66 +2226,26 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         tot_all = len(b_df)
         overall_rate = f"{(tot_g / tot_all * 100.0):.1f}%" if tot_all > 0 else "100.0%"
         
-        td_g, td_r, td_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= today_start])
-        yd_g, yd_r, yd_rate = get_sub_stats(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
-        wk_g, wk_r, wk_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= week_start])
-        mo_g, mo_r, mo_rate = get_sub_stats(b_df[b_df['Parsed_Date'] >= month_start])
-        
-        tot_comp_g += comp_g
-        tot_comp_r += comp_r
-        tot_pend_g += pend_g
-        tot_pend_r += pend_r
-        tot_td_g += td_g
-        tot_td_r += td_r
-        tot_yd_g += yd_g
-        tot_yd_r += yd_r
-        tot_wk_g += wk_g
-        tot_wk_r += wk_r
-        tot_mo_g += mo_g
-        tot_mo_r += mo_r
+        td_str = format_period(b_df[b_df['Parsed_Date'] >= today_start])
+        yd_str = format_period(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
+        wk_str = format_period(b_df[b_df['Parsed_Date'] >= week_start])
+        mo_str = format_period(b_df[b_df['Parsed_Date'] >= month_start])
         
         ws.append([
             b,
-            comp_g, comp_r,
-            pend_g, pend_r,
+            f"🟢 {comp_g:,} | 🔴 {comp_r:,}",
+            f"🟢 {pend_g:,}",
+            f"🔴 {pend_r:,}",
             overall_rate,
-            td_g, td_r, td_rate,
-            yd_g, yd_r, yd_rate,
-            wk_g, wk_r, wk_rate,
-            mo_g, mo_r, mo_rate
+            td_str,
+            yd_str,
+            wk_str,
+            mo_str
         ])
         
-    # Grand Total Row
-    tot_all_g = tot_comp_g + tot_pend_g
-    tot_all_r = tot_comp_r + tot_pend_r
-    tot_grand = tot_all_g + tot_all_r
-    grand_overall_rate = f"{(tot_all_g / tot_grand * 100.0):.1f}%" if tot_grand > 0 else "100.0%"
-    
-    td_tot = tot_td_g + tot_td_r
-    yd_tot = tot_yd_g + tot_yd_r
-    wk_tot = tot_wk_g + tot_wk_r
-    mo_tot = tot_mo_g + tot_mo_r
-    
-    gt_td_rate = f"{(tot_td_g / td_tot * 100.0):.1f}%" if td_tot > 0 else "100.0%"
-    gt_yd_rate = f"{(tot_yd_g / yd_tot * 100.0):.1f}%" if yd_tot > 0 else "100.0%"
-    gt_wk_rate = f"{(tot_wk_g / wk_tot * 100.0):.1f}%" if wk_tot > 0 else "100.0%"
-    gt_mo_rate = f"{(tot_mo_g / mo_tot * 100.0):.1f}%" if mo_tot > 0 else "100.0%"
-    
-    ws.append([
-        "GRAND TOTAL",
-        tot_comp_g, tot_comp_r,
-        tot_pend_g, tot_pend_r,
-        grand_overall_rate,
-        tot_td_g, tot_td_r, gt_td_rate,
-        tot_yd_g, tot_yd_r, gt_yd_rate,
-        tot_wk_g, tot_wk_r, gt_wk_rate,
-        tot_mo_g, tot_mo_r, gt_mo_rate
-    ])
-    
     # Clean styling
     header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
     header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    total_fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
     thin_border = Border(
         left=Side(style='thin', color='D9D9D9'),
         right=Side(style='thin', color='D9D9D9'),
@@ -2306,22 +2260,10 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         cell.alignment = Alignment(horizontal="center", vertical="center")
         
     for r_idx in range(2, ws.max_row + 1):
-        is_total_row = (r_idx == ws.max_row)
         for c_idx in range(1, len(headers) + 1):
             cell = ws.cell(row=r_idx, column=c_idx)
             cell.border = thin_border
-            if is_total_row:
-                cell.fill = total_fill
-                cell.font = Font(name="Calibri", size=10, bold=True)
-            elif c_idx == 1:
-                cell.font = Font(name="Calibri", size=10, bold=True)
-            elif c_idx in [2, 4, 7, 10, 13, 16]:
-                cell.font = Font(name="Calibri", size=10, bold=True, color="008000")
-            elif c_idx in [3, 5, 8, 11, 14, 17]:
-                cell.font = Font(name="Calibri", size=10, bold=True, color="C00000")
-            else:
-                cell.font = Font(name="Calibri", size=10)
-                
+            cell.font = Font(name="Calibri", size=10, bold=(c_idx == 1 or c_idx == 5))
             if c_idx == 1:
                 cell.alignment = Alignment(horizontal="left")
             else:
@@ -2330,7 +2272,7 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = max(max_len + 3, 14)
+        ws.column_dimensions[col_letter].width = max(max_len + 4, 16)
         
     wb.save(out_file)
     return out_file
