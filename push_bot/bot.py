@@ -2142,10 +2142,10 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_branch_kpi_excel(df_in, out_file, cfg=None):
-    """Builds a 1-row-per-branch KPI summary Excel file for registered main post offices."""
+    """Builds a super clean 3-column KPI summary Excel file for registered main post offices."""
     import openpyxl
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-    from datetime import datetime, timedelta
+    from datetime import datetime
     
     df = df_in.copy()
     po_col = 'POST OFFICE HANDLE' if 'POST OFFICE HANDLE' in df.columns else 'CURRENT POST OFFICE'
@@ -2167,34 +2167,20 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     df['Is_Green'] = completed_mask | green_pending_mask
     df['Is_Red'] = red_pending_mask
     
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    yesterday_start = today_start - timedelta(days=1)
-    week_start = today_start - timedelta(days=today_start.weekday())
-    month_start = today_start.replace(day=1)
-    
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "Registered Main Branches KPI"
+    ws.title = "Main Branches 10H KPI"
     ws.views.sheetView[0].showGridLines = True
     
     headers = [
         "Branch Code",
-        "Today <=10h", "Today >10h", "Today Hit %",
-        "Yesterday <=10h", "Yesterday >10h", "Yesterday Hit %",
-        "This Week <=10h", "This Week >10h", "This Week Hit %",
-        "This Month <=10h", "This Month >10h", "This Month Hit %",
+        "🟢 Green (<=10h)",
+        "🔴 Red (>10h)",
+        "🎯 KPI Hit Rate %",
         "Total Orders"
     ]
     ws.append(headers)
     
-    def get_stats(sub):
-        g = int(sub['Is_Green'].sum())
-        r = int(sub['Is_Red'].sum())
-        tot = len(sub)
-        rate = (g / tot * 100.0) if tot > 0 else 100.0
-        return g, r, rate
-
-    # Filter for registered main post offices only
     registered = set()
     if cfg:
         fm = cfg.get('telegram', {}).get('forward_mapping', {})
@@ -2208,25 +2194,28 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
     else:
         branches = sorted([str(b) for b in df[po_col].dropna().unique() if str(b).strip()])
     
+    tot_g, tot_r, tot_all = 0, 0, 0
     for b in branches:
         b_df = df[df[po_col].astype(str).str.upper().str.contains(b, na=False)]
-        td_g, td_r, td_rate = get_stats(b_df[b_df['Parsed_Date'] >= today_start])
-        yd_g, yd_r, yd_rate = get_stats(b_df[(b_df['Parsed_Date'] >= yesterday_start) & (b_df['Parsed_Date'] < today_start)])
-        wk_g, wk_r, wk_rate = get_stats(b_df[b_df['Parsed_Date'] >= week_start])
-        mo_g, mo_r, mo_rate = get_stats(b_df[b_df['Parsed_Date'] >= month_start])
+        g = int(b_df['Is_Green'].sum())
+        r = int(b_df['Is_Red'].sum())
+        tot = len(b_df)
+        rate = (g / tot * 100.0) if tot > 0 else 100.0
         
-        row = [
-            b,
-            td_g, td_r, f"{td_rate:.1f}%",
-            yd_g, yd_r, f"{yd_rate:.1f}%",
-            wk_g, wk_r, f"{wk_rate:.1f}%",
-            mo_g, mo_r, f"{mo_rate:.1f}%",
-            len(b_df)
-        ]
-        ws.append(row)
+        tot_g += g
+        tot_r += r
+        tot_all += tot
         
+        ws.append([b, g, r, f"{rate:.1f}%", tot])
+        
+    # Grand Total Row
+    tot_rate = (tot_g / tot_all * 100.0) if tot_all > 0 else 100.0
+    ws.append(["GRAND TOTAL", tot_g, tot_r, f"{tot_rate:.1f}%", tot_all])
+    
+    # Clean styling
     header_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
     header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    total_fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
     thin_border = Border(
         left=Side(style='thin', color='D9D9D9'),
         right=Side(style='thin', color='D9D9D9'),
@@ -2241,20 +2230,31 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
         cell.alignment = Alignment(horizontal="center", vertical="center")
         
     for r_idx in range(2, ws.max_row + 1):
+        is_total_row = (r_idx == ws.max_row)
         for c_idx in range(1, len(headers) + 1):
             cell = ws.cell(row=r_idx, column=c_idx)
             cell.border = thin_border
-            if c_idx == 1:
+            if is_total_row:
+                cell.fill = total_fill
+                cell.font = Font(name="Calibri", size=11, bold=True)
+            elif c_idx == 1:
                 cell.font = Font(name="Calibri", size=10, bold=True)
-                cell.alignment = Alignment(horizontal="left")
+            elif c_idx == 2:
+                cell.font = Font(name="Calibri", size=10, bold=True, color="008000")
+            elif c_idx == 3:
+                cell.font = Font(name="Calibri", size=10, bold=True, color="C00000")
             else:
                 cell.font = Font(name="Calibri", size=10)
+                
+            if c_idx == 1:
+                cell.alignment = Alignment(horizontal="left")
+            else:
                 cell.alignment = Alignment(horizontal="center")
                 
     for col in ws.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+        ws.column_dimensions[col_letter].width = max(max_len + 4, 15)
         
     wb.save(out_file)
     return out_file
