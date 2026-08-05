@@ -216,7 +216,7 @@ def build_index():
     conn.close()
     print(f"✅ Indexing Complete! {total_indexed} order records processed into SQLite database.")
 
-def search_orders(query="", branch=None, limit=50):
+def search_orders(query="", branch=None, role="all", status_code=None, limit=50):
     init_db()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -228,14 +228,36 @@ def search_orders(query="", branch=None, limit=50):
     sql = "SELECT * FROM orders WHERE 1=1"
     params = []
 
-    if q_clean:
+    role_str = (role or "all").lower()
+
+    if status_code:
+        sql += " AND status_code = ?"
+        params.append(str(status_code).strip())
+    elif q_clean and len(q_clean) == 3 and q_clean.isdigit():
+        sql += " AND (status_code = ? OR order_id LIKE ?)"
+        params.extend([q_clean, f"%{q_clean}%"])
+    elif q_clean:
         if phone_clean and len(phone_clean) >= 6:
-            sql += " AND (sender_phone LIKE ? OR receiver_phone LIKE ? OR order_id LIKE ?)"
-            params.extend([f"%{phone_clean}%", f"%{phone_clean}%", f"%{q_clean}%"])
+            if role_str in ("sender", "store"):
+                sql += " AND (sender_phone LIKE ? OR order_id LIKE ?)"
+                params.extend([f"%{phone_clean}%", f"%{q_clean}%"])
+            elif role_str in ("receiver", "customer", "cus"):
+                sql += " AND (receiver_phone LIKE ? OR order_id LIKE ?)"
+                params.extend([f"%{phone_clean}%", f"%{q_clean}%"])
+            else:
+                sql += " AND (sender_phone LIKE ? OR receiver_phone LIKE ? OR order_id LIKE ?)"
+                params.extend([f"%{phone_clean}%", f"%{phone_clean}%", f"%{q_clean}%"])
         else:
-            sql += " AND (order_id LIKE ? OR sender_name LIKE ? OR receiver_name LIKE ? OR sender_phone LIKE ? OR receiver_phone LIKE ? OR post_office_handle LIKE ? OR current_po LIKE ?)"
             p_like = f"%{q_clean}%"
-            params.extend([p_like, p_like, p_like, p_like, p_like, p_like, p_like])
+            if role_str in ("sender", "store"):
+                sql += " AND (order_id LIKE ? OR sender_name LIKE ? OR sender_phone LIKE ? OR post_office_handle LIKE ? OR current_po LIKE ?)"
+                params.extend([p_like, p_like, p_like, p_like, p_like])
+            elif role_str in ("receiver", "customer", "cus"):
+                sql += " AND (order_id LIKE ? OR receiver_name LIKE ? OR receiver_phone LIKE ? OR post_office_handle LIKE ? OR current_po LIKE ?)"
+                params.extend([p_like, p_like, p_like, p_like, p_like])
+            else:
+                sql += " AND (order_id LIKE ? OR sender_name LIKE ? OR receiver_name LIKE ? OR sender_phone LIKE ? OR receiver_phone LIKE ? OR post_office_handle LIKE ? OR current_po LIKE ?)"
+                params.extend([p_like, p_like, p_like, p_like, p_like, p_like, p_like])
 
     if branch:
         sql += " AND (post_office_handle LIKE ? OR current_po LIKE ? OR delivery_po LIKE ? OR receive_po LIKE ?)"
@@ -270,16 +292,30 @@ def main():
         if idx + 1 < len(sys.argv):
             branch_filter = sys.argv[idx + 1]
 
-    results = search_orders(arg, branch=branch_filter)
-    print(f"\n🔍 SEARCH RESULTS FOR '{arg}'" + (f" (Branch: {branch_filter})" if branch_filter else "") + f" — Found {len(results)} matches:\n")
+    role_filter = "all"
+    if "--sender" in sys.argv or "--store" in sys.argv:
+        role_filter = "sender"
+    elif "--receiver" in sys.argv or "--customer" in sys.argv:
+        role_filter = "receiver"
+
+    status_filter = None
+    if "--status" in sys.argv:
+        idx = sys.argv.index("--status")
+        if idx + 1 < len(sys.argv):
+            status_filter = sys.argv[idx + 1]
+
+    results = search_orders(arg, branch=branch_filter, role=role_filter, status_code=status_filter)
+    role_desc = f" ({role_filter.upper()} ONLY)" if role_filter != "all" else ""
+    st_desc = f" (Status: {status_filter})" if status_filter else ""
+    print(f"\n🔍 SEARCH RESULTS FOR '{arg}'{role_desc}{st_desc}" + (f" (Branch: {branch_filter})" if branch_filter else "") + f" — Found {len(results)} matches:\n")
     print("=" * 110)
     for r in results:
         vip_tag = " [VIP 🌟]" if r["vip"] == "VIP" else ""
         print(f"📦 ORDER ID: {r['order_id']}{vip_tag}")
-        print(f"   👤 SENDER   : {r['sender_name']} (Phone: {r['sender_phone'] or 'N/A'})")
-        print(f"   📥 RECEIVER : {r['receiver_name']} (Phone: {r['receiver_phone'] or 'N/A'})")
-        print(f"   📍 BRANCHES : Receive={r['receive_po']} | Current={r['current_po']} | Delivery={r['delivery_po']}")
-        print(f"   📊 STATUS   : {r['current_status']} (COD: ${r['cod']:.2f})")
+        print(f"   👤 SENDER (STORE)   : {r['sender_name']} (Phone: {r['sender_phone'] or 'N/A'})")
+        print(f"   📥 RECEIVER (CUS)   : {r['receiver_name']} (Phone: {r['receiver_phone'] or 'N/A'})")
+        print(f"   📍 BRANCHES         : Receive={r['receive_po']} | Current={r['current_po']} | Delivery={r['delivery_po']}")
+        print(f"   📊 STATUS           : {r['current_status']} (COD: ${r['cod']:.2f})")
         print("-" * 110)
 
 if __name__ == "__main__":
