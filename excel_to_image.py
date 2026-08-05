@@ -434,7 +434,7 @@ def excel_to_image(xlsx_path: str) -> io.BytesIO:
                     dot_color = "#10B981"  # Bright Vivid Green
                     clean_text = text_str[1:].strip()
                 elif text_str.startswith("🟡"):
-                    dot_color = "#F59E0B"  # Bright Vivid Yellow
+                    dot_color = "#EF4444"  # Map yellow to Red (no yellow)
                     clean_text = text_str[1:].strip()
                 elif text_str.startswith("🔴"):
                     dot_color = "#EF4444"  # Bright Vivid Red

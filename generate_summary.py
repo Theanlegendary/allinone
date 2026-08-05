@@ -548,7 +548,14 @@ def build_summary_image(
     return buf
 
 
-def compute_kpi_info(row):
+def compute_kpi_info(row, age_adjust_hours=0):
+    """
+    Compute age and KPI info for a row.
+    
+    Args:
+        row: DataFrame row with order data
+        age_adjust_hours: Hours to subtract from age (e.g., 12 for morning reports to exclude overnight hold)
+    """
     import pandas as pd
     from datetime import datetime
 
@@ -579,8 +586,12 @@ def compute_kpi_info(row):
     diff = now - scan_time
     total_seconds = max(0, diff.total_seconds())
     total_minutes = int(total_seconds // 60)
-    hours = int(total_minutes // 60)
-    minutes = int(total_minutes % 60)
+    
+    # Apply age adjustment (subtract hours for morning reports)
+    adjusted_minutes = max(0, total_minutes - (age_adjust_hours * 60))
+    
+    hours = int(adjusted_minutes // 60)
+    minutes = int(adjusted_minutes % 60)
 
     raw_age = f"{hours}h {minutes:02d}m"
     kpi_target = "10h"
@@ -588,11 +599,9 @@ def compute_kpi_info(row):
     # Status 420 (Store Waiting) and 472 (Resolving Issue) are Green status rows -> ALWAYS GREEN 🟢!
     if status_code in ('420', '472'):
         dot = "🟢"
-    elif total_minutes <= 599:
+    elif adjusted_minutes <= 600:  # Use adjusted minutes for color
         dot = "🟢"
-    elif 600 <= total_minutes <= 659:
-        dot = "🟡"
-    else:
+    else:  # >10h = Red (no yellow)
         dot = "🔴"
 
     age_with_dot = f"{dot} {raw_age}"
@@ -601,7 +610,16 @@ def compute_kpi_info(row):
 
 # ── Total Excel builder ────────────────────────────────────────────────────────
 
-def build_total_excel(result, out_path, lang='kh'):
+def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
+    """
+    Build total Excel report with optional age adjustment.
+    
+    Args:
+        result: Report data dictionary
+        out_path: Output file path
+        lang: Language ('kh' or 'en')
+        age_adjust_hours: Hours to subtract from age (e.g., 12 for morning reports to exclude overnight)
+    """
     import calendar
     import pandas as pd
     from openpyxl import Workbook
@@ -709,7 +727,7 @@ def build_total_excel(result, out_path, lang='kh'):
         active_days = [d for d in day_cols if d in dates_present]
 
         if rn in ('Delivery', 'Not Assign'):
-            kpi_res = df.apply(compute_kpi_info, axis=1)
+            kpi_res = df.apply(lambda row: compute_kpi_info(row, age_adjust_hours), axis=1)
             df['Age'] = [r[0] for r in kpi_res]
             df['10H KPI'] = [r[1] for r in kpi_res]
 
@@ -900,7 +918,7 @@ def build_total_excel(result, out_path, lang='kh'):
                 cell_fill = row_fill
                 cell_font = Font(name=fn, size=10)
 
-                # AGE Column (3 Status Colors: 🟢 Green 0-10h, 🟡 Yellow 10-24h, 🔴 Red >24h)
+                # AGE Column (2 Status Colors: 🟢 Green 0-10h, 🔴 Red >10h - no yellow)
                 if col == 'Age':
                     val_str = str(val or '').strip()
                     match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', val_str, re.IGNORECASE)
@@ -910,11 +928,9 @@ def build_total_excel(result, out_path, lang='kh'):
                         t_mins = h_val * 60 + m_val
                         if status_code in ('420', '472'):
                             cell_font = Font(name=fn, size=10, bold=True, color='065F46')
-                        elif t_mins <= 599:
+                        elif t_mins <= 600:  # 0-10h = Green
                             cell_font = Font(name=fn, size=10, bold=True, color='065F46')
-                        elif 600 <= t_mins <= 1439:
-                            cell_font = Font(name=fn, size=10, bold=True, color='92400E')
-                        else:
+                        else:  # >10h = Red (no yellow)
                             cell_font = Font(name=fn, size=10, bold=True, color='991B1B')
                     else:
                         cell_font = Font(name=fn, size=10, bold=True)

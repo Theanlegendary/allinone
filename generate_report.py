@@ -2,6 +2,9 @@ import pandas as pd
 import os
 import json
 import re
+import glob
+import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, date as _date
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
@@ -80,13 +83,12 @@ def compute_kpi_info(row):
     kpi_target = "10h"
 
     # Status 420 (Store Waiting) and 472 (Resolving Issue) are Green status rows -> ALWAYS GREEN 🟢!
+    # Age coloring: Green (0-10h), Red (>10h) - NO YELLOW
     if status_code in ('420', '472'):
         dot = "🟢"
-    elif total_minutes <= 599:
+    elif total_minutes <= 600:  # 0-10h = Green
         dot = "🟢"
-    elif 600 <= total_minutes <= 659:
-        dot = "🟡"
-    else:
+    else:  # >10h = Red (no yellow)
         dot = "🔴"
 
     age_with_dot = f"{dot} {raw_age}"
@@ -121,9 +123,9 @@ MAX_INDEX = 9  # Delivery and Branch have 9 index columns before Fee+COD
 
 REPORT_COLS = {
     'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'Cus name', 'Phone'],
-    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
     'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
-    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
 }
 
 REPORT_FILTER_COLS = {
@@ -584,6 +586,14 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell_font = _font(fn, '1E293B', bold=False)
             cell_align = _align('center')
 
+            # ========== VIP COLUMN HIGHLIGHTING ==========
+            # If this is the VIP column and cell has "VIP", use red text only
+            if col_name == 'VIP' and str(val).strip() == 'VIP':
+                # Keep row background color (no special fill)
+                # Just change text to red
+                cell_font = _font(fn, 'EF4444', bold=True)  # Red text, bold
+            # ========== END VIP HIGHLIGHTING ==========
+
             if is_total:
                 if row_fill:
                     cell.fill = row_fill
@@ -597,11 +607,9 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                     t_mins = h_val * 60 + m_val
                     if status_code in ("420", "472"):
                         cell_font = _font(fn, "065F46", bold=True)
-                    elif t_mins <= 599:
+                    elif t_mins <= 600:  # 0-10h = Green
                         cell_font = _font(fn, "065F46", bold=True)
-                    elif 600 <= t_mins <= 1439:
-                        cell_font = _font(fn, "92400E", bold=True)
-                    else:
+                    else:  # >10h = Red (no yellow)
                         cell_font = _font(fn, "991B1B", bold=True)
                 else:
                     cell_font = _font(fn, '1E293B', bold=True)
@@ -939,6 +947,70 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     else:
         df['STATUS_CODE'] = ''
 
+    # ========== LIVE API STATUS SYNC (FIX FOR METFONE REPORT EXPORT LAG) ==========
+    try:
+        completed_from_sync = set()
+        
+        # 1. Check local tracking log Excel files
+        for f_log in glob.glob('*Tracking*Status*Logs*.xlsx') + glob.glob('Bill_Tracking*.xlsx'):
+            try:
+                xl_log = pd.ExcelFile(f_log)
+                for sname in xl_log.sheet_names:
+                    df_log = xl_log.parse(sname)
+                    col_id = next((c for c in df_log.columns if any(k in str(c).lower() for k in ('order', 'bill', 'waybill'))), None)
+                    if col_id:
+                        for _, r_log in df_log.iterrows():
+                            r_str = ' '.join([str(v) for v in r_log if pd.notna(v)])
+                            if '410' in r_str or '520' in r_str or 'GIAO THÀNH CÔNG' in r_str or 'SHIPPED' in r_str:
+                                oid_str = str(r_log[col_id]).strip()
+                                if oid_str and oid_str != 'nan':
+                                    completed_from_sync.add(normalize_id(oid_str))
+            except Exception:
+                pass
+
+        # 2. Query Live API multithreading for any candidate pending orders
+        token = cfg.get('api', {}).get('bearer_token', '')
+        if token:
+            headers = {'Authorization': f'Bearer {token}'}
+            def _check_live_tracking(oid):
+                try:
+                    url_tr = 'https://gw-express.metfone.com.kh/tms-tracking/api/v1/order-tracking'
+                    r_tr = requests.get(url_tr, params={'order_id': str(oid)}, headers=headers, timeout=4)
+                    if r_tr.status_code == 200:
+                        data_tr = r_tr.json()
+                        trips_tr = data_tr.get('trackingTrips', [])
+                        if trips_tr:
+                            st_tr = str(trips_tr[0].get('status', ''))
+                            desc_tr = str(trips_tr[0].get('desc', ''))
+                            if '410' in st_tr or '520' in st_tr or 'Delivered' in desc_tr or 'GIAO THÀNH CÔNG' in desc_tr or 'SHIPPED' in desc_tr:
+                                return normalize_id(oid)
+                except Exception:
+                    pass
+                return None
+
+            candidate_ids = []
+            if 'ORDER ID' in df.columns and 'STATUS_CODE' in df.columns:
+                for oid, sc_val in zip(df['ORDER ID'], df['STATUS_CODE']):
+                    if pd.notna(oid) and pd.notna(sc_val):
+                        if str(sc_val).strip() in ('402', '306', '310', '311', '309', '400', '401', '420', '470', '472', '480', '500'):
+                            candidate_ids.append(str(oid).strip())
+
+            if candidate_ids:
+                with ThreadPoolExecutor(max_workers=12) as executor:
+                    for comp_oid in executor.map(_check_live_tracking, candidate_ids[:200]):
+                        if comp_oid:
+                            completed_from_sync.add(comp_oid)
+
+        if completed_from_sync and 'ORDER ID' in df.columns:
+            for i in range(len(df)):
+                oid_norm = normalize_id(df.iloc[i]['ORDER ID'])
+                if oid_norm in completed_from_sync:
+                    df.iloc[i, df.columns.get_loc('CURRENT STATUS')] = '410 - Giao thành công'
+                    df.iloc[i, df.columns.get_loc('STATUS_CODE')] = '410'
+    except Exception as e_sync:
+        print(f"⚠️ Live API Status Sync Warning: {e_sync}")
+    # ========== END LIVE API STATUS SYNC ==========
+
     if 'CURRENT POST OFFICE' in df.columns:
         df['_po_key'] = df['CURRENT POST OFFICE'].apply(normalize_code)
     else:
@@ -978,6 +1050,73 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 lambda v: str(v).split(' - ', 1)[1].strip() if ' - ' in str(v) else clean_text(v))
         else:
             dm['RECEIVER'] = ''
+
+    # ========== VIP DETECTION ==========
+    # Load VIP list from Excel file
+    vip_phones = set()
+    vip_names = set()
+    try:
+        vip_file = 'VIP_Phone_Numbers_FORMATTED_20260805_1006.xlsx'
+        if os.path.exists(vip_file):
+            df_vip = pd.read_excel(vip_file, sheet_name='Found (Phone Numbers)')
+            for _, row in df_vip.iterrows():
+                phone = str(row.get('Phone Number', '')).strip()
+                name = str(row.get('VIP Name (Search)', '')).strip()
+                if phone and phone != 'NOT FOUND':
+                    vip_phones.add(phone)
+                if name:
+                    vip_names.add(name.lower())
+    except Exception as e:
+        print(f"⚠️  Warning: Could not load VIP list: {e}")
+    
+    # Add VIP column after RECEIVER
+    dm['VIP'] = ''
+    if 'RECEIVER' in df.columns or 'SENDER' in df.columns:
+        # Use .iloc for integer-based indexing to match row positions
+        for i in range(len(dm)):
+            # Get original RECEIVER and SENDER from source (has phone number)
+            orig_receiver = str(df.iloc[i]['RECEIVER']) if ('RECEIVER' in df.columns and i < len(df)) else ''
+            orig_sender = str(df.iloc[i]['SENDER']) if ('SENDER' in df.columns and i < len(df)) else ''
+            
+            # Extract phone & name for RECEIVER
+            receiver_phone = ''
+            receiver_name = ''
+            if ' - ' in orig_receiver:
+                parts = orig_receiver.split(' - ', 1)
+                receiver_phone = parts[0].strip()
+                receiver_name = parts[1].strip().lower()
+            else:
+                receiver_name = orig_receiver.strip().lower()
+
+            # Extract phone & name for SENDER
+            sender_phone = ''
+            sender_name = ''
+            if ' - ' in orig_sender:
+                parts = orig_sender.split(' - ', 1)
+                sender_phone = parts[0].strip()
+                sender_name = parts[1].strip().lower()
+            else:
+                sender_name = orig_sender.strip().lower()
+            
+            # Check if VIP by phone or name (checking both Receiver and Sender)
+            is_vip = False
+            
+            # Check Receiver
+            if receiver_phone and receiver_phone in vip_phones:
+                is_vip = True
+            elif receiver_name and any(vip_name in receiver_name for vip_name in vip_names if len(vip_name) >= 3):
+                is_vip = True
+                
+            # Check Sender
+            if not is_vip:
+                if sender_phone and sender_phone in vip_phones:
+                    is_vip = True
+                elif sender_name and any(vip_name in sender_name for vip_name in vip_names if len(vip_name) >= 3):
+                    is_vip = True
+            
+            if is_vip:
+                dm.iloc[i, dm.columns.get_loc('VIP')] = 'VIP'
+    # ========== END VIP DETECTION ==========
 
     # Cus name / Phone
     cus_src = next((c for c in dm.columns if c.strip() == 'Cus name'), None)

@@ -2103,10 +2103,8 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     h_val = int(match.group(1))
                     m_val = int(match.group(2)) if match.group(2) else 0
                     t_mins = h_val * 60 + m_val
-                    if t_mins <= 599:
+                    if t_mins <= 600:
                         hits_10h += 1
-                    elif 600 <= t_mins <= 1439:
-                        warning_10_24h += 1
                     else:
                         overdue_24h += 1
                 else:
@@ -2114,7 +2112,6 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         deliv_pct   = (hits_10h / total_orders) * 100
         special_pct = (special_green / total_orders) * 100
-        warn_pct    = (warning_10_24h / total_orders) * 100
         overdue_pct = (overdue_24h / total_orders) * 100
         overall_pct = ((hits_10h + special_green) / total_orders) * 100
 
@@ -2124,8 +2121,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📦 *Total Active Orders* : `{total_orders:,}`\n\n"
             f"🟢 *Delivery KPI (<=10h)*  : `{hits_10h:,}` ({deliv_pct:.1f}%)\n"
             f"🟢 *Special Hold (420/472)*: `{special_green:,}` ({special_pct:.1f}%)\n"
-            f"🟡 *Warning (10h–24h)*      : `{warning_10_24h:,}` ({warn_pct:.1f}%)\n"
-            f"🔴 *Overdue (>24h / >7d)*  : `{overdue_24h:,}` ({overdue_pct:.1f}%)\n"
+            f"🔴 *Overdue (>10h / >7d)*  : `{overdue_24h:,}` ({overdue_pct:.1f}%)\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"🎯 *OVERALL KPI HIT RATE*  : `{overall_pct:.1f}%` 🟢\n"
             f"  ↳ Courier Delivery KPI: `{deliv_pct:.1f}%`\n"

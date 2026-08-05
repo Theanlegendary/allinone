@@ -1336,6 +1336,8 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "`push zone5` — Push to zone 5 only\n"
         "`/total` — Summary image + Excel (all data)\n"
         "`/total zone5` — Summary image + Excel (zone5 only)\n"
+        "`/morning` — Morning report with age -12h (excludes overnight hold)\n"
+        "`/morning zone5` — Morning report for zone5 only\n"
         "`/tpg` — TPG Branch Operational Summary (Pickup/Delivery/Branch/Transit)\n"
         "`/totalkpi` — Total KPI performance report & hit % summary\n"
         "`/deletereport` — Delete a report (reply to the bot's report message)\n"
@@ -2040,6 +2042,166 @@ def get_highlighted_order_ids(df_t, today_date):
 
 
 @pm_required_handler
+async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/morning [zone] — Morning report with 12h age adjustment (excludes overnight hold time).
+    Examples: /morning  (all data)  |  /morning zone5  |  /morning zone1
+    """
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    # Parse optional zone argument
+    args = [a.strip().lower() for a in (context.args or []) if a.strip()]
+    zone_filter = None
+    zone_label = "ALL"
+    
+    if args:
+        zone_key = args[0]
+        total_zones = cfg.get("total_zones", {})
+        if zone_key in total_zones:
+            zone_filter = [h.upper() for h in total_zones[zone_key]]
+            zone_label = zone_key.upper()
+        else:
+            available = ", ".join(sorted(total_zones.keys())) if total_zones else "none configured"
+            await private_or_current_reply(
+                update,
+                context,
+                f"Unknown zone '{zone_key}'.\n"
+                f"Available zones: {available}\n"
+                f"Usage: /morning zone5"
+            )
+            return
+
+    msg = await send_requester_text(update, context, f"☀️ Fetching data for {zone_label} MORNING report (age -12h)...")
+
+    tmpdir = tempfile.mkdtemp(prefix="morning_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        msg = await edit_or_send_requester_text(msg, update, context, "Building morning summary (age adjusted -12h)...")
+
+        mode = get_mode(cfg)
+        result = generate_report.generate_reports_from_data(
+            src, REF_PATH, tmpdir, return_metadata=True, mode=mode,
+        )
+
+        # ── Zone filtering ────────────────────────────────────────────────
+        if zone_filter:
+            result["handle_results"] = [
+                hr for hr in result["handle_results"]
+                if hr["handle"] in zone_filter
+            ]
+            overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+            for hr in result["handle_results"]:
+                for k in overall:
+                    overall[k] += hr["handle_counts"].get(k, 0)
+            result["overall_counts"] = overall
+
+            import pandas as pd
+            for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                df = result.get("type_data", {}).get(rn)
+                if df is not None and not df.empty:
+                    filter_col = "POST OFFICE HANDLE"
+                    if filter_col in df.columns:
+                        result["type_data"][rn] = df[df[filter_col].isin(zone_filter)].copy()
+
+        # Calculate counts
+        total_day_date_counts = {}
+        total_urgent_counts = {}
+        urgent_by_type = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+        today_date = datetime.now().date()
+        import pandas as pd
+
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            df_z = result.get("type_data", {}).get(rn)
+            if df_z is None or df_z.empty:
+                continue
+            date_col_z = result.get("date_col") or (
+                "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
+            )
+            if date_col_z and date_col_z in df_z.columns:
+                parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
+                                          format="mixed", errors="coerce")
+                df_z = df_z.copy()
+                df_z["_zdate"] = parsed_z.dt.date
+
+            handle_col = "POST OFFICE HANDLE"
+            if handle_col not in df_z.columns:
+                continue
+
+            for _, row_z in df_z.iterrows():
+                h = str(row_z.get(handle_col, "")).strip().upper()
+                if not h:
+                    continue
+                d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
+                if d_val and not pd.isna(d_val):
+                    total_day_date_counts.setdefault(h, {})
+                    total_day_date_counts[h][d_val] = total_day_date_counts[h].get(d_val, 0) + 1
+                created_d = None
+                if "CREATED DATE" in df_z.columns:
+                    cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
+                                        format="mixed", errors="coerce")
+                    if not pd.isna(cd):
+                        created_d = cd.date()
+                if created_d and (today_date - created_d).days > 1:
+                    if h not in total_urgent_counts:
+                        total_urgent_counts[h] = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+                    total_urgent_counts[h][rn] = total_urgent_counts[h].get(rn, 0) + 1
+                    urgent_by_type[rn] += 1
+
+        overall = result["overall_counts"]
+        grand_total = sum(overall.values())
+        total_urgent_sum = sum(urgent_by_type.values())
+
+        result["summary_caption"] = "\n".join([
+            f"☀️ {zone_label} MORNING Report (Age -12h)  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            f"Delivery: {overall.get('Delivery',0)} (U:{urgent_by_type.get('Delivery',0)})  |  "
+            f"Not Assign: {overall.get('Branch',0)} (U:{urgent_by_type.get('Branch',0)})  |  "
+            f"Pickup: {overall.get('Pickup',0)} (U:{urgent_by_type.get('Pickup',0)})  |  "
+            f"Send Mega: {overall.get('Transit',0)} (U:{urgent_by_type.get('Transit',0)})",
+            f"Grand Total: {grand_total}  |  Total Urgent: {total_urgent_sum}",
+            f"📝 Age adjusted: -12 hours (excludes overnight hold)",
+        ])
+
+        # 1. Summary image
+        img_buf = generate_summary.build_summary_image(
+            result["handle_results"],
+            result["overall_counts"],
+            zone_label=f"{zone_label} MORNING",
+            day_date_counts=total_day_date_counts if total_day_date_counts else None,
+            urgent_counts=total_urgent_counts if total_urgent_counts else None,
+        )
+        img_buf.name = "morning_summary.png"
+        await send_requester_photo(update, context, img_buf)
+
+        # 2. Total Excel with 12h age adjustment
+        label = f"Morning_{zone_label}_" if zone_filter else "Morning_"
+        total_xlsx = os.path.join(tmpdir, f"{label}{stamp}.xlsx")
+        generate_summary.build_total_excel(result, total_xlsx, age_adjust_hours=12)
+
+        with open(total_xlsx, "rb") as f:
+            await send_requester_document(
+                update,
+                context,
+                f,
+                os.path.basename(total_xlsx),
+                caption=result["summary_caption"],
+            )
+
+        await edit_or_send_requester_text(msg, update, context, 
+            f"☀️ Done. {zone_label} MORNING report {datetime.now().strftime('%d.%m.%Y %H:%M')}\n"
+            f"Age adjusted: -12 hours"
+        )
+
+    except Exception as e:
+        log.exception("Error in /morning")
+        await edit_or_send_requester_text(msg, update, context, f"Error: {e}")
+
+
+@pm_required_handler
 async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/kpi or /totalkpi — Generates overall KPI performance summary report."""
     await delete_group_command(update, context)
@@ -2103,10 +2265,8 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     h_val = int(match.group(1))
                     m_val = int(match.group(2)) if match.group(2) else 0
                     t_mins = h_val * 60 + m_val
-                    if t_mins <= 599:
+                    if t_mins <= 600:
                         hits_10h += 1
-                    elif 600 <= t_mins <= 1439:
-                        warning_10_24h += 1
                     else:
                         overdue_24h += 1
                 else:
@@ -2114,7 +2274,6 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         deliv_pct   = (hits_10h / total_orders) * 100
         special_pct = (special_green / total_orders) * 100
-        warn_pct    = (warning_10_24h / total_orders) * 100
         overdue_pct = (overdue_24h / total_orders) * 100
         overall_pct = ((hits_10h + special_green) / total_orders) * 100
 
@@ -2124,8 +2283,7 @@ async def cmd_total_kpi(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📦 *Total Active Orders* : `{total_orders:,}`\n\n"
             f"🟢 *Delivery KPI (<=10h)*  : `{hits_10h:,}` ({deliv_pct:.1f}%)\n"
             f"🟢 *Special Hold (420/472)*: `{special_green:,}` ({special_pct:.1f}%)\n"
-            f"🟡 *Warning (10h–24h)*      : `{warning_10_24h:,}` ({warn_pct:.1f}%)\n"
-            f"🔴 *Overdue (>24h / >7d)*  : `{overdue_24h:,}` ({overdue_pct:.1f}%)\n"
+            f"🔴 *Overdue (>10h / >7d)*  : `{overdue_24h:,}` ({overdue_pct:.1f}%)\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"🎯 *OVERALL KPI HIT RATE*  : `{overall_pct:.1f}%` 🟢\n"
             f"  ↳ Courier Delivery KPI: `{deliv_pct:.1f}%`\n"
@@ -6674,6 +6832,7 @@ def main():
     app.add_handler(CommandHandler("app",        cmd_app))
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
+    app.add_handler(CommandHandler("morning",    cmd_morning))
     app.add_handler(CommandHandler("tpg",        cmd_tpg))
     app.add_handler(CommandHandler("compare",    cmd_compare))
     app.add_handler(CommandHandler("exportlogs", cmd_export_logs))
