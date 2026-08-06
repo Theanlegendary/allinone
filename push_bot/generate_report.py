@@ -131,7 +131,7 @@ REPORT_COLS = {
 REPORT_FILTER_COLS = {
     'Pickup':   'POST OFFICE HANDLE',
     'Delivery': 'POST OFFICE HANDLE',
-    'Transit':  'POST OFFICE HANDLE',
+    'Transit':  'CURRENT POST OFFICE',
     'Branch':   'POST OFFICE HANDLE',
 }
 
