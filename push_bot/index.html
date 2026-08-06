@@ -130,9 +130,7 @@
             }
         }
 
-        /* ------------------------------------------------------------- */
-        /* LEFT CONTENT COLUMN: 2X BIGGER TYPOGRAPHY ACROSS ALL SLIDES   */
-        /* ------------------------------------------------------------- */
+        /* LEFT CONTENT COLUMN */
         .left-content {
             display: flex;
             flex-direction: column;
@@ -159,7 +157,7 @@
             border-radius: 4px;
         }
 
-        /* MASSIVE 2X HERO TITLE WITH ANGKOR FONT */
+        /* HERO TITLE WITH ANGKOR FONT */
         .hero-title-bold {
             font-family: 'Angkor', serif;
             font-size: 5.2rem;
@@ -172,7 +170,7 @@
             color: var(--brand-red);
         }
 
-        /* 2X ENLARGED BILINGUAL DESCRIPTION & KHMER TEXT */
+        /* ENLARGED BILINGUAL DESCRIPTION & KHMER TEXT */
         .sub-english {
             font-size: 1.75rem;
             color: var(--text-black);
@@ -192,7 +190,7 @@
             box-shadow: 0 4px 12px rgba(225, 27, 34, 0.08);
         }
 
-        /* Status & Rule Cards (2X Enlarged Text) */
+        /* Status & Rule Cards */
         .status-flow-container {
             display: flex;
             flex-direction: column;
@@ -227,7 +225,7 @@
             font-weight: 800;
         }
 
-        /* KPI Explanation Grid (2X Enlarged) */
+        /* KPI Explanation Grid */
         .kpi-explain-box {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -277,6 +275,52 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+        }
+
+        /* STYLISH SMALL CORNER STICKER BADGES */
+        .exhibit-sticker {
+            position: absolute;
+            bottom: -14px;
+            left: 20px;
+            background: var(--brand-red);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.35);
+            border: 2px solid #ffffff;
+            transform: rotate(-4deg);
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .exhibit-sticker.blue {
+            background: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            transform: rotate(3deg);
+        }
+
+        .exhibit-sticker.amber {
+            background: #d97706;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+            transform: rotate(-3deg);
+        }
+
+        .exhibit-sticker.green {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+            transform: rotate(4deg);
+        }
+
+        .exhibit-sticker.purple {
+            background: #7c3aed;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+            transform: rotate(-5deg);
         }
 
         /* Yellow Sticky Note Callout */
@@ -530,6 +574,11 @@
                     📌 <b>Crisp Table View:</b><br>Click table to inspect full 100% size!
                 </div>
 
+                <!-- STYLISH STICKER BADGE FOR SLIDE 1 -->
+                <div class="exhibit-sticker">
+                    <span>🏷️ VERIFIED DATA</span>
+                </div>
+
                 <div class="tab-switcher">
                     <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. THOP001</button>
                     <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery</button>
@@ -581,6 +630,11 @@
                     ⚡ <b>Rule 306 → 402:</b><br>Assigning courier triggers 10h KPI timer immediately!
                 </div>
 
+                <!-- STYLISH STICKER BADGE FOR SLIDE 2 -->
+                <div class="exhibit-sticker blue">
+                    <span>⚡ 10H SLA ACTIVE</span>
+                </div>
+
                 <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide2('table2', this)">1. Delivery Table (SVAP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide2('table4', this)">2. Not Assign Table (SVAP001)</button>
@@ -621,6 +675,11 @@
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">
                     📲 <b>Check App First:</b><br>Open TMS App Pickup Page to confirm customer requests!
+                </div>
+
+                <!-- STYLISH STICKER BADGE FOR SLIDE 3 -->
+                <div class="exhibit-sticker amber">
+                    <span>📲 APP CHECK REQUIRED</span>
                 </div>
 
                 <div class="tab-switcher two-cols">
@@ -669,6 +728,11 @@
                     🎯 <b>Target SLA 10H:</b><br>Keep all order ages green (<10h) across all 3 daily shifts!
                 </div>
 
+                <!-- STYLISH STICKER BADGE FOR SLIDE 4 -->
+                <div class="exhibit-sticker green">
+                    <span>🟢 0 OVERDUE TARGET</span>
+                </div>
+
                 <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide4('table2', this)">1. Delivery KPI Table (SVAP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide4('table1', this)">2. Not Assign Age Table (THOP001)</button>
@@ -713,6 +777,11 @@
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #f3e8ff; color: #6b21a8; border-color: #a855f7;">
                     📦 <b>EOD Audit Rule:</b><br>Zero un-scanned packages left in store before closing shift!
+                </div>
+
+                <!-- STYLISH STICKER BADGE FOR SLIDE 5 -->
+                <div class="exhibit-sticker purple">
+                    <span>📦 EOD AUDIT PASSED</span>
                 </div>
 
                 <div class="tab-switcher two-cols">
