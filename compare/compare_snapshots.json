@@ -1,0 +1,817 @@
+{
+  "03/08/2026": {
+    "5PM": {
+      "captured_at": "03/08/2026 17:00:00 (EDIT THIS IN EXCEL)",
+      "handles": {
+        "KANP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP002": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP003": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP004": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP005": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP006": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP007": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP008": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP009": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP010": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP011": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP012": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP013": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PNPP014": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PREP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "SVAP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "SIHP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "KAMP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "SPEP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "TAKP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "KOHP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "KEPP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "BANP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "BATP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "CHHP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PURP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "SIEP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "ODDP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "THOP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PRHP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "KRAP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "TBKP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "STUP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "ROTP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "MONP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "CHAP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        },
+        "PAIP001": {
+          "urgent": 0,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 0
+        }
+      }
+    },
+    "9AM": {
+      "captured_at": "03/08/2026 09:00:00 (from v4)",
+      "handles": {
+        "KANP001": {
+          "urgent": 46,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 46
+        },
+        "PNPP001": {
+          "urgent": 8,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 8
+        },
+        "PNPP002": {
+          "urgent": 5,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 5
+        },
+        "PNPP003": {
+          "urgent": 84,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 84
+        },
+        "PNPP004": {
+          "urgent": 89,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 89
+        },
+        "PNPP005": {
+          "urgent": 57,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 57
+        },
+        "PNPP006": {
+          "urgent": 20,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 20
+        },
+        "PNPP007": {
+          "urgent": 14,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 14
+        },
+        "PNPP008": {
+          "urgent": 32,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 32
+        },
+        "PNPP009": {
+          "urgent": 156,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 156
+        },
+        "PNPP010": {
+          "urgent": 27,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 27
+        },
+        "PNPP011": {
+          "urgent": 56,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 56
+        },
+        "PNPP012": {
+          "urgent": 37,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 37
+        },
+        "PNPP013": {
+          "urgent": 76,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 76
+        },
+        "PNPP014": {
+          "urgent": 28,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 28
+        },
+        "PREP001": {
+          "urgent": 44,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 44
+        },
+        "SVAP001": {
+          "urgent": 33,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 33
+        },
+        "SIHP001": {
+          "urgent": 25,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 25
+        },
+        "KAMP001": {
+          "urgent": 18,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 18
+        },
+        "SPEP001": {
+          "urgent": 22,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 22
+        },
+        "TAKP001": {
+          "urgent": 35,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 35
+        },
+        "KOHP001": {
+          "urgent": 20,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 20
+        },
+        "KEPP001": {
+          "urgent": 10,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 10
+        },
+        "BANP001": {
+          "urgent": 68,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 68
+        },
+        "BATP001": {
+          "urgent": 65,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 65
+        },
+        "CHHP001": {
+          "urgent": 30,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 30
+        },
+        "PURP001": {
+          "urgent": 72,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 72
+        },
+        "SIEP001": {
+          "urgent": 55,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 55
+        },
+        "ODDP001": {
+          "urgent": 24,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 24
+        },
+        "THOP001": {
+          "urgent": 19,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 19
+        },
+        "PRHP001": {
+          "urgent": 26,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 26
+        },
+        "KRAP001": {
+          "urgent": 16,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 16
+        },
+        "TBKP001": {
+          "urgent": 28,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 28
+        },
+        "STUP001": {
+          "urgent": 14,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 14
+        },
+        "ROTP001": {
+          "urgent": 12,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 12
+        },
+        "MONP001": {
+          "urgent": 10,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 10
+        },
+        "CHAP001": {
+          "urgent": 18,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 18
+        },
+        "PAIP001": {
+          "urgent": 8,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 8
+        }
+      }
+    },
+    "2PM": {
+      "captured_at": "03/08/2026 14:00:00 (from v4)",
+      "handles": {
+        "KANP001": {
+          "urgent": 40,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 40
+        },
+        "PNPP001": {
+          "urgent": 8,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 8
+        },
+        "PNPP002": {
+          "urgent": 4,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 4
+        },
+        "PNPP003": {
+          "urgent": 86,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 86
+        },
+        "PNPP004": {
+          "urgent": 54,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 54
+        },
+        "PNPP005": {
+          "urgent": 54,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 54
+        },
+        "PNPP006": {
+          "urgent": 18,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 18
+        },
+        "PNPP007": {
+          "urgent": 15,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 15
+        },
+        "PNPP008": {
+          "urgent": 22,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 22
+        },
+        "PNPP009": {
+          "urgent": 116,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 116
+        },
+        "PNPP010": {
+          "urgent": 20,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 20
+        },
+        "PNPP011": {
+          "urgent": 51,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 51
+        },
+        "PNPP012": {
+          "urgent": 22,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 22
+        },
+        "PNPP013": {
+          "urgent": 68,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 68
+        },
+        "PNPP014": {
+          "urgent": 19,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 19
+        },
+        "PREP001": {
+          "urgent": 31,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 31
+        },
+        "SVAP001": {
+          "urgent": 15,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 15
+        },
+        "SIHP001": {
+          "urgent": 18,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 18
+        },
+        "KAMP001": {
+          "urgent": 12,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 12
+        },
+        "SPEP001": {
+          "urgent": 16,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 16
+        },
+        "TAKP001": {
+          "urgent": 26,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 26
+        },
+        "KOHP001": {
+          "urgent": 14,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 14
+        },
+        "KEPP001": {
+          "urgent": 6,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 6
+        },
+        "BANP001": {
+          "urgent": 60,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 60
+        },
+        "BATP001": {
+          "urgent": 57,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 57
+        },
+        "CHHP001": {
+          "urgent": 24,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 24
+        },
+        "PURP001": {
+          "urgent": 61,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 61
+        },
+        "SIEP001": {
+          "urgent": 42,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 42
+        },
+        "ODDP001": {
+          "urgent": 17,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 17
+        },
+        "THOP001": {
+          "urgent": 14,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 14
+        },
+        "PRHP001": {
+          "urgent": 19,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 19
+        },
+        "KRAP001": {
+          "urgent": 11,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 11
+        },
+        "TBKP001": {
+          "urgent": 21,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 21
+        },
+        "STUP001": {
+          "urgent": 9,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 9
+        },
+        "ROTP001": {
+          "urgent": 8,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 8
+        },
+        "MONP001": {
+          "urgent": 7,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 7
+        },
+        "CHAP001": {
+          "urgent": 12,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 12
+        },
+        "PAIP001": {
+          "urgent": 5,
+          "pickup": 0,
+          "delivery": 0,
+          "transit": 0,
+          "branch": 5
+        }
+      }
+    }
+  }
+}
