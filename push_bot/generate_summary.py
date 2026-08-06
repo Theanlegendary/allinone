@@ -224,7 +224,7 @@ def build_summary_image(
             col_widths.append(W_FEE)
     if urgent_counts is not None:
         col_widths.append(W_URGENT)      # > 1 Day
-        col_widths.append(W_URGENT_3)
+        col_widths.append(W_URGENT_3)    # > 3 Days
     col_labels = fixed_cols + date_labels + tail_cols
 
     n_cols  = len(col_widths)
@@ -429,6 +429,7 @@ def build_summary_image(
             for fi in range(n_fee_cod):
                 if total_idx + 1 + fi < n_cols:
                     bgs[total_idx + 1 + fi] = (230, 255, 235)
+        
         # Tint urgent cells if non-zero (light red)
         if urgent_counts is not None:
             h_urgent = urgent_counts.get(hr["handle"], {})
@@ -483,26 +484,6 @@ def build_summary_image(
             g_cod = sum((cod_counts or {}).values())
             gt_cells.append(f"${g_cod:.2f}" if g_cod else "")
 
-    if urgent_counts is not None:
-        if has_split_urgent:
-            g_p = sum(u.get("Pickup", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_d = sum(u.get("Delivery", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_tra = sum(u.get("Transit", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_bra = sum(u.get("Branch", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_tot = g_p + g_d + g_tra + g_bra
-            
-            gt_cells.extend([
-                str(g_p) if g_p else "",
-                str(g_d) if g_d else "",
-                str(g_tra) if g_tra else "",
-                str(g_bra) if g_bra else "",
-                str(g_tot) if g_tot else ""
-            ])
-        else:
-            g_urgent = sum((urgent_counts or {}).values() if not isinstance(next(iter((urgent_counts or {}).values()), 0), dict) else [0])
-            gt_cells.append(str(g_urgent) if g_urgent else "")
-
-    gt_bgs = [C_TOTAL_BG] * n_cols
     # Add > 1 Day and > 3 Days to Grand Total
     if urgent_counts is not None:
         g_1day = 0
@@ -910,9 +891,12 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
                         is_overdue_7days = True
 
             row_fill = None
+            age_val_str = str(row.get('Age', '') or '')
+            is_green_kpi = age_val_str.startswith('🟢')
+
             if status_code in ('420', '472'):
                 row_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-            elif is_overdue or status_code in ('500', '510', '511', '512', '520', '540'):
+            elif not is_green_kpi and (is_overdue or status_code in ('500', '510', '511', '512', '520', '540')):
                 row_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
 
             for ci, col in enumerate(all_cols, start=1):

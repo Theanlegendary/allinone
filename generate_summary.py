@@ -891,9 +891,12 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
                         is_overdue_7days = True
 
             row_fill = None
+            age_val_str = str(row.get('Age', '') or '')
+            is_green_kpi = age_val_str.startswith('🟢')
+
             if status_code in ('420', '472'):
                 row_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
-            elif is_overdue or status_code in ('500', '510', '511', '512', '520', '540'):
+            elif not is_green_kpi and (is_overdue or status_code in ('500', '510', '511', '512', '520', '540')):
                 row_fill = PatternFill(start_color='FFEBEB', end_color='FFEBEB', fill_type='solid')
 
             for ci, col in enumerate(all_cols, start=1):
