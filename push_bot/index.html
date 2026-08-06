@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metfone Express — Landscape Training Slide (Slide 1 of 5)</title>
+    <title>Metfone Express — Landscape Training Slide Deck</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Bold Display Fonts: Outfit + Inter -->
@@ -18,6 +18,9 @@
             --border-light: #e2e8f0;
             --sticky-yellow: #fef08a;
             --sticky-text: #854d0e;
+            --badge-green: #10b981;
+            --badge-yellow: #f59e0b;
+            --badge-blue: #3b82f6;
         }
 
         * {
@@ -106,22 +109,32 @@
             color: var(--text-muted);
         }
 
-        /* Main Split Content Layout */
-        .main-split {
+        /* Slide Views Switcher */
+        .slide-view {
+            display: none;
             width: 100%;
             height: 100%;
+        }
+
+        .slide-view.active {
             display: grid;
             grid-template-columns: 1fr 1fr;
             padding: 100px 40px 80px 80px;
             gap: 40px;
             align-items: center;
+            animation: slideFade 0.35s ease;
+        }
+
+        @keyframes slideFade {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         /* Left Content Column */
         .left-content {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             max-width: 580px;
         }
 
@@ -145,7 +158,7 @@
 
         .hero-title-bold {
             font-family: 'Outfit', sans-serif;
-            font-size: 4rem;
+            font-size: 3.6rem;
             font-weight: 900;
             line-height: 1.05;
             color: var(--text-black);
@@ -157,17 +170,57 @@
         }
 
         .sub-english {
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text-muted);
             line-height: 1.5;
             font-weight: 500;
         }
 
         .sub-khmer {
-            font-size: 1.05rem;
+            font-size: 0.98rem;
             color: var(--text-black);
             line-height: 1.6;
             font-weight: 600;
+        }
+
+        /* Status Transition Flow List (Slide 2) */
+        .status-flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .status-step-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--brand-red);
+            padding: 10px 14px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .status-code-badge {
+            background: var(--text-black);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .status-desc-text {
+            font-size: 0.85rem;
+            color: var(--text-black);
+            line-height: 1.3;
+        }
+
+        .status-desc-text strong {
+            color: var(--brand-red);
         }
 
         /* Right Visual Slide Paper Frame */
@@ -200,11 +253,11 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transform: rotate(2deg);
             z-index: 20;
-            max-width: 200px;
+            max-width: 210px;
             line-height: 1.4;
         }
 
-        /* 4 Section Tab Switcher inside Exhibit */
+        /* Tab Switcher */
         .tab-switcher {
             display: flex;
             gap: 8px;
@@ -299,6 +352,7 @@
             height: 6px;
             background: rgba(255, 255, 255, 0.4);
             border-radius: 50%;
+            cursor: pointer;
         }
 
         .dot.active {
@@ -362,12 +416,11 @@
                 <div class="brand-m-square">M</div>
                 <div class="nav-header-text">DAILY DISPATCH BOT TRAINING</div>
             </div>
-            <div class="nav-right-tag">Ops tms guide · 2026</div>
+            <div class="nav-right-tag" id="slideTag">Slide 1 of 5 · Ops tms guide</div>
         </div>
 
-        <!-- Main Split Area -->
-        <div class="main-split">
-            
+        <!-- SLIDE 1 VIEW -->
+        <div id="slide1" class="slide-view active">
             <!-- Left Headline Column -->
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 01 · Bot Core Operations</div>
@@ -387,12 +440,10 @@
 
             <!-- Right Visual Exhibit Container -->
             <div class="right-exhibit">
-                <!-- Yellow Sticky Note Callout -->
                 <div class="sticky-note">
                     📌 <b>Before Pushing:</b><br>Check creation date & active status scan timestamps.
                 </div>
 
-                <!-- Tab Selector for 4 Section Tables -->
                 <div class="tab-switcher">
                     <button class="exhibit-tab active" onclick="switchExhibit('pickup', this)">1. Pickup (ត្រូវយក)</button>
                     <button class="exhibit-tab" onclick="switchExhibit('delivery', this)">2. Delivery (ត្រូវចែក)</button>
@@ -400,28 +451,82 @@
                     <button class="exhibit-tab" onclick="switchExhibit('branch', this)">4. Branch (មិនទាន់)</button>
                 </div>
 
-                <!-- Active Display Image Frame -->
                 <div class="exhibit-display-frame" onclick="openLightbox()">
                     <img id="exhibitImg" src="/images/batp001_table_pickup.png" alt="BATP001 Report Table" class="exhibit-img">
                 </div>
             </div>
+        </div>
 
+        <!-- SLIDE 2 VIEW: DELIVERY & NOT ASSIGN CLEARANCE (KPI 10H & STATUS 306 -> 402 FLOW) -->
+        <div id="slide2" class="slide-view">
+            <!-- Left Headline Column -->
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Resolution</div>
+                
+                <h1 class="hero-title-bold" style="font-size: 3.2rem;">
+                    Clear pending.<br><span>Hit KPI 10h.</span>
+                </h1>
+
+                <p class="sub-english">
+                    Why orders get pending in <b>Branch (Not Assign)</b> & <b>Delivery</b> tables, and how to resolve them by transitioning status <b>306 → 402 (10h KPI)</b>.
+                </p>
+
+                <!-- Status Transition Stepper List -->
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #f59e0b;">
+                        <div class="status-code-badge" style="background: #f59e0b;">306</div>
+                        <div class="status-desc-text"><b>At Store / Accept Handover:</b> Order pending at branch awaiting courier assignment.</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">402</div>
+                        <div class="status-desc-text"><b>Assignment Confirmed (Set KPI 10h):</b> Courier assigned — 10h countdown starts!</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #10b981;">
+                        <div class="status-code-badge" style="background: #10b981;">410 / 420 / 430 / 460</div>
+                        <div class="status-desc-text">
+                            <b>Outcomes:</b> 410 (Shipped) | 420 (Ship again) | 430 (Ship failed) | 460 (Return)
+                        </div>
+                    </div>
+                </div>
+
+                <p class="sub-khmer" style="font-size: 0.9rem; margin-top: 4px;">
+                    ដំណោះស្រាយ៖ ប្តូរទំនិញកកស្ទះ 306 ទៅ 402 (កំណត់ KPI 10h) រួចបន្តទៅ 410 (ជោគជ័យ) 420 (ចែកឡើងវិញ) 430 (បរាជ័យ) ឬ 460 (ត្រឡប់មកវិញ)។
+                </p>
+            </div>
+
+            <!-- Right Visual Exhibit Container for Slide 2 -->
+            <div class="right-exhibit">
+                <div class="sticky-note" style="background: #dbeafe; color: #1e40af;">
+                    ⚡ <b>KPI Target 10 Hours:</b><br>Always convert 306 → 402 immediately to trigger 10h delivery timer!
+                </div>
+
+                <div class="tab-switcher">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide2('delivery', this)">1. Delivery (អីវ៉ាន់ត្រូវចែក)</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide2('branch', this)">2. Not Assign (មិនទាន់ចាត់ចែង)</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide2" src="/images/batp001_table_delivery.png" alt="Delivery & Branch Report Table" class="exhibit-img">
+                </div>
+            </div>
         </div>
 
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <div class="page-mark">01 &nbsp; METFONE EXPRESS</div>
+            <div class="page-mark" id="pageMark">01 &nbsp; METFONE EXPRESS</div>
             
             <div class="nav-controls-box">
-                <button class="nav-arrow" disabled>◄</button>
+                <button class="nav-arrow" id="prevBtn" onclick="goToSlide(1)" disabled>◄</button>
                 <div class="slide-dots">
-                    <div class="dot active"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
+                    <div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
+                    <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
+                    <div class="dot" id="dot3"></div>
+                    <div class="dot" id="dot4"></div>
+                    <div class="dot" id="dot5"></div>
                 </div>
-                <button class="nav-arrow" onclick="alert('Slide 2 of 5: Shift Clearance & Comparison Deep-Dive coming next!')">►</button>
+                <button class="nav-arrow" id="nextBtn" onclick="goToSlide(2)">►</button>
             </div>
         </div>
 
@@ -431,7 +536,7 @@
     <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
         <div class="lightbox-box" onclick="event.stopPropagation()">
             <button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
-            <div style="font-weight: 800; font-size: 1.1rem;" id="lightboxTitle">BATP001 Field Report Table Preview</div>
+            <div style="font-weight: 800; font-size: 1.1rem;" id="lightboxTitle">Field Report Table Preview</div>
             <div style="flex: 1; overflow: hidden; background: #090d16; border-radius: 8px; padding: 12px;">
                 <img id="lightboxFullImg" src="/images/batp001_table_pickup.png" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
@@ -439,26 +544,57 @@
     </div>
 
     <script>
-        const tableMap = {
+        let currentSlide = 1;
+        let currentTabSlide1 = 'pickup';
+        let currentTabSlide2 = 'delivery';
+
+        const tableMapSlide1 = {
             'pickup': { src: '/images/batp001_table_pickup.png', title: '1. អីវ៉ាន់ត្រូវយក (Pickup Report Table - BATP001)' },
             'delivery': { src: '/images/batp001_table_delivery.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery Report Table - BATP001)' },
             'transit': { src: '/images/batp001_table_transit.png', title: '3. អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Table - BATP001)' },
             'branch': { src: '/images/batp001_table_branch.png', title: '4. អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Table - BATP001)' }
         };
 
-        let currentTab = 'pickup';
+        const tableMapSlide2 = {
+            'delivery': { src: '/images/batp001_table_delivery.png', title: 'Delivery Report Table (402 KPI 10h -> 410/420/430/460 - BATP001)' },
+            'branch': { src: '/images/batp001_table_branch.png', title: 'Not Assign / Branch Report Table (Status 306 Pending at Store - BATP001)' }
+        };
+
+        function goToSlide(slideNum) {
+            currentSlide = slideNum;
+            document.querySelectorAll('.slide-view').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            
+            document.getElementById('slide' + slideNum).classList.add('active');
+            document.getElementById('dot' + slideNum).classList.add('active');
+
+            document.getElementById('slideTag').innerText = `Slide ${slideNum} of 5 · Ops tms guide`;
+            document.getElementById('pageMark').innerHTML = `0${slideNum} &nbsp; METFONE EXPRESS`;
+
+            document.getElementById('prevBtn').disabled = (slideNum === 1);
+            document.getElementById('nextBtn').disabled = (slideNum === 2); // For now up to slide 2
+        }
 
         function switchExhibit(tabKey, btnElement) {
-            currentTab = tabKey;
-            document.querySelectorAll('.exhibit-tab').forEach(b => b.classList.remove('active'));
+            currentTabSlide1 = tabKey;
+            document.querySelectorAll('#slide1 .exhibit-tab').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
             
-            let data = tableMap[tabKey];
+            let data = tableMapSlide1[tabKey];
             document.getElementById('exhibitImg').src = data.src;
         }
 
+        function switchExhibitSlide2(tabKey, btnElement) {
+            currentTabSlide2 = tabKey;
+            document.querySelectorAll('#slide2 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            let data = tableMapSlide2[tabKey];
+            document.getElementById('exhibitImgSlide2').src = data.src;
+        }
+
         function openLightbox() {
-            let data = tableMap[currentTab];
+            let data = (currentSlide === 1) ? tableMapSlide1[currentTabSlide1] : tableMapSlide2[currentTabSlide2];
             document.getElementById('lightboxFullImg').src = data.src;
             document.getElementById('lightboxTitle').innerText = data.title;
             document.getElementById('lightboxModal').classList.add('active');
