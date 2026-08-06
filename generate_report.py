@@ -611,14 +611,18 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell = ws.cell(r, start_col + ci, val if val != '' else None)
             cell.border = bdr
 
-            # Row-level fill (original system: 420/472 light green row, overdue/return light red row)
+            # Row-level fill (420/472 light green row, overdue/return light red row)
+            # CRITICAL RULE: If Age is green (🟢, under 10h KPI), NEVER fill red!
             row_fill = None
+            age_val_str = str(row_dict.get('Age', '') or '')
+            is_green_kpi = age_val_str.startswith('🟢')
+
             if is_total:
                 row_fill = _fill(tot_bg)
             elif status_code in ("420", "472"):
                 row_fill = _fill("E2EFDA")  # Light green row fill
-            elif is_overdue or status_code in ("500", "510", "511", "512", "520", "540"):
-                row_fill = _fill("FFEBEB")  # Light red row fill
+            elif not is_green_kpi and (is_overdue or status_code in ("500", "510", "511", "512", "520", "540")):
+                row_fill = _fill("FFEBEB")  # Light red row fill ONLY when KPI > 10h (not green)
 
             cell_fill = row_fill
             cell_font = _font(fn, '1E293B', bold=False)
@@ -1181,9 +1185,8 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         else:
             dm['Phone'] = ''
 
-    # SERVICE column — carry forward raw service type (CLT, CCN, CNT, CHK, CVT …)
+    # SERVICE column — carry forward raw service type + check VAS/NOTE for NTN/VTT
     if 'SERVICE' not in dm.columns:
-        # Try alternate source column names
         svc_src = next((c for c in dm.columns if str(c).strip().upper() == 'SERVICE'), None)
         if svc_src:
             dm['SERVICE'] = dm[svc_src].astype(str).str.strip()
@@ -1191,6 +1194,21 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             dm['SERVICE'] = ''
     else:
         dm['SERVICE'] = dm['SERVICE'].fillna('').astype(str).str.strip()
+
+    # Search NOTE, VAS, or EXTRA SERVICE columns for NTN / VTT additional service tags
+    note_cols = [c for c in dm.columns if any(k in str(c).upper() for k in ('NOTE', 'VAS', 'EXTRA', 'SERVICE'))]
+    def _attach_additional_service(row):
+        base_svc = str(row.get('SERVICE', '') or '').strip()
+        if base_svc == 'nan':
+            base_svc = ''
+        combined_notes = ' '.join(str(row.get(col, '') or '') for col in note_cols).upper()
+        if 'NTN' in combined_notes and 'NTN' not in base_svc.upper():
+            return f"{base_svc} (NTN)" if base_svc else "NTN"
+        elif 'VTT' in combined_notes and 'VTT' not in base_svc.upper():
+            return f"{base_svc} (VTT)" if base_svc else "VTT"
+        return base_svc
+
+    dm['SERVICE'] = dm.apply(_attach_additional_service, axis=1)
 
     os.makedirs(output_dir, exist_ok=True)
 
