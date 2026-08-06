@@ -126,17 +126,15 @@ def build_summary_image(
     urgent_counts: dict = None,     # {handle: urgent_count}
     fee_counts: dict = None,        # {handle: float} total fee per handle
     cod_counts: dict = None,        # {handle: float} total COD per handle
+    vip_counts: dict = None,        # {handle: int} total VIP count per handle
 ) -> io.BytesIO:
     """
     New layout:
       Row 1  : Title   — "DAILY REPORT — ZONE3  06/07/2026 09:30"
       Row 2  : Month sub-header spanning date columns (blank over fixed cols)
-      Row 3  : Headers — HANDLE | Pickup | Delivery | Pending | DD DD DD … | TOTAL | URGENT
+      Row 3  : Headers — HANDLE | Pickup | Delivery | Pending | VIP | DD DD DD … | TOTAL | URGENT
       Row 4+ : Data rows
       Last   : Grand Total (all red)
-
-    day_date_counts: optional {handle: {date: int}} — if provided, adds date columns.
-    urgent_counts:   optional {handle: int}          — if provided, adds URGENT column.
     """
     now = today or datetime.now()
     n_data_rows = len(handle_results)
@@ -178,15 +176,17 @@ def build_summary_image(
     W_HANDLE = max(_tw(draw, s, fn_b) for s in handle_strs) + PAD * 2
     W_HANDLE = max(W_HANDLE, 80 * sc)
 
-    W_NUM    = max(_tw(draw, h, fn_b) for h in ["Pickup", "Delivery", "Transit", "Branch", "TOTAL"]) + PAD * 2
+    W_NUM    = max(_tw(draw, h, fn_b) for h in ["Pickup", "Delivery", "Transit", "Branch", "VIP", "TOTAL"]) + PAD * 2
     W_NUM    = max(W_NUM, 56 * sc)
 
     W_DATE   = max(_tw(draw, "00", fn_b) + PAD * 2, 32 * sc)
     W_URGENT = max(_tw(draw, "URGENT", fn_sm) + PAD * 2, 48 * sc)
     W_U_COL  = max(_tw(draw, "U.Delivery", fn_sm) + PAD * 2, 48 * sc)
 
-    # Column order: Handle | Pickup | Delivery | Transit | Branch | [dates…] | TOTAL | [Fee | COD] | URGENT
+    # Column order: Handle | Pickup | Delivery | Transit | Branch | [VIP] | [dates…] | TOTAL | [Fee | COD] | URGENT
     fixed_cols  = ["HANDLE", "Pickup", "Delivery", "Transit", "Branch"]
+    if vip_counts is not None:
+        fixed_cols.append("VIP")
     date_labels = [f"{d.day:02d}" for d in all_dates]
     tail_cols   = ["TOTAL"]
 
@@ -212,7 +212,7 @@ def build_summary_image(
             tail_cols.append("URGENT")
 
     col_widths = (
-        [W_HANDLE, W_NUM, W_NUM, W_NUM, W_NUM]
+        [W_HANDLE] + [W_NUM] * (len(fixed_cols) - 1)
         + [W_DATE] * len(all_dates)
         + [W_NUM]                          # TOTAL
     )
@@ -361,6 +361,13 @@ def build_summary_image(
         fonts  = [fn_b, fn, fn, fn, fn]
         aligns = ["left", "center", "center", "center", "center"]
 
+        if vip_counts is not None:
+            v_cnt = vip_counts.get(handle, 0)
+            cells.append(str(v_cnt) if v_cnt else "")
+            fgs.append((220, 38, 38) if v_cnt else C_NUM_FG)
+            fonts.append(fn_b if v_cnt else fn)
+            aligns.append("center")
+
         # Date columns
         day_dc = (day_date_counts or {}).get(handle, {})
         for d in all_dates:
@@ -432,7 +439,7 @@ def build_summary_image(
         if has_fee_cod:
             n_fee_cod = (1 if fee_counts is not None else 0) + (1 if cod_counts is not None else 0)
             # find start index of fee/cod (after TOTAL)
-            total_idx = 5 + len(all_dates)  # HANDLE+4types+dates+TOTAL-1 = index of TOTAL
+            total_idx = 5 + len(all_dates) + (1 if vip_counts is not None else 0)  # index of TOTAL
             for fi in range(n_fee_cod):
                 if total_idx + 1 + fi < n_cols:
                     bgs[total_idx + 1 + fi] = (230, 255, 235)
@@ -467,6 +474,10 @@ def build_summary_image(
                  str(g_delivery) if g_delivery else "",
                  str(g_transit)  if g_transit  else "",
                  str(g_branch)   if g_branch   else ""]
+
+    if vip_counts is not None:
+        g_vip = sum((vip_counts or {}).values())
+        gt_cells.append(str(g_vip) if g_vip else "")
 
     # Date totals
     for d in all_dates:

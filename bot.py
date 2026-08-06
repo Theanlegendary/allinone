@@ -5920,8 +5920,6 @@ async def run_push(
                 hr for hr in result["handle_results"]
                 if hr["handle"] in target_handles
             ]
-
-        # Recalculate overall counts after filtering
         if target_handles or zone_mode:
             overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
             for hr in result["handle_results"]:
@@ -5985,7 +5983,7 @@ async def run_push(
             handle_str = hr["handle"]
             
             # Hide from requester in production mode (only show in test mode)
-            if not test_mode:
+            if not test_mode and handle_str in covered_handles:
                 continue
                 
             for hf in hr["handle_files"]:
@@ -6085,10 +6083,26 @@ async def run_push(
 
                 zone_label = zone_key.upper()
 
-                # ── Calculate Fee + COD totals per handle and zone total ──
+                # ── Calculate Fee + COD + VIP totals per handle and zone total ──
                 zone_fee_total = 0.0
                 zone_cod_total = 0.0
+                zone_vip_counts = {}
                 fee_cod_lines = []
+
+                # Count VIPs across all report types for this zone
+                for hr in zone_results:
+                    h = hr["handle"]
+                    h_v = 0
+                    for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                        df_tab = result.get("type_data", {}).get(rn)
+                        if df_tab is not None and not df_tab.empty and "VIP" in df_tab.columns:
+                            flt_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
+                            if flt_col in df_tab.columns:
+                                df_h_v = df_tab[df_tab[flt_col] == h]
+                                h_v += (df_h_v["VIP"] == "VIP").sum()
+                    zone_vip_counts[h] = h_v
+                zone_vip_total = sum(zone_vip_counts.values())
+
                 for rn in ["Delivery", "Branch"]:
                     df_fc = result.get("type_data", {}).get(rn)
                     if df_fc is None or df_fc.empty:
@@ -6110,6 +6124,7 @@ async def run_push(
                     h = hr["handle"]
                     h_fee = 0.0
                     h_cod = 0.0
+                    h_vip = zone_vip_counts.get(h, 0)
                     for rn in ["Delivery", "Branch"]:
                         df_fc = result.get("type_data", {}).get(rn)
                         if df_fc is None or df_fc.empty:
@@ -6125,13 +6140,13 @@ async def run_push(
                             h_cod += pd.to_numeric(df_h[cod_col], errors="coerce").fillna(0).sum()
                     total_orders = sum(hr["handle_counts"].get(k, 0) for k in ["Pickup","Delivery","Transit","Branch"])
                     fee_cod_lines.append(
-                        f"  {h}: {total_orders} orders | Fee: ${h_fee:.2f} | COD: ${h_cod:.2f}"
+                        f"  {h}: {total_orders} orders (🌟 {h_vip} VIP) | Fee: ${h_fee:.2f} | COD: ${h_cod:.2f}"
                     )
 
                 zone_caption = "\n".join([
                     f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                     f"Delivery: {zone_overall.get('Delivery',0)}  |  Not Assign: {zone_overall.get('Branch',0)}  |  Pickup: {zone_overall.get('Pickup',0)}  |  Send Mega: {zone_overall.get('Transit',0)}",
-                    f"Grand Total: {zone_grand}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
+                    f"Grand Total: {zone_grand}  |  🌟 VIP: {zone_vip_total}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
                 ])
                 if inline_remark:
                     zone_caption += f"\n📝 Remark: {inline_remark}"
@@ -6227,6 +6242,7 @@ async def run_push(
                         urgent_counts=zone_urgent_counts if zone_urgent_counts else None,
                         fee_counts=zone_fee_counts if any(zone_fee_counts.values()) else None,
                         cod_counts=zone_cod_counts if any(zone_cod_counts.values()) else None,
+                        vip_counts=zone_vip_counts if any(zone_vip_counts.values()) else None,
                     )
                     img_buf.name = f"{zone_key}_summary.png"
                     await safe_api_call(context.bot.send_photo, chat_id=group_id, photo=img_buf)
