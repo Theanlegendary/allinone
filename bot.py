@@ -1969,11 +1969,17 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                         format="mixed", errors="coerce")
                     if not pd.isna(cd):
                         created_d = cd.date()
-                if created_d and (today_date - created_d).days > 1:
-                    if h not in total_urgent_counts:
-                        total_urgent_counts[h] = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
-                    total_urgent_counts[h][rn] = total_urgent_counts[h].get(rn, 0) + 1
-                    urgent_by_type[rn] += 1
+                if created_d:
+                    days_old = (today_date - created_d).days
+                    if days_old > 1:
+                        if h not in total_urgent_counts:
+                            total_urgent_counts[h] = {"1day": 0, "3days": 0}
+                        total_urgent_counts[h]["1day"] = total_urgent_counts[h].get("1day", 0) + 1
+                        urgent_by_type[rn] += 1
+                    if days_old >= 3:
+                        if h not in total_urgent_counts:
+                            total_urgent_counts[h] = {"1day": 0, "3days": 0}
+                        total_urgent_counts[h]["3days"] = total_urgent_counts[h].get("3days", 0) + 1
 
         overall = result["overall_counts"]
         grand_total = sum(overall.values())
@@ -6153,13 +6159,13 @@ async def run_push(
                             h_cod += pd.to_numeric(df_h[cod_col], errors="coerce").fillna(0).sum()
                     total_orders = sum(hr["handle_counts"].get(k, 0) for k in ["Pickup","Delivery","Transit","Branch"])
                     fee_cod_lines.append(
-                        f"  {h}: {total_orders} orders (🌟 {h_vip} VIP) | Fee: ${h_fee:.2f} | COD: ${h_cod:.2f}"
+                        f"  {h}: {total_orders} orders (VIP: {h_vip}) | Fee: ${h_fee:.2f} | COD: ${h_cod:.2f}"
                     )
 
                 zone_caption = "\n".join([
                     f"📋 {zone_label} Report  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
                     f"Delivery: {zone_overall.get('Delivery',0)}  |  Not Assign: {zone_overall.get('Branch',0)}  |  Pickup: {zone_overall.get('Pickup',0)}  |  Send Mega: {zone_overall.get('Transit',0)}",
-                    f"Grand Total: {zone_grand}  |  🌟 VIP: {zone_vip_total}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
+                    f"Grand Total: {zone_grand}  |  VIP: {zone_vip_total}  |  Fee: ${zone_fee_total:.2f}  |  COD: ${zone_cod_total:.2f}",
                 ])
                 if inline_remark:
                     zone_caption += f"\n📝 Remark: {inline_remark}"
@@ -6213,15 +6219,23 @@ async def run_push(
                             if d_val and not pd.isna(d_val):
                                 zone_day_date_counts.setdefault(h, {})
                                 zone_day_date_counts[h][d_val] = zone_day_date_counts[h].get(d_val, 0) + 1
-                            # urgent = overdue (created > 1 day ago)
+                            # urgent = overdue (created > 1 day ago); also track > 3 days
                             created_d = None
                             if "CREATED DATE" in df_z.columns:
                                 cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
                                                     format="mixed", errors="coerce")
                                 if not pd.isna(cd):
                                     created_d = cd.date()
-                            if created_d and (today_date - created_d).days > 1:
-                                zone_urgent_counts[h] = zone_urgent_counts.get(h, 0) + 1
+                            if created_d:
+                                days_old = (today_date - created_d).days
+                                if days_old > 1:
+                                    if h not in zone_urgent_counts:
+                                        zone_urgent_counts[h] = {"1day": 0, "3days": 0}
+                                    zone_urgent_counts[h]["1day"] = zone_urgent_counts[h].get("1day", 0) + 1
+                                if days_old >= 3:
+                                    if h not in zone_urgent_counts:
+                                        zone_urgent_counts[h] = {"1day": 0, "3days": 0}
+                                    zone_urgent_counts[h]["3days"] = zone_urgent_counts[h].get("3days", 0) + 1
 
                     # Build per-handle fee/cod dicts for image columns
                     zone_fee_counts = {}
@@ -6945,8 +6959,16 @@ async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True, format="mixed", errors="coerce")
                             if not pd.isna(cd):
                                 created_d = cd.date()
-                        if created_d and (today_date - created_d).days > 1:
-                            zone_urgent_counts[h] = zone_urgent_counts.get(h, 0) + 1
+                        if created_d:
+                            days_old = (today_date - created_d).days
+                            if days_old > 1:
+                                if h not in zone_urgent_counts:
+                                    zone_urgent_counts[h] = {"1day": 0, "3days": 0}
+                                zone_urgent_counts[h]["1day"] = zone_urgent_counts[h].get("1day", 0) + 1
+                            if days_old >= 3:
+                                if h not in zone_urgent_counts:
+                                    zone_urgent_counts[h] = {"1day": 0, "3days": 0}
+                                zone_urgent_counts[h]["3days"] = zone_urgent_counts[h].get("3days", 0) + 1
 
                 img_buf = generate_summary.build_summary_image(
                     zone_results, zone_overall,

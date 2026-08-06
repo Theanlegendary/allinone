@@ -24,7 +24,8 @@ SUMMARY_HEADER_KHMER = {
     "Send Mega": "ដាក់ទៅ MEGA",
     "Not Assign": "មិនទាន់ចាត់",
     "TOTAL": "សរុប",
-    "URGENT": "ប្រញាប់",
+    "> 1 Day": "> 1 ថ្ងៃ",
+    "> 3 Days": "> 3 ថ្ងៃ",
     "U.Pickup": "ប្រញាប់.យក",
     "U.Delivery": "ប្រញាប់.ដឹក",
     "U.Pending": "ប្រញាប់.រង់ចាំ",
@@ -180,10 +181,11 @@ def build_summary_image(
     W_NUM    = max(W_NUM, 56 * sc)
 
     W_DATE   = max(_tw(draw, "00", fn_b) + PAD * 2, 32 * sc)
-    W_URGENT = max(_tw(draw, "URGENT", fn_sm) + PAD * 2, 48 * sc)
+    W_URGENT = max(_tw(draw, "> 1 Day", fn_sm) + PAD * 2, 52 * sc)
+    W_URGENT_3 = max(_tw(draw, "> 3 Days", fn_sm) + PAD * 2, 56 * sc)
     W_U_COL  = max(_tw(draw, "U.Delivery", fn_sm) + PAD * 2, 48 * sc)
 
-    # Column order: Handle | Pickup | Delivery | Transit | Branch | [VIP] | [dates…] | TOTAL | [Fee | COD] | URGENT
+    # Column order: Handle | Pickup | Delivery | Transit | Branch | [VIP] | [dates…] | TOTAL | [Fee | COD] | > 1 Day | > 3 Days
     fixed_cols  = ["HANDLE", "Pickup", "Delivery", "Transit", "Branch"]
     if vip_counts is not None:
         fixed_cols.append("VIP")
@@ -205,11 +207,10 @@ def build_summary_image(
         if cod_counts is not None:
             tail_cols.append("COD($)")
 
+    # Add > 1 Day and > 3 Days columns
     if urgent_counts is not None:
-        if has_split_urgent:
-            tail_cols.extend(["U.Pickup", "U.Delivery", "U.Transit", "U.Branch", "URGENT"])
-        else:
-            tail_cols.append("URGENT")
+        tail_cols.append("> 1 Day")
+        tail_cols.append("> 3 Days")
 
     col_widths = (
         [W_HANDLE] + [W_NUM] * (len(fixed_cols) - 1)
@@ -222,10 +223,8 @@ def build_summary_image(
         if cod_counts is not None:
             col_widths.append(W_FEE)
     if urgent_counts is not None:
-        if has_split_urgent:
-            col_widths.extend([W_U_COL, W_U_COL, W_U_COL, W_U_COL, W_URGENT])
-        else:
-            col_widths.append(W_URGENT)
+        col_widths.append(W_URGENT)      # > 1 Day
+        col_widths.append(W_URGENT_3)
     col_labels = fixed_cols + date_labels + tail_cols
 
     n_cols  = len(col_widths)
@@ -311,7 +310,7 @@ def build_summary_image(
     hdr_bgs = []
     hdr_fgs = []
     for ci, label in enumerate(col_labels):
-        if label == "URGENT":
+        if label in ("> 1 Day", "> 3 Days"):
             hdr_bgs.append(C_URGENT_HDR)
             hdr_fgs.append((255, 230, 230))
         elif label in ("TOTAL",):
@@ -400,39 +399,26 @@ def build_summary_image(
                 fonts.append(fn_b)
                 aligns.append("center")
 
-        # URGENT
-        urgent = 0
-        if urgent_counts:
-            val_u = urgent_counts.get(hr["handle"], 0)
-            if isinstance(val_u, dict):
-                urgent = sum(val_u.values())
-            else:
-                urgent = val_u
-
+        # > 1 Day and > 3 Days columns
         if urgent_counts is not None:
-            if has_split_urgent:
-                h_urg = urgent_counts.get(hr["handle"], {})
-                u_p = h_urg.get("Pickup", 0)
-                u_d = h_urg.get("Delivery", 0)
-                u_tra = h_urg.get("Transit", 0)
-                u_bra = h_urg.get("Branch", 0)
-                u_tot = u_p + u_d + u_tra + u_bra
-                
-                cells.extend([
-                    str(u_p) if u_p else "",
-                    str(u_d) if u_d else "",
-                    str(u_tra) if u_tra else "",
-                    str(u_bra) if u_bra else "",
-                    str(u_tot) if u_tot else ""
-                ])
-                fgs.extend([C_URGENT_FG] * 5)
-                fonts.extend([fn_b] * 5)
-                aligns.extend(["center"] * 5)
+            h_urgent = urgent_counts.get(hr["handle"], {})
+            
+            # Extract counts (handle both dict and simple int for backward compatibility)
+            if isinstance(h_urgent, dict):
+                urgent_1day = h_urgent.get("1day", 0)
+                urgent_3days = h_urgent.get("3days", 0)
             else:
-                cells.append(str(urgent) if urgent else "")
-                fgs.append(C_URGENT_FG)
-                fonts.append(fn_b)
-                aligns.append("center")
+                # Backward compatibility: if it's just a number, use it for 1day only
+                urgent_1day = h_urgent
+                urgent_3days = 0
+            
+            # Add both columns
+            cells.append(str(urgent_1day) if urgent_1day else "")
+            cells.append(str(urgent_3days) if urgent_3days else "")
+            
+            fgs.extend([C_URGENT_FG, C_URGENT_FG])
+            fonts.extend([fn_b, fn_b])
+            aligns.extend(["center", "center"])
 
         bgs = [row_bg] * n_cols
         # Tint fee/cod cells light green
@@ -443,19 +429,18 @@ def build_summary_image(
             for fi in range(n_fee_cod):
                 if total_idx + 1 + fi < n_cols:
                     bgs[total_idx + 1 + fi] = (230, 255, 235)
-        # Tint urgent cell if non-zero
+        # Tint urgent cells if non-zero (light red)
         if urgent_counts is not None:
-            if has_split_urgent:
-                h_urg = urgent_counts.get(hr["handle"], {})
-                u_p = h_urg.get("Pickup", 0)
-                u_d = h_urg.get("Delivery", 0)
-                u_tra = h_urg.get("Transit", 0)
-                u_bra = h_urg.get("Branch", 0)
-                u_tot = u_p + u_d + u_tra + u_bra
-                if u_tot > 0:
-                    bgs[-4:] = [(255, 235, 235)] * 4
-            elif urgent > 0:
-                bgs[-1] = (255, 235, 235)
+            h_urgent = urgent_counts.get(hr["handle"], {})
+            if isinstance(h_urgent, dict):
+                urgent_1day = h_urgent.get("1day", 0)
+                urgent_3days = h_urgent.get("3days", 0)
+            else:
+                urgent_1day = h_urgent
+                urgent_3days = 0
+            
+            if urgent_1day > 0 or urgent_3days > 0:
+                bgs[-2:] = [(255, 235, 235), (255, 235, 235)]  # Last 2 cells (> 1 Day, > 3 Days)
 
         _row(y, ROW_H,
              cells=cells, bgs=bgs, fgs=fgs, fonts=fonts, aligns=aligns,
@@ -518,19 +503,27 @@ def build_summary_image(
             gt_cells.append(str(g_urgent) if g_urgent else "")
 
     gt_bgs = [C_TOTAL_BG] * n_cols
+    # Add > 1 Day and > 3 Days to Grand Total
     if urgent_counts is not None:
-        if has_split_urgent:
-            g_p = sum(u.get("Pickup", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_d = sum(u.get("Delivery", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_tra = sum(u.get("Transit", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_bra = sum(u.get("Branch", 0) for u in urgent_counts.values() if isinstance(u, dict))
-            g_tot = g_p + g_d + g_tra + g_bra
-            if g_tot > 0:
-                gt_bgs[-4:] = [(255, 200, 200)] * 4
-        else:
-            g_urgent = sum((urgent_counts or {}).values() if not isinstance(next(iter((urgent_counts or {}).values()), 0), dict) else [0])
-            if g_urgent > 0:
-                gt_bgs[-1] = (255, 200, 200)
+        g_1day = 0
+        g_3days = 0
+        for h_urgent in urgent_counts.values():
+            if isinstance(h_urgent, dict):
+                g_1day += h_urgent.get("1day", 0)
+                g_3days += h_urgent.get("3days", 0)
+            else:
+                # Backward compatibility
+                g_1day += h_urgent
+        
+        gt_cells.append(str(g_1day) if g_1day else "")
+        gt_cells.append(str(g_3days) if g_3days else "")
+
+    gt_bgs = [C_TOTAL_BG] * n_cols
+    if urgent_counts is not None:
+        g_1day = sum(u.get("1day", 0) if isinstance(u, dict) else u for u in urgent_counts.values())
+        g_3days = sum(u.get("3days", 0) if isinstance(u, dict) else 0 for u in urgent_counts.values())
+        if g_1day > 0 or g_3days > 0:
+            gt_bgs[-2:] = [(255, 200, 200), (255, 200, 200)]  # Last 2 cells
 
     _row(y, ROW_H,
          cells=gt_cells,
@@ -640,9 +633,9 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
     REPORT_ORDER = ['Delivery', 'Not Assign', 'Pickup', 'Send Mega']
     REPORT_COLS = {
         'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'Cus name', 'Phone'],
-        'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+        'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
         'Send Mega':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
-        'Not Assign': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+        'Not Assign': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
     }
 
     ACTION_TRANSLATIONS_EN = {
@@ -825,10 +818,11 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
 
         title_row = current_row
         ws.row_dimensions[title_row].height = 22
-        tc = ws.cell(title_row, 1, f"{rn.upper()} BILL CHECK  {now_str}")
+        today_str = datetime.now().strftime('%d/%m/%Y %H:%M')
+        tc = ws.cell(title_row, 1, f"{rn.upper()} REPORT — {today_str}")
         tc.font      = Font(name=fn, color='FFFFFF', bold=True, size=12)
         tc.fill      = PatternFill(start_color=NAVY, end_color=NAVY, fill_type='solid')
-        tc.alignment = Alignment(horizontal='left', vertical='center')
+        tc.alignment = Alignment(horizontal='center', vertical='center')
         tc.border    = bdr
         for ci in range(2, n_total + 1):
             c = ws.cell(title_row, ci, '')
