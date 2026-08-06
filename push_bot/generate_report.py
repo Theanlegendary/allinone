@@ -1267,19 +1267,27 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             df_t['10H KPI'] = [r[1] for r in kpi_res]
         type_data[rn] = df_t
 
-    # Gather all handles
+    # Gather all handles — ONLY Main Post Offices (excluding showrooms 'A' and agents 'S')
     all_handles = set()
     for rn in ALL_TABS:
         df_t = type_data[rn]
         filter_col = REPORT_FILTER_COLS[rn]
         if filter_col in df_t.columns:
-            all_handles.update(df_t[filter_col].dropna().unique())
+            for h in df_t[filter_col].dropna().unique():
+                h_str = str(h).strip().upper()
+                if not h_str:
+                    continue
+                # Exclude showroom (A) and agent (S) handles from forming separate rows/tables
+                if len(h_str) >= 4 and h_str[3] in ('A', 'S'):
+                    continue
+                all_handles.add(h_str)
 
     unique_handles = sorted(list(h for h in all_handles if str(h).strip()))
     if target_handles:
         for th in target_handles:
-            if th not in unique_handles:
-                unique_handles.append(th)
+            th_str = str(th).strip().upper()
+            if th_str not in unique_handles and not (len(th_str) >= 4 and th_str[3] in ('A', 'S')):
+                unique_handles.append(th_str)
         unique_handles = sorted(unique_handles)
 
     handle_results = []

@@ -1915,6 +1915,19 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Re-fetch overall if zone_filter was processed
             overall = result["overall_counts"]
 
+        # ── Exclude showroom (A) and agent (S) from type_data for image + Excel ──
+        # Their counts are already included in the main post office figures.
+        import pandas as pd
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            df_t = result.get("type_data", {}).get(rn)
+            if df_t is not None and not df_t.empty:
+                po_col = "POST OFFICE HANDLE"
+                if po_col in df_t.columns:
+                    mask = df_t[po_col].apply(
+                        lambda h: not (len(str(h).strip()) >= 4 and str(h).strip()[3] in ('A', 'S'))
+                    )
+                    result["type_data"][rn] = df_t[mask].copy()
+
         # Calculate day_date_counts and urgent_counts for /total image
         total_day_date_counts = {}
         total_urgent_counts   = {}
