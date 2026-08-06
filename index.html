@@ -18,9 +18,6 @@
             --border-light: #e2e8f0;
             --sticky-yellow: #fef08a;
             --sticky-text: #854d0e;
-            --badge-green: #10b981;
-            --badge-yellow: #f59e0b;
-            --badge-blue: #3b82f6;
         }
 
         * {
@@ -118,7 +115,7 @@
 
         .slide-view.active {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.1fr;
             padding: 100px 40px 80px 80px;
             gap: 40px;
             align-items: center;
@@ -158,7 +155,7 @@
 
         .hero-title-bold {
             font-family: 'Outfit', sans-serif;
-            font-size: 3.6rem;
+            font-size: 3.8rem;
             font-weight: 900;
             line-height: 1.05;
             color: var(--text-black);
@@ -170,14 +167,14 @@
         }
 
         .sub-english {
-            font-size: 1rem;
+            font-size: 1.02rem;
             color: var(--text-muted);
             line-height: 1.5;
             font-weight: 500;
         }
 
         .sub-khmer {
-            font-size: 0.98rem;
+            font-size: 1rem;
             color: var(--text-black);
             line-height: 1.6;
             font-weight: 600;
@@ -219,24 +216,20 @@
             line-height: 1.3;
         }
 
-        .status-desc-text strong {
-            color: var(--brand-red);
-        }
-
         /* Right Visual Slide Paper Frame */
         .right-exhibit {
             width: 100%;
             height: 100%;
-            max-height: 520px;
-            background: #f8fafc;
+            max-height: 540px;
+            background: #ffffff;
             border: 2px solid var(--text-black);
             border-radius: 12px;
-            box-shadow: 16px 16px 0px rgba(15, 23, 42, 0.1);
+            box-shadow: 16px 16px 0px rgba(15, 23, 42, 0.08);
             position: relative;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
         }
 
         /* Yellow Sticky Note Callout */
@@ -263,18 +256,20 @@
             gap: 8px;
             border-bottom: 2px solid var(--border-light);
             padding-bottom: 8px;
+            overflow-x: auto;
         }
 
         .exhibit-tab {
             background: transparent;
             border: none;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
             color: var(--text-muted);
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .exhibit-tab.active {
@@ -286,12 +281,15 @@
         .exhibit-display-frame {
             flex: 1;
             width: 100%;
-            background: #090d16;
+            background: #ffffff;
             border: 1px solid var(--border-light);
             border-radius: 8px;
             overflow: hidden;
             position: relative;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .exhibit-img {
@@ -299,6 +297,7 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         /* Bottom Controls Bar */
@@ -361,16 +360,16 @@
             border-radius: 10px;
         }
 
-        /* Fullscreen Lightbox Modal */
+        /* Fullscreen Sharp Lightbox Modal */
         .lightbox-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.92);
+            background: rgba(15, 23, 42, 0.95);
             z-index: 99999;
             align-items: center;
             justify-content: center;
-            padding: 32px;
+            padding: 24px;
         }
 
         .lightbox-modal.active {
@@ -378,14 +377,14 @@
         }
 
         .lightbox-box {
-            width: 90vw;
-            height: 85vh;
+            width: 95vw;
+            height: 90vh;
             background: #ffffff;
             border-radius: 12px;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             position: relative;
         }
 
@@ -399,6 +398,14 @@
             border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
+            z-index: 100;
+        }
+
+        .lightbox-img-full {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
         }
     </style>
 </head>
@@ -419,9 +426,8 @@
             <div class="nav-right-tag" id="slideTag">Slide 1 of 5 · Ops tms guide</div>
         </div>
 
-        <!-- SLIDE 1 VIEW -->
+        <!-- SLIDE 1 VIEW: CORE BOT OPERATIONS & 4 HIGH-RES TABLES -->
         <div id="slide1" class="slide-view active">
-            <!-- Left Headline Column -->
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 01 · Bot Core Operations</div>
                 
@@ -441,25 +447,24 @@
             <!-- Right Visual Exhibit Container -->
             <div class="right-exhibit">
                 <div class="sticky-note">
-                    📌 <b>Before Pushing:</b><br>Check creation date & active status scan timestamps.
+                    📌 <b>High Resolution Table:</b><br>Click anywhere on table to inspect crisp full-size view!
                 </div>
 
                 <div class="tab-switcher">
-                    <button class="exhibit-tab active" onclick="switchExhibit('pickup', this)">1. Pickup (ត្រូវយក)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('delivery', this)">2. Delivery (ត្រូវចែក)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('transit', this)">3. Transit (ផ្ញើបន្ត)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('branch', this)">4. Branch (មិនទាន់)</button>
+                    <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. Not Assign (THOP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery (SVAP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table3', this)">3. Transit (SVAP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table4', this)">4. Not Assign (SVAP001)</button>
                 </div>
 
                 <div class="exhibit-display-frame" onclick="openLightbox()">
-                    <img id="exhibitImg" src="/images/batp001_table_pickup.png" alt="BATP001 Report Table" class="exhibit-img">
+                    <img id="exhibitImg" src="/images/thop001_branch_sharp.png" alt="THOP001 Branch Sharp Table" class="exhibit-img">
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 2 VIEW: DELIVERY & NOT ASSIGN CLEARANCE (KPI 10H & STATUS 306 -> 402 FLOW) -->
+        <!-- SLIDE 2 VIEW: DELIVERY & NOT ASSIGN CLEARANCE (2 SHARP TABLES) -->
         <div id="slide2" class="slide-view">
-            <!-- Left Headline Column -->
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Resolution</div>
                 
@@ -499,16 +504,16 @@
             <!-- Right Visual Exhibit Container for Slide 2 -->
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #dbeafe; color: #1e40af;">
-                    ⚡ <b>KPI Target 10 Hours:</b><br>Always convert 306 → 402 immediately to trigger 10h delivery timer!
+                    ⚡ <b>KPI Target 10 Hours:</b><br>Convert status 306 → 402 immediately to start 10h delivery SLA!
                 </div>
 
                 <div class="tab-switcher">
-                    <button class="exhibit-tab active" onclick="switchExhibitSlide2('delivery', this)">1. Delivery (អីវ៉ាន់ត្រូវចែក)</button>
-                    <button class="exhibit-tab" onclick="switchExhibitSlide2('branch', this)">2. Not Assign (មិនទាន់ចាត់ចែង)</button>
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide2('table2', this)">1. Delivery Table (SVAP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide2('table4', this)">2. Not Assign Table (SVAP001)</button>
                 </div>
 
                 <div class="exhibit-display-frame" onclick="openLightbox()">
-                    <img id="exhibitImgSlide2" src="/images/batp001_table_delivery.png" alt="Delivery & Branch Report Table" class="exhibit-img">
+                    <img id="exhibitImgSlide2" src="/images/svap001_delivery_sharp.png" alt="SVAP001 Delivery Sharp Table" class="exhibit-img">
                 </div>
             </div>
         </div>
@@ -532,32 +537,27 @@
 
     </div>
 
-    <!-- Lightbox Modal -->
+    <!-- Fullscreen Sharp Lightbox Modal -->
     <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
         <div class="lightbox-box" onclick="event.stopPropagation()">
             <button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
-            <div style="font-weight: 800; font-size: 1.1rem;" id="lightboxTitle">Field Report Table Preview</div>
-            <div style="flex: 1; overflow: hidden; background: #090d16; border-radius: 8px; padding: 12px;">
-                <img id="lightboxFullImg" src="/images/batp001_table_pickup.png" style="width: 100%; height: 100%; object-fit: contain;">
+            <div style="font-weight: 800; font-size: 1.1rem; color: #0f172a;" id="lightboxTitle">Field Report Table Preview</div>
+            <div style="flex: 1; overflow: hidden; background: #ffffff; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px;">
+                <img id="lightboxFullImg" src="/images/thop001_branch_sharp.png" class="lightbox-img-full">
             </div>
         </div>
     </div>
 
     <script>
         let currentSlide = 1;
-        let currentTabSlide1 = 'pickup';
-        let currentTabSlide2 = 'delivery';
+        let currentTabSlide1 = 'table1';
+        let currentTabSlide2 = 'table2';
 
-        const tableMapSlide1 = {
-            'pickup': { src: '/images/batp001_table_pickup.png', title: '1. អីវ៉ាន់ត្រូវយក (Pickup Report Table - BATP001)' },
-            'delivery': { src: '/images/batp001_table_delivery.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery Report Table - BATP001)' },
-            'transit': { src: '/images/batp001_table_transit.png', title: '3. អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Table - BATP001)' },
-            'branch': { src: '/images/batp001_table_branch.png', title: '4. អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Table - BATP001)' }
-        };
-
-        const tableMapSlide2 = {
-            'delivery': { src: '/images/batp001_table_delivery.png', title: 'Delivery Report Table (402 KPI 10h -> 410/420/430/460 - BATP001)' },
-            'branch': { src: '/images/batp001_table_branch.png', title: 'Not Assign / Branch Report Table (Status 306 Pending at Store - BATP001)' }
+        const sharpTables = {
+            'table1': { src: '/images/thop001_branch_sharp.png', title: '1. មិនទាន់ចាត់ចែង (Not Assign) — Report_THOP001_Branch' },
+            'table2': { src: '/images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery) — Report_SVAP001_Delivery' },
+            'table3': { src: '/images/svap001_transit_sharp.png', title: '3. ដាក់ទៅ MEGA (Send Mega / Transit) — Report_SVAP001_Transit' },
+            'table4': { src: '/images/svap001_branch_sharp.png', title: '4. មិនទាន់ចាត់ចែង (Not Assign) — Report_SVAP001_Branch' }
         };
 
         function goToSlide(slideNum) {
@@ -572,7 +572,7 @@
             document.getElementById('pageMark').innerHTML = `0${slideNum} &nbsp; METFONE EXPRESS`;
 
             document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 2); // For now up to slide 2
+            document.getElementById('nextBtn').disabled = (slideNum === 2);
         }
 
         function switchExhibit(tabKey, btnElement) {
@@ -580,7 +580,7 @@
             document.querySelectorAll('#slide1 .exhibit-tab').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
             
-            let data = tableMapSlide1[tabKey];
+            let data = sharpTables[tabKey];
             document.getElementById('exhibitImg').src = data.src;
         }
 
@@ -589,12 +589,13 @@
             document.querySelectorAll('#slide2 .exhibit-tab').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
             
-            let data = tableMapSlide2[tabKey];
+            let data = sharpTables[tabKey];
             document.getElementById('exhibitImgSlide2').src = data.src;
         }
 
         function openLightbox() {
-            let data = (currentSlide === 1) ? tableMapSlide1[currentTabSlide1] : tableMapSlide2[currentTabSlide2];
+            let key = (currentSlide === 1) ? currentTabSlide1 : currentTabSlide2;
+            let data = sharpTables[key];
             document.getElementById('lightboxFullImg').src = data.src;
             document.getElementById('lightboxTitle').innerText = data.title;
             document.getElementById('lightboxModal').classList.add('active');
