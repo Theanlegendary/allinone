@@ -595,6 +595,14 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                         is_overdue = True
                     if h_val >= 168:
                         is_overdue_7days = True
+            # ── Special case: current scan is under KPI (🟢) → keep row WHITE ──────
+            # Even if total Age ≥ 24h (is_overdue=True), if the Age cell starts with
+            # a green dot it means the package was recently scanned/moved (≤10h at
+            # current location). In that case override red and leave the row white.
+            if is_overdue:
+                age_str = str(row_dict.get('Age', '') or '')
+                if age_str.startswith('🟢'):
+                    is_overdue = False  # Recently scanned → white, not red
             if order_status_map:
                 status_code = order_status_map.get(order_id)
 
