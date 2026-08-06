@@ -3,916 +3,1026 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OPS Express — Daily Training Guide</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Metfone Ops Express — Operations Standard Operating Procedure (SOP)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── Reset & Base ─────────────────────────────────────────────── */
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0d1b3e;--blue:#1a56db;--indigo:#4338ca;--teal:#0891b2;
-  --green:#059669;--amber:#d97706;--red:#dc2626;--orange:#ea580c;
-  --slate:#334155;--muted:#64748b;
-  --glass:rgba(255,255,255,.08);--glass-border:rgba(255,255,255,.15);
-  --slide-h:100vh;
-}
-html,body{height:100%;overflow:hidden}
-body{
-  font-family:'Inter',sans-serif;
-  background:var(--navy);
-  color:#f8fafc;
-}
-
-/* ── Slides Container ─────────────────────────────────────────── */
-#slides-container{
-  width:100%;height:100vh;
-  overflow:hidden;position:relative;
-}
-.slide{
-  position:absolute;top:0;left:0;
-  width:100%;height:100vh;
-  display:flex;flex-direction:column;
-  opacity:0;pointer-events:none;
-  transition:opacity .5s ease,transform .5s ease;
-  transform:translateX(60px);
-  overflow-y:auto;
-}
-.slide.active{
-  opacity:1;pointer-events:all;transform:translateX(0);
-}
-.slide.exit-left{
-  opacity:0;transform:translateX(-60px);
+:root {
+  --metfone-red: #e11d48;
+  --metfone-red-dark: #be123c;
+  --ops-navy: #0f172a;
+  --ops-slate: #334155;
+  --ops-border: #e2e8f0;
+  --ops-bg: #f8fafc;
+  --ops-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --badge-green-bg: #dcfce7; --badge-green-txt: #15803d;
+  --badge-blue-bg: #dbeafe; --badge-blue-txt: #1d4ed8;
+  --badge-amber-bg: #fef3c7; --badge-amber-txt: #b45309;
+  --badge-red-bg: #ffe4e6; --badge-red-txt: #be123c;
 }
 
-/* ── Navigation Bar ───────────────────────────────────────────── */
-#nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  background:rgba(13,27,62,.95);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--glass-border);
-  padding:0 24px;height:60px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.nav-logo{
-  font-size:15px;font-weight:800;letter-spacing:.5px;
-  background:linear-gradient(135deg,#60a5fa,#a78bfa);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.nav-steps{
-  display:flex;gap:6px;align-items:center;
-}
-.step-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:rgba(255,255,255,.25);cursor:pointer;
-  transition:all .3s;
-}
-.step-dot.active{
-  width:28px;border-radius:4px;
-  background:linear-gradient(90deg,#60a5fa,#a78bfa);
-}
-.nav-arrows{display:flex;gap:8px}
-.nav-btn{
-  background:var(--glass);border:1px solid var(--glass-border);
-  color:#f8fafc;width:36px;height:36px;border-radius:10px;
-  cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-.nav-btn:hover{background:rgba(255,255,255,.15)}
-.nav-btn:disabled{opacity:.3;cursor:not-allowed}
-
-/* ── Common slide padding ─────────────────────────────────────── */
-.slide-inner{
-  padding:80px 32px 32px;
-  flex:1;display:flex;flex-direction:column;gap:20px;
-  max-width:1300px;margin:0 auto;width:100%;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', 'Kantumruy Pro', sans-serif;
+  background-color: var(--ops-bg);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Section Header ───────────────────────────────────────────── */
-.slide-header{
-  text-align:center;padding:8px 0 4px;
-}
-.slide-num{
-  font-size:11px;font-weight:600;letter-spacing:2px;
-  text-transform:uppercase;color:#60a5fa;margin-bottom:6px;
-}
-.slide-title{
-  font-size:clamp(22px,3vw,36px);font-weight:800;
-  background:linear-gradient(135deg,#f8fafc 0%,#94a3b8 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.slide-subtitle{
-  margin-top:6px;font-size:13px;color:#94a3b8;font-weight:400;
+/* ── Top Header Bar ────────────────────────────────────────────── */
+header {
+  height: 60px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--ops-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* ── Card ─────────────────────────────────────────────────────── */
-.card{
-  background:var(--glass);border:1px solid var(--glass-border);
-  border-radius:16px;padding:20px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.card-title{
-  font-size:12px;font-weight:700;letter-spacing:1.5px;
-  text-transform:uppercase;color:#60a5fa;margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
+.brand-logo {
+  background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ops-navy);
+}
+.brand-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  border-left: 1px solid #cbd5e1;
+  padding-left: 12px;
+  margin-left: 4px;
 }
 
-/* ── 4-Grid (Slide 1) ─────────────────────────────────────────── */
-.grid4{
-  display:grid;grid-template-columns:repeat(2,1fr);
-  grid-template-rows:repeat(2,1fr);gap:14px;flex:1;min-height:0;
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.grid-slot{
-  background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.2);
-  border-radius:14px;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;
-  transition:border-color .2s;min-height:180px;
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ops-slate);
 }
-.grid-slot:hover{border-color:rgba(96,165,250,.6)}
-.slot-label{
-  position:absolute;top:10px;left:12px;z-index:2;
-  font-size:11px;font-weight:700;letter-spacing:1px;
-  text-transform:uppercase;padding:3px 10px;border-radius:20px;
-  backdrop-filter:blur(8px);
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
 }
-.slot-pickup   .slot-label{background:rgba(5,150,105,.85);color:#d1fae5}
-.slot-delivery .slot-label{background:rgba(29,86,219,.85);color:#bfdbfe}
-.slot-transit  .slot-label{background:rgba(217,119,6,.85);color:#fef3c7}
-.slot-branch   .slot-label{background:rgba(220,38,38,.85);color:#fee2e2}
 
-.slot-img-wrap{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  padding:44px 8px 8px;
+/* ── Module Stepper Tabs ────────────────────────────────────────── */
+.stepper-bar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--ops-border);
+  padding: 0 24px;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
 }
-.slot-img-wrap img{
-  max-width:100%;max-height:100%;
-  object-fit:contain;border-radius:8px;
-  cursor:zoom-in;transition:transform .2s;
+.step-tab {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
-.slot-img-wrap img:hover{transform:scale(1.03)}
-.slot-empty{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;color:rgba(255,255,255,.3);font-size:13px;height:100%;
-  padding-top:40px;
+.step-tab:hover {
+  color: var(--ops-navy);
+  background: #f8fafc;
 }
-.slot-empty svg{width:40px;height:40px;opacity:.4}
+.step-tab.active {
+  color: var(--metfone-red);
+  border-bottom-color: var(--metfone-red);
+  background: #fff;
+}
+.tab-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #e2e8f0; color: #475569;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-tab.active .tab-num {
+  background: var(--metfone-red); color: #fff;
+}
 
-/* Upload overlay button */
-.upload-overlay{
-  position:absolute;bottom:8px;right:8px;z-index:3;
-  background:rgba(26,86,219,.85);border:none;border-radius:8px;
-  color:#fff;font-size:11px;font-weight:600;padding:5px 10px;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;gap:4px;
+/* ── Main View Area ────────────────────────────────────────────── */
+main {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
 }
-.upload-overlay:hover{background:rgba(26,86,219,1);transform:scale(1.05)}
-.del-btn{
-  position:absolute;top:36px;right:8px;z-index:3;
-  background:rgba(220,38,38,.7);border:none;border-radius:6px;
-  color:#fff;font-size:10px;padding:3px 7px;cursor:pointer;
-  display:none;
-}
-.grid-slot:hover .del-btn{display:block}
 
-/* ── 2-grid ───────────────────────────────────────────────────── */
-.grid2{
-  display:grid;grid-template-columns:repeat(2,1fr);
-  gap:14px;
+.slide-view {
+  position: absolute;
+  inset: 0;
+  padding: 24px 32px;
+  overflow-y: auto;
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
-.grid1{display:grid;grid-template-columns:1fr;gap:14px;}
-.img-slot{
-  background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.2);
-  border-radius:14px;overflow:hidden;min-height:200px;
-  display:flex;flex-direction:column;position:relative;
-  transition:border-color .2s;
+.slide-view.active {
+  display: flex;
 }
-.img-slot:hover{border-color:rgba(96,165,250,.6)}
-.img-slot .slot-label{
-  background:rgba(26,86,219,.85);color:#bfdbfe;
-  position:absolute;top:10px;left:12px;z-index:2;
-  font-size:11px;font-weight:700;letter-spacing:1px;
-  text-transform:uppercase;padding:3px 10px;border-radius:20px;
-  backdrop-filter:blur(8px);
-}
-.img-slot img{
-  width:100%;height:100%;object-fit:contain;
-  max-height:300px;border-radius:8px;
-  cursor:zoom-in;
-}
-.img-slot .slot-empty{height:200px}
 
-/* ── Info Boxes ───────────────────────────────────────────────── */
-.info-row{display:flex;gap:12px;flex-wrap:wrap;}
-.info-box{
-  flex:1;min-width:180px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  border-radius:12px;padding:14px 16px;
+/* ── Page Header Inside Slide ──────────────────────────────────── */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
 }
-.info-box .ib-icon{font-size:22px;margin-bottom:6px}
-.info-box .ib-title{font-size:11px;color:#94a3b8;margin-bottom:4px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
-.info-box .ib-val{font-size:16px;font-weight:700;color:#f8fafc}
-.info-box .ib-desc{font-size:11px;color:#64748b;margin-top:3px}
+.view-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ops-navy);
+}
+.view-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
 
-.steps-list{display:flex;flex-direction:column;gap:8px}
-.step-item{
-  display:flex;gap:12px;align-items:flex-start;
-  padding:10px 14px;background:rgba(255,255,255,.04);
-  border-radius:10px;border-left:3px solid var(--blue);
+/* ── Cards & Containers ────────────────────────────────────────── */
+.panel-card {
+  background: var(--ops-card);
+  border: 1px solid var(--ops-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 20px;
 }
-.step-item.green{border-left-color:var(--green)}
-.step-item.amber{border-left-color:var(--amber)}
-.step-item.red  {border-left-color:var(--red)}
-.step-item.teal {border-left-color:var(--teal)}
-.step-num{
-  width:24px;height:24px;border-radius:50%;
-  background:var(--blue);color:#fff;
-  font-size:11px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+.panel-head {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ops-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.step-item.green .step-num{background:var(--green)}
-.step-item.amber .step-num{background:var(--amber)}
-.step-item.red   .step-num{background:var(--red)}
-.step-item.teal  .step-num{background:var(--teal)}
-.step-text{font-size:13px;color:#e2e8f0;line-height:1.5}
-.step-text strong{color:#f8fafc}
 
-/* ── Badge ────────────────────────────────────────────────────── */
-.badge{
-  display:inline-block;padding:2px 10px;border-radius:20px;
-  font-size:11px;font-weight:700;letter-spacing:.5px;
+/* ── 4-Grid Upload Layout ─────────────────────────────────────── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
-.badge-green{background:rgba(5,150,105,.2);color:#34d399;border:1px solid rgba(52,211,153,.3)}
-.badge-red  {background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
-.badge-amber{background:rgba(217,119,6,.2);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
-.badge-blue {background:rgba(29,86,219,.2);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
-
-/* ── Checklist ────────────────────────────────────────────────── */
-.checklist{display:flex;flex-direction:column;gap:6px}
-.check-item{
-  display:flex;align-items:center;gap:10px;
-  font-size:13px;color:#cbd5e1;
-  padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px;
+.upload-card {
+  background: #ffffff;
+  border: 1px solid var(--ops-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
-.check-icon{font-size:15px;flex-shrink:0}
+.upload-card-head {
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--ops-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.tag-pickup   { background: var(--badge-green-bg); color: var(--badge-green-txt); }
+.tag-delivery { background: var(--badge-blue-bg);  color: var(--badge-blue-txt); }
+.tag-transit  { background: var(--badge-amber-bg); color: var(--badge-amber-txt); }
+.tag-branch   { background: var(--badge-red-bg);   color: var(--badge-red-txt); }
 
-/* ── Columns layout ───────────────────────────────────────────── */
-.cols{display:flex;gap:14px;flex:1}
-.col{flex:1;display:flex;flex-direction:column;gap:12px}
+.preview-box {
+  height: 230px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.preview-box img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+  background: #ffffff;
+}
+.placeholder-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+.placeholder-box svg {
+  width: 32px; height: 32px; stroke: #94a3b8;
+}
+
+.upload-card-foot {
+  padding: 10px 14px;
+  background: #ffffff;
+  border-top: 1px solid var(--ops-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn-upload {
+  background: var(--ops-navy);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-upload:hover { background: #1e293b; }
+.btn-remove {
+  background: #fff;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-remove:hover { background: #ffe4e6; }
+
+/* ── Standard Operational Tables ───────────────────────────────── */
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ops-table th {
+  background: var(--ops-navy);
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+.ops-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ops-border);
+  color: var(--text-main);
+}
+.ops-table tr:hover td { background: #f8fafc; }
+
+/* ── Split Layout Grid ────────────────────────────────────────── */
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ── Standard Checklist & Callout Boxes ────────────────────────── */
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+.rule-icon {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.rule-icon.red { background: var(--badge-red-bg); color: var(--badge-red-txt); }
+.rule-icon.amber { background: var(--badge-amber-bg); color: var(--badge-amber-txt); }
+.rule-icon.green { background: var(--badge-green-bg); color: var(--badge-green-txt); }
+.rule-icon.blue { background: var(--badge-blue-bg); color: var(--badge-blue-txt); }
+
+.rule-content { font-size: 13px; line-height: 1.5; color: var(--ops-slate); }
+.rule-content strong { color: var(--ops-navy); }
+
+/* ── Metric Summary Widgets ────────────────────────────────────── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.metric-box {
+  background: #ffffff;
+  border: 1px solid var(--ops-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.metric-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ops-navy);
+  margin-top: 4px;
+}
+.metric-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Footer Navigation ─────────────────────────────────────────── */
+footer {
+  height: 56px;
+  background: #ffffff;
+  border-top: 1px solid var(--ops-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 10;
+}
+.btn-nav {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--ops-border);
+  background: #ffffff;
+  color: var(--ops-navy);
+  cursor: pointer;
+}
+.btn-nav:hover { background: #f1f5f9; }
+.btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-nav.primary {
+  background: var(--metfone-red);
+  color: #ffffff;
+  border-color: var(--metfone-red);
+}
+.btn-nav.primary:hover { background: var(--metfone-red-dark); }
 
 /* ── Lightbox ─────────────────────────────────────────────────── */
-#lightbox{
-  display:none;position:fixed;inset:0;z-index:999;
-  background:rgba(0,0,0,.92);
-  align-items:center;justify-content:center;
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
 }
-#lightbox.open{display:flex}
-#lightbox img{max-width:90vw;max-height:90vh;border-radius:12px}
-#lightbox-close{
-  position:absolute;top:20px;right:24px;
-  background:rgba(255,255,255,.1);border:none;border-radius:50%;
-  color:#fff;width:40px;height:40px;font-size:22px;cursor:pointer;
-}
-
-/* ── Progress bar ─────────────────────────────────────────────── */
-#progress{
-  position:fixed;bottom:0;left:0;right:0;height:3px;
-  background:rgba(255,255,255,.1);z-index:100;
-}
-#progress-bar{
-  height:100%;
-  background:linear-gradient(90deg,#60a5fa,#a78bfa);
-  transition:width .4s ease;
+#lightbox.open { display: flex; }
+#lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 6px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+#lightbox-close {
+  position: absolute; top: 20px; right: 24px;
+  background: #ffffff; border: none; border-radius: 50%;
+  color: #000; width: 36px; height: 36px; font-size: 18px; font-weight: bold; cursor: pointer;
 }
 
-/* ── Upload toast ─────────────────────────────────────────────── */
-#toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:#1a56db;color:#fff;padding:10px 20px;border-radius:10px;
-  font-size:13px;font-weight:600;z-index:200;
-  opacity:0;pointer-events:none;transition:opacity .3s;
-}
-#toast.show{opacity:1}
-
-/* ── Hidden file input ────────────────────────────────────────── */
-#file-input{display:none}
-
-/* ── Responsive ───────────────────────────────────────────────── */
-@media(max-width:768px){
-  .grid4{grid-template-columns:1fr;grid-template-rows:auto}
-  .grid2{grid-template-columns:1fr}
-  .cols{flex-direction:column}
-  .info-row{flex-direction:column}
-  .slide-inner{padding:70px 16px 24px}
-}
+#file-input { display: none; }
 </style>
 </head>
 <body>
 
-<!-- Navigation -->
-<nav id="nav">
-  <div class="nav-logo">📦 OPS Express — Training Guide</div>
-  <div class="nav-steps" id="nav-dots"></div>
-  <div class="nav-arrows">
-    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>‹</button>
-    <button class="nav-btn" id="btn-next" onclick="navigate(1)">›</button>
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="brand-logo">METFONE</div>
+    <div class="brand-title">Ops Express Portal</div>
+    <div class="brand-sub">SOP & Daily Execution Protocol</div>
   </div>
-</nav>
-
-<!-- Progress -->
-<div id="progress"><div id="progress-bar"></div></div>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 1 — Daily Summary (Upload & 4-Grid) -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide active" id="slide-0">
-<div class="slide-inner">
-  <div class="slide-header">
-    <div class="slide-num">Slide 1 of 5</div>
-    <div class="slide-title">📊 Daily Pending Summary</div>
-    <div class="slide-subtitle">Upload today's 4 report screenshots — Pickup · Delivery · Send Mega · Not Assign</div>
-  </div>
-
-  <div class="info-row">
-    <div class="info-box">
-      <div class="ib-icon">🟢</div>
-      <div class="ib-title">Pickup</div>
-      <div class="ib-val">Parcel collected</div>
-      <div class="ib-desc">Bills picked up, waiting transit</div>
-    </div>
-    <div class="info-box">
-      <div class="ib-icon">🔵</div>
-      <div class="ib-title">Delivery</div>
-      <div class="ib-val">Out for delivery</div>
-      <div class="ib-desc">Bills assigned to riders</div>
-    </div>
-    <div class="info-box">
-      <div class="ib-icon">🟡</div>
-      <div class="ib-title">Send Mega (Transit)</div>
-      <div class="ib-val">At hub / in transit</div>
-      <div class="ib-desc">Pending move to destination</div>
-    </div>
-    <div class="info-box">
-      <div class="ib-icon">🔴</div>
-      <div class="ib-title">Not Assign (Branch)</div>
-      <div class="ib-val">Unassigned bills</div>
-      <div class="ib-desc">Must be assigned before COB</div>
+  <div class="header-meta">
+    <div class="user-badge">
+      <div class="status-dot"></div>
+      Branch Operational Console
     </div>
   </div>
+</header>
 
-  <div class="grid4" id="grid4">
-    <!-- Slot 0: Pickup -->
-    <div class="grid-slot slot-pickup" id="slot-0">
-      <div class="slot-label">Pickup</div>
-      <div class="slot-img-wrap">
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-          Click to upload
-        </div>
-      </div>
-      <button class="upload-overlay" onclick="triggerUpload(0,'slide1')">⬆ Upload</button>
-      <button class="del-btn" onclick="deleteSlotImg(0,'slide1')">✕ Remove</button>
-    </div>
-    <!-- Slot 1: Delivery -->
-    <div class="grid-slot slot-delivery" id="slot-1">
-      <div class="slot-label">Delivery</div>
-      <div class="slot-img-wrap">
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-          Click to upload
-        </div>
-      </div>
-      <button class="upload-overlay" onclick="triggerUpload(1,'slide1')">⬆ Upload</button>
-      <button class="del-btn" onclick="deleteSlotImg(1,'slide1')">✕ Remove</button>
-    </div>
-    <!-- Slot 2: Send Mega -->
-    <div class="grid-slot slot-transit" id="slot-2">
-      <div class="slot-label">Send Mega</div>
-      <div class="slot-img-wrap">
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-          Click to upload
-        </div>
-      </div>
-      <button class="upload-overlay" onclick="triggerUpload(2,'slide1')">⬆ Upload</button>
-      <button class="del-btn" onclick="deleteSlotImg(2,'slide1')">✕ Remove</button>
-    </div>
-    <!-- Slot 3: Not Assign -->
-    <div class="grid-slot slot-branch" id="slot-3">
-      <div class="slot-label">Not Assign</div>
-      <div class="slot-img-wrap">
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-          Click to upload
-        </div>
-      </div>
-      <button class="upload-overlay" onclick="triggerUpload(3,'slide1')">⬆ Upload</button>
-      <button class="del-btn" onclick="deleteSlotImg(3,'slide1')">✕ Remove</button>
-    </div>
+<!-- Module Stepper -->
+<div class="stepper-bar" id="stepper">
+  <div class="step-tab active" onclick="goToStep(0)">
+    <div class="tab-num">1</div>
+    01. Daily Pending Summary (4-Grid)
+  </div>
+  <div class="step-tab" onclick="goToStep(1)">
+    <div class="tab-num">2</div>
+    02. On-Hold & Exceptions
+  </div>
+  <div class="step-tab" onclick="goToStep(2)">
+    <div class="tab-num">3</div>
+    03. Mega & Pickup Follow-Up
+  </div>
+  <div class="step-tab" onclick="goToStep(3)">
+    <div class="tab-num">4</div>
+    04. 10H KPI Performance
+  </div>
+  <div class="step-tab" onclick="goToStep(4)">
+    <div class="tab-num">5</div>
+    05. End-of-Day Inventory Close
   </div>
 </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 2 — On Hold / Feedback (Delivery & Not Assign reasons) -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-1">
-<div class="slide-inner">
-  <div class="slide-header">
-    <div class="slide-num">Slide 2 of 5</div>
-    <div class="slide-title">⚠️ On Hold — Reasons & Feedback</div>
-    <div class="slide-subtitle">Why bills are Not Assigned or stuck in Delivery · How to provide feedback</div>
-  </div>
+<!-- Main Views -->
+<main>
 
-  <div class="cols">
-    <div class="col">
-      <div class="card">
-        <div class="card-title">📋 Common On-Hold Reasons</div>
-        <div class="steps-list">
-          <div class="step-item red">
-            <div class="step-num">1</div>
-            <div class="step-text"><strong>No rider assigned</strong> — Bill arrived at branch but no driver allocated yet</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">2</div>
-            <div class="step-text"><strong>Customer not reachable</strong> — Phone off / no answer after 2+ attempts</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">3</div>
-            <div class="step-text"><strong>Wrong / incomplete address</strong> — Cannot locate destination</div>
-          </div>
-          <div class="step-item">
-            <div class="step-num">4</div>
-            <div class="step-text"><strong>COD dispute</strong> — Customer refuses payment amount</div>
-          </div>
-          <div class="step-item">
-            <div class="step-num">5</div>
-            <div class="step-text"><strong>Parcel damaged / missing</strong> — Needs supervisor review before delivery</div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🎯 Required Actions</div>
-        <div class="checklist">
-          <div class="check-item"><span class="check-icon">✅</span> Update status in system within <strong>1 hour</strong> of identifying issue</div>
-          <div class="check-item"><span class="check-icon">✅</span> Call customer minimum <strong>3 times</strong> before escalating</div>
-          <div class="check-item"><span class="check-icon">✅</span> Record reason with correct status code</div>
-          <div class="check-item"><span class="check-icon">✅</span> Escalate to supervisor if unresolved after <strong>24 hours</strong></div>
-          <div class="check-item"><span class="check-icon">⚠️</span> Bills &gt;3 days old = urgent escalation required</div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card" style="flex:1">
-        <div class="card-title">📸 Feedback Screenshot (Upload 1 Image)</div>
-        <div class="img-slot" id="img-slide2-0" style="flex:1;min-height:300px">
-          <div class="slot-label">Feedback Example</div>
-          <div class="slot-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            Click Upload to add feedback image
-          </div>
-          <button class="upload-overlay" onclick="triggerUpload(0,'slide2')">⬆ Upload</button>
-          <button class="del-btn" onclick="deleteSlotImg(0,'slide2')">✕ Remove</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 3 — Follow-Up: MEGA Transit + Pickup Handover -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-2">
-<div class="slide-inner">
-  <div class="slide-header">
-    <div class="slide-num">Slide 3 of 5</div>
-    <div class="slide-title">🔄 Follow-Up & Tracking</div>
-    <div class="slide-subtitle">MEGA transit pending · Pickup bills not yet handover</div>
-  </div>
-
-  <div class="cols">
-    <div class="col">
-      <div class="card">
-        <div class="card-title" style="color:#fbbf24">🚚 Track with MEGA — Transit Pending</div>
-        <div class="steps-list">
-          <div class="step-item teal">
-            <div class="step-num">1</div>
-            <div class="step-text">Open <strong>Send Mega report</strong> → filter bills &gt;24h at hub</div>
-          </div>
-          <div class="step-item teal">
-            <div class="step-num">2</div>
-            <div class="step-text">Contact <strong>MEGA hub staff</strong> for each overdue bill</div>
-          </div>
-          <div class="step-item teal">
-            <div class="step-num">3</div>
-            <div class="step-text">Confirm <strong>dispatch schedule</strong> — when truck departs</div>
-          </div>
-          <div class="step-item teal">
-            <div class="step-num">4</div>
-            <div class="step-text">Update system with <strong>estimated arrival date</strong></div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">!</div>
-            <div class="step-text"><strong>Bills &gt;48h at MEGA</strong> = escalate to manager immediately</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="img-slot" id="img-slide3-0">
-        <div class="slot-label">MEGA Tracking Screenshot</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload screenshot
-        </div>
-        <button class="upload-overlay" onclick="triggerUpload(0,'slide3')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(0,'slide3')">✕ Remove</button>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 1: Daily Pending Summary -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide-view active" id="view-0">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Module 01: Daily Pending Operational Summary</div>
+        <div class="view-desc">Upload today's 4 core status reports for system verification: Pickup, Delivery, Send Mega (Transit), and Not Assign (Branch).</div>
       </div>
     </div>
 
-    <div class="col">
-      <div class="card">
-        <div class="card-title" style="color:#34d399">📦 Pickup — Bills Not Yet Handover</div>
-        <div class="steps-list">
-          <div class="step-item green">
-            <div class="step-num">1</div>
-            <div class="step-text">Open <strong>Pickup report</strong> → identify bills still at sender</div>
-          </div>
-          <div class="step-item green">
-            <div class="step-num">2</div>
-            <div class="step-text">Call <strong>pickup rider</strong> — confirm parcel was collected</div>
-          </div>
-          <div class="step-item green">
-            <div class="step-num">3</div>
-            <div class="step-text">If not collected → <strong>reschedule pickup</strong> for same day</div>
-          </div>
-          <div class="step-item green">
-            <div class="step-num">4</div>
-            <div class="step-text">Mark as <strong>collected</strong> in system once confirmed</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">!</div>
-            <div class="step-text"><strong>Pickup &gt;24h pending</strong> = customer notification required</div>
-          </div>
-        </div>
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-label">Pickup Pending</div>
+        <div class="metric-val" style="color:#15803d">Collected</div>
+        <div class="metric-sub">Parcels at sender / origin hub</div>
       </div>
-
-      <div class="img-slot" id="img-slide3-1">
-        <div class="slot-label">Pickup Follow-up Screenshot</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload screenshot
-        </div>
-        <button class="upload-overlay" onclick="triggerUpload(1,'slide3')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(1,'slide3')">✕ Remove</button>
+      <div class="metric-box">
+        <div class="metric-label">Delivery Active</div>
+        <div class="metric-val" style="color:#1d4ed8">Out for Delivery</div>
+        <div class="metric-sub">Assigned to delivery riders</div>
       </div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 4 — KPI System Explained (2 images) -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-3">
-<div class="slide-inner">
-  <div class="slide-header">
-    <div class="slide-num">Slide 4 of 5</div>
-    <div class="slide-title">🎯 KPI System — How It Works</div>
-    <div class="slide-subtitle">Understanding the 10H KPI · Green vs Red targets · Hit Rate</div>
-  </div>
-
-  <div class="cols">
-    <div class="col">
-      <div class="card">
-        <div class="card-title">📏 KPI Rules</div>
-        <div class="info-row" style="margin-bottom:12px">
-          <div class="info-box">
-            <div class="ib-icon">🟢</div>
-            <div class="ib-title">Green KPI</div>
-            <div class="ib-val">≤ 10 Hours</div>
-            <div class="ib-desc">Delivered within target</div>
-          </div>
-          <div class="info-box">
-            <div class="ib-icon">🔴</div>
-            <div class="ib-title">Red / Over KPI</div>
-            <div class="ib-val">&gt; 10 Hours</div>
-            <div class="ib-desc">Exceeds target — review required</div>
-          </div>
-        </div>
-        <div class="steps-list">
-          <div class="step-item green">
-            <div class="step-num">✓</div>
-            <div class="step-text">KPI clock starts when bill arrives at post office (status 306)</div>
-          </div>
-          <div class="step-item green">
-            <div class="step-num">✓</div>
-            <div class="step-text">Clock stops when bill is delivered (status 410)</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">!</div>
-            <div class="step-text"><strong>Hit Rate</strong> = Green KPI bills ÷ Total completed × 100%</div>
-          </div>
-          <div class="step-item red">
-            <div class="step-num">✗</div>
-            <div class="step-text">VIP bills must achieve &gt;95% hit rate — priority handling</div>
-          </div>
-        </div>
+      <div class="metric-box">
+        <div class="metric-label">Send Mega</div>
+        <div class="metric-val" style="color:#b45309">In Transit</div>
+        <div class="metric-sub">Inter-station transport</div>
       </div>
-
-      <div class="img-slot" id="img-slide4-0" style="flex:1">
-        <div class="slot-label">KPI Report Screenshot 1</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload KPI example
-        </div>
-        <button class="upload-overlay" onclick="triggerUpload(0,'slide4')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(0,'slide4')">✕ Remove</button>
+      <div class="metric-box">
+        <div class="metric-label">Not Assign</div>
+        <div class="metric-val" style="color:#be123c">Action Required</div>
+        <div class="metric-sub">Unassigned at service point</div>
       </div>
     </div>
 
-    <div class="col">
-      <div class="card">
-        <div class="card-title">📊 How to Read the Report</div>
-        <div class="checklist">
-          <div class="check-item"><span class="check-icon">📌</span> <strong>Completed (410)</strong> — Total delivered bills today</div>
-          <div class="check-item"><span class="check-icon">🟢</span> <strong>Pending Green</strong> — Not yet delivered but still within 10H</div>
-          <div class="check-item"><span class="check-icon">🔴</span> <strong>Pending Red Over</strong> — Over 10H, needs urgent action</div>
-          <div class="check-item"><span class="check-icon">📈</span> <strong>Hit Rate %</strong> — Overall KPI performance percentage</div>
-          <div class="check-item"><span class="check-icon">📅</span> <strong>Today / Yesterday / This Week / Month</strong> — Trend columns</div>
-          <div class="check-item"><span class="check-icon">⭐</span> <strong>VIP</strong> — Special customers, must be prioritized</div>
-          <div class="check-item"><span class="check-icon">⏱️</span> <strong>&gt;1 Day</strong> — Bills pending more than 24 hours</div>
-          <div class="check-item"><span class="check-icon">🔥</span> <strong>&gt;3 Days</strong> — Critical overdue — immediate escalation</div>
+    <div class="grid-4">
+      <!-- Slot 0: Pickup -->
+      <div class="upload-card" id="card-0">
+        <div class="upload-card-head">
+          <span class="card-tag tag-pickup">01. Pickup Pending</span>
+          <span style="font-size:11px;color:#64748b">Report Image #1</span>
+        </div>
+        <div class="preview-box">
+          <div class="placeholder-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Click upload to attach screenshot
+          </div>
+        </div>
+        <div class="upload-card-foot">
+          <button class="btn-upload" onclick="triggerUpload(0, 'slide1')">Upload File</button>
+          <button class="btn-remove" style="display:none" onclick="removeImg(0, 'slide1')">Remove</button>
         </div>
       </div>
 
-      <div class="img-slot" id="img-slide4-1" style="flex:1">
-        <div class="slot-label">KPI Report Screenshot 2</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload KPI example 2
+      <!-- Slot 1: Delivery -->
+      <div class="upload-card" id="card-1">
+        <div class="upload-card-head">
+          <span class="card-tag tag-delivery">02. Delivery Active</span>
+          <span style="font-size:11px;color:#64748b">Report Image #2</span>
         </div>
-        <button class="upload-overlay" onclick="triggerUpload(1,'slide4')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(1,'slide4')">✕ Remove</button>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SLIDE 5 — End of Day: Service Point Tasks -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-4">
-<div class="slide-inner">
-  <div class="slide-header">
-    <div class="slide-num">Slide 5 of 5</div>
-    <div class="slide-title">🌙 End of Day — Service Point Checklist</div>
-    <div class="slide-subtitle">Tasks every service point must complete before close · Update inventory</div>
-  </div>
-
-  <div class="cols">
-    <div class="col">
-      <div class="card">
-        <div class="card-title" style="color:#f472b6">🏪 Service Point — Must Do</div>
-        <div class="steps-list">
-          <div class="step-item green">
-            <div class="step-num">1</div>
-            <div class="step-text"><strong>Count all remaining parcels</strong> — Physical count must match system count</div>
+        <div class="preview-box">
+          <div class="placeholder-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Click upload to attach screenshot
           </div>
-          <div class="step-item green">
-            <div class="step-num">2</div>
-            <div class="step-text"><strong>Update Not Assign bills</strong> — All unassigned must have a reason + next action</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">3</div>
-            <div class="step-text"><strong>Scan all new arrivals</strong> — Incoming parcels scanned and in system before close</div>
-          </div>
-          <div class="step-item amber">
-            <div class="step-num">4</div>
-            <div class="step-text"><strong>Send MEGA returns</strong> — Any return parcels dispatched to hub by 5PM</div>
-          </div>
-          <div class="step-item red">
-            <div class="step-num">5</div>
-            <div class="step-text"><strong>Escalate overdue bills</strong> — Report all &gt;3-day bills to supervisor with reason</div>
-          </div>
-          <div class="step-item">
-            <div class="step-num">6</div>
-            <div class="step-text"><strong>Submit daily report</strong> — Send EOD summary to group chat by 6PM</div>
-          </div>
+        </div>
+        <div class="upload-card-foot">
+          <button class="btn-upload" onclick="triggerUpload(1, 'slide1')">Upload File</button>
+          <button class="btn-remove" style="display:none" onclick="removeImg(1, 'slide1')">Remove</button>
         </div>
       </div>
 
-      <div class="img-slot" id="img-slide5-0">
-        <div class="slot-label">EOD Task Screenshot 1</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload screenshot
+      <!-- Slot 2: Send Mega -->
+      <div class="upload-card" id="card-2">
+        <div class="upload-card-head">
+          <span class="card-tag tag-transit">03. Send Mega (Transit)</span>
+          <span style="font-size:11px;color:#64748b">Report Image #3</span>
         </div>
-        <button class="upload-overlay" onclick="triggerUpload(0,'slide5')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(0,'slide5')">✕ Remove</button>
-      </div>
-    </div>
-
-    <div class="col">
-      <div class="card">
-        <div class="card-title" style="color:#a78bfa">📦 Inventory Update</div>
-        <div class="checklist">
-          <div class="check-item"><span class="check-icon">📋</span> Verify system count vs physical parcel count matches</div>
-          <div class="check-item"><span class="check-icon">🔍</span> Identify any discrepancies — investigate immediately</div>
-          <div class="check-item"><span class="check-icon">📝</span> Log any lost or damaged items with photo evidence</div>
-          <div class="check-item"><span class="check-icon">🔄</span> Update inventory sheet with today's in/out movements</div>
-          <div class="check-item"><span class="check-icon">📤</span> Submit inventory report to zone manager</div>
+        <div class="preview-box">
+          <div class="placeholder-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Click upload to attach screenshot
+          </div>
         </div>
-        <div style="margin-top:12px;padding:10px 14px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:10px;font-size:12px;color:#c4b5fd">
-          ⚠️ Inventory mismatch must be reported within <strong>2 hours</strong> of detection. Take photos of all evidence before moving parcels.
+        <div class="upload-card-foot">
+          <button class="btn-upload" onclick="triggerUpload(2, 'slide1')">Upload File</button>
+          <button class="btn-remove" style="display:none" onclick="removeImg(2, 'slide1')">Remove</button>
         </div>
       </div>
 
-      <div class="img-slot" id="img-slide5-1" style="flex:1">
-        <div class="slot-label">EOD Task Screenshot 2</div>
-        <div class="slot-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-          Upload screenshot
+      <!-- Slot 3: Not Assign -->
+      <div class="upload-card" id="card-3">
+        <div class="upload-card-head">
+          <span class="card-tag tag-branch">04. Not Assign (Branch)</span>
+          <span style="font-size:11px;color:#64748b">Report Image #4</span>
         </div>
-        <button class="upload-overlay" onclick="triggerUpload(1,'slide5')">⬆ Upload</button>
-        <button class="del-btn" onclick="deleteSlotImg(1,'slide5')">✕ Remove</button>
+        <div class="preview-box">
+          <div class="placeholder-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Click upload to attach screenshot
+          </div>
+        </div>
+        <div class="upload-card-foot">
+          <button class="btn-upload" onclick="triggerUpload(3, 'slide1')">Upload File</button>
+          <button class="btn-remove" style="display:none" onclick="removeImg(3, 'slide1')">Remove</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-</div>
 
-<!-- Lightbox -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 2: On-Hold & Exceptions -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide-view" id="view-1">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Module 02: On-Hold Management & Exception Reporting</div>
+        <div class="view-desc">Standard protocol for handling unassigned bills and failed delivery attempts.</div>
+      </div>
+    </div>
+
+    <div class="two-cols">
+      <div class="panel-card">
+        <div class="panel-head">Exception Code Protocol</div>
+        <div class="rule-list">
+          <div class="rule-item">
+            <div class="rule-icon red">01</div>
+            <div class="rule-content">
+              <strong>Unassigned Driver (Code 306)</strong><br>
+              Parcel arrived at station but no rider assigned within 2 hours. Mandatory assignment before 11:00 AM shift.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon amber">02</div>
+            <div class="rule-content">
+              <strong>Unreachable Receiver (Code 404)</strong><br>
+              Phone unreachable after minimum 3 calls spaced 30 mins apart. Document call logs in system.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon amber">03</div>
+            <div class="rule-content">
+              <strong>Address Discrepancy</strong><br>
+              Receiver requested redirection or address incomplete. Update system notes with new destination.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon blue">04</div>
+            <div class="rule-content">
+              <strong>COD Amount Dispute</strong><br>
+              COD fee mismatch. Verify original invoice with sender store before releasing package.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-head">
+          <span>Feedback Proof Image</span>
+          <span style="font-size:11px;color:#64748b;font-weight:normal">1 Required</span>
+        </div>
+        <div class="upload-card" id="card-s2-0">
+          <div class="preview-box" style="height: 280px;">
+            <div class="placeholder-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              Upload Exception Log Screenshot
+            </div>
+          </div>
+          <div class="upload-card-foot">
+            <button class="btn-upload" onclick="triggerUpload(0, 'slide2')">Upload Proof</button>
+            <button class="btn-remove" style="display:none" onclick="removeImg(0, 'slide2')">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 3: Mega & Pickup Follow-Up -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide-view" id="view-2">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Module 03: MEGA Transit & Pickup Handover Tracking</div>
+        <div class="view-desc">Operational workflow for inter-station transit dispatch and pending pickup handovers.</div>
+      </div>
+    </div>
+
+    <div class="two-cols">
+      <div class="panel-card">
+        <div class="panel-head">MEGA Transit Verification</div>
+        <table class="ops-table">
+          <thead>
+            <tr><th>Stage</th><th>Timeframe Limit</th><th>Action Required</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Hub Inbound</strong></td><td>&lt; 12 Hours</td><td>Confirm arrival scan at origin hub</td></tr>
+            <tr><td><strong>Inter-City Transit</strong></td><td>&lt; 24 Hours</td><td>Verify truck dispatch manifest</td></tr>
+            <tr><td><strong>Destination Hub</strong></td><td>&lt; 48 Hours</td><td>Escalate if unreceived after 48h</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s3-0">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload MEGA Tracking Log
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(0, 'slide3')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(0, 'slide3')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-head">Pickup Handover Verification</div>
+        <table class="ops-table">
+          <thead>
+            <tr><th>Status</th><th>Target</th><th>Escalation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Sender Pickup</strong></td><td>Same Day</td><td>Call rider if uncollected by 3 PM</td></tr>
+            <tr><td><strong>Branch Handover</strong></td><td>&lt; 4 Hours</td><td>Scan to inventory upon rider return</td></tr>
+            <tr><td><strong>Overdue Pickup</strong></td><td>&gt; 24 Hours</td><td>Notify area supervisor</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s3-1">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload Pickup Verification Log
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(1, 'slide3')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(1, 'slide3')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 4: 10H KPI Performance -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide-view" id="view-3">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Module 04: 10-Hour KPI Measurement System</div>
+        <div class="view-desc">Performance standard metrics: Green KPI (<=10h), Red Overdue (>10h), and VIP SLA targets.</div>
+      </div>
+    </div>
+
+    <div class="two-cols">
+      <div class="panel-card">
+        <div class="panel-head">KPI Standard Criteria</div>
+        <div class="rule-list">
+          <div class="rule-item">
+            <div class="rule-icon green">10h</div>
+            <div class="rule-content">
+              <strong>Green KPI Target (≤ 10 Hours)</strong><br>
+              Calculated from arrival scan (Status 306) to successful delivery scan (Status 410). Minimum branch SLA: 90%.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon red">&gt;10</div>
+            <div class="rule-content">
+              <strong>Red Overdue (> 10 Hours)</strong><br>
+              Requires immediate action notes. Repeated overdue items impact station quality score.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon amber">VIP</div>
+            <div class="rule-content">
+              <strong>VIP Order Priority SLA</strong><br>
+              VIP parcels must achieve &gt;95% hit rate with dedicated delivery dispatch.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s4-0">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload KPI Report Image #1
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(0, 'slide4')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(0, 'slide4')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-head">Report Header Definitions</div>
+        <table class="ops-table">
+          <thead>
+            <tr><th>Column</th><th>Definition</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Completed (410)</strong></td><td>Successfully delivered parcels today</td></tr>
+            <tr><td><strong>Pending Green</strong></td><td>Active parcels currently under 10-hour threshold</td></tr>
+            <tr><td><strong>Over Red</strong></td><td>Parcels exceeding 10 hours — urgent push needed</td></tr>
+            <tr><td><strong>&gt; 1 Day / &gt; 3 Days</strong></td><td>Aging inventory pending over 24h / 72h</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s4-1">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload KPI Report Image #2
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(1, 'slide4')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(1, 'slide4')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 5: End-of-Day Inventory Close -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="slide-view" id="view-4">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Module 05: End-of-Day Service Point Protocol</div>
+        <div class="view-desc">Mandatory station close procedure, physical parcel audit, and daily inventory reconciliation.</div>
+      </div>
+    </div>
+
+    <div class="two-cols">
+      <div class="panel-card">
+        <div class="panel-head">Service Point EOD Checklist</div>
+        <div class="rule-list">
+          <div class="rule-item">
+            <div class="rule-icon green">01</div>
+            <div class="rule-content">
+              <strong>Physical Parcel Audit</strong><br>
+              Count all physical parcels stored in the service point. Physical count must match system inventory 100%.
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon blue">02</div>
+            <div class="rule-content">
+              <strong>Status Resolution</strong><br>
+              Zero unhandled parcels allowed. All items must have updated status code (Delivered, In Transit, or On Hold reason).
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-icon red">03</div>
+            <div class="rule-content">
+              <strong>Discrepancy Escalation</strong><br>
+              Report any missing or damaged parcels to the zone manager before station closing.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s5-0">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload EOD Audit Proof #1
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(0, 'slide5')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(0, 'slide5')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-head">Inventory Reconciliation Protocol</div>
+        <table class="ops-table">
+          <thead>
+            <tr><th>Task</th><th>Deadline</th><th>Requirement</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>System Re-scan</strong></td><td>5:30 PM</td><td>Scan all inbound/outbound packages</td></tr>
+            <tr><td><strong>Return Dispatch</strong></td><td>5:45 PM</td><td>Package all return bills for MEGA hub</td></tr>
+            <tr><td><strong>Daily Summary Push</strong></td><td>6:00 PM</td><td>Submit completed report to group chat</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px;">
+          <div class="upload-card" id="card-s5-1">
+            <div class="preview-box" style="height: 180px;">
+              <div class="placeholder-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Upload Inventory Close Log #2
+              </div>
+            </div>
+            <div class="upload-card-foot">
+              <button class="btn-upload" onclick="triggerUpload(1, 'slide5')">Upload File</button>
+              <button class="btn-remove" style="display:none" onclick="removeImg(1, 'slide5')">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer Navigation -->
+<footer>
+  <button class="btn-nav" id="btn-prev" onclick="changeStep(-1)" disabled>Previous Module</button>
+  <div style="font-size:12px;color:#64748b;font-weight:600" id="step-indicator">Module 1 of 5</div>
+  <button class="btn-nav primary" id="btn-next" onclick="changeStep(1)">Next Module</button>
+</footer>
+
+<!-- Lightbox Modal -->
 <div id="lightbox" onclick="closeLightbox()">
   <button id="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="">
+  <img id="lightbox-img" src="" alt="Proof Preview">
 </div>
 
-<!-- Toast -->
-<div id="toast">✅ Uploaded successfully!</div>
-
-<!-- Hidden file input -->
-<input type="file" id="file-input" accept="image/*" multiple>
+<!-- Hidden File Input -->
+<input type="file" id="file-input" accept="image/*">
 
 <script>
-/* ── State ─────────────────────────────────────────────────────── */
-let currentSlide = 0;
-const TOTAL = 5;
-let uploadContext = {slot: 0, slide: 'slide1'};
+let currentStep = 0;
+const TOTAL_STEPS = 5;
+let uploadContext = { slot: 0, slide: 'slide1' };
 
-/* ── Slot → image element mapping ──────────────────────────────── */
-const slotMap = {
-  slide1: {0:'slot-0', 1:'slot-1', 2:'slot-2', 3:'slot-3'},
-  slide2: {0:'img-slide2-0'},
-  slide3: {0:'img-slide3-0', 1:'img-slide3-1'},
-  slide4: {0:'img-slide4-0', 1:'img-slide4-1'},
-  slide5: {0:'img-slide5-0', 1:'img-slide5-1'},
+const cardMap = {
+  slide1: { 0: 'card-0', 1: 'card-1', 2: 'card-2', 3: 'card-3' },
+  slide2: { 0: 'card-s2-0' },
+  slide3: { 0: 'card-s3-0', 1: 'card-s3-1' },
+  slide4: { 0: 'card-s4-0', 1: 'card-s4-1' },
+  slide5: { 0: 'card-s5-0', 1: 'card-s5-1' },
 };
 
-/* ── Navigation ─────────────────────────────────────────────────── */
-function navigate(dir) {
-  const slides = document.querySelectorAll('.slide');
-  slides[currentSlide].classList.remove('active');
-  slides[currentSlide].classList.add('exit-left');
-  setTimeout(() => slides[currentSlide].classList.remove('exit-left'), 500);
-  currentSlide = Math.max(0, Math.min(TOTAL - 1, currentSlide + dir));
-  slides[currentSlide].classList.add('active');
-  updateNav();
+function goToStep(n) {
+  if (n < 0 || n >= TOTAL_STEPS) return;
+  document.querySelectorAll('.step-tab')[currentStep].classList.remove('active');
+  document.querySelectorAll('.slide-view')[currentStep].classList.remove('active');
+
+  currentStep = n;
+
+  document.querySelectorAll('.step-tab')[currentStep].classList.add('active');
+  document.querySelectorAll('.slide-view')[currentStep].classList.add('active');
+
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+  document.getElementById('btn-next').disabled = currentStep === TOTAL_STEPS - 1;
+  document.getElementById('step-indicator').textContent = `Module ${currentStep + 1} of ${TOTAL_STEPS}`;
 }
 
-function goToSlide(n) {
-  if (n === currentSlide) return;
-  const slides = document.querySelectorAll('.slide');
-  slides[currentSlide].classList.remove('active');
-  currentSlide = n;
-  slides[currentSlide].classList.add('active');
-  updateNav();
+function changeStep(dir) {
+  goToStep(currentStep + dir);
 }
 
-function updateNav() {
-  document.getElementById('btn-prev').disabled = currentSlide === 0;
-  document.getElementById('btn-next').disabled = currentSlide === TOTAL - 1;
-  document.querySelectorAll('.step-dot').forEach((d, i) => {
-    d.classList.toggle('active', i === currentSlide);
-  });
-  document.getElementById('progress-bar').style.width =
-    ((currentSlide + 1) / TOTAL * 100) + '%';
-}
-
-/* Build nav dots */
-const dotsEl = document.getElementById('nav-dots');
-for (let i = 0; i < TOTAL; i++) {
-  const d = document.createElement('div');
-  d.className = 'step-dot' + (i === 0 ? ' active' : '');
-  d.onclick = () => goToSlide(i);
-  dotsEl.appendChild(d);
-}
-
-/* Keyboard navigation */
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
-});
-
-/* ── Upload ─────────────────────────────────────────────────────── */
 function triggerUpload(slot, slide) {
-  uploadContext = {slot, slide};
+  uploadContext = { slot, slide };
   document.getElementById('file-input').click();
 }
 
 document.getElementById('file-input').addEventListener('change', async function() {
   const files = this.files;
   if (!files.length) return;
+
   const fd = new FormData();
   fd.append('slide', uploadContext.slide);
-  fd.append('slot',  uploadContext.slot);
-  for (const f of files) fd.append('file', f);
+  fd.append('slot', uploadContext.slot);
+  fd.append('file', files[0]);
+
   try {
-    const res  = await fetch('/api/upload', {method:'POST', body: fd});
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.ok && data.urls.length) {
-      setSlotImage(uploadContext.slide, uploadContext.slot, data.urls[0]);
-      showToast('Uploaded successfully!');
+      displaySlotImage(uploadContext.slide, uploadContext.slot, data.urls[0]);
     }
-  } catch(e) {
-    // Server not running — use local URL preview
-    const url = URL.createObjectURL(files[0]);
-    setSlotImage(uploadContext.slide, uploadContext.slot, url);
-    showToast('Preview mode (server offline)');
+  } catch (e) {
+    const localUrl = URL.createObjectURL(files[0]);
+    displaySlotImage(uploadContext.slide, uploadContext.slot, localUrl);
   }
   this.value = '';
 });
 
-function setSlotImage(slide, slot, url) {
-  const id = slotMap[slide] && slotMap[slide][slot];
-  if (!id) return;
-  const el = document.getElementById(id);
-  if (!el) return;
+function displaySlotImage(slide, slot, url) {
+  const cardId = cardMap[slide] && cardMap[slide][slot];
+  if (!cardId) return;
+  const card = document.getElementById(cardId);
+  if (!card) return;
 
-  // Clear empty state
-  const wrap = el.querySelector('.slot-img-wrap, .slot-empty');
+  const box = card.querySelector('.preview-box');
+  box.innerHTML = `<img src="${url}" onclick="openLightbox('${url}')" alt="Uploaded Screenshot">`;
 
-  let img = el.querySelector('img.slot-main-img');
-  if (!img) {
-    img = document.createElement('img');
-    img.className = 'slot-main-img';
-    img.onclick = () => openLightbox(url);
-    // For grid4 slots
-    const w = el.querySelector('.slot-img-wrap');
-    if (w) {
-      w.innerHTML = '';
-      w.appendChild(img);
-    } else {
-      el.querySelector('.slot-empty') && el.querySelector('.slot-empty').remove();
-      el.appendChild(img);
-    }
-  }
-  img.src = url;
-  img.onclick = () => openLightbox(url);
-  el.dataset.url = url;
+  const btnRemove = card.querySelector('.btn-remove');
+  if (btnRemove) btnRemove.style.display = 'inline-block';
+  card.dataset.url = url;
 }
 
-function deleteSlotImg(slot, slide) {
-  const id = slotMap[slide] && slotMap[slide][slot];
-  if (!id) return;
-  const el = document.getElementById(id);
-  if (!el) return;
-  const url = el.dataset.url;
+function removeImg(slot, slide) {
+  const cardId = cardMap[slide] && cardMap[slide][slot];
+  if (!cardId) return;
+  const card = document.getElementById(cardId);
+  if (!card) return;
+
+  const url = card.dataset.url;
   if (url && url.startsWith('/uploads/')) {
-    fetch('/api/delete', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})});
+    fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
   }
-  // Reset to empty state
-  const img = el.querySelector('.slot-main-img');
-  if (img) img.remove();
-  const w = el.querySelector('.slot-img-wrap');
-  if (w) {
-    w.innerHTML = `<div class="slot-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
-      Click to upload</div>`;
-  } else {
-    // For img-slot elements
-    if (!el.querySelector('.slot-empty')) {
-      const empty = document.createElement('div');
-      empty.className = 'slot-empty';
-      empty.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;opacity:.4"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Upload screenshot`;
-      el.insertBefore(empty, el.firstChild.nextSibling);
-    }
-  }
-  delete el.dataset.url;
+
+  const box = card.querySelector('.preview-box');
+  box.innerHTML = `
+    <div class="placeholder-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Click upload to attach screenshot
+    </div>`;
+
+  const btnRemove = card.querySelector('.btn-remove');
+  if (btnRemove) btnRemove.style.display = 'none';
+  delete card.dataset.url;
 }
 
-/* ── Load saved images on start ─────────────────────────────────── */
-async function loadSavedImages() {
-  for (const [slide, slots] of Object.entries(slotMap)) {
+async function loadExistingImages() {
+  for (const [slide, slots] of Object.entries(cardMap)) {
     try {
-      const res  = await fetch(`/api/images/${slide}`);
+      const res = await fetch(`/api/images/${slide}`);
       const data = await res.json();
       data.images.forEach((url, i) => {
-        const slot = parseInt(Object.keys(slots)[i] || i);
-        if (slots[slot]) setSlotImage(slide, slot, url);
+        const slotKey = parseInt(Object.keys(slots)[i] || i);
+        if (slots[slotKey]) displaySlotImage(slide, slotKey, url);
       });
-    } catch(e) { /* server offline */ }
+    } catch(e) {}
   }
 }
-loadSavedImages();
+loadExistingImages();
 
-/* ── Lightbox ───────────────────────────────────────────────────── */
 function openLightbox(src) {
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('open');
@@ -921,16 +1031,10 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
-/* ── Toast ──────────────────────────────────────────────────────── */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = '✅ ' + msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-/* init */
-updateNav();
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') changeStep(1);
+  if (e.key === 'ArrowLeft') changeStep(-1);
+});
 </script>
 </body>
 </html>
