@@ -6,8 +6,8 @@
     <title>Metfone Express — 5-Slide Landscape Training Deck</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Bold Display Fonts: Outfit + Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Angkor (Khmer Display Serif) + Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Angkor&family=Inter:wght@600;700;800;900&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-white: #ffffff;
@@ -64,7 +64,7 @@
             white-space: nowrap;
         }
 
-        /* Top Bar Layout */
+        /* Top Bar Layout with Official Metfone Express Brand Logo */
         .top-nav {
             position: absolute;
             top: 20px;
@@ -82,26 +82,17 @@
             gap: 16px;
         }
 
-        .brand-m-square {
-            width: 44px;
-            height: 44px;
-            background: var(--brand-red);
-            color: #ffffff;
-            font-weight: 900;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.3);
+        .brand-logo-img {
+            height: 48px;
+            object-fit: contain;
+            display: block;
         }
 
         .nav-header-text {
-            font-size: 0.95rem;
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
+            font-family: 'Angkor', serif;
+            font-size: 1.05rem;
             color: var(--text-black);
+            letter-spacing: 0.05em;
         }
 
         .nav-right-tag {
@@ -157,20 +148,20 @@
             background: var(--brand-red);
         }
 
+        /* HERO TITLE WITH ANGKOR FONT */
         .hero-title-bold {
-            font-family: 'Outfit', sans-serif;
-            font-size: 4.4rem;
-            font-weight: 900;
-            line-height: 1.02;
+            font-family: 'Angkor', serif;
+            font-size: 4rem;
+            line-height: 1.15;
             color: var(--text-black);
-            letter-spacing: -0.03em;
+            letter-spacing: -0.01em;
         }
 
         .hero-title-bold span {
             color: var(--brand-red);
         }
 
-        /* ENLARGED BILINGUAL TEXT */
+        /* BILINGUAL TEXT WITH ANGKOR FONT FOR KHMER */
         .sub-english {
             font-size: 1.35rem;
             color: var(--text-black);
@@ -179,12 +170,12 @@
         }
 
         .sub-khmer {
-            font-size: 1.3rem;
+            font-family: 'Angkor', serif;
+            font-size: 1.25rem;
             color: var(--brand-red);
-            line-height: 1.6;
-            font-weight: 800;
+            line-height: 1.7;
             background: #fff1f2;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 8px;
             border-left: 5px solid var(--brand-red);
         }
@@ -295,7 +286,7 @@
             line-height: 1.4;
         }
 
-        /* EVENLY SPACED GRID TAB SWITCHERS (NO HIDING / NO OVERFLOW) */
+        /* GRID TAB SWITCHERS */
         .tab-switcher {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -473,10 +464,10 @@
         <!-- Left Margin Vertical Stamp -->
         <div class="side-stamp">METFONE EXPRESS · INTERNAL TRAINING</div>
 
-        <!-- Top Navigation -->
+        <!-- Top Navigation with Official Metfone Express Brand Logo -->
         <div class="top-nav">
             <div class="logo-box">
-                <div class="brand-m-square">M</div>
+                <img src="/images/metfone_express_logo.png" alt="Metfone Express Logo" class="brand-logo-img">
                 <div class="nav-header-text">DAILY DISPATCH BOT TRAINING</div>
             </div>
             <div class="nav-right-tag" id="slideTag">Slide 1 of 5 · Ops tms guide</div>
@@ -505,7 +496,6 @@
                     📌 <b>Crisp Table View:</b><br>Click table to inspect full 100% size!
                 </div>
 
-                <!-- 4 EQUAL GRID COLUMNS: ALL TABS FULLY VISIBLE -->
                 <div class="tab-switcher">
                     <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. THOP001</button>
                     <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery</button>
@@ -524,7 +514,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Logic</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
                     Clear pending.<br><span>Hit KPI 10h.</span>
                 </h1>
 
@@ -573,7 +563,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 03 · Pickup & Mega Transit Action</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
                     Verify pickup.<br><span>Transit fast.</span>
                 </h1>
 
@@ -615,7 +605,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 04 · Operational KPI & Age SLA</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
                     Target 10h.<br><span>Zero overdue.</span>
                 </h1>
 
@@ -661,7 +651,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 05 · End of Day Inventory Audit</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
                     Scan inventory.<br><span>Close shift clean.</span>
                 </h1>
 
