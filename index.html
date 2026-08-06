@@ -2,243 +2,287 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Training Slide Deck (Slide 1 of 5) — BATP001 Dispatch Bot Manual</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Slide Deck (Slide 1 of 5) — BATP001 Dispatch Bot</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Premium Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Modern Corporate Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --slide-bg: #0d1322;
-            --page-bg: #141d33;
-            --gold-accent: #f59e0b;
-            --cyan-accent: #38bdf8;
-            --border-gold: rgba(245, 158, 11, 0.3);
-            --border-cyan: rgba(56, 189, 248, 0.2);
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --book-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.1);
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        body {
-            background-color: var(--slide-bg);
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
-            color: var(--text-main);
-            padding: 24px 16px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Slide Deck Book Container */
-        .book-slide-frame {
+        html, body {
             width: 100%;
-            max-width: 1020px;
-            background: var(--page-bg);
-            border: 2px solid var(--border-gold);
-            border-radius: 24px;
-            box-shadow: var(--book-shadow);
+            height: 100%;
             overflow: hidden;
+            background-color: #0f172a;
+            color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Full Screen Presentation Canvas */
+        .slide-canvas {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
             position: relative;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* Top Slide Header Bar */
-        .slide-header {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--border-gold);
+        /* Presentation Top Bar */
+        .slide-topbar {
+            height: 64px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 0 32px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            flex-shrink: 0;
         }
 
-        .slide-title-group {
+        .slide-branding {
             display: flex;
             align-items: center;
-            gap: 14px;
-        }
-
-        .book-icon {
-            font-size: 2rem;
-            filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4));
-        }
-
-        .slide-main-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--gold-accent);
-            letter-spacing: 0.03em;
-        }
-
-        .slide-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-
-        .page-badge {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--gold-accent);
-            border: 1px solid var(--border-gold);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-        }
-
-        /* Slide Body Content */
-        .slide-body {
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* Chapter Banner */
-        .chapter-box {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(30, 41, 59, 0.6) 100%);
-            border: 1px solid var(--border-cyan);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .chapter-heading {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--cyan-accent);
-        }
-
-        .chapter-desc {
-            font-size: 0.92rem;
-            color: var(--text-sub);
-            line-height: 1.6;
-        }
-
-        /* 4 Section Report Images Grid */
-        .report-section-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
         }
 
-        .report-card {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--border-cyan);
+        .brand-logo {
+            background: #2563eb;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.9rem;
+            padding: 6px 14px;
+            border-radius: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .presentation-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .presentation-subtitle {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-left: 8px;
+        }
+
+        .slide-counter {
+            background: #334155;
+            color: #38bdf8;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Slide Main Area (Split View) */
+        .slide-main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 24px;
+            padding: 24px 32px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 900px) {
+            .slide-main-content {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+            }
+        }
+
+        /* Left Info Panel */
+        .info-panel {
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            padding: 24px;
             display: flex;
             flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
         }
 
-        .report-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--cyan-accent);
-            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
-        }
-
-        .report-img-wrapper {
-            width: 100%;
-            height: 150px;
-            background: #020617;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .report-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top;
-            transition: transform 0.4s ease;
-        }
-
-        .report-card:hover .report-img {
-            transform: scale(1.05);
-        }
-
-        .report-card-info {
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stage-badge {
+        .chapter-badge {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
             font-size: 0.75rem;
             font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 6px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--cyan-accent);
+            width: fit-content;
         }
 
-        .report-card-title {
+        .slide-heading {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text-main);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.3;
         }
 
-        /* Slide Footer Navigation */
-        .slide-footer {
-            background: rgba(15, 23, 42, 0.95);
-            border-top: 1px solid var(--border-cyan);
-            padding: 16px 30px;
+        .summary-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .summary-item {
+            display: flex;
+            gap: 12px;
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .summary-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .summary-item strong {
+            color: #f8fafc;
+        }
+
+        /* Right 2x2 Image Grid Area */
+        .grid-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .grid-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .nav-btn {
-            background: rgba(56, 189, 248, 0.12);
-            color: var(--cyan-accent);
-            border: 1px solid var(--border-cyan);
-            padding: 10px 20px;
-            border-radius: 12px;
+        .grid-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
             font-weight: 700;
-            font-size: 0.88rem;
+            color: #38bdf8;
+        }
+
+        .branch-badge {
+            background: #2563eb;
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+
+        .images-2x2-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        .image-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .image-card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header-tag {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #f8fafc;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-img-wrapper {
+            flex: 1;
+            width: 100%;
+            background: #020617;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        /* Bottom Slide Control Footer */
+        .slide-footer {
+            height: 60px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .btn-slide {
+            background: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .nav-btn:hover:not(:disabled) {
-            background: var(--cyan-accent);
-            color: #020617;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+        .btn-slide:hover:not(:disabled) {
+            background: #2563eb;
+            color: #ffffff;
         }
 
-        .nav-btn:disabled {
+        .btn-slide:disabled {
             opacity: 0.4;
             cursor: not-allowed;
-            border-color: transparent;
         }
 
         /* Lightbox Modal */
@@ -246,157 +290,212 @@
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 6, 23, 0.92);
-            backdrop-filter: blur(12px);
-            z-index: 9999;
+            background: rgba(2, 6, 23, 0.95);
+            z-index: 99999;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
         }
 
         .lightbox-modal.active {
             display: flex;
         }
 
-        .lightbox-card {
-            max-width: 92vw;
-            max-height: 90vh;
-            background: #0f172a;
-            border: 2px solid var(--cyan-accent);
-            border-radius: 20px;
+        .lightbox-content {
+            width: 95vw;
+            height: 90vh;
+            background: #1e293b;
+            border: 1px solid #38bdf8;
+            border-radius: 16px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
-        .lightbox-img {
-            max-width: 100%;
-            max-height: 78vh;
-            object-fit: contain;
+        .lightbox-top {
+            padding: 14px 20px;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .lightbox-title {
+            font-weight: 700;
+            color: #38bdf8;
+            font-size: 1rem;
         }
 
         .lightbox-close {
-            position: absolute;
-            top: 14px; right: 14px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 38px; height: 38px;
-            border-radius: 50%;
-            font-size: 1.2rem;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            font-size: 1.4rem;
             cursor: pointer;
+        }
+
+        .lightbox-close:hover {
+            color: #fff;
+        }
+
+        .lightbox-body {
+            flex: 1;
+            width: 100%;
+            background: #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 16px;
+        }
+
+        .lightbox-body img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
 
-    <!-- Slide Deck Frame (Book Page View) -->
-    <div class="book-slide-frame">
-        <!-- Header -->
-        <div class="slide-header">
-            <div class="slide-title-group">
-                <div class="book-icon">📖</div>
+    <!-- Full Screen Slide Canvas -->
+    <div class="slide-canvas">
+        
+        <!-- Slide Top Bar -->
+        <div class="slide-topbar">
+            <div class="slide-branding">
+                <div class="brand-logo">METFONE TMS</div>
                 <div>
-                    <div class="slide-main-title">OPERATIONAL TRAINING MANUAL</div>
-                    <div class="slide-subtitle">Telegram Dispatch Bot Core Operations & BATP001 Analysis</div>
+                    <span class="presentation-title">Operational Training Presentation</span>
+                    <span class="presentation-subtitle">— Chapter 1: Bot Core Daily Operations</span>
                 </div>
             </div>
-            <div class="page-badge">SLIDE 1 / 5</div>
+            <div class="slide-counter">SLIDE 1 OF 5</div>
         </div>
 
-        <!-- Body -->
-        <div class="slide-body">
-            <!-- Chapter 1 Banner -->
-            <div class="chapter-box">
-                <div class="chapter-heading">Chapter 1: What Our Bot Does Every Day</div>
-                <div class="chapter-desc">
-                    The bot automatically connects to the Metfone TMS API to process live bill movements across <b>38 Post Offices</b> and <b>5 Zones</b>. It splits reports into 4 core operational stages, executes 3-shift clearance comparisons (9 AM → 2 PM → 5 PM), and dispatches formatted tables directly to Telegram groups.
-                </div>
+        <!-- Main Content Area -->
+        <div class="slide-main-content">
+            
+            <!-- Left Info Panel -->
+            <div class="info-panel">
+                <span class="chapter-badge">Chapter 1</span>
+                <h1 class="slide-heading">What Our Bot Does Every Day</h1>
+                
+                <ul class="summary-list">
+                    <li class="summary-item">
+                        <span class="summary-icon">⚡</span>
+                        <div><strong>Live API Sync:</strong> Automatically pulls real-time order data directly from Metfone TMS API servers.</div>
+                    </li>
+                    <li class="summary-item">
+                        <span class="summary-icon">📦</span>
+                        <div><strong>4-Stage Categorization:</strong> Categorizes bills by <b>Pickup</b>, <b>Delivery</b>, <b>Transit (Send Mega)</b>, and <b>Branch (Not Assign)</b>.</div>
+                    </li>
+                    <li class="summary-item">
+                        <span class="summary-icon">📊</span>
+                        <div><strong>3-Shift Clearance Tracking:</strong> Measures daily volume clearance changes across <b>9 AM Baseline</b>, <b>2 PM Checkpoint</b>, and <b>5 PM Total</b>.</div>
+                    </li>
+                    <li class="summary-item">
+                        <span class="summary-icon">🚀</span>
+                        <div><strong>Telegram Auto-Pushes:</strong> Dispatches HD summary tables & Excel reports to 23 branch groups & 5 zone groups.</div>
+                    </li>
+                    <li class="summary-item">
+                        <span class="summary-icon">⚙️</span>
+                        <div><strong>Filter Rules:</strong> <code>push</code> uses <i>CREATED DATE</i> for creation metrics; <code>push zone</code> uses <i>CURRENT TIME</i> for active movements.</div>
+                    </li>
+                </ul>
             </div>
 
-            <!-- 4 BATP001 Report Table Cards -->
-            <div>
-                <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--gold-accent); margin-bottom: 12px;">
-                    📊 Test Run Output: 4 Section Report Tables (Branch BATP001 - Battambang)
+            <!-- Right 2x2 Image Grid Area -->
+            <div class="grid-panel">
+                <div class="grid-header">
+                    <div class="grid-title">📊 Generated 4-Section Report Tables Test Output</div>
+                    <div class="branch-badge">TARGET BRANCH: BATP001</div>
                 </div>
 
-                <div class="report-section-grid">
+                <div class="images-2x2-container">
                     <!-- Table 1: Pickup -->
-                    <div class="report-card" onclick="showLightbox('/images/batp001_table_pickup.png', '1. អីវ៉ាន់ត្រូវយក (Pickup Report Table)')">
-                        <div class="report-img-wrapper">
-                            <img src="/images/batp001_table_pickup.png" alt="Pickup Report Table" class="report-img">
+                    <div class="image-card" onclick="openLightbox('/images/batp001_table_pickup.png', 'Stage 1: អីវ៉ាន់ត្រូវយក (Pickup Report Table)')">
+                        <div class="card-header-tag">
+                            <span>Stage 1: អីវ៉ាន់ត្រូវយក (Pickup)</span>
+                            <span style="color: #38bdf8;">🔍 Click to Expand</span>
                         </div>
-                        <div class="report-card-info">
-                            <div class="stage-badge">Stage 1</div>
-                            <div class="report-card-title">អីវ៉ាន់ត្រូវយក (Pickup)</div>
+                        <div class="card-img-wrapper">
+                            <img src="/images/batp001_table_pickup.png" alt="Pickup Table">
                         </div>
                     </div>
 
                     <!-- Table 2: Delivery -->
-                    <div class="report-card" onclick="showLightbox('/images/batp001_table_delivery.png', '2. អីវ៉ាន់ត្រូវចែក (Delivery Report Table)')">
-                        <div class="report-img-wrapper">
-                            <img src="/images/batp001_table_delivery.png" alt="Delivery Report Table" class="report-img">
+                    <div class="image-card" onclick="openLightbox('/images/batp001_table_delivery.png', 'Stage 2: អីវ៉ាន់ត្រូវចែក (Delivery Report Table)')">
+                        <div class="card-header-tag">
+                            <span>Stage 2: អីវ៉ាន់ត្រូវចែក (Delivery)</span>
+                            <span style="color: #10b981;">🔍 Click to Expand</span>
                         </div>
-                        <div class="report-card-info">
-                            <div class="stage-badge" style="color: #10b981;">Stage 2</div>
-                            <div class="report-card-title">អីវ៉ាន់ត្រូវចែក (Delivery)</div>
+                        <div class="card-img-wrapper">
+                            <img src="/images/batp001_table_delivery.png" alt="Delivery Table">
                         </div>
                     </div>
 
                     <!-- Table 3: Transit -->
-                    <div class="report-card" onclick="showLightbox('/images/batp001_table_transit.png', '3. អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Report Table)')">
-                        <div class="report-img-wrapper">
-                            <img src="/images/batp001_table_transit.png" alt="Transit Report Table" class="report-img">
+                    <div class="image-card" onclick="openLightbox('/images/batp001_table_transit.png', 'Stage 3: អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Table)')">
+                        <div class="card-header-tag">
+                            <span>Stage 3: អីវ៉ាន់ផ្ញើបន្ត (Transit)</span>
+                            <span style="color: #f59e0b;">🔍 Click to Expand</span>
                         </div>
-                        <div class="report-card-info">
-                            <div class="stage-badge" style="color: #f59e0b;">Stage 3</div>
-                            <div class="report-card-title">អីវ៉ាន់ផ្ញើបន្ត (Transit)</div>
+                        <div class="card-img-wrapper">
+                            <img src="/images/batp001_table_transit.png" alt="Transit Table">
                         </div>
                     </div>
 
                     <!-- Table 4: Branch -->
-                    <div class="report-card" onclick="showLightbox('/images/batp001_table_branch.png', '4. អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Report Table)')">
-                        <div class="report-img-wrapper">
-                            <img src="/images/batp001_table_branch.png" alt="Branch Report Table" class="report-img">
+                    <div class="image-card" onclick="openLightbox('/images/batp001_table_branch.png', 'Stage 4: អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Table)')">
+                        <div class="card-header-tag">
+                            <span>Stage 4: អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch)</span>
+                            <span style="color: #ef4444;">🔍 Click to Expand</span>
                         </div>
-                        <div class="report-card-info">
-                            <div class="stage-badge" style="color: #ef4444;">Stage 4</div>
-                            <div class="report-card-title">អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch)</div>
+                        <div class="card-img-wrapper">
+                            <img src="/images/batp001_table_branch.png" alt="Branch Table">
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
-        <!-- Footer -->
+        <!-- Slide Footer Controls -->
         <div class="slide-footer">
-            <button class="nav-btn" disabled>◀ Previous Slide</button>
-            <div style="font-family: 'Outfit'; font-weight: 700; font-size: 0.95rem; color: var(--gold-accent);">SLIDE 1 OF 5</div>
-            <button class="nav-btn" onclick="alert('Slide 2 of 5: Shift Clearance & Comparison Deep-Dive coming next!')">Next Slide ▶</button>
+            <button class="btn-slide" disabled>◀ Previous Slide</button>
+            <div style="font-weight: 600; font-size: 0.88rem; color: #94a3b8;">PAGE 1 / 5 — CORE BOT OPERATIONS</div>
+            <button class="btn-slide" onclick="alert('Slide 2 of 5: Shift Clearance & Comparison Deep-Dive coming next!')">Next Slide ▶</button>
         </div>
+
     </div>
 
     <!-- Lightbox Modal -->
-    <div id="lightbox" class="lightbox-modal" onclick="hideLightbox()">
-        <div class="lightbox-card" onclick="event.stopPropagation()">
-            <button class="lightbox-close" onclick="hideLightbox()">✕</button>
-            <img id="lightboxImg" src="" alt="Report Table" class="lightbox-img">
-            <div id="lightboxCap" style="padding: 16px; font-weight: 700; color: #fff; font-family: 'Outfit'; border-top: 1px solid var(--border-cyan);"></div>
+    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <div class="lightbox-top">
+                <div id="lightboxTitle" class="lightbox-title">Report Table Preview</div>
+                <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            </div>
+            <div class="lightbox-body">
+                <img id="lightboxImg" src="" alt="Full Table">
+            </div>
         </div>
     </div>
 
     <script>
-        // Lightbox Handler
-        function showLightbox(src, caption) {
+        function openLightbox(src, title) {
             document.getElementById('lightboxImg').src = src;
-            document.getElementById('lightboxCap').innerText = caption;
-            document.getElementById('lightbox').classList.add('active');
+            document.getElementById('lightboxTitle').innerText = title;
+            document.getElementById('lightboxModal').classList.add('active');
         }
 
-        function hideLightbox() {
-            document.getElementById('lightbox').classList.remove('active');
+        function closeLightbox() {
+            document.getElementById('lightboxModal').classList.remove('active');
         }
     </script>
+
 </body>
 </html>
