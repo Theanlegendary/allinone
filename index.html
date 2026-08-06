@@ -3,313 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metfone Express — Executive Strategy Handbook (Page 01)</title>
+    <title>Metfone Express — Landscape Training Slide (Slide 1 of 5)</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Premium Editorial Typography: Newsreader (Serif) + Inter (Sans) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+    <!-- Bold Display Fonts: Outfit + Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-paper: #faf9f6;
-            --surface-white: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #475569;
+            --bg-white: #ffffff;
+            --brand-red: #e11b22;
+            --text-black: #0f172a;
+            --text-muted: #64748b;
             --text-light: #94a3b8;
-            --brand-red: #d90429;
-            --border-fine: #e2e8f0;
-            --border-dark: #0f172a;
+            --border-light: #e2e8f0;
+            --sticky-yellow: #fef08a;
+            --sticky-text: #854d0e;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-paper);
-            color: var(--text-dark);
             font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            line-height: 1.7;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-white);
+            color: var(--text-black);
             -webkit-font-smoothing: antialiased;
-            padding: 0;
-            margin: 0;
-            min-height: 100vh;
         }
 
-        /* Editorial Book Container */
-        .editorial-book {
-            max-width: 1280px;
-            margin: 0 auto;
-            background: var(--surface-white);
-            min-height: 100vh;
-            border-left: 1px solid var(--border-fine);
-            border-right: 1px solid var(--border-fine);
+        /* 16:9 Landscape Canvas */
+        .landscape-canvas {
+            width: 100vw;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
         }
 
-        /* Running Header Bar */
-        .running-header {
-            padding: 32px 64px 20px;
-            border-bottom: 1px solid var(--text-dark);
+        /* Far Left Vertical Stamp Margin */
+        .side-stamp {
+            position: absolute;
+            left: 24px;
+            bottom: 120px;
+            transform: rotate(-90deg);
+            transform-origin: left bottom;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.25em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Top Bar Layout */
+        .top-nav {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 40px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--text-muted);
+            align-items: center;
+            z-index: 10;
         }
 
-        .brand-mark {
+        .logo-box {
             display: flex;
             align-items: center;
-            gap: 12px;
-            color: var(--text-dark);
-        }
-
-        .brand-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--brand-red);
-            border-radius: 50%;
-        }
-
-        /* Book Page Main Layout */
-        .page-content {
-            padding: 64px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 64px;
-        }
-
-        /* Title Section (Swiss Asymmetric Layout) */
-        .chapter-header {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 32px;
-            align-items: start;
-        }
-
-        .chapter-number {
-            font-family: 'Newsreader', serif;
-            font-size: 5rem;
-            font-weight: 400;
-            line-height: 0.8;
-            color: var(--brand-red);
-        }
-
-        .chapter-titles {
-            display: flex;
-            flex-direction: column;
             gap: 16px;
         }
 
-        .chapter-title {
-            font-family: 'Newsreader', serif;
-            font-size: 3.5rem;
+        .brand-m-square {
+            width: 36px;
+            height: 36px;
+            background: var(--brand-red);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .nav-header-text {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-black);
+        }
+
+        .nav-right-tag {
+            font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            color: var(--text-dark);
-        }
-
-        .chapter-subtitle {
-            font-size: 1.15rem;
             color: var(--text-muted);
-            font-weight: 400;
-            max-width: 800px;
-            line-height: 1.6;
         }
 
-        /* Pull Quote Component */
-        .pull-quote {
-            border-left: 3px solid var(--brand-red);
-            padding-left: 32px;
-            margin: 16px 0;
-        }
-
-        .quote-text {
-            font-family: 'Newsreader', serif;
-            font-style: italic;
-            font-size: 1.5rem;
-            line-height: 1.4;
-            color: var(--text-dark);
-        }
-
-        /* Strategy Grid Layout (3 Column Editorial) */
-        .strategy-grid {
+        /* Main Split Content Layout */
+        .main-split {
+            width: 100%;
+            height: 100%;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 32px;
-            border-top: 1px solid var(--border-fine);
-            border-bottom: 1px solid var(--border-fine);
-            padding: 40px 0;
+            grid-template-columns: 1fr 1fr;
+            padding: 100px 40px 80px 80px;
+            gap: 40px;
+            align-items: center;
         }
 
-        .strategy-column {
+        /* Left Content Column */
+        .left-content {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 20px;
+            max-width: 580px;
         }
 
-        .column-number {
-            font-size: 0.75rem;
+        .eyebrow-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
             font-weight: 800;
             letter-spacing: 0.15em;
             color: var(--brand-red);
             text-transform: uppercase;
         }
 
-        .column-heading {
-            font-family: 'Newsreader', serif;
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--text-dark);
+        .eyebrow-line::before {
+            content: '';
+            width: 30px;
+            height: 3px;
+            background: var(--brand-red);
         }
 
-        .column-text {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.6;
+        .hero-title-bold {
+            font-family: 'Outfit', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1.05;
+            color: var(--text-black);
+            letter-spacing: -0.03em;
         }
 
-        /* Figure Gallery Section */
-        .figures-section {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+        .hero-title-bold span {
+            color: var(--brand-red);
         }
 
-        .section-meta-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--text-dark);
-            padding-bottom: 12px;
-        }
-
-        .meta-title {
-            font-family: 'Newsreader', serif;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .meta-caption {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
-        /* 2x2 Publication Figures Grid */
-        .figures-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .figure-card {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            cursor: pointer;
-        }
-
-        .figure-frame {
-            border: 1px solid var(--border-fine);
-            background: #000;
-            padding: 8px;
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.3s ease;
-        }
-
-        .figure-card:hover .figure-frame {
-            border-color: var(--brand-red);
-        }
-
-        .figure-img {
-            width: 100%;
-            height: 240px;
-            object-fit: contain;
-            display: block;
-            background: #090d16;
-        }
-
-        .figure-caption {
-            font-size: 0.82rem;
+        .sub-english {
+            font-size: 1.05rem;
             color: var(--text-muted);
             line-height: 1.5;
+            font-weight: 500;
         }
 
-        .figure-caption strong {
-            color: var(--text-dark);
-            font-weight: 700;
+        .sub-khmer {
+            font-size: 1.05rem;
+            color: var(--text-black);
+            line-height: 1.6;
+            font-weight: 600;
         }
 
-        /* Running Footer */
-        .running-footer {
-            padding: 32px 64px;
-            border-top: 1px solid var(--text-dark);
+        /* Right Visual Slide Paper Frame */
+        .right-exhibit {
+            width: 100%;
+            height: 100%;
+            max-height: 520px;
+            background: #f8fafc;
+            border: 2px solid var(--text-black);
+            border-radius: 12px;
+            box-shadow: 16px 16px 0px rgba(15, 23, 42, 0.1);
+            position: relative;
+            padding: 24px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: 600;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .turn-page-btn {
+        /* Yellow Sticky Note Callout */
+        .sticky-note {
+            position: absolute;
+            top: -16px;
+            right: 24px;
+            background: var(--sticky-yellow);
+            color: var(--sticky-text);
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: rotate(2deg);
+            z-index: 20;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+
+        /* 4 Section Tab Switcher inside Exhibit */
+        .tab-switcher {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+
+        .exhibit-tab {
             background: transparent;
-            border: 1px solid var(--text-dark);
-            color: var(--text-dark);
-            padding: 10px 24px;
-            font-weight: 600;
+            border: none;
             font-size: 0.8rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .turn-page-btn:hover:not(:disabled) {
-            background: var(--text-dark);
+        .exhibit-tab.active {
+            background: var(--text-black);
             color: #ffffff;
         }
 
-        .turn-page-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            border-color: var(--border-fine);
+        /* Display Image Container */
+        .exhibit-display-frame {
+            flex: 1;
+            width: 100%;
+            background: #090d16;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
         }
 
-        /* Lightbox Viewer */
-        .lightbox-overlay {
+        .exhibit-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Bottom Controls Bar */
+        .bottom-nav {
+            position: absolute;
+            bottom: 24px;
+            left: 80px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-mark {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--text-black);
+        }
+
+        .nav-controls-box {
+            background: var(--text-black);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-arrow {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+        }
+
+        .dot.active {
+            background: var(--brand-red);
+            width: 16px;
+            border-radius: 10px;
+        }
+
+        /* Fullscreen Lightbox Modal */
+        .lightbox-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.92);
             z-index: 99999;
             align-items: center;
             justify-content: center;
             padding: 32px;
         }
 
-        .lightbox-overlay.active {
+        .lightbox-modal.active {
             display: flex;
         }
 
-        .lightbox-container {
-            max-width: 90vw;
-            max-height: 90vh;
-            background: var(--surface-white);
-            border: 1px solid var(--text-dark);
+        .lightbox-box {
+            width: 90vw;
+            height: 85vh;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 24px;
             display: flex;
             flex-direction: column;
@@ -317,166 +335,137 @@
             position: relative;
         }
 
-        .lightbox-img-full {
-            max-width: 100%;
-            max-height: 75vh;
-            object-fit: contain;
-            background: #090d16;
-        }
-
-        .lightbox-close-btn {
+        .lightbox-close {
             position: absolute;
             top: 16px; right: 16px;
-            background: var(--text-dark);
+            background: var(--text-black);
             color: #fff;
             border: none;
-            width: 32px; height: 32px;
-            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
             cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <!-- Editorial Book Page Container -->
-    <div class="editorial-book">
+    <!-- 16:9 Landscape Presentation Canvas -->
+    <div class="landscape-canvas">
         
-        <!-- Running Header -->
-        <header class="running-header">
-            <div class="brand-mark">
-                <div class="brand-dot"></div>
-                <span>METFONE EXPRESS LOGISTICS HANDBOOK</span>
-            </div>
-            <div>VOL. I — DISPATCH ARCHITECTURE</div>
-            <div>PAGE 01 / 05</div>
-        </header>
+        <!-- Left Margin Vertical Stamp -->
+        <div class="side-stamp">METFONE EXPRESS · INTERNAL TRAINING</div>
 
-        <!-- Page Main Content -->
-        <main class="page-content">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="logo-box">
+                <div class="brand-m-square">M</div>
+                <div class="nav-header-text">DAILY DISPATCH BOT TRAINING</div>
+            </div>
+            <div class="nav-right-tag">Ops tms guide · 2026</div>
+        </div>
+
+        <!-- Main Split Area -->
+        <div class="main-split">
             
-            <!-- Chapter Header -->
-            <section class="chapter-header">
-                <div class="chapter-number">01</div>
-                <div class="chapter-titles">
-                    <h1 class="chapter-title">Automated Dispatch Architecture</h1>
-                    <p class="chapter-subtitle">
-                        An executive study on real-time order telemetry, 4-stage operational partitioning, and multi-shift clearance monitoring across 38 nationwide post offices.
-                    </p>
-                </div>
-            </section>
+            <!-- Left Headline Column -->
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 01 · Bot Core Operations</div>
+                
+                <h1 class="hero-title-bold">
+                    Right report.<br><span>Every shift.</span>
+                </h1>
 
-            <!-- Editorial Pull Quote -->
-            <blockquote class="pull-quote">
-                <p class="quote-text">
-                    "Logistical velocity depends on decision clarity. By transforming raw Metfone TMS server feeds into structured executive telemetry, nationwide clearance times are reduced by 40%."
+                <p class="sub-english">
+                    A practical guide for automated daily pushes, 4-stage order tracking, 3-shift clearance comparison, and status logs.
                 </p>
-            </blockquote>
 
-            <!-- Strategy 4-Column Grid -->
-            <section class="strategy-grid">
-                <div class="strategy-column">
-                    <span class="column-number">STAGE 01</span>
-                    <h3 class="column-heading">អីវ៉ាន់ត្រូវយក (Pickup)</h3>
-                    <p class="column-text">Tracks orders created and scheduled for collection at receiving stores across all 5 operational zones.</p>
-                </div>
-                <div class="strategy-column">
-                    <span class="column-number">STAGE 02</span>
-                    <h3 class="column-heading">អីវ៉ាន់ត្រូវចែក (Delivery)</h3>
-                    <p class="column-text">Monitors active delivery dispatches assigned to couriers for final recipient drop-off.</p>
-                </div>
-                <div class="strategy-column">
-                    <span class="column-number">STAGE 03</span>
-                    <h3 class="column-heading">អីវ៉ាន់ផ្ញើបន្ត (Transit)</h3>
-                    <p class="column-text">Manages inter-hub transfers, Send Mega dispatches, and sorting facility movement logs.</p>
-                </div>
-                <div class="strategy-column">
-                    <span class="column-number">STAGE 04</span>
-                    <h3 class="column-heading">អីវ៉ាន់មិនទាន់ (Branch)</h3>
-                    <p class="column-text">Identifies pending unassigned inventory sitting at branch post offices to prevent bottleneck delays.</p>
-                </div>
-            </section>
-
-            <!-- Figures Gallery (BATP001 Telemetry Output) -->
-            <section class="figures-section">
-                <div class="section-meta-header">
-                    <h2 class="meta-title">Field Verification Figures: Branch BATP001 (Battambang)</h2>
-                    <span class="meta-caption">EXECUTIVE REPORT EXHIBIT 1.2 — 4 SECTIONS</span>
-                </div>
-
-                <div class="figures-grid">
-                    <!-- Figure 1.2a -->
-                    <div class="figure-card" onclick="openFigure('/images/batp001_table_pickup.png', 'Figure 1.2a: Stage 1 — Pickup Telemetry Matrix (BATP001)')">
-                        <div class="figure-frame">
-                            <img src="/images/batp001_table_pickup.png" alt="Pickup Matrix" class="figure-img">
-                        </div>
-                        <p class="figure-caption">
-                            <strong>Figure 1.2a:</strong> Stage 1 — Pickup Telemetry Matrix (BATP001). Formatted table showing receiving store pickups.
-                        </p>
-                    </div>
-
-                    <!-- Figure 1.2b -->
-                    <div class="figure-card" onclick="openFigure('/images/batp001_table_delivery.png', 'Figure 1.2b: Stage 2 — Courier Delivery Log (BATP001)')">
-                        <div class="figure-frame">
-                            <img src="/images/batp001_table_delivery.png" alt="Delivery Log" class="figure-img">
-                        </div>
-                        <p class="figure-caption">
-                            <strong>Figure 1.2b:</strong> Stage 2 — Courier Delivery Log (BATP001). Active dispatch tracking for Battambang delivery sector.
-                        </p>
-                    </div>
-
-                    <!-- Figure 1.2c -->
-                    <div class="figure-card" onclick="openFigure('/images/batp001_table_transit.png', 'Figure 1.2c: Stage 3 — Inter-Hub Transit Audit (BATP001)')">
-                        <div class="figure-frame">
-                            <img src="/images/batp001_table_transit.png" alt="Transit Audit" class="figure-img">
-                        </div>
-                        <p class="figure-caption">
-                            <strong>Figure 1.2c:</strong> Stage 3 — Inter-Hub Transit Audit (BATP001). Send Mega movement logs between central hubs.
-                        </p>
-                    </div>
-
-                    <!-- Figure 1.2d -->
-                    <div class="figure-card" onclick="openFigure('/images/batp001_table_branch.png', 'Figure 1.2d: Stage 4 — Branch Unassigned Inventory (BATP001)')">
-                        <div class="figure-frame">
-                            <img src="/images/batp001_table_branch.png" alt="Branch Inventory" class="figure-img">
-                        </div>
-                        <p class="figure-caption">
-                            <strong>Figure 1.2d:</strong> Stage 4 — Branch Unassigned Inventory (BATP001). Pending hold bills requiring operational clearance.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Running Footer -->
-        <footer class="running-footer">
-            <button class="turn-page-btn" disabled>◄ PREVIOUS CHAPTER</button>
-            <div style="letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);">
-                PAGE 01 — CHAPTER 01: DISPATCH BOT ARCHITECTURE
+                <p class="sub-khmer">
+                    សៀវភៅណែនាំសម្រាប់ការប្រើប្រាស់ Bot ស្វ័យប្រវត្តិនៃការទាញរបាយការណ៍ប្រចាំថ្ងៃ និងតាមដានទិន្នន័យ។
+                </p>
             </div>
-            <button class="turn-page-btn" onclick="alert('Proceeding to Chapter 2: Shift Clearance Dynamics (Page 02 / 05)')">NEXT CHAPTER ►</button>
-        </footer>
+
+            <!-- Right Visual Exhibit Container -->
+            <div class="right-exhibit">
+                <!-- Yellow Sticky Note Callout -->
+                <div class="sticky-note">
+                    📌 <b>Before Pushing:</b><br>Check creation date & active status scan timestamps.
+                </div>
+
+                <!-- Tab Selector for 4 Section Tables -->
+                <div class="tab-switcher">
+                    <button class="exhibit-tab active" onclick="switchExhibit('pickup', this)">1. Pickup (ត្រូវយក)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('delivery', this)">2. Delivery (ត្រូវចែក)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('transit', this)">3. Transit (ផ្ញើបន្ត)</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('branch', this)">4. Branch (មិនទាន់)</button>
+                </div>
+
+                <!-- Active Display Image Frame -->
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImg" src="/images/batp001_table_pickup.png" alt="BATP001 Report Table" class="exhibit-img">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <div class="page-mark">01 &nbsp; METFONE EXPRESS</div>
+            
+            <div class="nav-controls-box">
+                <button class="nav-arrow" disabled>◄</button>
+                <div class="slide-dots">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="nav-arrow" onclick="alert('Slide 2 of 5: Shift Clearance & Comparison Deep-Dive coming next!')">►</button>
+            </div>
+        </div>
 
     </div>
 
     <!-- Lightbox Modal -->
-    <div id="lightbox" class="lightbox-overlay" onclick="closeFigure()">
-        <div class="lightbox-container" onclick="event.stopPropagation()">
-            <button class="lightbox-close-btn" onclick="closeFigure()">✕</button>
-            <img id="lightboxImg" src="" alt="Full Figure" class="lightbox-img-full">
-            <div id="lightboxTitle" style="font-family: 'Newsreader', serif; font-size: 1.1rem; font-weight: 600;"></div>
+    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
+        <div class="lightbox-box" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
+            <div style="font-weight: 800; font-size: 1.1rem;" id="lightboxTitle">BATP001 Field Report Table Preview</div>
+            <div style="flex: 1; overflow: hidden; background: #090d16; border-radius: 8px; padding: 12px;">
+                <img id="lightboxFullImg" src="/images/batp001_table_pickup.png" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
         </div>
     </div>
 
     <script>
-        function openFigure(src, title) {
-            document.getElementById('lightboxImg').src = src;
-            document.getElementById('lightboxTitle').innerText = title;
-            document.getElementById('lightbox').classList.add('active');
+        const tableMap = {
+            'pickup': { src: '/images/batp001_table_pickup.png', title: '1. អីវ៉ាន់ត្រូវយក (Pickup Report Table - BATP001)' },
+            'delivery': { src: '/images/batp001_table_delivery.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery Report Table - BATP001)' },
+            'transit': { src: '/images/batp001_table_transit.png', title: '3. អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Table - BATP001)' },
+            'branch': { src: '/images/batp001_table_branch.png', title: '4. អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Table - BATP001)' }
+        };
+
+        let currentTab = 'pickup';
+
+        function switchExhibit(tabKey, btnElement) {
+            currentTab = tabKey;
+            document.querySelectorAll('.exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            let data = tableMap[tabKey];
+            document.getElementById('exhibitImg').src = data.src;
         }
 
-        function closeFigure() {
-            document.getElementById('lightbox').classList.remove('active');
+        function openLightbox() {
+            let data = tableMap[currentTab];
+            document.getElementById('lightboxFullImg').src = data.src;
+            document.getElementById('lightboxTitle').innerText = data.title;
+            document.getElementById('lightboxModal').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightboxModal').classList.remove('active');
         }
     </script>
 </body>
