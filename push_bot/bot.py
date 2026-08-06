@@ -72,6 +72,20 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             else:
                 self.wfile.write(b'{"branches":{},"summary":{},"updated":null}')
+        elif self.path.startswith('/images/'):
+            filename = os.path.basename(self.path.split('?')[0])
+            file_path = os.path.join(HERE, "images", filename)
+            if os.path.exists(file_path) and filename.lower().endswith(('.png', '.jpg', '.jpeg', '.svg')):
+                self.send_response(200)
+                self.send_header('Content-type', 'image/png')
+                self.send_header('Cache-Control', 'max-age=86400')
+                self.end_headers()
+                with open(file_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"Image Not Found")
         elif self.path == '/dashboard-tokens':
             self.send_response(404)
             self.end_headers()
