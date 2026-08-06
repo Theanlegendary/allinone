@@ -135,7 +135,7 @@
         .left-content {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             max-width: 600px;
         }
 
@@ -171,58 +171,54 @@
         }
 
         .sub-english {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--text-dark);
-            line-height: 1.55;
+            line-height: 1.5;
             font-weight: 600;
         }
 
         .sub-khmer {
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text-black);
-            line-height: 1.65;
+            line-height: 1.6;
             font-weight: 700;
         }
 
-        /* Operational Rules Card Container (Slide 3) */
-        .rule-card-box {
+        /* KPI Explanation Grid (Slide 4) */
+        .kpi-explain-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .kpi-card {
             background: #f8fafc;
             border: 2px solid var(--text-black);
-            border-radius: 12px;
-            padding: 18px 22px;
+            border-radius: 10px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            box-shadow: 6px 6px 0px rgba(9, 13, 22, 0.08);
+            gap: 8px;
         }
 
-        .rule-item {
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .rule-badge-icon {
-            background: var(--brand-red);
-            color: #ffffff;
-            font-size: 0.85rem;
+        .kpi-badge-tag {
+            font-size: 0.8rem;
             font-weight: 900;
             padding: 4px 10px;
             border-radius: 6px;
-            flex-shrink: 0;
-            text-transform: uppercase;
+            display: inline-block;
+            width: max-content;
         }
 
-        .rule-text-content {
-            font-size: 0.92rem;
+        .kpi-badge-tag.green { background: #d1fae5; color: #047857; }
+        .kpi-badge-tag.red { background: #ffe4e6; color: #b91c1c; }
+
+        .kpi-card-text {
+            font-size: 0.88rem;
             color: var(--text-black);
-            line-height: 1.45;
-            font-weight: 600;
-        }
-
-        .rule-text-content strong {
-            color: var(--brand-red);
-            font-weight: 800;
+            line-height: 1.4;
+            font-weight: 700;
         }
 
         /* Status Transition Flow List (Slide 2) */
@@ -562,7 +558,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 3 VIEW: PICKUP & MEGA (TRANSIT) ACTION GUIDE -->
+        <!-- SLIDE 3 VIEW: PICKUP & MEGA TRANSIT -->
         <div id="slide3" class="slide-view">
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 03 · Pickup & Mega Transit Action</div>
@@ -571,23 +567,15 @@
                     Verify pickup.<br><span>Transit fast.</span>
                 </h1>
 
-                <p class="sub-english">
-                    Checking pending orders in <b>Pickup</b> & <b>Send Mega (Transit)</b> tables to take immediate action.
-                </p>
-
-                <!-- Action Rule Cards for Pickup & Mega -->
-                <div class="rule-card-box">
-                    <div class="rule-item">
-                        <div class="rule-badge-icon">PICKUP ACTION</div>
-                        <div class="rule-text-content">
-                            For bills pending in the <strong>Pickup Table</strong>, staff must <strong>check the Pickup Page on the TMS App</strong> to verify customer pickup assignments!
-                        </div>
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #e11b22;">
+                        <div class="status-code-badge" style="background: #e11b22;">PICKUP APP</div>
+                        <div class="status-desc-text">For pending pickup bills, staff <b>must check the Pickup Page in the TMS App</b> to confirm customer assignments!</div>
                     </div>
-                    <div class="rule-item" style="border-top: 1px solid var(--border-light); padding-top: 10px;">
-                        <div class="rule-badge-icon" style="background: #2563eb;">MEGA TRANSIT</div>
-                        <div class="rule-text-content">
-                            Verify <strong>Send Mega Table (302/306/311)</strong> for hub dispatches to ensure inter-branch packages are loaded on outbound trucks without delay.
-                        </div>
+
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">MEGA TRANSIT</div>
+                        <div class="status-desc-text">Verify <b>Send Mega Table (302/306/311)</b> to ensure inter-branch packages are dispatched on transit trucks.</div>
                     </div>
                 </div>
 
@@ -596,7 +584,6 @@
                 </p>
             </div>
 
-            <!-- Right Visual Exhibit Container for Slide 3 -->
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">
                     📲 <b>Check App First:</b><br>Open TMS App Pickup Page to confirm customer pickup requests!
@@ -613,6 +600,58 @@
             </div>
         </div>
 
+        <!-- SLIDE 4 VIEW: HOW OPERATIONAL KPI & AGE SLA WORK -->
+        <div id="slide4" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 04 · How Operational KPI Works</div>
+                
+                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                    Target 10h.<br><span>Zero overdue.</span>
+                </h1>
+
+                <p class="sub-english">
+                    Understanding the <b>10-Hour KPI Target (កាលកំណត់ 10H KPI)</b> and the <b>Age Column (រយៈពេលអាយុ)</b> SLA indicator system.
+                </p>
+
+                <!-- KPI Age Color Indicator Box -->
+                <div class="kpi-explain-box">
+                    <div class="kpi-card" style="border-left: 5px solid #10b981;">
+                        <div class="kpi-badge-tag green">🟢 GREEN (0h — 9h 59m)</div>
+                        <div class="kpi-card-text">
+                            <b>Safe SLA Zone:</b> Order age is within the 10-hour target limit. Delivery is on schedule.
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 5px solid #e11b22;">
+                        <div class="kpi-badge-tag red">🔴 RED (≥ 10h 00m)</div>
+                        <div class="kpi-card-text">
+                            <b>Overdue Alert:</b> Order age has exceeded 10 hours! Requires immediate courier follow-up.
+                        </div>
+                    </div>
+                </div>
+
+                <p class="sub-khmer">
+                    <b>ការរាប់ KPI៖</b> រយៈពេលអាយុ (Age) ពណ៌បៃតង 🟢 គឺទាន់ពេល (<10h) | ពណ៌ក្រហម 🔴 គឺហួសកាលកំណត់ (≥10h) ត្រូវតែប្រញាប់ដោះស្រាយ!
+                </p>
+            </div>
+
+            <!-- Right Visual Exhibit Container for Slide 4 -->
+            <div class="right-exhibit">
+                <div class="sticky-note" style="background: #dcfce7; color: #166534; border-color: #22c55e;">
+                    🎯 <b>Target SLA 10H:</b><br>Keep all order ages green (<10h) across all 3 daily clearance shifts!
+                </div>
+
+                <div class="tab-switcher">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide4('table2', this)">1. Delivery KPI Table (SVAP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide4('table1', this)">2. Not Assign Age Table (THOP001)</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide4" src="/images/svap001_delivery_sharp.png" alt="Delivery KPI Table" class="exhibit-img">
+                </div>
+            </div>
+        </div>
+
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
             <div class="page-mark" id="pageMark">01 &nbsp; METFONE EXPRESS</div>
@@ -623,7 +662,7 @@
                     <div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
                     <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
                     <div class="dot" id="dot3" onclick="goToSlide(3)"></div>
-                    <div class="dot" id="dot4"></div>
+                    <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
                     <div class="dot" id="dot5"></div>
                 </div>
                 <button class="nav-arrow" id="nextBtn" onclick="nextSlide()">►</button>
@@ -648,10 +687,11 @@
         let currentTabSlide1 = 'table1';
         let currentTabSlide2 = 'table2';
         let currentTabSlide3 = 'table1';
+        let currentTabSlide4 = 'table2';
 
         const sharpTables = {
-            'table1': { src: '/images/thop001_branch_sharp.png', title: '1. មិនទាន់ចាត់ចែង / Pickup Check — Report_THOP001_Branch' },
-            'table2': { src: '/images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery) — Report_SVAP001_Delivery' },
+            'table1': { src: '/images/thop001_branch_sharp.png', title: '1. មិនទាន់ចាត់ចែង (Not Assign Age Column) — Report_THOP001_Branch' },
+            'table2': { src: '/images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery 10H KPI Column) — Report_SVAP001_Delivery' },
             'table3': { src: '/images/svap001_transit_sharp.png', title: '3. ដាក់ទៅ MEGA (Send Mega / Transit) — Report_SVAP001_Transit' },
             'table4': { src: '/images/svap001_branch_sharp.png', title: '4. មិនទាន់ចាត់ចែង (Not Assign) — Report_SVAP001_Branch' }
         };
@@ -668,11 +708,11 @@
             document.getElementById('pageMark').innerHTML = `0${slideNum} &nbsp; METFONE EXPRESS`;
 
             document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 3);
+            document.getElementById('nextBtn').disabled = (slideNum === 4);
         }
 
         function nextSlide() {
-            if (currentSlide < 3) goToSlide(currentSlide + 1);
+            if (currentSlide < 4) goToSlide(currentSlide + 1);
         }
 
         function prevSlide() {
@@ -700,8 +740,16 @@
             document.getElementById('exhibitImgSlide3').src = sharpTables[tabKey].src;
         }
 
+        function switchExhibitSlide4(tabKey, btnElement) {
+            currentTabSlide4 = tabKey;
+            document.querySelectorAll('#slide4 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide4').src = sharpTables[tabKey].src;
+        }
+
         function openLightbox() {
-            let key = (currentSlide === 1) ? currentTabSlide1 : ((currentSlide === 2) ? currentTabSlide2 : currentTabSlide3);
+            let keyMap = { 1: currentTabSlide1, 2: currentTabSlide2, 3: currentTabSlide3, 4: currentTabSlide4 };
+            let key = keyMap[currentSlide] || 'table1';
             let data = sharpTables[key];
             document.getElementById('lightboxFullImg').src = data.src;
             document.getElementById('lightboxTitle').innerText = data.title;
