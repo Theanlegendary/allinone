@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metfone Express — Landscape Training Slide Deck</title>
+    <title>Metfone Express — 5-Slide Landscape Training Deck</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Bold Display Fonts: Outfit + Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-white: #ffffff;
             --brand-red: #e11b22;
             --text-black: #090d16;
             --text-dark: #1e293b;
-            --text-muted: #475569;
+            --text-muted: #334155;
             --border-dark: #0f172a;
-            --border-light: #cbd5e1;
+            --border-light: #94a3b8;
             --sticky-yellow: #fef08a;
             --sticky-text: #713f12;
             --node-blue: #1d4ed8;
@@ -52,14 +52,14 @@
         /* Far Left Vertical Stamp Margin */
         .side-stamp {
             position: absolute;
-            left: 24px;
+            left: 20px;
             bottom: 120px;
             transform: rotate(-90deg);
             transform-origin: left bottom;
-            font-size: 0.82rem;
+            font-size: 0.95rem;
             font-weight: 900;
             letter-spacing: 0.25em;
-            color: var(--text-muted);
+            color: var(--text-dark);
             text-transform: uppercase;
             white-space: nowrap;
         }
@@ -67,8 +67,8 @@
         /* Top Bar Layout */
         .top-nav {
             position: absolute;
-            top: 24px;
-            left: 24px;
+            top: 20px;
+            left: 20px;
             right: 40px;
             display: flex;
             justify-content: space-between;
@@ -83,21 +83,21 @@
         }
 
         .brand-m-square {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             background: var(--brand-red);
             color: #ffffff;
             font-weight: 900;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(225, 27, 34, 0.25);
+            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.3);
         }
 
         .nav-header-text {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-weight: 900;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -105,8 +105,8 @@
         }
 
         .nav-right-tag {
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.95rem;
+            font-weight: 900;
             color: var(--text-dark);
         }
 
@@ -119,9 +119,9 @@
 
         .slide-view.active {
             display: grid;
-            grid-template-columns: 1fr 1.1fr;
-            padding: 100px 40px 80px 80px;
-            gap: 40px;
+            grid-template-columns: 1.15fr 1.05fr;
+            padding: 85px 30px 75px 75px;
+            gap: 30px;
             align-items: center;
             animation: slideFade 0.35s ease;
         }
@@ -131,19 +131,19 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Left Content Column */
+        /* Left Content Column (Enlarged Typography) */
         .left-content {
             display: flex;
             flex-direction: column;
             gap: 18px;
-            max-width: 600px;
+            max-width: 650px;
         }
 
         .eyebrow-line {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 0.88rem;
+            font-size: 1rem;
             font-weight: 900;
             letter-spacing: 0.18em;
             color: var(--brand-red);
@@ -152,14 +152,14 @@
 
         .eyebrow-line::before {
             content: '';
-            width: 36px;
-            height: 4px;
+            width: 40px;
+            height: 5px;
             background: var(--brand-red);
         }
 
         .hero-title-bold {
             font-family: 'Outfit', sans-serif;
-            font-size: 4.2rem;
+            font-size: 4.4rem;
             font-weight: 900;
             line-height: 1.02;
             color: var(--text-black);
@@ -170,18 +170,58 @@
             color: var(--brand-red);
         }
 
+        /* 2X ENLARGED BILINGUAL TEXT */
         .sub-english {
-            font-size: 1.05rem;
-            color: var(--text-dark);
+            font-size: 1.35rem;
+            color: var(--text-black);
             line-height: 1.5;
-            font-weight: 600;
+            font-weight: 800;
         }
 
         .sub-khmer {
-            font-size: 1rem;
-            color: var(--text-black);
+            font-size: 1.3rem;
+            color: var(--brand-red);
             line-height: 1.6;
-            font-weight: 700;
+            font-weight: 800;
+            background: #fff1f2;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border-left: 5px solid var(--brand-red);
+        }
+
+        /* Status & Rule Cards (Enlarged Text) */
+        .status-flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .status-step-card {
+            background: #f8fafc;
+            border: 2px solid var(--text-black);
+            border-left: 6px solid var(--brand-red);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .status-code-badge {
+            background: var(--text-black);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1rem;
+            padding: 6px 14px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .status-desc-text {
+            font-size: 1.15rem;
+            color: var(--text-black);
+            line-height: 1.45;
+            font-weight: 800;
         }
 
         /* KPI Explanation Grid (Slide 4) */
@@ -189,7 +229,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 4px;
         }
 
         .kpi-card {
@@ -203,9 +242,9 @@
         }
 
         .kpi-badge-tag {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             font-weight: 900;
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
             display: inline-block;
             width: max-content;
@@ -215,60 +254,23 @@
         .kpi-badge-tag.red { background: #ffe4e6; color: #b91c1c; }
 
         .kpi-card-text {
-            font-size: 0.88rem;
+            font-size: 1.1rem;
             color: var(--text-black);
             line-height: 1.4;
-            font-weight: 700;
-        }
-
-        /* Status Transition Flow List (Slide 2) */
-        .status-flow-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 4px;
-        }
-
-        .status-step-card {
-            background: #f8fafc;
-            border: 2px solid var(--text-black);
-            border-left: 6px solid var(--brand-red);
-            padding: 12px 16px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-
-        .status-code-badge {
-            background: var(--text-black);
-            color: #ffffff;
-            font-weight: 900;
-            font-size: 0.88rem;
-            padding: 6px 12px;
-            border-radius: 6px;
-            flex-shrink: 0;
-        }
-
-        .status-desc-text {
-            font-size: 0.9rem;
-            color: var(--text-black);
-            line-height: 1.4;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         /* Right Visual Slide Paper Frame */
         .right-exhibit {
             width: 100%;
             height: 100%;
-            max-height: 550px;
+            max-height: 560px;
             background: #ffffff;
             border: 3px solid var(--text-black);
             border-radius: 14px;
             box-shadow: 16px 16px 0px rgba(9, 13, 22, 0.1);
             position: relative;
-            padding: 22px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -283,32 +285,32 @@
             color: var(--sticky-text);
             padding: 12px 16px;
             border-radius: 6px;
-            font-size: 0.82rem;
-            font-weight: 800;
+            font-size: 0.95rem;
+            font-weight: 900;
             border: 2px solid #eab308;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             transform: rotate(2deg);
             z-index: 20;
-            max-width: 230px;
+            max-width: 250px;
             line-height: 1.45;
         }
 
         /* Tab Switcher */
         .tab-switcher {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             border-bottom: 3px solid var(--border-light);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             overflow-x: auto;
         }
 
         .exhibit-tab {
             background: #f1f5f9;
             border: 2px solid var(--border-light);
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.95rem;
+            font-weight: 900;
             color: var(--text-dark);
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -347,8 +349,8 @@
         /* Bottom Controls Bar */
         .bottom-nav {
             position: absolute;
-            bottom: 24px;
-            left: 80px;
+            bottom: 20px;
+            left: 75px;
             right: 40px;
             display: flex;
             justify-content: space-between;
@@ -356,7 +358,7 @@
         }
 
         .page-mark {
-            font-size: 0.88rem;
+            font-size: 0.95rem;
             font-weight: 900;
             letter-spacing: 0.12em;
             color: var(--text-black);
@@ -365,11 +367,11 @@
         .nav-controls-box {
             background: var(--text-black);
             color: #ffffff;
-            padding: 10px 20px;
+            padding: 10px 22px;
             border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 22px;
             box-shadow: 0 4px 14px rgba(9, 13, 22, 0.2);
         }
 
@@ -377,7 +379,7 @@
             background: transparent;
             border: none;
             color: #ffffff;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 900;
             cursor: pointer;
         }
@@ -393,8 +395,8 @@
         }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             background: rgba(255, 255, 255, 0.4);
             border-radius: 50%;
             cursor: pointer;
@@ -402,7 +404,7 @@
 
         .dot.active {
             background: var(--brand-red);
-            width: 20px;
+            width: 22px;
             border-radius: 10px;
         }
 
@@ -472,7 +474,7 @@
             <div class="nav-right-tag" id="slideTag">Slide 1 of 5 · Ops tms guide</div>
         </div>
 
-        <!-- SLIDE 1 VIEW: CORE BOT OPERATIONS & 4 HIGH-RES TABLES -->
+        <!-- SLIDE 1 VIEW: CORE BOT OPERATIONS -->
         <div id="slide1" class="slide-view active">
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 01 · Bot Core Operations</div>
@@ -490,10 +492,9 @@
                 </p>
             </div>
 
-            <!-- Right Visual Exhibit Container -->
             <div class="right-exhibit">
                 <div class="sticky-note">
-                    📌 <b>Crisp Table View:</b><br>Click anywhere on table to inspect full 100% size!
+                    📌 <b>Crisp Table View:</b><br>Click table to inspect full 100% size!
                 </div>
 
                 <div class="tab-switcher">
@@ -514,19 +515,19 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Logic</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
                     Clear pending.<br><span>Hit KPI 10h.</span>
                 </h1>
 
                 <div class="status-flow-container">
                     <div class="status-step-card" style="border-left-color: #f59e0b;">
                         <div class="status-code-badge" style="background: #f59e0b;">306</div>
-                        <div class="status-desc-text"><b>At Store / Accept Handover:</b> Pending at branch awaiting courier assignment.</div>
+                        <div class="status-desc-text"><b>At Store / Pending:</b> Order pending at branch awaiting courier assignment.</div>
                     </div>
 
                     <div class="status-step-card" style="border-left-color: #2563eb;">
                         <div class="status-code-badge" style="background: #2563eb;">402</div>
-                        <div class="status-desc-text"><b>Assign Courier (Set KPI 10h):</b> Courier assigned — 10h SLA timer starts!</div>
+                        <div class="status-desc-text"><b>Assign Courier (10h KPI):</b> Courier assigned — 10h SLA timer starts!</div>
                     </div>
 
                     <div class="status-step-card" style="border-left-color: #10b981;">
@@ -544,7 +545,7 @@
 
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #dbeafe; color: #1e40af; border-color: #3b82f6;">
-                    ⚡ <b>Rule 306 → 402:</b><br>Assigning courier triggers the 10h KPI countdown timer immediately!
+                    ⚡ <b>Rule 306 → 402:</b><br>Assigning courier triggers 10h KPI timer immediately!
                 </div>
 
                 <div class="tab-switcher">
@@ -563,19 +564,19 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 03 · Pickup & Mega Transit Action</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
                     Verify pickup.<br><span>Transit fast.</span>
                 </h1>
 
                 <div class="status-flow-container">
                     <div class="status-step-card" style="border-left-color: #e11b22;">
                         <div class="status-code-badge" style="background: #e11b22;">PICKUP APP</div>
-                        <div class="status-desc-text">For pending pickup bills, staff <b>must check the Pickup Page in the TMS App</b> to confirm customer assignments!</div>
+                        <div class="status-desc-text">For pending pickup bills, staff <b>must check Pickup Page in TMS App</b> for customer assignments!</div>
                     </div>
 
                     <div class="status-step-card" style="border-left-color: #2563eb;">
                         <div class="status-code-badge" style="background: #2563eb;">MEGA TRANSIT</div>
-                        <div class="status-desc-text">Verify <b>Send Mega Table (302/306/311)</b> to ensure inter-branch packages are dispatched on transit trucks.</div>
+                        <div class="status-desc-text">Verify <b>Send Mega Table (302/306/311)</b> to ensure packages are loaded on transit trucks.</div>
                     </div>
                 </div>
 
@@ -586,7 +587,7 @@
 
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">
-                    📲 <b>Check App First:</b><br>Open TMS App Pickup Page to confirm customer pickup requests!
+                    📲 <b>Check App First:</b><br>Open TMS App Pickup Page to confirm customer requests!
                 </div>
 
                 <div class="tab-switcher">
@@ -603,29 +604,24 @@
         <!-- SLIDE 4 VIEW: HOW OPERATIONAL KPI & AGE SLA WORK -->
         <div id="slide4" class="slide-view">
             <div class="left-content">
-                <div class="eyebrow-line">Chapter 04 · How Operational KPI Works</div>
+                <div class="eyebrow-line">Chapter 04 · Operational KPI & Age SLA</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
                     Target 10h.<br><span>Zero overdue.</span>
                 </h1>
 
-                <p class="sub-english">
-                    Understanding the <b>10-Hour KPI Target (កាលកំណត់ 10H KPI)</b> and the <b>Age Column (រយៈពេលអាយុ)</b> SLA indicator system.
-                </p>
-
-                <!-- KPI Age Color Indicator Box -->
                 <div class="kpi-explain-box">
-                    <div class="kpi-card" style="border-left: 5px solid #10b981;">
+                    <div class="kpi-card" style="border-left: 6px solid #10b981;">
                         <div class="kpi-badge-tag green">🟢 GREEN (0h — 9h 59m)</div>
                         <div class="kpi-card-text">
-                            <b>Safe SLA Zone:</b> Order age is within the 10-hour target limit. Delivery is on schedule.
+                            <b>Safe SLA Zone:</b> Order age is within 10-hour target. Delivery on schedule.
                         </div>
                     </div>
 
-                    <div class="kpi-card" style="border-left: 5px solid #e11b22;">
+                    <div class="kpi-card" style="border-left: 6px solid #e11b22;">
                         <div class="kpi-badge-tag red">🔴 RED (≥ 10h 00m)</div>
                         <div class="kpi-card-text">
-                            <b>Overdue Alert:</b> Order age has exceeded 10 hours! Requires immediate courier follow-up.
+                            <b>Overdue Alert:</b> Order age exceeded 10 hours! Requires immediate courier follow-up.
                         </div>
                     </div>
                 </div>
@@ -635,10 +631,9 @@
                 </p>
             </div>
 
-            <!-- Right Visual Exhibit Container for Slide 4 -->
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #dcfce7; color: #166534; border-color: #22c55e;">
-                    🎯 <b>Target SLA 10H:</b><br>Keep all order ages green (<10h) across all 3 daily clearance shifts!
+                    🎯 <b>Target SLA 10H:</b><br>Keep all order ages green (<10h) across all 3 daily shifts!
                 </div>
 
                 <div class="tab-switcher">
@@ -648,6 +643,53 @@
 
                 <div class="exhibit-display-frame" onclick="openLightbox()">
                     <img id="exhibitImgSlide4" src="/images/svap001_delivery_sharp.png" alt="Delivery KPI Table" class="exhibit-img">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5 VIEW: END OF DAY CHECK & SCAN IN INVENTORY FEATURE -->
+        <div id="slide5" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 05 · End of Day Inventory Audit</div>
+                
+                <h1 class="hero-title-bold" style="font-size: 3.8rem;">
+                    Scan inventory.<br><span>Close shift clean.</span>
+                </h1>
+
+                <p class="sub-english">
+                    At the end of every operational shift, staff must perform a physical audit using the <b>Scan in Inventory feature</b> in the TMS app.
+                </p>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">1. PHYSICAL AUDIT</div>
+                        <div class="status-desc-text">Scan all remaining store packages using the <b>Scan in Inventory feature</b> to reconcile store stock.</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #10b981;">
+                        <div class="status-code-badge" style="background: #10b981;">2. MATCH BOT LOGS</div>
+                        <div class="status-desc-text">Ensure total scanned store count matches the <b>Not Assign & Branch Tables</b> in the bot report.</div>
+                    </div>
+                </div>
+
+                <p class="sub-khmer">
+                    <b>គ្រប់គ្រងស្តុកចុងម៉ោង៖</b> នៅចុងបញ្ចប់នៃវេនការងារ ត្រូវតែប្រើមុខងារ Scan ចូលស្តុក ក្នុង App ដើម្បីស៊ើបអង្កេតទំនិញ និងទិន្នន័យក្នុងប្រព័ន្ធ!
+                </p>
+            </div>
+
+            <!-- Right Visual Exhibit Container for Slide 5 -->
+            <div class="right-exhibit">
+                <div class="sticky-note" style="background: #f3e8ff; color: #6b21a8; border-color: #a855f7;">
+                    📦 <b>EOD Audit Rule:</b><br>Zero un-scanned packages left in store before closing shift!
+                </div>
+
+                <div class="tab-switcher">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide5('table4', this)">1. Branch Store Table (SVAP001)</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide5('table1', this)">2. Not Assign Table (THOP001)</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide5" src="/images/svap001_branch_sharp.png" alt="Branch Inventory Table" class="exhibit-img">
                 </div>
             </div>
         </div>
@@ -663,7 +705,7 @@
                     <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
                     <div class="dot" id="dot3" onclick="goToSlide(3)"></div>
                     <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
-                    <div class="dot" id="dot5"></div>
+                    <div class="dot" id="dot5" onclick="goToSlide(5)"></div>
                 </div>
                 <button class="nav-arrow" id="nextBtn" onclick="nextSlide()">►</button>
             </div>
@@ -688,12 +730,13 @@
         let currentTabSlide2 = 'table2';
         let currentTabSlide3 = 'table1';
         let currentTabSlide4 = 'table2';
+        let currentTabSlide5 = 'table4';
 
         const sharpTables = {
-            'table1': { src: '/images/thop001_branch_sharp.png', title: '1. មិនទាន់ចាត់ចែង (Not Assign Age Column) — Report_THOP001_Branch' },
-            'table2': { src: '/images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery 10H KPI Column) — Report_SVAP001_Delivery' },
+            'table1': { src: '/images/thop001_branch_sharp.png', title: '1. មិនទាន់ចាត់ចែង (Not Assign) — Report_THOP001_Branch' },
+            'table2': { src: '/images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery 10H KPI) — Report_SVAP001_Delivery' },
             'table3': { src: '/images/svap001_transit_sharp.png', title: '3. ដាក់ទៅ MEGA (Send Mega / Transit) — Report_SVAP001_Transit' },
-            'table4': { src: '/images/svap001_branch_sharp.png', title: '4. មិនទាន់ចាត់ចែង (Not Assign) — Report_SVAP001_Branch' }
+            'table4': { src: '/images/svap001_branch_sharp.png', title: '4. មិនទាន់ចាត់ចែង (Branch Inventory Audit) — Report_SVAP001_Branch' }
         };
 
         function goToSlide(slideNum) {
@@ -708,11 +751,11 @@
             document.getElementById('pageMark').innerHTML = `0${slideNum} &nbsp; METFONE EXPRESS`;
 
             document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 4);
+            document.getElementById('nextBtn').disabled = (slideNum === 5);
         }
 
         function nextSlide() {
-            if (currentSlide < 4) goToSlide(currentSlide + 1);
+            if (currentSlide < 5) goToSlide(currentSlide + 1);
         }
 
         function prevSlide() {
@@ -747,8 +790,15 @@
             document.getElementById('exhibitImgSlide4').src = sharpTables[tabKey].src;
         }
 
+        function switchExhibitSlide5(tabKey, btnElement) {
+            currentTabSlide5 = tabKey;
+            document.querySelectorAll('#slide5 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide5').src = sharpTables[tabKey].src;
+        }
+
         function openLightbox() {
-            let keyMap = { 1: currentTabSlide1, 2: currentTabSlide2, 3: currentTabSlide3, 4: currentTabSlide4 };
+            let keyMap = { 1: currentTabSlide1, 2: currentTabSlide2, 3: currentTabSlide3, 4: currentTabSlide4, 5: currentTabSlide5 };
             let key = keyMap[currentSlide] || 'table1';
             let data = sharpTables[key];
             document.getElementById('lightboxFullImg').src = data.src;
