@@ -119,7 +119,7 @@
 
         .slide-view.active {
             display: grid;
-            grid-template-columns: 1.15fr 1.05fr;
+            grid-template-columns: 1.1fr 1.1fr;
             padding: 85px 30px 75px 75px;
             gap: 30px;
             align-items: center;
@@ -131,7 +131,7 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Left Content Column (Enlarged Typography) */
+        /* Left Content Column */
         .left-content {
             display: flex;
             flex-direction: column;
@@ -170,7 +170,7 @@
             color: var(--brand-red);
         }
 
-        /* 2X ENLARGED BILINGUAL TEXT */
+        /* ENLARGED BILINGUAL TEXT */
         .sub-english {
             font-size: 1.35rem;
             color: var(--text-black);
@@ -189,7 +189,7 @@
             border-left: 5px solid var(--brand-red);
         }
 
-        /* Status & Rule Cards (Enlarged Text) */
+        /* Status & Rule Cards */
         .status-flow-container {
             display: flex;
             flex-direction: column;
@@ -224,7 +224,7 @@
             font-weight: 800;
         }
 
-        /* KPI Explanation Grid (Slide 4) */
+        /* KPI Explanation Grid */
         .kpi-explain-box {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -280,41 +280,49 @@
         .sticky-note {
             position: absolute;
             top: -18px;
-            right: 24px;
+            right: 20px;
             background: var(--sticky-yellow);
             color: var(--sticky-text);
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 6px;
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             font-weight: 900;
             border: 2px solid #eab308;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             transform: rotate(2deg);
             z-index: 20;
-            max-width: 250px;
-            line-height: 1.45;
+            max-width: 230px;
+            line-height: 1.4;
         }
 
-        /* Tab Switcher */
+        /* EVENLY SPACED GRID TAB SWITCHERS (NO HIDING / NO OVERFLOW) */
         .tab-switcher {
-            display: flex;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
             border-bottom: 3px solid var(--border-light);
             padding-bottom: 8px;
-            overflow-x: auto;
+            width: 100%;
+        }
+
+        .tab-switcher.two-cols {
+            grid-template-columns: repeat(2, 1fr);
         }
 
         .exhibit-tab {
             background: #f1f5f9;
             border: 2px solid var(--border-light);
-            font-size: 0.95rem;
+            font-size: 0.82rem;
             font-weight: 900;
             color: var(--text-dark);
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 8px 6px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-align: center;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .exhibit-tab.active {
@@ -497,11 +505,12 @@
                     📌 <b>Crisp Table View:</b><br>Click table to inspect full 100% size!
                 </div>
 
+                <!-- 4 EQUAL GRID COLUMNS: ALL TABS FULLY VISIBLE -->
                 <div class="tab-switcher">
-                    <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. Not Assign (THOP001)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery (SVAP001)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('table3', this)">3. Transit (SVAP001)</button>
-                    <button class="exhibit-tab" onclick="switchExhibit('table4', this)">4. Not Assign (SVAP001)</button>
+                    <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. THOP001</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table3', this)">3. Transit</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table4', this)">4. SVAP001</button>
                 </div>
 
                 <div class="exhibit-display-frame" onclick="openLightbox()">
@@ -548,7 +557,7 @@
                     ⚡ <b>Rule 306 → 402:</b><br>Assigning courier triggers 10h KPI timer immediately!
                 </div>
 
-                <div class="tab-switcher">
+                <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide2('table2', this)">1. Delivery Table (SVAP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide2('table4', this)">2. Not Assign Table (SVAP001)</button>
                 </div>
@@ -590,7 +599,7 @@
                     📲 <b>Check App First:</b><br>Open TMS App Pickup Page to confirm customer requests!
                 </div>
 
-                <div class="tab-switcher">
+                <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide3('table1', this)">1. Pickup Table (THOP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide3('table3', this)">2. Send Mega Table (SVAP001)</button>
                 </div>
@@ -636,7 +645,7 @@
                     🎯 <b>Target SLA 10H:</b><br>Keep all order ages green (<10h) across all 3 daily shifts!
                 </div>
 
-                <div class="tab-switcher">
+                <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide4('table2', this)">1. Delivery KPI Table (SVAP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide4('table1', this)">2. Not Assign Age Table (THOP001)</button>
                 </div>
@@ -663,12 +672,12 @@
                 <div class="status-flow-container">
                     <div class="status-step-card" style="border-left-color: #2563eb;">
                         <div class="status-code-badge" style="background: #2563eb;">1. PHYSICAL AUDIT</div>
-                        <div class="status-desc-text">Scan all remaining store packages using the <b>Scan in Inventory feature</b> to reconcile store stock.</div>
+                        <div class="status-desc-text">Scan all remaining store packages using <b>Scan in Inventory feature</b> to reconcile store stock.</div>
                     </div>
 
                     <div class="status-step-card" style="border-left-color: #10b981;">
                         <div class="status-code-badge" style="background: #10b981;">2. MATCH BOT LOGS</div>
-                        <div class="status-desc-text">Ensure total scanned store count matches the <b>Not Assign & Branch Tables</b> in the bot report.</div>
+                        <div class="status-desc-text">Ensure total scanned store count matches the <b>Not Assign & Branch Tables</b> in bot report.</div>
                     </div>
                 </div>
 
@@ -677,13 +686,12 @@
                 </p>
             </div>
 
-            <!-- Right Visual Exhibit Container for Slide 5 -->
             <div class="right-exhibit">
                 <div class="sticky-note" style="background: #f3e8ff; color: #6b21a8; border-color: #a855f7;">
                     📦 <b>EOD Audit Rule:</b><br>Zero un-scanned packages left in store before closing shift!
                 </div>
 
-                <div class="tab-switcher">
+                <div class="tab-switcher two-cols">
                     <button class="exhibit-tab active" onclick="switchExhibitSlide5('table4', this)">1. Branch Store Table (SVAP001)</button>
                     <button class="exhibit-tab" onclick="switchExhibitSlide5('table1', this)">2. Not Assign Table (THOP001)</button>
                 </div>
