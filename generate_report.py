@@ -36,6 +36,7 @@ HEADER_KHMER_MAP = {
     'TOTAL FEE (USD)': 'ថ្លៃដឹក (USD)',
     'COD (USD)': 'COD (USD)',
     'STATUS_CODE': 'Status',
+    'SERVICE': 'ប្រភេទសេវា',
 }
 
 def translate_header(col_name):
@@ -122,7 +123,7 @@ CEO_HEADER_KHMER = {
 MAX_INDEX = 9  # Delivery and Branch have 9 index columns before Fee+COD
 
 REPORT_COLS = {
-    'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'Cus name', 'Phone'],
+    'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'SERVICE', 'STATUS_CODE', 'Cus name', 'Phone'],
     'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
     'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
     'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
@@ -1171,6 +1172,17 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 lambda v: str(v).split(' - ', 1)[0].strip() if ' - ' in str(v) else '')
         else:
             dm['Phone'] = ''
+
+    # SERVICE column — carry forward raw service type (CLT, CCN, CNT, CHK, CVT …)
+    if 'SERVICE' not in dm.columns:
+        # Try alternate source column names
+        svc_src = next((c for c in dm.columns if str(c).strip().upper() == 'SERVICE'), None)
+        if svc_src:
+            dm['SERVICE'] = dm[svc_src].astype(str).str.strip()
+        else:
+            dm['SERVICE'] = ''
+    else:
+        dm['SERVICE'] = dm['SERVICE'].fillna('').astype(str).str.strip()
 
     os.makedirs(output_dir, exist_ok=True)
 
