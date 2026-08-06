@@ -84,20 +84,20 @@
         }
 
         .brand-logo-img {
-            height: 48px;
+            height: 52px;
             object-fit: contain;
             display: block;
         }
 
         .nav-header-text {
             font-family: 'Angkor', serif;
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             color: var(--text-black);
             letter-spacing: 0.05em;
         }
 
         .nav-right-tag {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 900;
             color: var(--text-dark);
         }
@@ -112,7 +112,7 @@
 
         .slide-view.active {
             display: grid;
-            grid-template-columns: 1.1fr 1.1fr;
+            grid-template-columns: 1.25fr 1fr;
             padding: 85px 30px 85px 75px;
             gap: 30px;
             align-items: center;
@@ -130,19 +130,21 @@
             }
         }
 
-        /* Left Content Column */
+        /* ------------------------------------------------------------- */
+        /* LEFT CONTENT COLUMN: 2X BIGGER TYPOGRAPHY ACROSS ALL SLIDES   */
+        /* ------------------------------------------------------------- */
         .left-content {
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            max-width: 650px;
+            gap: 22px;
+            max-width: 720px;
         }
 
         .eyebrow-line {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 1rem;
+            gap: 14px;
+            font-size: 1.35rem;
             font-weight: 900;
             letter-spacing: 0.18em;
             color: var(--brand-red);
@@ -151,16 +153,17 @@
 
         .eyebrow-line::before {
             content: '';
-            width: 40px;
-            height: 5px;
+            width: 48px;
+            height: 6px;
             background: var(--brand-red);
+            border-radius: 4px;
         }
 
-        /* HERO TITLE WITH ANGKOR FONT */
+        /* MASSIVE 2X HERO TITLE WITH ANGKOR FONT */
         .hero-title-bold {
             font-family: 'Angkor', serif;
-            font-size: 4rem;
-            line-height: 1.15;
+            font-size: 5.2rem;
+            line-height: 1.1;
             color: var(--text-black);
             letter-spacing: -0.01em;
         }
@@ -169,81 +172,82 @@
             color: var(--brand-red);
         }
 
-        /* BILINGUAL TEXT WITH ANGKOR FONT FOR KHMER */
+        /* 2X ENLARGED BILINGUAL DESCRIPTION & KHMER TEXT */
         .sub-english {
-            font-size: 1.35rem;
+            font-size: 1.75rem;
             color: var(--text-black);
-            line-height: 1.5;
+            line-height: 1.45;
             font-weight: 800;
         }
 
         .sub-khmer {
             font-family: 'Angkor', serif;
-            font-size: 1.25rem;
+            font-size: 1.6rem;
             color: var(--brand-red);
-            line-height: 1.7;
+            line-height: 1.65;
             background: #fff1f2;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border-left: 5px solid var(--brand-red);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border-left: 6px solid var(--brand-red);
+            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.08);
         }
 
-        /* Status & Rule Cards */
+        /* Status & Rule Cards (2X Enlarged Text) */
         .status-flow-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .status-step-card {
             background: #f8fafc;
             border: 2px solid var(--text-black);
             border-left: 6px solid var(--brand-red);
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 14px 18px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
 
         .status-code-badge {
             background: var(--text-black);
             color: #ffffff;
             font-weight: 900;
-            font-size: 1rem;
-            padding: 6px 14px;
-            border-radius: 6px;
+            font-size: 1.25rem;
+            padding: 8px 16px;
+            border-radius: 8px;
             flex-shrink: 0;
         }
 
         .status-desc-text {
-            font-size: 1.15rem;
+            font-size: 1.35rem;
             color: var(--text-black);
-            line-height: 1.45;
+            line-height: 1.4;
             font-weight: 800;
         }
 
-        /* KPI Explanation Grid */
+        /* KPI Explanation Grid (2X Enlarged) */
         .kpi-explain-box {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 14px;
         }
 
         .kpi-card {
             background: #f8fafc;
             border: 2px solid var(--text-black);
-            border-radius: 10px;
-            padding: 14px;
+            border-radius: 12px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .kpi-badge-tag {
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             font-weight: 900;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 6px;
             display: inline-block;
             width: max-content;
@@ -253,7 +257,7 @@
         .kpi-badge-tag.red { background: #ffe4e6; color: #b91c1c; }
 
         .kpi-card-text {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             color: var(--text-black);
             line-height: 1.4;
             font-weight: 800;
@@ -353,7 +357,7 @@
             image-rendering: -webkit-optimize-contrast;
         }
 
-        /* ALWAYS VISIBLE FIXED BOTTOM BOOK FLIP NAVIGATION BAR */
+        /* FIXED PERMANENTLY VISIBLE BOOK FLIP NAVIGATION BAR */
         .bottom-nav {
             position: fixed;
             bottom: 24px;
@@ -544,7 +548,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Logic</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 4.6rem;">
                     Clear pending.<br><span>Hit KPI 10h.</span>
                 </h1>
 
@@ -593,7 +597,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 03 · Pickup & Mega Transit Action</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 4.6rem;">
                     Verify pickup.<br><span>Transit fast.</span>
                 </h1>
 
@@ -635,7 +639,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 04 · Operational KPI & Age SLA</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 4.6rem;">
                     Target 10h.<br><span>Zero overdue.</span>
                 </h1>
 
@@ -681,7 +685,7 @@
             <div class="left-content">
                 <div class="eyebrow-line">Chapter 05 · End of Day Inventory Audit</div>
                 
-                <h1 class="hero-title-bold" style="font-size: 3.4rem;">
+                <h1 class="hero-title-bold" style="font-size: 4.6rem;">
                     Scan inventory.<br><span>Close shift clean.</span>
                 </h1>
 
