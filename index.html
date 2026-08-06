@@ -3,27 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Bot Web Portal & Data Explorer</title>
+    <title>Training Slide Deck (Slide 1 of 5) — BATP001 Dispatch Bot Manual</title>
     <!-- Import Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Modern fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #090d16;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --card-hover: rgba(30, 41, 59, 0.85);
-            --border-color: rgba(56, 189, 248, 0.15);
-            --border-glow: rgba(56, 189, 248, 0.4);
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #6366f1 100%);
-            --accent-green: #10b981;
-            --accent-yellow: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-purple: #8b5cf6;
-            --shadow-glow: 0 10px 30px -5px rgba(56, 189, 248, 0.15);
-            --glass-blur: blur(16px);
+            --slide-bg: #0d1322;
+            --page-bg: #141d33;
+            --gold-accent: #f59e0b;
+            --cyan-accent: #38bdf8;
+            --border-gold: rgba(245, 158, 11, 0.3);
+            --border-cyan: rgba(56, 189, 248, 0.2);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --book-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.1);
         }
 
         * {
@@ -34,47 +29,37 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--slide-bg);
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
-            color: var(--text-color);
-            padding: 16px;
+                radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
+            color: var(--text-main);
+            padding: 24px 16px;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Top Header */
-        header {
-            background: var(--card-bg);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            padding: 20px 24px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-glow);
-            margin-bottom: 20px;
-            position: relative;
+        /* Slide Deck Book Container */
+        .book-slide-frame {
+            width: 100%;
+            max-width: 1020px;
+            background: var(--page-bg);
+            border: 2px solid var(--border-gold);
+            border-radius: 24px;
+            box-shadow: var(--book-shadow);
             overflow: hidden;
+            position: relative;
             display: flex;
             flex-direction: column;
-            gap: 12px;
         }
 
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--primary-gradient);
-        }
-
-        .header-top {
+        /* Top Slide Header Bar */
+        .slide-header {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-gold);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -82,166 +67,85 @@
             gap: 12px;
         }
 
-        .header-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
+        .slide-title-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .logo-badge {
-            background: var(--primary-gradient);
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .book-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4));
+        }
+
+        .slide-main-title {
+            font-family: 'Cinzel', serif;
             font-size: 1.4rem;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+            font-weight: 800;
+            color: var(--gold-accent);
+            letter-spacing: 0.03em;
         }
 
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 6px;
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
+        .slide-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 500;
         }
 
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-color);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .tab-btn.active {
-            background: var(--primary-gradient);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
-        }
-
-        /* Tab Content Views */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Hero Banner */
-        .hero-banner {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
-            border: 1px solid var(--border-color);
+        .page-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--gold-accent);
+            border: 1px solid var(--border-gold);
+            padding: 6px 16px;
             border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Slide Body Content */
+        .slide-body {
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            position: relative;
+            gap: 24px;
         }
 
-        .hero-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #38bdf8;
+        /* Chapter Banner */
+        .chapter-box {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border: 1px solid var(--border-cyan);
+            border-radius: 16px;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .hero-desc {
-            color: var(--text-muted);
-            font-size: 0.95rem;
+        .chapter-heading {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--cyan-accent);
+        }
+
+        .chapter-desc {
+            font-size: 0.92rem;
+            color: var(--text-sub);
             line-height: 1.6;
         }
 
-        /* Grid Layouts */
-        .grid-2 {
+        /* 4 Section Report Images Grid */
+        .report-section-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
-            margin-bottom: 24px;
         }
 
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        /* Feature Cards */
-        .feature-card {
-            background: var(--card-bg);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--border-glow);
-            box-shadow: var(--shadow-glow);
-            background: var(--card-hover);
-        }
-
-        .feature-icon {
-            font-size: 1.8rem;
-            margin-bottom: 12px;
-            display: inline-block;
-        }
-
-        .feature-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-color);
-        }
-
-        .feature-desc {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* Image Gallery Cards */
-        .gallery-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+        .report-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-cyan);
             border-radius: 16px;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -250,21 +154,23 @@
             flex-direction: column;
         }
 
-        .gallery-card:hover {
+        .report-card:hover {
             transform: translateY(-4px);
-            border-color: var(--border-glow);
-            box-shadow: 0 12px 30px rgba(56, 189, 248, 0.2);
+            border-color: var(--cyan-accent);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
         }
 
-        .gallery-img-container {
+        .report-img-wrapper {
             width: 100%;
-            height: 180px;
+            height: 150px;
             background: #020617;
             overflow: hidden;
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .gallery-img {
+        .report-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -272,139 +178,111 @@
             transition: transform 0.4s ease;
         }
 
-        .gallery-card:hover .gallery-img {
+        .report-card:hover .report-img {
             transform: scale(1.05);
         }
 
-        .gallery-info {
-            padding: 16px;
+        .report-card-info {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .gallery-badge {
-            display: inline-block;
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
+        .stage-badge {
             font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
-            margin-bottom: 8px;
+            font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--cyan-accent);
         }
 
-        .gallery-title {
+        .report-card-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 4px;
-        }
-
-        /* Search Section */
-        .search-box {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 14px 20px 14px 48px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            color: var(--text-color);
             font-size: 0.95rem;
-            outline: none;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
-        .search-input:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 1.2rem;
-        }
-
-        /* Order Cards */
-        .order-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .order-header {
+        /* Slide Footer Navigation */
+        .slide-footer {
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid var(--border-cyan);
+            padding: 16px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
         }
 
-        .order-id {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #38bdf8;
-        }
-
-        .order-badge {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-            font-size: 0.75rem;
+        .nav-btn {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--cyan-accent);
+            border: 1px solid var(--border-cyan);
+            padding: 10px 20px;
+            border-radius: 12px;
             font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Modal Lightbox */
-        .modal-overlay {
+        .nav-btn:hover:not(:disabled) {
+            background: var(--cyan-accent);
+            color: #020617;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: transparent;
+        }
+
+        /* Lightbox Modal */
+        .lightbox-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 6, 23, 0.9);
+            background: rgba(2, 6, 23, 0.92);
             backdrop-filter: blur(12px);
-            z-index: 999;
+            z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        .modal-overlay.active {
+        .lightbox-modal.active {
             display: flex;
         }
 
-        .modal-content {
-            max-width: 90vw;
+        .lightbox-card {
+            max-width: 92vw;
             max-height: 90vh;
-            background: var(--card-bg);
-            border: 1px solid var(--border-glow);
+            background: #0f172a;
+            border: 2px solid var(--cyan-accent);
             border-radius: 20px;
             overflow: hidden;
-            position: relative;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        .modal-img {
+        .lightbox-img {
             max-width: 100%;
-            max-height: 75vh;
+            max-height: 78vh;
             object-fit: contain;
         }
 
-        .modal-close {
+        .lightbox-close {
             position: absolute;
-            top: 16px; right: 16px;
-            background: rgba(0, 0, 0, 0.6);
+            top: 14px; right: 14px;
+            background: rgba(0, 0, 0, 0.7);
             color: #fff;
-            border: none;
-            width: 36px; height: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 38px; height: 38px;
             border-radius: 50%;
             font-size: 1.2rem;
             cursor: pointer;
@@ -413,265 +291,112 @@
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="header-top">
-            <div class="header-title">
-                <div class="logo-badge">🤖</div>
+    <!-- Slide Deck Frame (Book Page View) -->
+    <div class="book-slide-frame">
+        <!-- Header -->
+        <div class="slide-header">
+            <div class="slide-title-group">
+                <div class="book-icon">📖</div>
                 <div>
-                    <div>Metfone Dispatch Portal</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Automated Telegram Bot & Training Hub</div>
+                    <div class="slide-main-title">OPERATIONAL TRAINING MANUAL</div>
+                    <div class="slide-subtitle">Telegram Dispatch Bot Core Operations & BATP001 Analysis</div>
+                </div>
+            </div>
+            <div class="page-badge">SLIDE 1 / 5</div>
+        </div>
+
+        <!-- Body -->
+        <div class="slide-body">
+            <!-- Chapter 1 Banner -->
+            <div class="chapter-box">
+                <div class="chapter-heading">Chapter 1: What Our Bot Does Every Day</div>
+                <div class="chapter-desc">
+                    The bot automatically connects to the Metfone TMS API to process live bill movements across <b>38 Post Offices</b> and <b>5 Zones</b>. It splits reports into 4 core operational stages, executes 3-shift clearance comparisons (9 AM → 2 PM → 5 PM), and dispatches formatted tables directly to Telegram groups.
+                </div>
+            </div>
+
+            <!-- 4 BATP001 Report Table Cards -->
+            <div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--gold-accent); margin-bottom: 12px;">
+                    📊 Test Run Output: 4 Section Report Tables (Branch BATP001 - Battambang)
+                </div>
+
+                <div class="report-section-grid">
+                    <!-- Table 1: Pickup -->
+                    <div class="report-card" onclick="showLightbox('/images/batp001_table_pickup.png', '1. អីវ៉ាន់ត្រូវយក (Pickup Report Table)')">
+                        <div class="report-img-wrapper">
+                            <img src="/images/batp001_table_pickup.png" alt="Pickup Report Table" class="report-img">
+                        </div>
+                        <div class="report-card-info">
+                            <div class="stage-badge">Stage 1</div>
+                            <div class="report-card-title">អីវ៉ាន់ត្រូវយក (Pickup)</div>
+                        </div>
+                    </div>
+
+                    <!-- Table 2: Delivery -->
+                    <div class="report-card" onclick="showLightbox('/images/batp001_table_delivery.png', '2. អីវ៉ាន់ត្រូវចែក (Delivery Report Table)')">
+                        <div class="report-img-wrapper">
+                            <img src="/images/batp001_table_delivery.png" alt="Delivery Report Table" class="report-img">
+                        </div>
+                        <div class="report-card-info">
+                            <div class="stage-badge" style="color: #10b981;">Stage 2</div>
+                            <div class="report-card-title">អីវ៉ាន់ត្រូវចែក (Delivery)</div>
+                        </div>
+                    </div>
+
+                    <!-- Table 3: Transit -->
+                    <div class="report-card" onclick="showLightbox('/images/batp001_table_transit.png', '3. អីវ៉ាន់ផ្ញើបន្ត (Transit / Send Mega Report Table)')">
+                        <div class="report-img-wrapper">
+                            <img src="/images/batp001_table_transit.png" alt="Transit Report Table" class="report-img">
+                        </div>
+                        <div class="report-card-info">
+                            <div class="stage-badge" style="color: #f59e0b;">Stage 3</div>
+                            <div class="report-card-title">អីវ៉ាន់ផ្ញើបន្ត (Transit)</div>
+                        </div>
+                    </div>
+
+                    <!-- Table 4: Branch -->
+                    <div class="report-card" onclick="showLightbox('/images/batp001_table_branch.png', '4. អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch / Not Assign Report Table)')">
+                        <div class="report-img-wrapper">
+                            <img src="/images/batp001_table_branch.png" alt="Branch Report Table" class="report-img">
+                        </div>
+                        <div class="report-card-info">
+                            <div class="stage-badge" style="color: #ef4444;">Stage 4</div>
+                            <div class="report-card-title">អីវ៉ាន់មិនទាន់ចាត់ចែង (Branch)</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('training', event)">🎓 Training Slide (Page 1)</button>
-            <button class="tab-btn" onclick="switchTab('batp001', event)">📸 Branch BATP001 Test Reports</button>
-            <button class="tab-btn" onclick="switchTab('explorer', event)">🔍 Live Order Explorer</button>
-            <button class="tab-btn" onclick="switchTab('commands', event)">⚡ Bot Commands</button>
-        </div>
-    </header>
-
-    <!-- Tab 1: Training Slide Page 1 -->
-    <div id="tab-training" class="tab-content active">
-        <div class="hero-banner">
-            <div class="hero-title">🎓 Training Slide 1: What Our Bot Does Every Day</div>
-            <div class="hero-desc">
-                Our Telegram Bot is an automated dispatches, status tracking, shift clearance comparison, and audit reporting engine integrated with Metfone TMS API.
-            </div>
-        </div>
-
-        <div class="grid-4">
-            <div class="feature-card">
-                <div class="feature-icon">📦</div>
-                <div class="feature-title">4-Stage Tracking</div>
-                <div class="feature-desc">Categorizes bills by <b>Pickup</b>, <b>Delivery</b>, <b>Transit (Send Mega)</b>, and <b>Branch (Not Assign)</b> across 38 post offices.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🌅</div>
-                <div class="feature-title">3-Shift Clearance</div>
-                <div class="feature-desc">Monitors status clearance changes between <b>9 AM Baseline</b>, <b>2 PM Checkpoint</b>, and <b>5 PM Full-Day Total</b>.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <div class="feature-title">Auto Group Pushes</div>
-                <div class="feature-desc">Pushes HD summary table images and Excel total files automatically to 23 branch groups and 5 zone groups.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔍</div>
-                <div class="feature-title">/logs Status Audit</div>
-                <div class="feature-desc">Exports 20+ status-coded tracking logs complete with <b>Service Type</b> (CLT, CNT) and exact scan unit timestamps.</div>
-            </div>
-        </div>
-
-        <div class="feature-card" style="margin-bottom: 24px;">
-            <div class="feature-title">⚙️ Operational Date Filter Rules</div>
-            <div class="grid-2" style="margin-top: 12px; margin-bottom: 0;">
-                <div style="background: rgba(56, 189, 248, 0.08); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <strong style="color: #38bdf8;">• push (Branch Command):</strong><br>
-                    Uses <code>CREATED DATE = today</code>. Best for daily branch creation metrics.
-                </div>
-                <div style="background: rgba(16, 185, 129, 0.08); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <strong style="color: #10b981;">• push zone (Zone Groups):</strong><br>
-                    Uses <code>CURRENT TIME = today</code>. Captures all bills with active scan movements today.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tab 2: BATP001 Test Image Gallery -->
-    <div id="tab-batp001" class="tab-content">
-        <div class="hero-banner">
-            <div class="hero-title">📸 Branch BATP001 (Battambang) Report Test Gallery</div>
-            <div class="hero-desc">
-                Below are the 4 generated report test images for branch <b>BATP001</b> and system-wide post office previews. Click any card to expand fullscreen.
-            </div>
-        </div>
-
-        <div class="grid-2">
-            <div class="gallery-card" onclick="openLightbox('/images/batp001_shipments_tomorrow.png', 'BATP001 Shipments Report Table')">
-                <div class="gallery-img-container">
-                    <img src="/images/batp001_shipments_tomorrow.png" alt="BATP001 Shipments Tomorrow" class="gallery-img">
-                </div>
-                <div class="gallery-info">
-                    <div class="gallery-badge">Report 1</div>
-                    <div class="gallery-title">BATP001 Shipments Tomorrow Report</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Formatted Excel table export for Battambang shipments.</div>
-                </div>
-            </div>
-
-            <div class="gallery-card" onclick="openLightbox('/images/batp001_shipments_hd.png', 'BATP001 Vector Alignment & Khmer Text Preview')">
-                <div class="gallery-img-container">
-                    <img src="/images/batp001_shipments_hd.png" alt="BATP001 HD Preview" class="gallery-img">
-                </div>
-                <div class="gallery-info">
-                    <div class="gallery-badge" style="color: #10b981; background: rgba(16,185,129,0.15);">Report 2</div>
-                    <div class="gallery-title">BATP001 HD Vector Alignment</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">1:1 crisp vector aspect ratio with native Khmer font rendering.</div>
-                </div>
-            </div>
-
-            <div class="gallery-card" onclick="openLightbox('/images/pnp_post_offices_summary.png', 'PNP Regional Post Offices Summary')">
-                <div class="gallery-img-container">
-                    <img src="/images/pnp_post_offices_summary.png" alt="PNP Summary" class="gallery-img">
-                </div>
-                <div class="gallery-info">
-                    <div class="gallery-badge" style="color: #f59e0b; background: rgba(245,158,11,0.15);">Report 3</div>
-                    <div class="gallery-title">PNP Regional Post Offices Summary</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Regional summary report for Phnom Penh area branches.</div>
-                </div>
-            </div>
-
-            <div class="gallery-card" onclick="openLightbox('/images/all_post_offices_summary.png', 'All 38 Post Offices Executive Summary')">
-                <div class="gallery-img-container">
-                    <img src="/images/all_post_offices_summary.png" alt="All Post Offices Summary" class="gallery-img">
-                </div>
-                <div class="gallery-info">
-                    <div class="gallery-badge" style="color: #8b5cf6; background: rgba(139,92,246,0.15);">Report 4</div>
-                    <div class="gallery-title">All 38 Post Offices Executive Summary</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">System-wide executive summary covering all 5 zones.</div>
-                </div>
-            </div>
+        <!-- Footer -->
+        <div class="slide-footer">
+            <button class="nav-btn" disabled>◀ Previous Slide</button>
+            <div style="font-family: 'Outfit'; font-weight: 700; font-size: 0.95rem; color: var(--gold-accent);">SLIDE 1 OF 5</div>
+            <button class="nav-btn" onclick="alert('Slide 2 of 5: Shift Clearance & Comparison Deep-Dive coming next!')">Next Slide ▶</button>
         </div>
     </div>
 
-    <!-- Tab 3: Live Order Explorer -->
-    <div id="tab-explorer" class="tab-content">
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" class="search-input" placeholder="Search by Order ID, Receiver, District, or Store handle..." oninput="filterOrders()">
-        </div>
-
-        <div id="ordersContainer">
-            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-                Loading live cache data...
-            </div>
-        </div>
-    </div>
-
-    <!-- Tab 4: Bot Commands Cheat Sheet -->
-    <div id="tab-commands" class="tab-content">
-        <div class="grid-2">
-            <div class="feature-card">
-                <div class="feature-title" style="color: #38bdf8;"><code>push</code> / <code>push zone</code></div>
-                <div class="feature-desc">Fetches live API data, builds HD summary images & Excel files, and forwards them to Telegram branch or zone groups.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-title" style="color: #10b981;"><code>/compare 3</code></div>
-                <div class="feature-desc">Generates 3-shift clearance comparison (9 AM Baseline vs 2 PM Checkpoint vs 5 PM Full-Day Total).</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-title" style="color: #f59e0b;"><code>/logs</code> or <code>/exportlogs</code></div>
-                <div class="feature-desc">Exports status-divided tracking logs with Service Type (CLT, CNT) and timestamp audit columns.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-title" style="color: #8b5cf6;"><code>/notice [target] &lt;msg&gt;</code></div>
-                <div class="feature-desc">Broadcasts custom announcements or attached document files directly to branch or zone groups.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Lightbox Overlay -->
-    <div id="lightbox" class="modal-overlay" onclick="closeLightbox(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeLightbox()">✕</button>
-            <img id="lightboxImg" src="" alt="Enlarged Preview" class="modal-img">
-            <div id="lightboxTitle" style="padding: 16px; font-weight: 700; color: #fff; background: rgba(15,23,42,0.9); font-family: 'Outfit';"></div>
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox-modal" onclick="hideLightbox()">
+        <div class="lightbox-card" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="hideLightbox()">✕</button>
+            <img id="lightboxImg" src="" alt="Report Table" class="lightbox-img">
+            <div id="lightboxCap" style="padding: 16px; font-weight: 700; color: #fff; font-family: 'Outfit'; border-top: 1px solid var(--border-cyan);"></div>
         </div>
     </div>
 
     <script>
-        // Init Telegram WebApp
-        let tg = window.Telegram ? window.Telegram.WebApp : null;
-        if (tg) {
-            tg.expand();
-        }
-
-        // Tab Switching
-        function switchTab(tabId, ev) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if (ev && ev.currentTarget) {
-                ev.currentTarget.classList.add('active');
-            }
-            document.getElementById('tab-' + tabId).classList.add('active');
-        }
-
-        // Lightbox
-        function openLightbox(src, title) {
+        // Lightbox Handler
+        function showLightbox(src, caption) {
             document.getElementById('lightboxImg').src = src;
-            document.getElementById('lightboxTitle').innerText = title;
+            document.getElementById('lightboxCap').innerText = caption;
             document.getElementById('lightbox').classList.add('active');
         }
 
-        function closeLightbox() {
+        function hideLightbox() {
             document.getElementById('lightbox').classList.remove('active');
         }
-
-        // Live Data Explorer
-        let allOrders = [];
-        async function loadLiveData() {
-            try {
-                let res = await fetch('/data');
-                allOrders = await res.json();
-                renderOrders(allOrders);
-            } catch (e) {
-                document.getElementById('ordersContainer').innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-                        No cached order data found. Run <code>push</code> in Telegram to update cache.
-                    </div>
-                `;
-            }
-        }
-
-        function renderOrders(items) {
-            let container = document.getElementById('ordersContainer');
-            if (!items || items.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">No orders match your search.</div>';
-                return;
-            }
-
-            let html = '';
-            items.slice(0, 50).forEach(item => {
-                html += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-id">📦 ${item.id}</div>
-                            <div class="order-badge">${item.store || 'Active'}</div>
-                        </div>
-                        <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">
-                            <div>📍 <b>Location:</b> ${item.province || 'N/A'} ${item.district ? '/ ' + item.district : ''}</div>
-                            ${item.address ? `<div>🏠 <b>Address:</b> ${item.address}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function filterOrders() {
-            let input = document.getElementById('searchInput');
-            if (!input) return;
-            let query = input.value.toLowerCase().trim();
-            if (!query) {
-                renderOrders(allOrders);
-                return;
-            }
-            let filtered = allOrders.filter(o => 
-                (o.id && o.id.toLowerCase().includes(query)) ||
-                (o.province && o.province.toLowerCase().includes(query)) ||
-                (o.district && o.district.toLowerCase().includes(query)) ||
-                (o.store && o.store.toLowerCase().includes(query)) ||
-                (o.address && o.address.toLowerCase().includes(query))
-            );
-            renderOrders(filtered);
-        }
-
-        // Load live data on startup
-        loadLiveData();
     </script>
 </body>
 </html>
