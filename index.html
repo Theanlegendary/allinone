@@ -47,6 +47,7 @@
             position: relative;
             background: #ffffff;
             overflow: hidden;
+            perspective: 1200px;
         }
 
         /* Far Left Vertical Stamp Margin */
@@ -73,7 +74,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
+            z-index: 100;
         }
 
         .logo-box {
@@ -101,25 +102,32 @@
             color: var(--text-dark);
         }
 
-        /* Slide Views Switcher */
+        /* Slide Views Switcher with 3D Book Page Flip Animation */
         .slide-view {
             display: none;
             width: 100%;
             height: 100%;
+            transform-origin: left center;
         }
 
         .slide-view.active {
             display: grid;
             grid-template-columns: 1.1fr 1.1fr;
-            padding: 85px 30px 75px 75px;
+            padding: 85px 30px 85px 75px;
             gap: 30px;
             align-items: center;
-            animation: slideFade 0.35s ease;
+            animation: bookPageFlip 0.45s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        @keyframes slideFade {
-            from { opacity: 0; transform: translateX(10px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes bookPageFlip {
+            from {
+                opacity: 0;
+                transform: rotateY(-20deg) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg) scale(1);
+            }
         }
 
         /* Left Content Column */
@@ -345,15 +353,17 @@
             image-rendering: -webkit-optimize-contrast;
         }
 
-        /* Bottom Controls Bar */
+        /* ALWAYS VISIBLE FIXED BOTTOM BOOK FLIP NAVIGATION BAR */
         .bottom-nav {
-            position: absolute;
-            bottom: 20px;
+            position: fixed;
+            bottom: 24px;
             left: 75px;
             right: 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 9999;
+            pointer-events: none;
         }
 
         .page-mark {
@@ -361,49 +371,69 @@
             font-weight: 900;
             letter-spacing: 0.12em;
             color: var(--text-black);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid var(--text-black);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            pointer-events: auto;
         }
 
+        /* ELEGANT BOOK PAGE TURN CONTROLLER */
         .nav-controls-box {
             background: var(--text-black);
             color: #ffffff;
-            padding: 10px 22px;
-            border-radius: 8px;
+            padding: 10px 24px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
-            gap: 22px;
-            box-shadow: 0 4px 14px rgba(9, 13, 22, 0.2);
+            gap: 20px;
+            box-shadow: 0 8px 24px rgba(9, 13, 22, 0.25);
+            border: 2px solid #ffffff;
+            pointer-events: auto;
         }
 
-        .nav-arrow {
+        .book-turn-btn {
             background: transparent;
             border: none;
             color: #ffffff;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 900;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
 
-        .nav-arrow:disabled {
-            opacity: 0.3;
+        .book-turn-btn:hover:not(:disabled) {
+            color: var(--brand-red);
+            transform: scale(1.05);
+        }
+
+        .book-turn-btn:disabled {
+            opacity: 0.35;
             cursor: not-allowed;
         }
 
         .slide-dots {
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         .dot {
-            width: 9px;
-            height: 9px;
-            background: rgba(255, 255, 255, 0.4);
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.35);
             border-radius: 50%;
             cursor: pointer;
+            transition: all 0.25s ease;
         }
 
         .dot.active {
             background: var(--brand-red);
-            width: 22px;
+            width: 26px;
             border-radius: 10px;
         }
 
@@ -413,7 +443,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(9, 13, 22, 0.95);
-            z-index: 99999;
+            z-index: 999999;
             align-items: center;
             justify-content: center;
             padding: 24px;
@@ -692,12 +722,14 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar -->
+        <!-- FIXED PERMANENTLY VISIBLE BOOK FLIP NAVIGATION BAR -->
         <div class="bottom-nav">
-            <div class="page-mark" id="pageMark">01 &nbsp; METFONE EXPRESS</div>
+            <div class="page-mark" id="pageMark">PAGE 01 / 05 &nbsp;·&nbsp; METFONE EXPRESS</div>
             
             <div class="nav-controls-box">
-                <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" disabled>◄</button>
+                <button class="book-turn-btn" id="prevBtn" onclick="prevSlide()" disabled>
+                    📖 <span>PREV PAGE</span>
+                </button>
                 <div class="slide-dots">
                     <div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
                     <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
@@ -705,7 +737,9 @@
                     <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
                     <div class="dot" id="dot5" onclick="goToSlide(5)"></div>
                 </div>
-                <button class="nav-arrow" id="nextBtn" onclick="nextSlide()">►</button>
+                <button class="book-turn-btn" id="nextBtn" onclick="nextSlide()">
+                    <span>NEXT PAGE</span> 📖
+                </button>
             </div>
         </div>
 
@@ -746,7 +780,7 @@
             document.getElementById('dot' + slideNum).classList.add('active');
 
             document.getElementById('slideTag').innerText = `Slide ${slideNum} of 5 · Ops tms guide`;
-            document.getElementById('pageMark').innerHTML = `0${slideNum} &nbsp; METFONE EXPRESS`;
+            document.getElementById('pageMark').innerHTML = `PAGE 0${slideNum} / 05 &nbsp;·&nbsp; METFONE EXPRESS`;
 
             document.getElementById('prevBtn').disabled = (slideNum === 1);
             document.getElementById('nextBtn').disabled = (slideNum === 5);
