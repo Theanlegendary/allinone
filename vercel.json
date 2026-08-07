@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/training2", "destination": "/training2/index.html" },
+    { "source": "/training", "destination": "/training/index.html" }
+  ]
+}
