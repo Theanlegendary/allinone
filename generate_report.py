@@ -580,29 +580,21 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
         ws.row_dimensions[r].height = 20
         is_total = str(row_dict.get(index_cols[0], '')).strip() == 'Grand Total'
 
-        # Check overdue and status code
-        is_overdue = bool(row_dict.get('_is_overdue', False))
-        is_overdue_7days = bool(row_dict.get('_is_overdue_7days', False))
+        # Check overdue (>48h) and status code
+        is_overdue_48h = False
         status_code = None
         if not is_total:
             order_id = normalize_id(row_dict.get('ORDER ID', ''))
-            if not is_overdue:
-                age_str = str(row_dict.get('Age', '') or '')
-                match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
-                if match:
-                    h_val = int(match.group(1))
-                    if h_val >= 24:
-                        is_overdue = True
-                    if h_val >= 168:
-                        is_overdue_7days = True
-            # ── Special case: current scan is under KPI (🟢) → keep row WHITE ──────
-            # Even if total Age ≥ 24h (is_overdue=True), if the Age cell starts with
-            # a green dot it means the package was recently scanned/moved (≤10h at
-            # current location). In that case override red and leave the row white.
-            if is_overdue:
-                age_str = str(row_dict.get('Age', '') or '')
-                if age_str.startswith('🟢'):
-                    is_overdue = False  # Recently scanned → white, not red
+            age_str = str(row_dict.get('Age', '') or '')
+            match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
+            if match:
+                h_val = int(match.group(1))
+                if h_val >= 48:
+                    is_overdue_48h = True
+
+            if is_overdue_48h and age_str.startswith('🟢'):
+                is_overdue_48h = False
+
             if order_status_map:
                 status_code = order_status_map.get(order_id)
 
@@ -611,8 +603,8 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell = ws.cell(r, start_col + ci, val if val != '' else None)
             cell.border = bdr
 
-            # Row-level fill (420/472 light green row, overdue/return light red row)
-            # CRITICAL RULE: If Age is green (🟢, under 10h KPI), NEVER fill red!
+            # Row-level fill (420/472 light green row; >48h overdue / return light red row)
+            # CRITICAL RULE: Row background is RED only for >48h or Return status; 10h-48h age has RED text only with WHITE row background!
             row_fill = None
             age_val_str = str(row_dict.get('Age', '') or '')
             is_green_kpi = age_val_str.startswith('🟢')
@@ -621,8 +613,8 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                 row_fill = _fill(tot_bg)
             elif status_code in ("420", "472"):
                 row_fill = _fill("E2EFDA")  # Light green row fill
-            elif not is_green_kpi and (is_overdue or status_code in ("500", "510", "511", "512", "520", "540")):
-                row_fill = _fill("FFEBEB")  # Light red row fill ONLY when KPI > 10h (not green)
+            elif not is_green_kpi and (is_overdue_48h or status_code in ("500", "510", "511", "512", "520", "540")):
+                row_fill = _fill("FFEBEB")  # Light red row fill ONLY for >48h or return status
 
             cell_fill = row_fill
             cell_font = _font(fn, '1E293B', bold=False)
@@ -1020,11 +1012,16 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                     r_tr = requests.get(url_tr, params={'order_id': str(oid)}, headers=headers, timeout=4)
                     if r_tr.status_code == 200:
                         data_tr = r_tr.json()
+                        top_st = str(data_tr.get('status', '') or data_tr.get('statusName', '') or '').upper()
+                        if '410' in top_st or '520' in top_st or 'DELIVERED' in top_st:
+                            return normalize_id(oid)
+
                         trips_tr = data_tr.get('trackingTrips', [])
-                        if trips_tr:
-                            st_tr = str(trips_tr[0].get('status', ''))
-                            desc_tr = str(trips_tr[0].get('desc', ''))
-                            if '410' in st_tr or '520' in st_tr or 'Delivered' in desc_tr or 'GIAO THÀNH CÔNG' in desc_tr or 'SHIPPED' in desc_tr:
+                        for trip in trips_tr:
+                            st_tr = str(trip.get('status', '') or '').upper()
+                            st_name = str(trip.get('statusName', '') or '').upper()
+                            desc_tr = str(trip.get('desc', '') or '').upper()
+                            if '410' in st_tr or '520' in st_tr or '410' in st_name or '520' in st_name or 'DELIVERED' in desc_tr or 'DELIVERED' in st_name or 'GIAO THÀNH CÔNG' in desc_tr or 'SHIPPED' in desc_tr:
                                 return normalize_id(oid)
                 except Exception:
                     pass
@@ -1038,8 +1035,8 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                             candidate_ids.append(str(oid).strip())
 
             if candidate_ids:
-                with ThreadPoolExecutor(max_workers=12) as executor:
-                    for comp_oid in executor.map(_check_live_tracking, candidate_ids[:200]):
+                with ThreadPoolExecutor(max_workers=20) as executor:
+                    for comp_oid in executor.map(_check_live_tracking, candidate_ids):
                         if comp_oid:
                             completed_from_sync.add(comp_oid)
 
@@ -1052,6 +1049,27 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     except Exception as e_sync:
         print(f"⚠️ Live API Status Sync Warning: {e_sync}")
     # ========== END LIVE API STATUS SYNC ==========
+
+    # ========== STRICT EXCLUDED STATUS SCRAPING / PRE-FILTERING ==========
+    # Scrape all excluded/completed status bills UPFRONT before report generation & comparison
+    excluded_codes = {'99', '100', '201', '410', '520'}
+    excluded_keywords = ['410', '520', 'GIAO THÀNH CÔNG', 'DELIVERED', 'COMPLETED', 'ĐÃ GIAO', 'DA GIAO', 'RETURN COMPLETED']
+    
+    if 'STATUS_CODE' in df.columns:
+        sc_mask = df['STATUS_CODE'].astype(str).str.strip().isin(excluded_codes)
+        df = df[~sc_mask].copy()
+
+    if 'CURRENT STATUS' in df.columns:
+        st_text = df['CURRENT STATUS'].astype(str).str.upper()
+        for kw in excluded_keywords:
+            df = df[~st_text.str.contains(kw.upper(), na=False)].copy()
+
+    if completed_from_sync and 'ORDER ID' in df.columns:
+        df['_oid_norm'] = df['ORDER ID'].apply(normalize_id)
+        df = df[~df['_oid_norm'].isin(completed_from_sync)].copy()
+        if '_oid_norm' in df.columns:
+            df.drop(columns=['_oid_norm'], inplace=True, errors='ignore')
+    # ========== END STRICT EXCLUDED STATUS SCRAPING ==========
 
     if 'CURRENT POST OFFICE' in df.columns:
         df['_po_key'] = df['CURRENT POST OFFICE'].apply(normalize_code)

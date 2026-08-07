@@ -159,7 +159,11 @@ def is_urgent_bill(r):
                 sc = sc_val.split()[0].strip()
                 break
 
-    if sc in ("99", "100", "201", "410", "420", "472", "520"):
+    if sc in ("99", "100", "201", "410", "520"):
+        return False
+
+    r_text = ' '.join(str(v) for v in r.values() if pd.notna(v)).upper()
+    if any(kw in r_text for kw in ['410', '520', 'GIAO THÀNH CÔNG', 'DELIVERED', 'COMPLETED', 'ĐÃ GIAO', 'DA GIAO']):
         return False
 
     if "_IS_OVERDUE" in r and pd.notna(r["_IS_OVERDUE"]):
