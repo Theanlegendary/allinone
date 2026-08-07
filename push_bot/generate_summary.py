@@ -678,7 +678,7 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
         'ដឹកជូនឡើងវិញ': 'Redeliver',
         'ជូនដំណឹងភ្ញៀវមកទទួល': 'Notify Customer to Collect',
         'ទាក់ទងអ្នកទទួល': 'Contact Receiver',
-        'បញ្ជូនត្រឡប់ទៅហាងផ្ញើ': 'Return to Sender Store',
+                'បញ្ជូនត្រឡប់ទៅហាងផ្ញើ': 'Return to Sender Store',
         'បន្តដំណើរការត្រឡប់': 'Continue Return Process',
         'ពិនិត្យព័ត៌មាន': 'Verify Info',
         'ដោះស្រាយបញ្ហា': 'Resolve Issue',
@@ -742,7 +742,11 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
         elif p3 in ['CHA', 'KRA', 'TBK', 'ROT', 'MON', 'STU']: return 'Zone 5'
         return 'Zone 1'
 
-    zs = {z: {'total': 0, 'overdue': 0, 'cod': 0.0, 'fee': 0.0} for z in ['Zone 1','Zone 2','Zone 3','Zone 4','Zone 5']}
+    # ── Collect SP-level stats per Zone ─────────────────────────────────────
+    # sp_stats[zone][sp] = {total, overdue, cod, fee}
+    ZONE_ORDER = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5']
+    sp_stats = {z: {} for z in ZONE_ORDER}
+    zs = {z: {'total': 0, 'overdue': 0, 'cod': 0.0, 'fee': 0.0} for z in ZONE_ORDER}
     zt = {'total': 0, 'overdue': 0, 'cod': 0.0, 'fee': 0.0}
 
     all_dfs = []
@@ -755,92 +759,75 @@ def build_total_excel(result, out_path, lang='kh', age_adjust_hours=0):
             all_dfs.append(_df)
 
     for _df in all_dfs:
-        _threshold = 48 if 'Transit' in str(_df) else 24
         for _, _row in _df.iterrows():
             po = str(_row.get('POST OFFICE HANDLE', '') or '').strip().upper()
             if not po or po.startswith('Subtotal') or po == 'Grand Total': continue
             zk = _zone_of(po)
+            if zk not in sp_stats:
+                sp_stats[zk] = {}
+            if po not in sp_stats[zk]:
+                sp_stats[zk][po] = {'total': 0, 'overdue': 0, 'cod': 0.0, 'fee': 0.0}
+
+            sp_stats[zk][po]['total'] += 1
             zs[zk]['total'] += 1
             zt['total'] += 1
+
             age_str = str(_row.get('Age', '') or '')
             _m = re.search(r'(\d+)\s*h', age_str, re.IGNORECASE)
             is_od = bool(_m and int(_m.group(1)) >= 48)
             if not is_od:
-                for _tc in ['STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)','CURRENT TIME','CREATED DATE']:
+                for _tc in ['STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)', 'CURRENT TIME', 'CREATED DATE']:
                     _tv = _row.get(_tc)
                     if pd.notna(_tv) and str(_tv).strip():
                         _pt = pd.to_datetime(_tv, dayfirst=True, format='mixed', errors='coerce')
-                        if pd.notna(_pt) and (datetime.now()-_pt).total_seconds()/3600 >= 48:
+                        if pd.notna(_pt) and (datetime.now() - _pt).total_seconds() / 3600 >= 48:
                             is_od = True; break
             if is_od:
+                sp_stats[zk][po]['overdue'] += 1
                 zs[zk]['overdue'] += 1
                 zt['overdue'] += 1
+
             try: _cv = float(_row.get('COD (USD)', 0) or 0)
             except: _cv = 0.0
             try: _fv = float(_row.get('TOTAL FEE (USD)', 0) or _row.get('TOTAL FEE (USD) (4)=(1)+(2)-(3)', 0) or 0)
             except: _fv = 0.0
-            zs[zk]['cod'] += _cv; zt['cod'] += _cv
-            zs[zk]['fee'] += _fv; zt['fee'] += _fv
 
+            sp_stats[zk][po]['cod'] += _cv; zs[zk]['cod'] += _cv; zt['cod'] += _cv
+            sp_stats[zk][po]['fee'] += _fv; zs[zk]['fee'] += _fv; zt['fee'] += _fv
+
+    # ── Draw Zone Summary Sheet ───────────────────────────────────────────────
     thin_s = Side(style='thin', color='BFBFBF')
     bdr_s  = Border(left=thin_s, right=thin_s, top=thin_s, bottom=thin_s)
     today_str_s = datetime.now().strftime('%d/%m/%Y %H:%M')
 
+    # Title row
     ws_sum.row_dimensions[1].height = 26
-    ws_sum.merge_cells(start_row=1, end_row=1, start_column=1, end_column=5)
-    _tc = ws_sum.cell(1, 1, f"\U0001f4ca ZONE 1 - 5 SUMMARY BY ZONE    ({today_str_s})")
+    ws_sum.merge_cells(start_row=1, end_row=1, start_column=1, end_column=6)
+    _tc = ws_sum.cell(1, 1, f"\U0001f4ca ZONE 1 - 5 SUMMARY BY SP    ({today_str_s})")
     _tc.font = Font(name=fn, size=12, bold=True, color='FFFFFF')
     _tc.fill = PatternFill(start_color='0F172A', end_color='0F172A', fill_type='solid')
     _tc.alignment = Alignment(horizontal='center', vertical='center')
 
-    _hdrs = ['ZONE', 'TOTAL ORDERS', 'OVERDUE (>48h)', 'TOTAL COD ($)', 'TOTAL FEE ($)']
+    # Column headers (6 cols now: ZONE, SP HANDLE, TOTAL ORDERS, OVERDUE, COD, FEE)
+    _hdrs = ['ZONE', 'SP HANDLE', 'TOTAL ORDERS', 'OVERDUE (>48h)', 'TOTAL COD ($)', 'TOTAL FEE ($)']
     _hfill = PatternFill(start_color='1E293B', end_color='1E293B', fill_type='solid')
     _hfont = Font(name=fn, size=10, bold=True, color='FFFFFF')
+    ws_sum.row_dimensions[2].height = 20; ws_sum.row_dimensions[3].height = 20
     for _ci, _h in enumerate(_hdrs, start=1):
         _hc = ws_sum.cell(2, _ci, _h)
         _hc.font = _hfont; _hc.fill = _hfill
         _hc.alignment = Alignment(horizontal='center', vertical='center')
         _hc.border = bdr_s
         ws_sum.merge_cells(start_row=2, end_row=3, start_column=_ci, end_column=_ci)
-    ws_sum.row_dimensions[2].height = 20; ws_sum.row_dimensions[3].height = 20
 
-    _ri = 4
-    for _zn in ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5']:
-        _st = zs[_zn]
-        ws_sum.row_dimensions[_ri].height = 22
-        _bg = 'F8FAFC' if _ri % 2 == 0 else 'FFFFFF'
-        _cf = PatternFill(start_color=_bg, end_color=_bg, fill_type='solid')
-        _c0 = ws_sum.cell(_ri, 1, _zn)
-        _c0.font = Font(name=fn, size=11, bold=True, color='0F172A'); _c0.fill = _cf
-        _c0.alignment = Alignment(horizontal='center', vertical='center'); _c0.border = bdr_s
-        _c1 = ws_sum.cell(_ri, 2, _st['total'])
-        _c1.number_format = '#,##0'; _c1.font = Font(name=fn, size=11, bold=True, color='1E3A8A')
-        _c1.fill = _cf; _c1.alignment = Alignment(horizontal='center', vertical='center'); _c1.border = bdr_s
-        _c2 = ws_sum.cell(_ri, 3, _st['overdue'])
-        _c2.number_format = '#,##0'; _c2.font = Font(name=fn, size=11, bold=True, color='991B1B' if _st['overdue'] > 0 else '475569')
-        _c2.fill = PatternFill(start_color='FFEBEB' if _st['overdue'] > 0 else _bg, fill_type='solid')
-        _c2.alignment = Alignment(horizontal='center', vertical='center'); _c2.border = bdr_s
-        _c3 = ws_sum.cell(_ri, 4, float(_st['cod']))
-        _c3.number_format = '"$"#,##0.00'; _c3.font = Font(name=fn, size=11, bold=True, color='065F46')
-        _c3.fill = _cf; _c3.alignment = Alignment(horizontal='center', vertical='center'); _c3.border = bdr_s
-        _c4 = ws_sum.cell(_ri, 5, float(_st['fee']))
-        _c4.number_format = '"$"#,##0.00'; _c4.font = Font(name=fn, size=11, bold=True, color='065F46')
-        _c4.fill = _cf; _c4.alignment = Alignment(horizontal='center', vertical='center'); _c4.border = bdr_s
-        _ri += 1
+    # Zone colors (alternating per zone block)
+    ZONE_BG = {'Zone 1': 'EFF6FF', 'Zone 2': 'F0FDF4', 'Zone 3': 'FFF7ED',
+               'Zone 4': 'FDF4FF', 'Zone 5': 'FFF1F2'}
+    ZONE_HDR_BG = {'Zone 1': 'DBEAFE', 'Zone 2': 'DCFCE7', 'Zone 3': 'FFEDD5',
+                   'Zone 4': 'FAE8FF', 'Zone 5': 'FFE4E6'}
+    ZONE_COLOR = {'Zone 1': '1D4ED8', 'Zone 2': '15803D', 'Zone 3': 'C2410C',
+                  'Zone 4': '7E22CE', 'Zone 5': 'BE123C'}
 
-    ws_sum.row_dimensions[_ri].height = 24
-    _tf = PatternFill(start_color='E2E8F0', end_color='E2E8F0', fill_type='solid')
-    _tfo = Font(name=fn, size=11, bold=True, color='991B1B')
-    for _ci2, _v in enumerate(['TOTAL', zt['total'], zt['overdue'], float(zt['cod']), float(zt['fee'])], start=1):
-        _tc2 = ws_sum.cell(_ri, _ci2, _v)
-        _tc2.font = _tfo; _tc2.fill = _tf
-        _tc2.alignment = Alignment(horizontal='center', vertical='center'); _tc2.border = bdr_s
-        if _ci2 == 2: _tc2.number_format = '#,##0'
-        elif _ci2 == 3: _tc2.number_format = '#,##0'
-        elif _ci2 in (4, 5): _tc2.number_format = '"$"#,##0.00'
-
-    for _ci3, _w in enumerate([16, 20, 20, 22, 22], start=1):
-        ws_sum.column_dimensions[get_column_letter(_ci3)].width = _w
 
     for rn in REPORT_ORDER:
         ws = wb.create_sheet(title=rn)
