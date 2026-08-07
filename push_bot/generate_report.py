@@ -592,11 +592,11 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                 if h_val >= 48:
                     is_overdue_48h = True
 
-            # For tabs without Age (like Pickup): check date column vs today
+            # For tabs without Age: check date column vs today (48h+ / 2+ days old is red; today & yesterday are white)
             if not is_overdue_48h:
                 for d in active_days:
                     if row_dict.get(d) and hasattr(d, 'year'):
-                        if (today - d).days >= 1:
+                        if (today - d).days >= 2:  # 2+ days old (older than yesterday)
                             is_overdue_48h = True
                             break
 
@@ -1389,8 +1389,8 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                             created_date = parsed_dt.date()
                             days_old = (today - created_date).days
                             
-                            # Red if 1+ days old (created yesterday or earlier)
-                            is_overdue = days_old >= 1
+                            # Red if 2+ days old (48h+ overdue, created 2+ days ago)
+                            is_overdue = days_old >= 2
                             # 7+ days old
                             is_overdue_7days = days_old >= 7
                             
