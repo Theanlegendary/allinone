@@ -580,8 +580,8 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
         ws.row_dimensions[r].height = 20
         is_total = str(row_dict.get(index_cols[0], '')).strip() == 'Grand Total'
 
-        # Check overdue (>48h) and status code
-        is_overdue_48h = False
+        # Check overdue (>24h/48h) and status code
+        is_overdue_48h = bool(row_dict.get('_is_overdue')) or bool(row_dict.get('_is_overdue_48h'))
         status_code = None
         if not is_total:
             order_id = normalize_id(row_dict.get('ORDER ID', ''))
@@ -591,6 +591,14 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
                 h_val = int(match.group(1))
                 if h_val >= 48:
                     is_overdue_48h = True
+
+            # For tabs without Age (like Pickup): check date column vs today
+            if not is_overdue_48h:
+                for d in active_days:
+                    if row_dict.get(d) and hasattr(d, 'year'):
+                        if (today - d).days >= 1:
+                            is_overdue_48h = True
+                            break
 
             if is_overdue_48h and age_str.startswith('🟢'):
                 is_overdue_48h = False
@@ -1381,8 +1389,8 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                             created_date = parsed_dt.date()
                             days_old = (today - created_date).days
                             
-                            # Red if 3+ days old (created ≥3 days ago)
-                            is_overdue = days_old >= 3
+                            # Red if 1+ days old (created yesterday or earlier)
+                            is_overdue = days_old >= 1
                             # 7+ days old
                             is_overdue_7days = days_old >= 7
                             
