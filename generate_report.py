@@ -770,6 +770,10 @@ def build_handle_excel(handle, sections, day_cols, dc, out_path, mode='wide', or
                                        rows, index_cols, shared_days, dc, handle=handle, show_top_title=(i==0), max_index=max_index, order_created_map=order_created_map, order_status_map=order_status_map)
             r = next_row + 1  # 1 blank row gap
 
+    wb.save(out_path)
+    return out_path
+
+
 def _write_zone_summary_side_table(ws, start_col, rows, cfg):
     """
     Renders a clean side summary box (Zone 1 to Zone 5) on the right side of the main data table.
