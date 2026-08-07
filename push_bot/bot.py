@@ -3761,61 +3761,61 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
     ws = wb.active
     ws.title = "Post Offices"
     ws.views.sheetView[0].showGridLines = True
-    ws.column_dimensions["A"].width = 25
-    ws.column_dimensions["B"].width = 25
-    ws.column_dimensions["C"].width = 25
-    ws.column_dimensions["D"].width = 45
-    ws.column_dimensions["E"].width = 22
-    ws.column_dimensions["F"].width = 20
-    ws.column_dimensions["G"].width = 15
-    ws.column_dimensions["H"].width = 15
-    ws.column_dimensions["I"].width = 30
-    
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:I{len(df)+1}"
 
-    # ── Sheet 2: All Details ──
-    ws2 = wb.create_sheet(title="All Details")
-    ws2.views.sheetView[0].showGridLines = True
-    
-    detail_headers = [
-        "Department Code", "Department Name", "Commune Khmer",
-        "Branch Code", "Branch EN", "Branch Khmer",
-        "Type", "Category *", "Status", "Phone Number", "Latitude", "Longitude"
-    ]
-    
-    for col_idx, col_name in enumerate(detail_headers, 1):
-        cell = ws2.cell(row=1, column=col_idx, value=col_name)
-        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
-        cell.fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type="solid")
-        cell.alignment = Alignment(horizontal="center", vertical="center")
+    export_headers = ["Post code", "Post office name", "Branch", "Post office level", "Status"]
+
+    # Title row (Row 1)
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(export_headers))
+    title_cell = ws.cell(row=1, column=1, value=title)
+    title_cell.font = title_font
+    title_cell.alignment = Alignment(horizontal='left', vertical='center')
+    ws.row_dimensions[1].height = 30
+
+    # Header row (Row 2)
+    for col_idx, col_name in enumerate(export_headers, 1):
+        cell = ws.cell(row=2, column=col_idx, value=col_name)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
         cell.border = thin_border
-    ws2.row_dimensions[1].height = 28
-    
-    detail_cols = [
-        "Pickup Branch", "Commune EN", "Commune Khmer",
-        "Branch Code", "Branch EN", "Branch Khmer",
-        "Type", "Category", "Status", "Phone", "Latitude", "Longitude"
-    ]
-    
-    for idx, row in df.iterrows():
-        row_idx = idx + 2
-        for col_idx, col_key in enumerate(detail_cols, 1):
-            val = row.get(col_key, "")
-            cell = ws2.cell(row=row_idx, column=col_idx, value=val)
-            cell.font = Font(name="Calibri", size=10)
+    ws.row_dimensions[2].height = 28
+
+    # Data rows (Row 3 onwards)
+    for idx, row in enumerate(df.itertuples(index=False), 3):
+        is_alt = (idx % 2 == 1)
+        r_dict = dict(zip(df.columns, row))
+
+        post_code = str(r_dict.get('Post code') or r_dict.get('Pickup Branch') or r_dict.get('Department Code') or r_dict.get('code') or '').strip().upper()
+        po_name = str(r_dict.get('Post office name') or r_dict.get('Commune EN') or r_dict.get('Department Name') or r_dict.get('name') or '').strip()
+        b_code = str(r_dict.get('Branch Code') or r_dict.get('parentDepartmentCode') or '').strip().upper()
+        b_name = str(r_dict.get('Branch EN') or r_dict.get('branch_name') or '').strip()
+        branch_str = str(r_dict.get('Branch') or (f"{b_code} - {b_name}" if b_name and b_name != b_code else b_code)).strip()
+        po_level = str(r_dict.get('Post office level') or r_dict.get('Category') or r_dict.get('Type') or '').strip()
+        status = str(r_dict.get('Status') or 'In effect').strip()
+
+        row_vals = [post_code, po_name, branch_str, po_level, status]
+
+        for col_idx, value in enumerate(row_vals, 1):
+            cell = ws.cell(row=idx, column=col_idx, value=value)
+            cell.font = data_font
+            cell.alignment = Alignment(horizontal='center' if col_idx in (1, 4, 5) else 'left', vertical='center')
             cell.border = thin_border
-            
-    ws2.freeze_panes = "A2"
-    ws2.auto_filter.ref = f"A1:{get_column_letter(len(detail_headers))}{len(df)+1}"
-    
-    for col_idx, col_name in enumerate(detail_headers, 1):
+            if is_alt:
+                cell.fill = alt_fill
+
+    ws.freeze_panes = "A3"
+    ws.auto_filter.ref = f"A2:E{len(df)+2}"
+
+    # Auto-fit column widths
+    for col_idx, col_name in enumerate(export_headers, 1):
         max_len = len(str(col_name))
         col_letter = get_column_letter(col_idx)
-        for row_idx in range(2, min(len(df) + 2, 50)):
-            v = ws2.cell(row=row_idx, column=col_idx).value
+        for r_i in range(3, min(len(df) + 3, 200)):
+            v = ws.cell(row=r_i, column=col_idx).value
             if v:
                 max_len = max(max_len, len(str(v)))
+        ws.column_dimensions[col_letter].width = max(max_len + 4, 18)
+
     wb.save(out_path)
 
 
