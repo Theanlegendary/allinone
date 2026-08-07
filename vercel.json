@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "framework": null,
   "cleanUrls": true,
   "rewrites": [
     { "source": "/training2", "destination": "/training2/index.html" },
