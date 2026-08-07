@@ -579,11 +579,12 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
     for row_dict in rows:
         ws.row_dimensions[r].height = 20
         is_total = str(row_dict.get(index_cols[0], '')).strip() == 'Grand Total'
+        is_subtotal = str(row_dict.get(index_cols[0], '')).strip().startswith('Subtotal')
 
         # Check overdue (>48h) and status code
         is_overdue_48h = False
         status_code = None
-        if not is_total:
+        if not is_total and not is_subtotal:
             order_id = normalize_id(row_dict.get('ORDER ID', ''))
             age_str = str(row_dict.get('Age', '') or '')
             match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
@@ -603,14 +604,14 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell = ws.cell(r, start_col + ci, val if val != '' else None)
             cell.border = bdr
 
-            # Row-level fill (420/472 light green row; >48h overdue / return light red row)
-            # CRITICAL RULE: Row background is RED only for >48h or Return status; 10h-48h age has RED text only with WHITE row background!
             row_fill = None
             age_val_str = str(row_dict.get('Age', '') or '')
             is_green_kpi = age_val_str.startswith('🟢')
 
             if is_total:
                 row_fill = _fill(tot_bg)
+            elif is_subtotal:
+                row_fill = _fill("E2E8F0")
             elif status_code in ("420", "472"):
                 row_fill = _fill("E2EFDA")  # Light green row fill
             elif not is_green_kpi and (is_overdue_48h or status_code in ("500", "510", "511", "512", "520", "540")):
@@ -621,17 +622,18 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell_align = _align('center')
 
             # ========== VIP COLUMN HIGHLIGHTING ==========
-            # If this is the VIP column and cell has "VIP", use red text only
             if col_name == 'VIP' and str(val).strip() == 'VIP':
-                # Keep row background color (no special fill)
-                # Just change text to red
-                cell_font = _font(fn, 'EF4444', bold=True)  # Red text, bold
+                cell_font = _font(fn, 'EF4444', bold=True)
             # ========== END VIP HIGHLIGHTING ==========
 
             if is_total:
                 if row_fill:
                     cell.fill = row_fill
                 cell.font      = _font(fn, RED if col_name == 'Grand Total' or col_name in index_cols else '0F172A', bold=True)
+            elif is_subtotal:
+                if row_fill:
+                    cell.fill = row_fill
+                cell.font      = _font(fn, '1E3A8A', bold=True)
             elif col_name == 'Age':
                 val_str = str(val or '').strip()
                 match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', val_str, re.IGNORECASE)
@@ -1038,13 +1040,49 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
                     if isinstance(val, (int, float)) and val != '':
                         col_totals[d] += int(val)
 
+            # Group sorted rows by Zone and insert Subtotal Zone 1-5 rows
+            rows_with_subtotals = []
+            cur_zone = None
+            cur_zone_rows = []
+            
+            def _build_zone_footer(zone_name, z_rows):
+                f_row = {col: '' for col in icols}
+                f_row[icols[0]] = f"Subtotal {zone_name}"
+                z_tot = 0
+                z_col_totals = defaultdict(int)
+                for r in z_rows:
+                    z_tot += 1
+                    for d in combined_active_days:
+                        v = r.get(d)
+                        if isinstance(v, (int, float)) and v != '':
+                            z_col_totals[d] += int(v)
+                for d in combined_active_days:
+                    f_row[d] = z_col_totals[d] if z_col_totals[d] > 0 else ''
+                f_row['Grand Total'] = z_tot
+                return f_row
+
+            for r in rows:
+                z_key = get_combined_sort_key(r)[0]
+                if cur_zone is not None and z_key != cur_zone:
+                    if cur_zone_rows:
+                        rows_with_subtotals.append(_build_zone_footer(cur_zone, cur_zone_rows))
+                        cur_zone_rows = []
+                cur_zone = z_key
+                cur_zone_rows.append(r)
+                rows_with_subtotals.append(r)
+            
+            if cur_zone and cur_zone_rows:
+                rows_with_subtotals.append(_build_zone_footer(cur_zone, cur_zone_rows))
+
             # Build the global footer row
             footer = {col: '' for col in icols}
             footer[icols[0]] = 'Grand Total'
             for d in combined_active_days:
                 footer[d] = col_totals[d] if col_totals[d] > 0 else ''
             footer['Grand Total'] = grand_total
-            rows.append(footer)
+
+            rows_with_subtotals.append(footer)
+            rows = rows_with_subtotals
 
         _write_table(ws, 1, 1, rn, rows, icols, combined_active_days, dc,
                      handle=handle_title, show_top_title=False, max_index=len(icols),
