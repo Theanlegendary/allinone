@@ -2235,7 +2235,17 @@ def build_branch_kpi_excel(df_in, out_file, cfg=None):
             for b in b_list:
                 if b and str(b).strip():
                     registered.add(str(b).strip().upper())
-                    
+        zm = cfg.get('zone_mapping', {}).get('by_post_office', {})
+        for b in zm.keys():
+            if b and str(b).strip():
+                registered.add(str(b).strip().upper())
+                
+    if po_col in df.columns:
+        for b in df[po_col].dropna().unique():
+            b_str = str(b).strip().upper()
+            if b_str and len(b_str) >= 4 and not (len(b_str) >= 4 and b_str[3] in ('A', 'S')):
+                registered.add(b_str)
+
     if registered:
         branches = sorted(list(registered))
     else:
