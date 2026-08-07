@@ -1872,7 +1872,12 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         total_zones = cfg.get("total_zones", {})
-        if zone_key in total_zones:
+        if zone_key in ["zone", "zones", "allzone", "allzones", "all_zones", "zone1-5", "zone1-zone5"]:
+            zone_filter = []
+            for z_handles in total_zones.values():
+                zone_filter.extend([h.upper() for h in z_handles])
+            zone_label = "TOTAL ZONE 1-5"
+        elif zone_key in total_zones:
             zone_filter = [h.upper() for h in total_zones[zone_key]]
             zone_label = zone_key.upper()
         else:
@@ -1881,8 +1886,8 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update,
                 context,
                 f"Unknown zone '{zone_key}'.\n"
-                f"Available zones: {available}\n"
-                f"Usage: /total zone5"
+                f"Available zones: {available}, zone (all zones 1-5)\n"
+                f"Usage: /total zone  or  /total zone1"
             )
             return
 
