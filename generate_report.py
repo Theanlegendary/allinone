@@ -908,6 +908,36 @@ def _write_zone_summary_side_table(ws, start_col, rows, cfg):
         
         r_idx += 1
 
+    # Grand Total Row for Side Summary Box
+    ws.row_dimensions[r_idx].height = 22
+    tot_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
+    tot_font = Font(name=fn, size=10, bold=True, color="991B1B")
+    
+    t0 = ws.cell(r_idx, start_col, "TOTAL")
+    t0.font = tot_font; t0.fill = tot_fill; t0.alignment = Alignment(horizontal="center", vertical="center"); t0.border = bdr
+    
+    t1 = ws.cell(r_idx, start_col + 1, total_all["total"])
+    t1.number_format = '#,##0'
+    t1.font = tot_font; t1.fill = tot_fill; t1.alignment = Alignment(horizontal="center", vertical="center"); t1.border = bdr
+    
+    t2 = ws.cell(r_idx, start_col + 2, total_all["overdue"])
+    t2.number_format = '#,##0'
+    t2.font = tot_font; t2.fill = tot_fill; t2.alignment = Alignment(horizontal="center", vertical="center"); t2.border = bdr
+    
+    t3 = ws.cell(r_idx, start_col + 3, float(total_all["cod"]))
+    t3.number_format = '"$"#,##0.00'
+    t3.font = tot_font; t3.fill = tot_fill; t3.alignment = Alignment(horizontal="center", vertical="center"); t3.border = bdr
+    
+    t4 = ws.cell(r_idx, start_col + 4, float(total_all["fee"]))
+    t4.number_format = '"$"#,##0.00'
+    t4.font = tot_font; t4.fill = tot_fill; t4.alignment = Alignment(horizontal="center", vertical="center"); t4.border = bdr
+
+    # Explicit column widths for side summary box
+    side_widths = [16, 18, 18, 20, 20]
+    for ci, w in enumerate(side_widths):
+        col_letter = get_column_letter(start_col + ci)
+        ws.column_dimensions[col_letter].width = w
+
 def _write_main_zone_summary_sheet(ws, combined_data, cfg):
     """
     Renders Tab 1: Executive 'Zone Summary' sheet as the main tab of Total_ZONE1-5.xlsx
@@ -1231,11 +1261,11 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
                      handle=handle_title, show_top_title=False, max_index=len(icols),
                      order_created_map=order_created_map, order_status_map=order_status_map)
         
-        # Render Side Zone Summary Table (Zone 1 to Zone 5 Summary Box on the right of main data table)
-        end_data_col = len(icols) + len(combined_active_days) + 1
-        _write_zone_summary_side_table(ws, end_data_col + 3, rows, cfg)
-
         _set_col_widths(ws)
+
+        # Render Side Zone Summary Table starting right on Column Z (2 cols after data)
+        end_data_col = len(icols) + len(combined_active_days) + 1
+        _write_zone_summary_side_table(ws, end_data_col + 2, rows, cfg)
         
     wb.save(out_path)
 
