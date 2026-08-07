@@ -811,9 +811,13 @@ def _write_zone_summary_side_table(ws, start_col, rows, cfg):
         total_all["total"] += 1
         
         # Check overdue > 48h
-        age_str = str(r.get("Age", "") or "")
-        match_h = re.search(r"(\d+)\s*h", age_str, re.IGNORECASE)
-        if match_h and int(match_h.group(1)) >= 48 and not age_str.startswith("🟢"):
+        is_overdue = bool(r.get("_is_overdue") or r.get("_is_overdue_7days"))
+        if not is_overdue:
+            age_str = str(r.get("Age", "") or "")
+            match_h = re.search(r"(\d+)\s*h", age_str, re.IGNORECASE)
+            if match_h and int(match_h.group(1)) >= 48 and not age_str.startswith("🟢"):
+                is_overdue = True
+        if is_overdue:
             zone_stats[z_key]["overdue"] += 1
             total_all["overdue"] += 1
             
@@ -873,24 +877,28 @@ def _write_zone_summary_side_table(ws, start_col, rows, cfg):
         c0.border = bdr
         
         c1 = ws.cell(r_idx, start_col + 1, st["total"])
+        c1.number_format = '#,##0'
         c1.font = Font(name=fn, size=10, bold=True, color="1E3A8A")
         c1.alignment = Alignment(horizontal="center", vertical="center")
         c1.fill = cell_fill
         c1.border = bdr
         
         c2 = ws.cell(r_idx, start_col + 2, st["overdue"])
+        c2.number_format = '#,##0'
         c2.font = Font(name=fn, size=10, bold=True, color="991B1B" if st["overdue"] > 0 else "475569")
         c2.alignment = Alignment(horizontal="center", vertical="center")
         c2.fill = PatternFill(start_color="FFEBEB" if st["overdue"] > 0 else bg_color, fill_type="solid")
         c2.border = bdr
         
-        c3 = ws.cell(r_idx, start_col + 3, f"${st['cod']:.2f}")
+        c3 = ws.cell(r_idx, start_col + 3, float(st["cod"]))
+        c3.number_format = '"$"#,##0.00'
         c3.font = Font(name=fn, size=10, bold=True, color="065F46")
         c3.alignment = Alignment(horizontal="center", vertical="center")
         c3.fill = cell_fill
         c3.border = bdr
         
-        c4 = ws.cell(r_idx, start_col + 4, f"${st['fee']:.2f}")
+        c4 = ws.cell(r_idx, start_col + 4, float(st["fee"]))
+        c4.number_format = '"$"#,##0.00'
         c4.font = Font(name=fn, size=10, bold=True, color="065F46")
         c4.alignment = Alignment(horizontal="center", vertical="center")
         c4.fill = cell_fill
@@ -907,21 +915,31 @@ def _write_zone_summary_side_table(ws, start_col, rows, cfg):
     t0.font = tot_font; t0.fill = tot_fill; t0.alignment = Alignment(horizontal="center", vertical="center"); t0.border = bdr
     
     t1 = ws.cell(r_idx, start_col + 1, total_all["total"])
+    t1.number_format = '#,##0'
     t1.font = tot_font; t1.fill = tot_fill; t1.alignment = Alignment(horizontal="center", vertical="center"); t1.border = bdr
     
     t2 = ws.cell(r_idx, start_col + 2, total_all["overdue"])
+    t2.number_format = '#,##0'
     t2.font = tot_font; t2.fill = tot_fill; t2.alignment = Alignment(horizontal="center", vertical="center"); t2.border = bdr
     
-    t3 = ws.cell(r_idx, start_col + 3, f"${total_all['cod']:.2f}")
+    t3 = ws.cell(r_idx, start_col + 3, float(total_all["cod"]))
+    t3.number_format = '"$"#,##0.00'
     t3.font = tot_font; t3.fill = tot_fill; t3.alignment = Alignment(horizontal="center", vertical="center"); t3.border = bdr
     
-    t4 = ws.cell(r_idx, start_col + 4, f"${total_all['fee']:.2f}")
+    t4 = ws.cell(r_idx, start_col + 4, float(total_all["fee"]))
+    t4.number_format = '"$"#,##0.00'
     t4.font = tot_font; t4.fill = tot_fill; t4.alignment = Alignment(horizontal="center", vertical="center"); t4.border = bdr
 
 
 def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', order_created_map=None, order_status_map=None, handle_title='ALL BRANCHES'):
     from collections import defaultdict
     wb = Workbook()
+    
+    cfg_p = os.path.join(os.path.dirname(__file__), "config.json")
+    cfg = {}
+    if os.path.exists(cfg_p):
+        with open(cfg_p, encoding="utf-8") as f:
+            cfg = json.load(f)
     
     # Render sheets in CEO order: Delivery > Not Assign (Branch) > Pickup > Send Mega (Transit)
     report_types = CEO_SHEET_ORDER
