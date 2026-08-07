@@ -198,6 +198,9 @@ def build_summary_image(
             return (z_val, h_u)
         handle_results = sorted(handle_results, key=_sort_key)
 
+    tmp  = Image.new("RGB", (1, 1))
+    draw = ImageDraw.Draw(tmp)
+
     handle_strs = [hr["handle"] for hr in handle_results] + ["GRAND TOTAL"]
     W_HANDLE = max(_tw(draw, s, fn_b) for s in handle_strs) + PAD * 2
     W_HANDLE = max(W_HANDLE, 80 * sc)
