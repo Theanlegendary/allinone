@@ -3559,19 +3559,19 @@ def _post_office_export_row(item, fallback_branch=""):
         category,
     ]
 
+    status = str(item.get("statusLabel") or item.get("status") or "In effect").strip()
+    branch_display = f"{branch_code} - {branch_en}" if branch_en and branch_en != branch_code else (branch_code or "")
+
     return {
+        "Post code": code,
+        "Post office name": commune_en,
+        "Branch": branch_display,
+        "Post office level": category,
+        "Status": status,
         "Pickup Branch": code,
         "Commune EN": commune_en,
-        "Commune Khmer": commune_khmer,
-        "Phone": phone,
         "Branch Code": branch_code,
-        "Branch EN": branch_en,
-        "Branch Khmer": branch_khmer,
-        "Type": str(item.get("typeLabel") or item.get("type") or "").strip(),
         "Category": category,
-        "Status": str(item.get("statusLabel") or item.get("status") or "").strip(),
-        "Latitude": item.get("latitude"),
-        "Longitude": item.get("longitude"),
         "Search Text": " | ".join(part for part in search_parts if part),
     }
 
@@ -3738,119 +3738,29 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
     from openpyxl.utils import get_column_letter
     import pandas as pd
 
-    DARK_BLUE = "172033"
-    PRIMARY = "00A651"
+    PRIMARY = "00A651"      # Metfone Green
+    SECONDARY = "EAF7EF"    # Light Green
     WHITE = "FFFFFF"
-    BORDER_CLR = "CCCCCC"
-    
-    thin_border = Border(
-        left=Side(style="thin", color=BORDER_CLR),
-        right=Side(style="thin", color=BORDER_CLR),
-        top=Side(style="thin", color=BORDER_CLR),
-        bottom=Side(style="thin", color=BORDER_CLR),
-    )
-    
-    # Load pickup_branch_lookup.csv for suggestion reference
-    lookup_map = {}
-    try:
-        ref_df = pd.read_csv("pickup_branch_lookup.csv", dtype=str)
-        for _, r in ref_df.iterrows():
-            code_val = str(r.get("Pickup Branch", "")).strip().upper()
-            comm_val = str(r.get("Commune EN", "")).strip()
-            if code_val and comm_val:
-                lookup_map[code_val] = comm_val
-    except Exception as e:
-        log.warning("Could not load pickup_branch_lookup.csv: %s", e)
+    DARK_TEXT = "333333"
+    BORDER_CLR = "B2D8B2"
 
-    # Extract all valid commune, district, and province names from the gazetteer
-    gazetteer = _get_gazetteer()
-    valid_locations = set()
-    for item in gazetteer:
-        c_en = str(item.get("comm_en", "")).lower().replace(" ", "").replace("-", "")
-        d_en = str(item.get("dist_en", "")).lower().replace(" ", "").replace("-", "")
-        p_en = str(item.get("prov_en", "")).lower().replace(" ", "").replace("-", "")
-        if c_en: valid_locations.add(c_en)
-        if d_en: valid_locations.add(d_en)
-        if p_en: valid_locations.add(p_en)
+    thin_border = Border(
+        left=Side(style='thin', color=BORDER_CLR),
+        right=Side(style='thin', color=BORDER_CLR),
+        top=Side(style='thin', color=BORDER_CLR),
+        bottom=Side(style='thin', color=BORDER_CLR),
+    )
+    header_font = Font(name='Calibri', bold=True, color=WHITE, size=11)
+    header_fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type='solid')
+    header_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    alt_fill = PatternFill(start_color=SECONDARY, end_color=SECONDARY, fill_type='solid')
+    data_font = Font(name='Calibri', color=DARK_TEXT, size=10)
+    title_font = Font(name='Calibri', bold=True, color=PRIMARY, size=14)
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Stores"
+    ws.title = "Post Offices"
     ws.views.sheetView[0].showGridLines = True
-    
-    data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
-    
-    for col_idx, col_name in enumerate(data_headers, 1):
-        cell = ws.cell(row=1, column=col_idx, value=col_name)
-        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
-        cell.fill = PatternFill(start_color=DARK_BLUE, end_color=DARK_BLUE, fill_type="solid")
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        cell.border = thin_border
-    ws.row_dimensions[1].height = 28
-    
-    for idx, row in df.iterrows():
-        branch_code = str(row.get("Branch Code", "")).strip().upper()
-        commune_en = str(row.get("Commune EN", ""))
-        commune_kh = str(row.get("Commune Khmer", ""))
-        code = str(row.get("Pickup Branch", ""))
-        phone = str(row.get("Phone", ""))
-        lat = row.get("Latitude")
-        lon = row.get("Longitude")
-        category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
-        
-        prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
-        store_name = f"{code} - {commune_en}"
-        
-        # Calculate edit suggestion if current commune name is not a valid location in Cambodia
-        suggest_val = ""
-        if commune_en:
-            comm_norm = str(commune_en).lower().replace(" ", "").replace("-", "")
-            correct_name = lookup_map.get(code)
-            if correct_name:
-                correct_norm = str(correct_name).lower().replace(" ", "").replace("-", "")
-                if comm_norm != correct_norm:
-                    suggest_val = f"Change to \"{correct_name}\""
-            else:
-                if comm_norm not in valid_locations:
-                    suggest_val = "Verify Location Name"
-
-        row_idx = idx + 2
-        
-        ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
-        
-        # Category badge styling
-        cat_cell = ws.cell(row=row_idx, column=5, value=category)
-        cat_cell.alignment = Alignment(horizontal="center", vertical="center")
-        if category == "Post Office":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="137333")
-            cat_cell.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
-        elif category == "Showroom":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="B06000")
-            cat_cell.fill = PatternFill(start_color="FEF7E0", end_color="FEF7E0", fill_type="solid")
-        elif category == "Agent":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="1A73E8")
-            cat_cell.fill = PatternFill(start_color="E8F0FE", end_color="E8F0FE", fill_type="solid")
-        else:
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="6B21A8")
-            cat_cell.fill = PatternFill(start_color="F3E8FF", end_color="F3E8FF", fill_type="solid")
-
-        ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
-        
-        cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
-        if suggest_val:
-            cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
-            cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
-        else:
-            cell_suggest.font = Font(name="Calibri", size=10)
-            
-        for col_idx in range(1, 10):
-            ws.cell(row=row_idx, column=col_idx).border = thin_border
-            
     ws.column_dimensions["A"].width = 25
     ws.column_dimensions["B"].width = 25
     ws.column_dimensions["C"].width = 25

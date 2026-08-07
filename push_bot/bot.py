@@ -1350,6 +1350,8 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "`push zone5` — Push to zone 5 only\n"
         "`/total` — Summary image + Excel (all data)\n"
         "`/total zone5` — Summary image + Excel (zone5 only)\n"
+        "`/morning` — Morning report with age -12h (excludes overnight hold)\n"
+        "`/morning zone5` — Morning report for zone5 only\n"
         "`/tpg` — TPG Branch Operational Summary (Pickup/Delivery/Branch/Transit)\n"
         "`/totalkpi` — Total KPI performance report & hit % summary\n"
         "`/deletereport` — Delete a report (reply to the bot's report message)\n"
@@ -2075,6 +2077,166 @@ def get_highlighted_order_ids(df_t, today_date):
             highlighted.add(oid)
             
     return highlighted
+
+
+@pm_required_handler
+async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/morning [zone] — Morning report with 12h age adjustment (excludes overnight hold time).
+    Examples: /morning  (all data)  |  /morning zone5  |  /morning zone1
+    """
+    await delete_group_command(update, context)
+    cfg = load_config()
+
+    # Parse optional zone argument
+    args = [a.strip().lower() for a in (context.args or []) if a.strip()]
+    zone_filter = None
+    zone_label = "ALL"
+    
+    if args:
+        zone_key = args[0]
+        total_zones = cfg.get("total_zones", {})
+        if zone_key in total_zones:
+            zone_filter = [h.upper() for h in total_zones[zone_key]]
+            zone_label = zone_key.upper()
+        else:
+            available = ", ".join(sorted(total_zones.keys())) if total_zones else "none configured"
+            await private_or_current_reply(
+                update,
+                context,
+                f"Unknown zone '{zone_key}'.\n"
+                f"Available zones: {available}\n"
+                f"Usage: /morning zone5"
+            )
+            return
+
+    msg = await send_requester_text(update, context, f"☀️ Fetching data for {zone_label} MORNING report (age -12h)...")
+
+    tmpdir = tempfile.mkdtemp(prefix="morning_")
+    track_report_dir(tmpdir)
+    stamp = datetime.now().strftime("%d.%m_%HH%M")
+    src = os.path.join(tmpdir, f"export_{stamp}.xlsx")
+
+    try:
+        downloader.download_detail(cfg["api"], src, force_refresh=True)
+        msg = await edit_or_send_requester_text(msg, update, context, "Building morning summary (age adjusted -12h)...")
+
+        mode = get_mode(cfg)
+        result = generate_report.generate_reports_from_data(
+            src, REF_PATH, tmpdir, return_metadata=True, mode=mode,
+        )
+
+        # ── Zone filtering ────────────────────────────────────────────────
+        if zone_filter:
+            result["handle_results"] = [
+                hr for hr in result["handle_results"]
+                if hr["handle"] in zone_filter
+            ]
+            overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+            for hr in result["handle_results"]:
+                for k in overall:
+                    overall[k] += hr["handle_counts"].get(k, 0)
+            result["overall_counts"] = overall
+
+            import pandas as pd
+            for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+                df = result.get("type_data", {}).get(rn)
+                if df is not None and not df.empty:
+                    filter_col = "POST OFFICE HANDLE"
+                    if filter_col in df.columns:
+                        result["type_data"][rn] = df[df[filter_col].isin(zone_filter)].copy()
+
+        # Calculate counts
+        total_day_date_counts = {}
+        total_urgent_counts = {}
+        urgent_by_type = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+        today_date = datetime.now().date()
+        import pandas as pd
+
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            df_z = result.get("type_data", {}).get(rn)
+            if df_z is None or df_z.empty:
+                continue
+            date_col_z = result.get("date_col") or (
+                "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
+            )
+            if date_col_z and date_col_z in df_z.columns:
+                parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
+                                          format="mixed", errors="coerce")
+                df_z = df_z.copy()
+                df_z["_zdate"] = parsed_z.dt.date
+
+            handle_col = "POST OFFICE HANDLE"
+            if handle_col not in df_z.columns:
+                continue
+
+            for _, row_z in df_z.iterrows():
+                h = str(row_z.get(handle_col, "")).strip().upper()
+                if not h:
+                    continue
+                d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
+                if d_val and not pd.isna(d_val):
+                    total_day_date_counts.setdefault(h, {})
+                    total_day_date_counts[h][d_val] = total_day_date_counts[h].get(d_val, 0) + 1
+                created_d = None
+                if "CREATED DATE" in df_z.columns:
+                    cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
+                                        format="mixed", errors="coerce")
+                    if not pd.isna(cd):
+                        created_d = cd.date()
+                if created_d and (today_date - created_d).days > 1:
+                    if h not in total_urgent_counts:
+                        total_urgent_counts[h] = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+                    total_urgent_counts[h][rn] = total_urgent_counts[h].get(rn, 0) + 1
+                    urgent_by_type[rn] += 1
+
+        overall = result["overall_counts"]
+        grand_total = sum(overall.values())
+        total_urgent_sum = sum(urgent_by_type.values())
+
+        result["summary_caption"] = "\n".join([
+            f"☀️ {zone_label} MORNING Report (Age -12h)  {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            f"Delivery: {overall.get('Delivery',0)} (U:{urgent_by_type.get('Delivery',0)})  |  "
+            f"Not Assign: {overall.get('Branch',0)} (U:{urgent_by_type.get('Branch',0)})  |  "
+            f"Pickup: {overall.get('Pickup',0)} (U:{urgent_by_type.get('Pickup',0)})  |  "
+            f"Send Mega: {overall.get('Transit',0)} (U:{urgent_by_type.get('Transit',0)})",
+            f"Grand Total: {grand_total}  |  Total Urgent: {total_urgent_sum}",
+            f"📝 Age adjusted: -12 hours (excludes overnight hold)",
+        ])
+
+        # 1. Summary image
+        img_buf = generate_summary.build_summary_image(
+            result["handle_results"],
+            result["overall_counts"],
+            zone_label=f"{zone_label} MORNING",
+            day_date_counts=total_day_date_counts if total_day_date_counts else None,
+            urgent_counts=total_urgent_counts if total_urgent_counts else None,
+        )
+        img_buf.name = "morning_summary.png"
+        await send_requester_photo(update, context, img_buf)
+
+        # 2. Total Excel with 12h age adjustment
+        label = f"Morning_{zone_label}_" if zone_filter else "Morning_"
+        total_xlsx = os.path.join(tmpdir, f"{label}{stamp}.xlsx")
+        generate_summary.build_total_excel(result, total_xlsx, age_adjust_hours=12)
+
+        with open(total_xlsx, "rb") as f:
+            await send_requester_document(
+                update,
+                context,
+                f,
+                os.path.basename(total_xlsx),
+                caption=result["summary_caption"],
+            )
+
+        await edit_or_send_requester_text(msg, update, context, 
+            f"☀️ Done. {zone_label} MORNING report {datetime.now().strftime('%d.%m.%Y %H:%M')}\n"
+            f"Age adjusted: -12 hours"
+        )
+
+    except Exception as e:
+        log.exception("Error in /morning")
+        await edit_or_send_requester_text(msg, update, context, f"Error: {e}")
 
 
 @pm_required_handler
@@ -3397,19 +3559,19 @@ def _post_office_export_row(item, fallback_branch=""):
         category,
     ]
 
+    status = str(item.get("statusLabel") or item.get("status") or "In effect").strip()
+    branch_display = f"{branch_code} - {branch_en}" if branch_en and branch_en != branch_code else (branch_code or "")
+
     return {
+        "Post code": code,
+        "Post office name": commune_en,
+        "Branch": branch_display,
+        "Post office level": category,
+        "Status": status,
         "Pickup Branch": code,
         "Commune EN": commune_en,
-        "Commune Khmer": commune_khmer,
-        "Phone": phone,
         "Branch Code": branch_code,
-        "Branch EN": branch_en,
-        "Branch Khmer": branch_khmer,
-        "Type": str(item.get("typeLabel") or item.get("type") or "").strip(),
         "Category": category,
-        "Status": str(item.get("statusLabel") or item.get("status") or "").strip(),
-        "Latitude": item.get("latitude"),
-        "Longitude": item.get("longitude"),
         "Search Text": " | ".join(part for part in search_parts if part),
     }
 
@@ -3576,119 +3738,29 @@ def _write_post_office_export_excel(df, out_path, sheet_label, title):
     from openpyxl.utils import get_column_letter
     import pandas as pd
 
-    DARK_BLUE = "172033"
-    PRIMARY = "00A651"
+    PRIMARY = "00A651"      # Metfone Green
+    SECONDARY = "EAF7EF"    # Light Green
     WHITE = "FFFFFF"
-    BORDER_CLR = "CCCCCC"
-    
-    thin_border = Border(
-        left=Side(style="thin", color=BORDER_CLR),
-        right=Side(style="thin", color=BORDER_CLR),
-        top=Side(style="thin", color=BORDER_CLR),
-        bottom=Side(style="thin", color=BORDER_CLR),
-    )
-    
-    # Load pickup_branch_lookup.csv for suggestion reference
-    lookup_map = {}
-    try:
-        ref_df = pd.read_csv("pickup_branch_lookup.csv", dtype=str)
-        for _, r in ref_df.iterrows():
-            code_val = str(r.get("Pickup Branch", "")).strip().upper()
-            comm_val = str(r.get("Commune EN", "")).strip()
-            if code_val and comm_val:
-                lookup_map[code_val] = comm_val
-    except Exception as e:
-        log.warning("Could not load pickup_branch_lookup.csv: %s", e)
+    DARK_TEXT = "333333"
+    BORDER_CLR = "B2D8B2"
 
-    # Extract all valid commune, district, and province names from the gazetteer
-    gazetteer = _get_gazetteer()
-    valid_locations = set()
-    for item in gazetteer:
-        c_en = str(item.get("comm_en", "")).lower().replace(" ", "").replace("-", "")
-        d_en = str(item.get("dist_en", "")).lower().replace(" ", "").replace("-", "")
-        p_en = str(item.get("prov_en", "")).lower().replace(" ", "").replace("-", "")
-        if c_en: valid_locations.add(c_en)
-        if d_en: valid_locations.add(d_en)
-        if p_en: valid_locations.add(p_en)
+    thin_border = Border(
+        left=Side(style='thin', color=BORDER_CLR),
+        right=Side(style='thin', color=BORDER_CLR),
+        top=Side(style='thin', color=BORDER_CLR),
+        bottom=Side(style='thin', color=BORDER_CLR),
+    )
+    header_font = Font(name='Calibri', bold=True, color=WHITE, size=11)
+    header_fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type='solid')
+    header_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    alt_fill = PatternFill(start_color=SECONDARY, end_color=SECONDARY, fill_type='solid')
+    data_font = Font(name='Calibri', color=DARK_TEXT, size=10)
+    title_font = Font(name='Calibri', bold=True, color=PRIMARY, size=14)
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Stores"
+    ws.title = "Post Offices"
     ws.views.sheetView[0].showGridLines = True
-    
-    data_headers = ["Province *", "District *", "District KH", "Delivery Store *", "Category *", "Phone Number", "Latitude", "Longitude", "Suggest Edit"]
-    
-    for col_idx, col_name in enumerate(data_headers, 1):
-        cell = ws.cell(row=1, column=col_idx, value=col_name)
-        cell.font = Font(name="Calibri", bold=True, color=WHITE, size=11)
-        cell.fill = PatternFill(start_color=DARK_BLUE, end_color=DARK_BLUE, fill_type="solid")
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        cell.border = thin_border
-    ws.row_dimensions[1].height = 28
-    
-    for idx, row in df.iterrows():
-        branch_code = str(row.get("Branch Code", "")).strip().upper()
-        commune_en = str(row.get("Commune EN", ""))
-        commune_kh = str(row.get("Commune Khmer", ""))
-        code = str(row.get("Pickup Branch", ""))
-        phone = str(row.get("Phone", ""))
-        lat = row.get("Latitude")
-        lon = row.get("Longitude")
-        category = str(row.get("Category") or _classify_facility(code, row.get("Type"))).strip()
-        
-        prov_en, prov_kh, dist_en, dist_kh, comm_kh = _map_to_administrative_division(branch_code, commune_en, commune_kh)
-        store_name = f"{code} - {commune_en}"
-        
-        # Calculate edit suggestion if current commune name is not a valid location in Cambodia
-        suggest_val = ""
-        if commune_en:
-            comm_norm = str(commune_en).lower().replace(" ", "").replace("-", "")
-            correct_name = lookup_map.get(code)
-            if correct_name:
-                correct_norm = str(correct_name).lower().replace(" ", "").replace("-", "")
-                if comm_norm != correct_norm:
-                    suggest_val = f"Change to \"{correct_name}\""
-            else:
-                if comm_norm not in valid_locations:
-                    suggest_val = "Verify Location Name"
-
-        row_idx = idx + 2
-        
-        ws.cell(row=row_idx, column=1, value=prov_en).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=2, value=dist_en).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=3, value=dist_kh).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=4, value=store_name).font = Font(name="Calibri", size=10)
-        
-        # Category badge styling
-        cat_cell = ws.cell(row=row_idx, column=5, value=category)
-        cat_cell.alignment = Alignment(horizontal="center", vertical="center")
-        if category == "Post Office":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="137333")
-            cat_cell.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
-        elif category == "Showroom":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="B06000")
-            cat_cell.fill = PatternFill(start_color="FEF7E0", end_color="FEF7E0", fill_type="solid")
-        elif category == "Agent":
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="1A73E8")
-            cat_cell.fill = PatternFill(start_color="E8F0FE", end_color="E8F0FE", fill_type="solid")
-        else:
-            cat_cell.font = Font(name="Calibri", size=10, bold=True, color="6B21A8")
-            cat_cell.fill = PatternFill(start_color="F3E8FF", end_color="F3E8FF", fill_type="solid")
-
-        ws.cell(row=row_idx, column=6, value=phone).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=7, value=lat).font = Font(name="Calibri", size=10)
-        ws.cell(row=row_idx, column=8, value=lon).font = Font(name="Calibri", size=10)
-        
-        cell_suggest = ws.cell(row=row_idx, column=9, value=suggest_val)
-        if suggest_val:
-            cell_suggest.font = Font(name="Calibri", size=10, bold=True, color="C00000")
-            cell_suggest.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
-        else:
-            cell_suggest.font = Font(name="Calibri", size=10)
-            
-        for col_idx in range(1, 10):
-            ws.cell(row=row_idx, column=col_idx).border = thin_border
-            
     ws.column_dimensions["A"].width = 25
     ws.column_dimensions["B"].width = 25
     ws.column_dimensions["C"].width = 25
@@ -5806,8 +5878,6 @@ async def run_push(
                 hr for hr in result["handle_results"]
                 if hr["handle"] in target_handles
             ]
-
-        # Recalculate overall counts after filtering
         if target_handles or zone_mode:
             overall = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
             for hr in result["handle_results"]:
@@ -5871,7 +5941,7 @@ async def run_push(
             handle_str = hr["handle"]
             
             # Hide from requester in production mode (only show in test mode)
-            if not test_mode:
+            if not test_mode and handle_str in covered_handles:
                 continue
                 
             for hf in hr["handle_files"]:
@@ -6805,8 +6875,8 @@ async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if df_z is None or df_z.empty:
                         continue
                     date_col_z = (
-                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else
-                        "CREATED DATE" if "CREATED DATE" in df_z.columns else None
+                        "CREATED DATE" if "CREATED DATE" in df_z.columns else
+                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
                     )
                     if date_col_z and date_col_z in df_z.columns:
                         parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True, format="mixed", errors="coerce")
@@ -7111,6 +7181,7 @@ def main():
     app.add_handler(CommandHandler("app",        cmd_app))
     app.add_handler(CommandHandler("push",       run_push))
     app.add_handler(CommandHandler("total",      cmd_total))
+    app.add_handler(CommandHandler("morning",    cmd_morning))
     app.add_handler(CommandHandler("tpg",        cmd_tpg))
     app.add_handler(CommandHandler("compare",    cmd_compare))
     app.add_handler(CommandHandler("exportlogs", cmd_export_logs))
