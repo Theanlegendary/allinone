@@ -4223,37 +4223,28 @@ async def cmd_export(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # If the result is a list of dicts, convert to DataFrame
-        if isinstance(post_offices, list) and isinstance(post_offices[0], dict):
-            df = pd.json_normalize(post_offices, sep='_')
+        rows = [
+            _post_office_export_row(item, branch_code)
+            for item in (post_offices if isinstance(post_offices, list) else [])
+            if isinstance(item, dict)
+        ]
+        if not rows and isinstance(post_offices, list) and post_offices:
+            df_raw = pd.DataFrame(post_offices)
+            df_raw['Post code'] = df_raw.get('code', '')
+            df_raw['Post office name'] = df_raw.get('name', '')
+            df_raw['Branch'] = branch_code
+            df_raw['Post office level'] = df_raw.get('typeLabel', df_raw.get('type', 'Post Office'))
+            df_raw['Status'] = df_raw.get('statusLabel', df_raw.get('status', 'In effect'))
+            df = df_raw[['Post code', 'Post office name', 'Branch', 'Post office level', 'Status']].copy()
         else:
-            df = pd.DataFrame(post_offices)
+            df = pd.DataFrame(rows)
 
-        # Select and rename useful columns to match management page
-        col_map = {
-            'code': 'Department Code',
-            'name': 'Department Name',
-            'parentDepartmentCode': 'Branch Code',
-            'branch_name': 'Branch Name',
-            'type': 'Type',
-            'phone': 'Phone',
-        }
-        # Only keep columns that exist
-        keep = [c for c in col_map if c in df.columns]
-        df = df[keep].rename(columns=col_map)
-
-        # Strip code prefix from Department Name (e.g. "KAMA001 - Chamnaom" → "Chamnaom")
-        if 'Department Name' in df.columns:
-            df['Department Name'] = df['Department Name'].str.replace(
-                r'^[A-Z0-9]+ - ', '', regex=True)
-
-        # Build "Branch" column as "KAM - Kampot"
-        if 'Branch Code' in df.columns and 'Branch Name' in df.columns:
-            df.insert(
-                df.columns.get_loc('Branch Name') + 1,
-                'Branch',
-                df['Branch Code'] + ' - ' + df['Branch Name']
+        if df.empty:
+            await edit_or_send_requester_text(
+                msg, update, context,
+                f"No post office rows found for branch {branch_code}."
             )
+            return
 
         await edit_or_send_requester_text(
             msg, update, context,
@@ -4264,77 +4255,9 @@ async def cmd_export(update: Update, context: ContextTypes.DEFAULT_TYPE):
         stamp = datetime.now().strftime("%d.%m_%HH%M")
         filename = f"PostOffices_{branch_code}_{stamp}.xlsx"
         out_path = os.path.join(tmpdir, filename)
+        title = f"📋 Post Office List — {branch_code} ({len(df)} offices)"
 
-        # ── Styled Excel with Metfone Green theme ──
-        from openpyxl import Workbook
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-
-        PRIMARY = "00A651"      # Metfone Green
-        SECONDARY = "EAF7EF"    # Light Green
-        WHITE = "FFFFFF"
-        DARK_TEXT = "333333"
-        BORDER_CLR = "B2D8B2"
-
-        thin_border = Border(
-            left=Side(style='thin', color=BORDER_CLR),
-            right=Side(style='thin', color=BORDER_CLR),
-            top=Side(style='thin', color=BORDER_CLR),
-            bottom=Side(style='thin', color=BORDER_CLR),
-        )
-        header_font = Font(name='Calibri', bold=True, color=WHITE, size=11)
-        header_fill = PatternFill(start_color=PRIMARY, end_color=PRIMARY, fill_type='solid')
-        header_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        alt_fill = PatternFill(start_color=SECONDARY, end_color=SECONDARY, fill_type='solid')
-        data_font = Font(name='Calibri', color=DARK_TEXT, size=10)
-        data_align = Alignment(vertical='center')
-        title_font = Font(name='Calibri', bold=True, color=PRIMARY, size=14)
-
-        wb = Workbook()
-        ws = wb.active
-        ws.title = branch_code
-
-        # Title row
-        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(df.columns))
-        title_cell = ws.cell(row=1, column=1,
-                             value=f"📋 Post Office List — {branch_code} ({len(df)} offices)")
-        title_cell.font = title_font
-        title_cell.alignment = Alignment(horizontal='left', vertical='center')
-        ws.row_dimensions[1].height = 30
-
-        # Header row (row 2)
-        for col_idx, col_name in enumerate(df.columns, 1):
-            cell = ws.cell(row=2, column=col_idx, value=col_name)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = header_align
-            cell.border = thin_border
-        ws.row_dimensions[2].height = 28
-
-        # Data rows
-        for row_idx, row_data in enumerate(df.itertuples(index=False), 3):
-            is_alt = (row_idx % 2 == 1)
-            for col_idx, value in enumerate(row_data, 1):
-                cell = ws.cell(row=row_idx, column=col_idx, value=value)
-                cell.font = data_font
-                cell.alignment = data_align
-                cell.border = thin_border
-                if is_alt:
-                    cell.fill = alt_fill
-
-        # Auto-fit column widths
-        for col_idx, col_name in enumerate(df.columns, 1):
-            max_len = len(str(col_name))
-            for row_idx in range(3, len(df) + 3):
-                val = ws.cell(row=row_idx, column=col_idx).value
-                if val:
-                    max_len = max(max_len, len(str(val)))
-            ws.column_dimensions[ws.cell(row=2, column=col_idx).column_letter].width = min(max_len + 3, 45)
-
-        # Freeze header
-        ws.freeze_panes = 'A3'
-        ws.auto_filter.ref = f"A2:{ws.cell(row=2, column=len(df.columns)).column_letter}2"
-
-        wb.save(out_path)
+        _write_post_office_export_excel(df, out_path, branch_code, title)
 
         with open(out_path, "rb") as f:
             await send_requester_document(
