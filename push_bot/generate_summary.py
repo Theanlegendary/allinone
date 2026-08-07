@@ -169,13 +169,39 @@ def build_summary_image(
             date_set.update(dc.keys())
         all_dates = sorted(date_set)
 
-    # ── Column definitions ────────────────────────────────────────────────────
-    tmp  = Image.new("RGB", (1, 1))
-    draw = ImageDraw.Draw(tmp)
+    # ── Zone column detection & sorting ───────────────────────────────────────
+    import json
+    handle_to_zone = {}
+    try:
+        cfg_p = os.path.join(os.path.dirname(__file__), "config.json")
+        if not os.path.exists(cfg_p):
+            cfg_p = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+        if os.path.exists(cfg_p):
+            with open(cfg_p, encoding="utf-8") as _f:
+                _cfg = json.load(_f)
+            for zk, h_list in _cfg.get("total_zones", {}).items():
+                z_name = f"Zone {zk[-1]}" if zk.lower().startswith("zone") and zk[-1].isdigit() else zk.upper()
+                for _h in h_list:
+                    handle_to_zone[_h.upper()] = z_name
+            for _h, _z in _cfg.get("zone_mapping", {}).get("by_post_office", {}).items():
+                if _h.upper() not in handle_to_zone:
+                    handle_to_zone[_h.upper()] = _z
+    except Exception:
+        pass
+
+    show_zone_col = bool(zone_label and ("ZONE" in zone_label.upper() or "ALL" in zone_label.upper()))
+
+    if show_zone_col:
+        def _sort_key(hr):
+            h_u = hr["handle"].upper()
+            z_val = handle_to_zone.get(h_u, "Zone 9")
+            return (z_val, h_u)
+        handle_results = sorted(handle_results, key=_sort_key)
 
     handle_strs = [hr["handle"] for hr in handle_results] + ["GRAND TOTAL"]
     W_HANDLE = max(_tw(draw, s, fn_b) for s in handle_strs) + PAD * 2
     W_HANDLE = max(W_HANDLE, 80 * sc)
+    W_ZONE   = max(_tw(draw, "Zone 5", fn_b) + PAD * 2, 54 * sc) if show_zone_col else 0
 
     W_NUM    = max(_tw(draw, h, fn_b) for h in ["Pickup", "Delivery", "Transit", "Branch", "VIP", "TOTAL"]) + PAD * 2
     W_NUM    = max(W_NUM, 56 * sc)
@@ -185,8 +211,8 @@ def build_summary_image(
     W_URGENT_3 = max(_tw(draw, "> 3 Days", fn_sm) + PAD * 2, 56 * sc)
     W_U_COL  = max(_tw(draw, "U.Delivery", fn_sm) + PAD * 2, 48 * sc)
 
-    # Column order: Handle | Pickup | Delivery | Transit | Branch | [VIP] | [dates…] | TOTAL | [Fee | COD] | > 1 Day | > 3 Days
-    fixed_cols  = ["HANDLE", "Pickup", "Delivery", "Transit", "Branch"]
+    # Column order: [ZONE] | Handle | Pickup | Delivery | Transit | Branch | [VIP] | [dates…] | TOTAL | [Fee | COD] | > 1 Day | > 3 Days
+    fixed_cols  = (["ZONE"] if show_zone_col else []) + ["HANDLE", "Pickup", "Delivery", "Transit", "Branch"]
     if vip_counts is not None:
         fixed_cols.append("VIP")
     date_labels = [f"{d.day:02d}" for d in all_dates]
@@ -213,7 +239,8 @@ def build_summary_image(
         tail_cols.append("> 3 Days")
 
     col_widths = (
-        [W_HANDLE] + [W_NUM] * (len(fixed_cols) - 1)
+        ([W_ZONE] if show_zone_col else [])
+        + [W_HANDLE] + [W_NUM] * (len(fixed_cols) - (2 if show_zone_col else 1))
         + [W_DATE] * len(all_dates)
         + [W_NUM]                          # TOTAL
     )
@@ -345,20 +372,24 @@ def build_summary_image(
 
         row_bg = C_ROW_ALT if i % 2 else C_ROW_BG
 
-        cells  = [handle,
-                  str(pickup)   if pickup   else "",
-                  str(delivery) if delivery else "",
-                  str(transit)  if transit  else "",
-                  str(branch)   if branch   else ""]
+        z_str  = handle_to_zone.get(handle.upper(), "Zone ?") if show_zone_col else None
+        cells  = (([z_str] if show_zone_col else []) +
+                  [handle,
+                   str(pickup)   if pickup   else "",
+                   str(delivery) if delivery else "",
+                   str(transit)  if transit  else "",
+                   str(branch)   if branch   else ""])
 
-        fgs    = [C_HANDLE_FG,
-                  C_NUM_FG,
-                  C_NUM_FG,
-                  C_NUM_FG,
-                  C_NUM_FG]
+        fgs    = (([C_HANDLE_FG] if show_zone_col else []) +
+                  [C_HANDLE_FG,
+                   C_NUM_FG,
+                   C_NUM_FG,
+                   C_NUM_FG,
+                   C_NUM_FG])
 
-        fonts  = [fn_b, fn, fn, fn, fn]
-        aligns = ["left", "center", "center", "center", "center"]
+        fonts  = (([fn_b] if show_zone_col else []) +
+                  [fn_b, fn, fn, fn, fn])
+        aligns = (["center"] if show_zone_col else []) + ["left", "center", "center", "center", "center"]
 
         if vip_counts is not None:
             v_cnt = vip_counts.get(handle, 0)
@@ -403,16 +434,13 @@ def build_summary_image(
         if urgent_counts is not None:
             h_urgent = urgent_counts.get(hr["handle"], {})
             
-            # Extract counts (handle both dict and simple int for backward compatibility)
             if isinstance(h_urgent, dict):
                 urgent_1day = h_urgent.get("1day", 0)
                 urgent_3days = h_urgent.get("3days", 0)
             else:
-                # Backward compatibility: if it's just a number, use it for 1day only
                 urgent_1day = h_urgent
                 urgent_3days = 0
             
-            # Add both columns
             cells.append(str(urgent_1day) if urgent_1day else "")
             cells.append(str(urgent_3days) if urgent_3days else "")
             
@@ -421,16 +449,13 @@ def build_summary_image(
             aligns.extend(["center", "center"])
 
         bgs = [row_bg] * n_cols
-        # Tint fee/cod cells light green
         if has_fee_cod:
             n_fee_cod = (1 if fee_counts is not None else 0) + (1 if cod_counts is not None else 0)
-            # find start index of fee/cod (after TOTAL)
-            total_idx = 5 + len(all_dates) + (1 if vip_counts is not None else 0)  # index of TOTAL
+            total_idx = (6 if show_zone_col else 5) + len(all_dates) + (1 if vip_counts is not None else 0)
             for fi in range(n_fee_cod):
                 if total_idx + 1 + fi < n_cols:
                     bgs[total_idx + 1 + fi] = (230, 255, 235)
         
-        # Tint urgent cells if non-zero (light red)
         if urgent_counts is not None:
             h_urgent = urgent_counts.get(hr["handle"], {})
             if isinstance(h_urgent, dict):
@@ -441,7 +466,7 @@ def build_summary_image(
                 urgent_3days = 0
             
             if urgent_1day > 0 or urgent_3days > 0:
-                bgs[-2:] = [(255, 235, 235), (255, 235, 235)]  # Last 2 cells (> 1 Day, > 3 Days)
+                bgs[-2:] = [(255, 235, 235), (255, 235, 235)]
 
         _row(y, ROW_H,
              cells=cells, bgs=bgs, fgs=fgs, fonts=fonts, aligns=aligns,
@@ -455,7 +480,8 @@ def build_summary_image(
     g_branch   = overall.get("Branch",   0)
     g_total    = g_pickup + g_delivery + g_transit + g_branch
 
-    gt_cells  = ["GRAND TOTAL",
+    gt_cells  = ([""] if show_zone_col else []) + [
+                 "GRAND TOTAL",
                  str(g_pickup)   if g_pickup   else "",
                  str(g_delivery) if g_delivery else "",
                  str(g_transit)  if g_transit  else "",
