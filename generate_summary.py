@@ -189,12 +189,29 @@ def build_summary_image(
     except Exception:
         pass
 
+    def resolve_zone(h_str):
+        if not h_str:
+            return "Zone ?"
+        hu = str(h_str).strip().upper()
+        if hu in handle_to_zone:
+            return handle_to_zone[hu]
+        for k, v in handle_to_zone.items():
+            if k in hu or hu in k:
+                return v
+        p3 = hu[:3]
+        if p3 in ["PNP", "KAN", "PRE", "SVA"]: return "Zone 1"
+        elif p3 in ["KAM", "KOH", "SIH", "SPE", "TAK"]: return "Zone 2"
+        elif p3 in ["BAN", "BAT", "CHH", "PUR"]: return "Zone 3"
+        elif p3 in ["ODD", "PRH", "SIE", "THO"]: return "Zone 4"
+        elif p3 in ["CHA", "KRA", "TBK", "ROT", "MON", "STU"]: return "Zone 5"
+        return "Zone ?"
+
     show_zone_col = bool(zone_label and ("ZONE" in zone_label.upper() or "ALL" in zone_label.upper()))
 
     if show_zone_col:
         def _sort_key(hr):
             h_u = hr["handle"].upper()
-            z_val = handle_to_zone.get(h_u, "Zone 9")
+            z_val = resolve_zone(h_u)
             return (z_val, h_u)
         handle_results = sorted(handle_results, key=_sort_key)
 
@@ -375,7 +392,7 @@ def build_summary_image(
 
         row_bg = C_ROW_ALT if i % 2 else C_ROW_BG
 
-        z_str  = handle_to_zone.get(handle.upper(), "Zone ?") if show_zone_col else None
+        z_str  = resolve_zone(handle) if show_zone_col else None
         cells  = (([z_str] if show_zone_col else []) +
                   [handle,
                    str(pickup)   if pickup   else "",
