@@ -580,28 +580,19 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
         ws.row_dimensions[r].height = 20
         is_total = str(row_dict.get(index_cols[0], '')).strip() == 'Grand Total'
 
-        # Check overdue (>24h/48h) and status code
-        is_overdue_48h = bool(row_dict.get('_is_overdue')) or bool(row_dict.get('_is_overdue_48h'))
+        # STRICT USER DIRECTIVE: Row fill is red ONLY if the date column in the table is 2+ days ago (older than yesterday).
+        # Any row with a '1' on Today or Yesterday MUST NEVER BE RED!
+        is_overdue_48h = False
         status_code = None
         if not is_total:
             order_id = normalize_id(row_dict.get('ORDER ID', ''))
-            age_str = str(row_dict.get('Age', '') or '')
-            match = re.search(r'(\d+)\s*h(?:\s*(\d+)\s*m)?', age_str, re.IGNORECASE)
-            if match:
-                h_val = int(match.group(1))
-                if h_val >= 48:
-                    is_overdue_48h = True
-
-            # For tabs without Age: check date column vs today (48h+ / 2+ days old is red; today & yesterday are white)
-            if not is_overdue_48h:
-                for d in active_days:
-                    if row_dict.get(d) and hasattr(d, 'year'):
-                        if (today - d).days >= 2:  # 2+ days old (older than yesterday)
-                            is_overdue_48h = True
-                            break
-
-            if is_overdue_48h and age_str.startswith('🟢'):
-                is_overdue_48h = False
+            
+            # Check the table date column for this row
+            for d in active_days:
+                if row_dict.get(d) and hasattr(d, 'year'):
+                    if (today - d).days >= 2:  # 2+ days ago (older than yesterday)
+                        is_overdue_48h = True
+                        break
 
             if order_status_map:
                 status_code = order_status_map.get(order_id)
@@ -611,18 +602,14 @@ def _write_table(ws, start_row, start_col, report_name, rows, index_cols, active
             cell = ws.cell(r, start_col + ci, val if val != '' else None)
             cell.border = bdr
 
-            # Row-level fill (420/472 light green row; >48h overdue / return light red row)
-            # CRITICAL RULE: Row background is RED only for >48h or Return status; 10h-48h age has RED text only with WHITE row background!
+            # Row-level fill
             row_fill = None
-            age_val_str = str(row_dict.get('Age', '') or '')
-            is_green_kpi = age_val_str.startswith('🟢')
-
             if is_total:
                 row_fill = _fill(tot_bg)
             elif status_code in ("420", "472"):
                 row_fill = _fill("E2EFDA")  # Light green row fill
-            elif not is_green_kpi and (is_overdue_48h or status_code in ("500", "510", "511", "512", "520", "540")):
-                row_fill = _fill("FFEBEB")  # Light red row fill ONLY for >48h or return status
+            elif is_overdue_48h or status_code in ("500", "510", "511", "512", "520", "540"):
+                row_fill = _fill("FFEBEB")  # Light red row fill ONLY for 2+ days ago or return status
 
             cell_fill = row_fill
             cell_font = _font(fn, '1E293B', bold=False)
