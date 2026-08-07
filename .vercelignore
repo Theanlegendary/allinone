@@ -1,0 +1,10 @@
+*.py
+*.xlsx
+*.xlsm
+*.csv
+*.db
+bot.log*
+__pycache__
+cache
+push_bot
+scratch
