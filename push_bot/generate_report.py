@@ -908,29 +908,173 @@ def _write_zone_summary_side_table(ws, start_col, rows, cfg):
         
         r_idx += 1
 
-    # Grand Total Row
-    ws.row_dimensions[r_idx].height = 22
-    tot_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
-    tot_font = Font(name=fn, size=10, bold=True, color="991B1B")
+def _write_main_zone_summary_sheet(ws, combined_data, cfg):
+    """
+    Renders Tab 1: Executive 'Zone Summary' sheet as the main tab of Total_ZONE1-5.xlsx
+    """
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
     
-    t0 = ws.cell(r_idx, start_col, "GRAND TOTAL")
+    fn = "Segoe UI"
+    bdr = Border(
+        left=Side(style='thin', color='B0BEC5'),
+        right=Side(style='thin', color='B0BEC5'),
+        top=Side(style='thin', color='B0BEC5'),
+        bottom=Side(style='thin', color='B0BEC5')
+    )
+    
+    # Title Row (Row 1)
+    ws.row_dimensions[1].height = 28
+    ws.merge_cells(start_row=1, end_row=1, start_column=1, end_column=5)
+    t = ws.cell(1, 1, f"📊 ZONE 1 - 5 SUMMARY BY ZONE    ({datetime.now().strftime('%d/%m/%Y %H:%M')})")
+    t.font = Font(name=fn, size=12, bold=True, color="FFFFFF")
+    t.fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
+    t.alignment = Alignment(horizontal="center", vertical="center")
+
+    zone_stats = {
+        "Zone 1": {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0},
+        "Zone 2": {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0},
+        "Zone 3": {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0},
+        "Zone 4": {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0},
+        "Zone 5": {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0},
+    }
+    total_all = {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0}
+    zone_mapping = cfg.get("zone_mapping", {})
+
+    def _get_r_zone(r):
+        z = str(r.get("ZONE", "") or "").strip()
+        if z and z.lower().startswith("zone") and z[-1].isdigit():
+            return f"Zone {z[-1]}"
+        po = str(r.get("POST OFFICE HANDLE", "") or r.get("CURRENT POST OFFICE", "") or "").strip().upper()
+        if po in zone_mapping.get("by_post_office", {}):
+            return zone_mapping["by_post_office"][po]
+        p3 = po[:3]
+        if p3 in ["PNP", "KAN", "PRE", "SVA"]: return "Zone 1"
+        elif p3 in ["KAM", "KOH", "SIH", "SPE", "TAK"]: return "Zone 2"
+        elif p3 in ["BAN", "BAT", "CHH", "PUR"]: return "Zone 3"
+        elif p3 in ["ODD", "PRH", "SIE", "THO"]: return "Zone 4"
+        elif p3 in ["CHA", "KRA", "TBK", "ROT", "MON", "STU"]: return "Zone 5"
+        return "Zone 1"
+
+    for r_list in combined_data.values():
+        for r in r_list:
+            if str(r.get("POST OFFICE HANDLE", "") or r.get("ORDER ID", "")).strip() == "Grand Total" or str(r.get("POST OFFICE HANDLE", "")).strip().startswith("Subtotal"):
+                continue
+            z_key = _get_r_zone(r)
+            if z_key not in zone_stats:
+                zone_stats[z_key] = {"total": 0, "overdue": 0, "cod": 0.0, "fee": 0.0}
+            
+            zone_stats[z_key]["total"] += 1
+            total_all["total"] += 1
+            
+            is_overdue = bool(r.get("_is_overdue") or r.get("_is_overdue_7days"))
+            if not is_overdue:
+                age_str = str(r.get("Age", "") or "")
+                match_h = re.search(r"(\d+)\s*h", age_str, re.IGNORECASE)
+                if match_h and int(match_h.group(1)) >= 48 and not age_str.startswith("🟢"):
+                    is_overdue = True
+            if is_overdue:
+                zone_stats[z_key]["overdue"] += 1
+                total_all["overdue"] += 1
+                
+            try: cod_v = float(r.get("COD (USD)", 0) or r.get("COD", 0) or 0)
+            except Exception: cod_v = 0.0
+            try: fee_v = float(r.get("TOTAL FEE (USD) (4)=(1)+(2)-(3)", 0) or r.get("BASE FEE (USD) (1)", 0) or 0)
+            except Exception: fee_v = 0.0
+
+            zone_stats[z_key]["cod"] += cod_v
+            zone_stats[z_key]["fee"] += fee_v
+            total_all["cod"] += cod_v
+            total_all["fee"] += fee_v
+
+    # Headers (Row 2 & 3)
+    hdr_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+    hdr_font = Font(name=fn, size=10, bold=True, color="FFFFFF")
+    
+    headers = ["ZONE", "TOTAL ORDERS", "OVERDUE (>48h)", "TOTAL COD ($)", "TOTAL FEE ($)"]
+    ws.row_dimensions[2].height = 20
+    ws.row_dimensions[3].height = 20
+    for ci, h_text in enumerate(headers):
+        c = ws.cell(2, ci + 1, h_text)
+        c.font = hdr_font
+        c.fill = hdr_fill
+        c.alignment = Alignment(horizontal="center", vertical="center")
+        c.border = bdr
+        ws.merge_cells(start_row=2, end_row=3, start_column=ci + 1, end_column=ci + 1)
+
+    # Data Rows (Row 4 to 8)
+    r_idx = 4
+    for z_name in ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]:
+        st = zone_stats[z_name]
+        ws.row_dimensions[r_idx].height = 22
+        bg_color = "F8FAFC" if (r_idx % 2 == 0) else "FFFFFF"
+        cell_fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
+        
+        c0 = ws.cell(r_idx, 1, z_name)
+        c0.font = Font(name=fn, size=11, bold=True, color="0F172A")
+        c0.alignment = Alignment(horizontal="center", vertical="center")
+        c0.fill = cell_fill
+        c0.border = bdr
+        
+        c1 = ws.cell(r_idx, 2, st["total"])
+        c1.number_format = '#,##0'
+        c1.font = Font(name=fn, size=11, bold=True, color="1E3A8A")
+        c1.alignment = Alignment(horizontal="center", vertical="center")
+        c1.fill = cell_fill
+        c1.border = bdr
+        
+        c2 = ws.cell(r_idx, 3, st["overdue"])
+        c2.number_format = '#,##0'
+        c2.font = Font(name=fn, size=11, bold=True, color="991B1B" if st["overdue"] > 0 else "475569")
+        c2.alignment = Alignment(horizontal="center", vertical="center")
+        c2.fill = PatternFill(start_color="FFEBEB" if st["overdue"] > 0 else bg_color, fill_type="solid")
+        c2.border = bdr
+        
+        c3 = ws.cell(r_idx, 4, float(st["cod"]))
+        c3.number_format = '"$"#,##0.00'
+        c3.font = Font(name=fn, size=11, bold=True, color="065F46")
+        c3.alignment = Alignment(horizontal="center", vertical="center")
+        c3.fill = cell_fill
+        c3.border = bdr
+        
+        c4 = ws.cell(r_idx, 5, float(st["fee"]))
+        c4.number_format = '"$"#,##0.00'
+        c4.font = Font(name=fn, size=11, bold=True, color="065F46")
+        c4.alignment = Alignment(horizontal="center", vertical="center")
+        c4.fill = cell_fill
+        c4.border = bdr
+        
+        r_idx += 1
+
+    # Grand Total Row (Row 9)
+    ws.row_dimensions[r_idx].height = 24
+    tot_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
+    tot_font = Font(name=fn, size=11, bold=True, color="991B1B")
+    
+    t0 = ws.cell(r_idx, 1, "TOTAL")
     t0.font = tot_font; t0.fill = tot_fill; t0.alignment = Alignment(horizontal="center", vertical="center"); t0.border = bdr
     
-    t1 = ws.cell(r_idx, start_col + 1, total_all["total"])
+    t1 = ws.cell(r_idx, 2, total_all["total"])
     t1.number_format = '#,##0'
     t1.font = tot_font; t1.fill = tot_fill; t1.alignment = Alignment(horizontal="center", vertical="center"); t1.border = bdr
     
-    t2 = ws.cell(r_idx, start_col + 2, total_all["overdue"])
+    t2 = ws.cell(r_idx, 3, total_all["overdue"])
     t2.number_format = '#,##0'
     t2.font = tot_font; t2.fill = tot_fill; t2.alignment = Alignment(horizontal="center", vertical="center"); t2.border = bdr
     
-    t3 = ws.cell(r_idx, start_col + 3, float(total_all["cod"]))
+    t3 = ws.cell(r_idx, 4, float(total_all["cod"]))
     t3.number_format = '"$"#,##0.00'
     t3.font = tot_font; t3.fill = tot_fill; t3.alignment = Alignment(horizontal="center", vertical="center"); t3.border = bdr
     
-    t4 = ws.cell(r_idx, start_col + 4, float(total_all["fee"]))
+    t4 = ws.cell(r_idx, 5, float(total_all["fee"]))
     t4.number_format = '"$"#,##0.00'
     t4.font = tot_font; t4.fill = tot_fill; t4.alignment = Alignment(horizontal="center", vertical="center"); t4.border = bdr
+
+    # Set column widths for Zone Summary Tab
+    col_widths = [16, 20, 20, 22, 22]
+    for ci, w in enumerate(col_widths):
+        col_letter = get_column_letter(ci + 1)
+        ws.column_dimensions[col_letter].width = w
 
 
 def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', order_created_map=None, order_status_map=None, handle_title='ALL BRANCHES'):
@@ -961,15 +1105,14 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
         for rn, rows, total, index_cols, active_days in sections:
             index_cols_map[rn] = index_cols
             non_footer_rows = [r for r in rows if r.get(index_cols[0]) != 'Grand Total']
-            combined_data[rn].extend(non_footer_rows)
+    # Tab 1: Create Executive 'Zone Summary' sheet as Sheet 1
+    ws_sum = wb.active
+    ws_sum.title = "Zone Summary"
+    _write_main_zone_summary_sheet(ws_sum, combined_data, cfg)
 
     for idx, rn in enumerate(report_types):
         display_title = CEO_DISPLAY_TITLES.get(rn, rn)
-        if idx == 0:
-            ws = wb.active
-            ws.title = display_title
-        else:
-            ws = wb.create_sheet(title=display_title)
+        ws = wb.create_sheet(title=display_title)
             
         rows = combined_data[rn]
         icols = index_cols_map.get(rn)
