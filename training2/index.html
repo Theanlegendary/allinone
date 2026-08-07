@@ -606,6 +606,126 @@
             cursor: pointer;
             z-index: 100;
         }
+
+        /* ── RESPONSIVE MOBILE STYLES (PHONES & TABLETS) ──────────── */
+        @media (max-width: 900px) {
+            html, body {
+                height: auto !important;
+                min-height: 100vh;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+            }
+
+            .landscape-canvas {
+                height: auto !important;
+                min-height: 100vh;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                padding-bottom: 90px;
+            }
+
+            .side-stamp {
+                display: none !important;
+            }
+
+            .top-nav {
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                padding: 12px 16px !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+                background: #ffffff;
+                border-bottom: 2px solid var(--text-black);
+            }
+
+            .logo-box {
+                gap: 10px !important;
+            }
+
+            .brand-logo-img {
+                height: 36px !important;
+            }
+
+            .nav-header-text {
+                font-size: 0.95rem !important;
+            }
+
+            .nav-right-controls {
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+
+            .slide-view.active {
+                grid-template-columns: 1fr !important;
+                padding: 16px 16px 100px 16px !important;
+                gap: 20px !important;
+                height: auto !important;
+            }
+
+            .hero-title-bold {
+                font-size: 2.1rem !important;
+            }
+
+            .hero-title-bold.kh-el {
+                font-size: 1.9rem !important;
+            }
+
+            .sub-english, .sub-khmer {
+                font-size: 0.95rem !important;
+            }
+
+            .right-exhibit {
+                max-height: none !important;
+                height: auto !important;
+                box-shadow: 6px 6px 0px rgba(9, 13, 22, 0.1) !important;
+                padding: 14px !important;
+            }
+
+            .summary-grid-box {
+                grid-template-columns: 1fr !important;
+            }
+
+            .tab-switcher {
+                grid-template-columns: 1fr !important;
+                gap: 4px !important;
+            }
+
+            .exhibit-tab {
+                font-size: 0.82rem !important;
+                padding: 8px 4px !important;
+            }
+
+            .sticky-note-under {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+                padding: 10px 14px !important;
+            }
+
+            .bottom-nav {
+                left: 10px !important;
+                right: 10px !important;
+                bottom: 12px !important;
+                flex-direction: row !important;
+                gap: 8px !important;
+            }
+
+            .page-mark {
+                font-size: 0.72rem !important;
+                padding: 4px 8px !important;
+            }
+
+            .nav-controls-box {
+                padding: 6px 14px !important;
+                gap: 10px !important;
+            }
+
+            .book-turn-btn {
+                font-size: 0.75rem !important;
+            }
+        }
     </style>
 </head>
 <body class="mode-both">
