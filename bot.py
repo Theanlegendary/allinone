@@ -5771,6 +5771,14 @@ async def run_push(
             target_handles = [arg.upper() for arg in raw_args if arg]
 
         downloader.download_detail(cfg["api"], src, branch_code=zone_override_branch, force_refresh=force_refresh)
+        
+        rev_src = os.path.join(tmpdir, "latest_revenue.xlsx")
+        try:
+            downloader.download_revenue_detail(cfg["api"], rev_src, force_refresh=force_refresh)
+        except Exception as e:
+            log.error(f"Failed to download revenue detail: {e}")
+            rev_src = None
+
         msg = await edit_or_send_requester_text(
             msg, update, context, "Download done. Generating reports..."
         )
@@ -5789,11 +5797,13 @@ async def run_push(
 
         mode = get_mode(cfg)
         result = generate_report.generate_reports_from_data(
-            src, REF_PATH, tmpdir, return_metadata=True, mode=mode, target_handles=target_handles
+            src, REF_PATH, tmpdir, return_metadata=True, mode=mode, target_handles=target_handles, revenue_path=rev_src
         )
         update_webapp_cache(result)
         update_dashboard_cache(result)
         save_highlight_history(result)
+
+        new_ignored_count = result.get('new_ignored_count', 0)
 
         # ── Apply handle filters ──────────────────────────────────────────
         if target_handles:
@@ -6163,9 +6173,13 @@ async def run_push(
             # Specific zone push (push zone5) — already handled above via send_to_zones
             pass
 
+        final_msg_text = f"Done. {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        if new_ignored_count > 0:
+            final_msg_text += f"\n🧹 Old Pickups auto-ignored today: {new_ignored_count} bills"
+
         await edit_or_send_requester_text(
             msg, update, context,
-            f"Done. {datetime.now().strftime('%d.%m.%Y %H:%M')}",
+            final_msg_text
         )
 
         # (Remark prompt removed as requested)

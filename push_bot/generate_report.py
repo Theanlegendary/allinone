@@ -18,6 +18,7 @@ HEADER_KHMER_MAP = {
     'ORDER ID': 'លេខបុង',
     'Cus name': 'ឈ្មោះអតិថិជន',
     'Phone': 'លេខទូរស័ព្ទ',
+    'VAS Service': 'ប្រភេទសេវា (VAS)',
     'RECEIVER': 'ឈ្មោះអតិថិជន',
     'ACTION': 'សកម្មភាព',
     'NEXT_STEP': 'ជំហានបន្ទាប់',
@@ -123,10 +124,10 @@ CEO_HEADER_KHMER = {
 MAX_INDEX = 9  # Delivery and Branch have 9 index columns before Fee+COD
 
 REPORT_COLS = {
-    'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'SERVICE', 'STATUS_CODE', 'Cus name', 'Phone'],
-    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+    'Pickup':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'VAS Service', 'STATUS_CODE', 'Cus name', 'Phone'],
+    'Delivery': ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'VAS Service', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
     'Transit':  ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'STATUS_CODE', 'NEXT_STEP'],
-    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
+    'Branch':   ['ZONE', 'POST OFFICE HANDLE', 'CURRENT POST OFFICE', 'ORDER ID', 'RECEIVER', 'VIP', 'STATUS_CODE', 'VAS Service', 'NEXT_STEP', 'TOTAL FEE (USD)', 'COD (USD)', 'Age', '10H KPI'],
 }
 
 REPORT_FILTER_COLS = {
@@ -874,13 +875,12 @@ def build_final_excel(all_handle_sections, day_cols, dc, out_path, mode='wide', 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def generate_reports_from_data(export_path, ref_path, output_dir,
-                                return_metadata=False, mode='wide', target_handles=None):
+                                return_metadata=False, mode='wide', target_handles=None, revenue_path=None):
     config_path = os.path.join(os.path.dirname(__file__), 'config.json')
     with open(config_path, encoding='utf-8') as f:
         cfg = json.load(f)
     zone_mapping = cfg.get('zone_mapping', {})
     excel_design = cfg.get('excel_design', {})
-
 
     df_ref = load_reference(ref_path)
 
@@ -901,11 +901,40 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 continue
     df = xl.parse(sheet)
 
+    new_ignored_count = 0
+
+    # Load revenue data and map VAS_SERVICE
+    vas_mapping = {}
+    if revenue_path and os.path.exists(revenue_path):
+        try:
+            for skiprows in range(5):
+                rev_df = pd.read_excel(revenue_path, skiprows=skiprows)
+                rev_order_col = next((c for c in rev_df.columns if str(c).strip().upper() in ['ORDER ID', 'ORDER_NUMBER', 'MÃ ĐƠN HÀNG', 'BILL', 'MÃ ĐƠN']), None)
+                if rev_order_col and 'VAS_SERVICE' in rev_df.columns:
+                    for _, row in rev_df.dropna(subset=[rev_order_col]).iterrows():
+                        oid = str(row[rev_order_col]).strip()
+                        vas = str(row['VAS_SERVICE']).strip()
+                        if vas.lower() not in ['nan', 'none', '']:
+                            vas_mapping[oid] = vas
+                    break
+        except Exception as e:
+            print(f"Failed to load revenue data for VAS mapping: {e}")
+
+    # Initialize VAS Service column
+    if 'ORDER ID' in df.columns:
+        df['VAS Service'] = df['ORDER ID'].astype(str).str.strip().map(vas_mapping).fillna('')
+    else:
+        df['VAS Service'] = ''
+
+    # Clean up column names
+    df.columns = [str(c).strip() for c in df.columns]
+
     # Date column for day-of-month grouping (prioritize CURRENT TIME over CREATED DATE as requested)
-    date_col = (
-        'CURRENT TIME' if 'CURRENT TIME' in df.columns else
-        'CREATED DATE' if 'CREATED DATE' in df.columns else None
+    date_col = next(
+        (c for c in df.columns if 'created date' in str(c).lower() or 'thời gian' in str(c).lower() or 'current time' in str(c).lower()), None
     )
+    if not date_col:
+        date_col = next((c for c in df.columns if 'date' in str(c).lower() or 'time' in str(c).lower()), None)
 
     order_created_map = {}
     order_status_map = {}
@@ -945,6 +974,33 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             df[test_col].isna() |
             df[test_col].astype(str).str.strip().isin(['', 'nan', 'NaN', '#N/A'])
         ].copy()
+
+    # Auto-cleanup old Pickup bills (created > 2 days ago, no NTN)
+    if 'CURRENT STATUS' in df.columns and 'ORDER ID' in df.columns and 'CREATED DATE' in df.columns:
+        now = datetime.now()
+        yesterday_start = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        pickup_statuses = ('110', '200', '202')
+        sc = df['CURRENT STATUS'].astype(str).str.extract(r'^(\d{3})')[0]
+        parsed_dates = pd.to_datetime(df['CREATED DATE'], dayfirst=True, format='mixed', errors='coerce')
+        note_cols = [c for c in df.columns if any(k in str(c).upper() for k in ('NOTE', 'VAS', 'EXTRA', 'SERVICE'))]
+        
+        def is_ntn(row):
+            return 'NTN' in ' '.join(str(row.get(col, '') or '') for col in note_cols).upper()
+            
+        old_pickups = df[
+            (sc.isin(pickup_statuses)) & (parsed_dates.notna()) & (parsed_dates < yesterday_start)
+        ]
+        
+        if not old_pickups.empty:
+            test_add = old_pickups[~old_pickups.apply(is_ntn, axis=1)]['ORDER ID'].astype(str).str.strip().tolist()
+            if test_add:
+                try:
+                    with open("test_bills.txt", "a", encoding="utf-8") as f:
+                        for oid in test_add:
+                            f.write(f"{oid}\n")
+                except Exception as e:
+                    print(f"Failed to auto-append test bills: {e}")
 
     test_order_ids = load_test_order_ids(cfg)
     if test_order_ids and 'ORDER ID' in df.columns:
@@ -1085,12 +1141,15 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         if 'CURRENT POST OFFICE' in dm.columns:
             dm.loc[dm['POST OFFICE HANDLE'] == '', 'POST OFFICE HANDLE'] = dm['CURRENT POST OFFICE']
     
-    # ALWAYS map CURRENT POST OFFICE to the correct responsible post office
+    # ALWAYS map CURRENT POST OFFICE to the correct responsible post office if lookup failed
     # This ensures agent codes (CHAA025) are mapped to main post offices (CHAP001)
     # Example: CHAA025 → CHAP001, PREA036 → PREP001, KANA046 → KANP001
     if 'CURRENT POST OFFICE' in dm.columns:
-        dm['POST OFFICE HANDLE'] = dm['CURRENT POST OFFICE'].apply(
-            lambda current: map_to_post_office(current, zone_mapping)
+        dm['POST OFFICE HANDLE'] = dm.apply(
+            lambda r: map_to_post_office(r['CURRENT POST OFFICE'], zone_mapping) 
+                      if pd.isna(r.get('POST OFFICE HANDLE')) or str(r.get('POST OFFICE HANDLE')).strip() == '' or str(r.get('POST OFFICE HANDLE')).strip() == str(r.get('CURRENT POST OFFICE')).strip()
+                      else str(r.get('POST OFFICE HANDLE')).strip(),
+            axis=1
         )
 
     if 'ZONE' not in dm.columns or dm['ZONE'].isna().all():
@@ -1211,14 +1270,24 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     # Search NOTE, VAS, or EXTRA SERVICE columns for NTN / VTT additional service tags
     note_cols = [c for c in dm.columns if any(k in str(c).upper() for k in ('NOTE', 'VAS', 'EXTRA', 'SERVICE'))]
     def _attach_additional_service(row):
-        base_svc = str(row.get('SERVICE', '') or '').strip()
-        if base_svc == 'nan':
+        base_svc = str(row.get('SERVICE', '') or '').strip().upper()
+        if base_svc == 'NAN':
             base_svc = ''
+            
+        # Hide standard services as requested by the boss
+        for std in ['CLT', 'CCN', 'CHK', 'CNT', 'CVT']:
+            if std in base_svc:
+                base_svc = base_svc.replace(std, '').strip()
+                
+        # If it's literally just empty now
+        if not base_svc:
+            base_svc = ''
+            
         combined_notes = ' '.join(str(row.get(col, '') or '') for col in note_cols).upper()
-        if 'NTN' in combined_notes and 'NTN' not in base_svc.upper():
-            return f"{base_svc} (NTN)" if base_svc else "NTN"
-        elif 'VTT' in combined_notes and 'VTT' not in base_svc.upper():
-            return f"{base_svc} (VTT)" if base_svc else "VTT"
+        if 'NTN' in combined_notes and 'NTN' not in base_svc:
+            return f"{base_svc} (NTN)".strip() if base_svc else "NTN"
+        elif 'VTT' in combined_notes and 'VTT' not in base_svc:
+            return f"{base_svc} (VTT)".strip() if base_svc else "VTT"
         return base_svc
 
     dm['SERVICE'] = dm.apply(_attach_additional_service, axis=1)
@@ -1489,6 +1558,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         'dm_all':          dm_all,
         'day_cols':        day_cols,
         'cur_time_col':    date_col,
+        'new_ignored_count': new_ignored_count,
         'order_status_map': order_status_map,
     }
     return result if return_metadata else [final_xlsx]

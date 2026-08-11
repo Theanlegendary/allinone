@@ -13,3 +13,4 @@ web_portal/
 dashboard_tokens.json
 dashboard/node_modules/
 dashboard/.next/
+.vercel

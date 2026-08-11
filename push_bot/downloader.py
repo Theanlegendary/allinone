@@ -119,6 +119,86 @@ def download_detail(api_cfg, out_path, from_date=None, to_date=None, branch_code
 
     raise RuntimeError(f"Khong tim thay file Excel trong phan hoi API: {data}")
 
+def download_revenue_detail(api_cfg, out_path, from_date=None, to_date=None, force_refresh=False):
+    """
+    Fetch the Revenue Pickup Detail Export to get VAS_SERVICE per bill.
+    """
+    import os
+    import time
+    import shutil
+
+    # Cache logic
+    is_default_range = (from_date is None and to_date is None)
+    cache_minutes = api_cfg.get("cache_minutes", 0)
+    cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+    cache_file = os.path.join(cache_dir, "latest_revenue.xlsx")
+
+    if is_default_range and cache_minutes > 0 and not force_refresh:
+        if os.path.exists(cache_file):
+            mtime = os.path.getmtime(cache_file)
+            age_seconds = time.time() - mtime
+            if age_seconds < (cache_minutes * 60):
+                print(f"[CACHE] Using cached Revenue data ({int(age_seconds)}s old)")
+                shutil.copy2(cache_file, out_path)
+                return out_path
+
+    if from_date is None or to_date is None:
+        from_date, to_date = day14_to_today_range()
+
+    base = api_cfg["url"].split("/tms-report/")[0]
+    url = f"{base}/tms-report/api/v1/revenue/pickup-revenue/export-detail?from_date={from_date}&to_date={to_date}&type=PICKUP_REVENUE"
+
+    headers = {
+        "Authorization": f"Bearer {api_cfg['bearer_token']}",
+        "Referer": api_cfg.get("referer", "https://opsexpress.metfone.com.kh/"),
+        "Accept-Language": "vi-VN",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "x-client-id": api_cfg.get("x_client_id", "TMS_ANDROID"),
+        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/148.0.0.0 Safari/537.36"),
+    }
+
+    resp = requests.get(url, headers=headers, timeout=120)
+    resp.raise_for_status()
+
+    ctype = resp.headers.get("Content-Type", "")
+    
+    def _save_to_cache():
+        if is_default_range and cache_minutes > 0:
+            try:
+                os.makedirs(cache_dir, exist_ok=True)
+                shutil.copy2(out_path, cache_file)
+            except Exception as e:
+                pass
+
+    if ("spreadsheet" in ctype or "octet-stream" in ctype or "excel" in ctype or out_path.endswith(".xlsx")):
+        with open(out_path, "wb") as f:
+            f.write(resp.content)
+        _save_to_cache()
+        return out_path
+
+    try:
+        data = resp.json()
+    except ValueError:
+        with open(out_path, "wb") as f:
+            f.write(resp.content)
+        _save_to_cache()
+        return out_path
+
+    file_url = (data.get("data", {}) or {}).get("url") or data.get("url")
+    if file_url:
+        r2 = requests.get(file_url, headers={"Authorization": headers["Authorization"]}, timeout=120)
+        r2.raise_for_status()
+        with open(out_path, "wb") as f:
+            f.write(r2.content)
+        _save_to_cache()
+        return out_path
+
+    raise RuntimeError(f"Failed to fetch Revenue Excel: {data}")
+
+
 
 def download_post_offices(api_cfg, branch_code, limit=200):
     """
