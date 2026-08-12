@@ -412,7 +412,9 @@ def build_section_rows(df_h, index_cols, day_cols, date_col):
         if col not in df.columns:
             df[col] = ''
 
-    if date_col and date_col in df.columns:
+    if '_scan_date' in df.columns and df['_scan_date'].notna().any():
+        df['_date'] = df['_scan_date']
+    elif date_col and date_col in df.columns:
         parsed = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
         df['_date'] = parsed.dt.date
     else:
@@ -929,9 +931,27 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     # Clean up column names
     df.columns = [str(c).strip() for c in df.columns]
 
-    # Date column for day-of-month grouping (prioritize CURRENT TIME over CREATED DATE as requested)
+    # Date column for day-of-month grouping (prioritize CURRENT TIME / current scan time over CREATED DATE)
+    scan_cols_priority = [
+        'CURRENT TIME',
+        'STATUS 306 AT STORE / AGENT (LAST TIME)',
+        'STATUS 306 AT STORE / AGENT FROM HUB (FIRST TIME)',
+        'STATUS 302/310 AT RECEIVING STORE / RECEIVING AGENT (FIRST TIME)',
+        'STATUS 306  AT ORIGIN HUB (FIRST TIME)',
+        'STATUS 210 TIME',
+        'CREATED DATE'
+    ]
+
+    dates_series = pd.Series(index=df.index, dtype='object')
+    for col in scan_cols_priority:
+        if col in df.columns:
+            parsed_col = pd.to_datetime(df[col], dayfirst=True, format='mixed', errors='coerce').dt.date
+            dates_series = dates_series.fillna(parsed_col)
+
+    df['_scan_date'] = dates_series
+
     date_col = next(
-        (c for c in df.columns if 'created date' in str(c).lower() or 'thời gian' in str(c).lower() or 'current time' in str(c).lower()), None
+        (c for c in df.columns if 'current time' in str(c).lower() or 'thời gian' in str(c).lower() or 'created date' in str(c).lower()), None
     )
     if not date_col:
         date_col = next((c for c in df.columns if 'date' in str(c).lower() or 'time' in str(c).lower()), None)
@@ -939,11 +959,9 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     order_created_map = {}
     order_status_map = {}
     if 'ORDER ID' in df.columns:
-        if date_col:
-            parsed_created = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
-            for order_id, dt in zip(df['ORDER ID'], parsed_created):
-                if pd.notna(dt):
-                    order_created_map[normalize_id(order_id)] = dt.date()
+        for order_id, dt in zip(df['ORDER ID'], df['_scan_date']):
+            if pd.notna(dt):
+                order_created_map[normalize_id(order_id)] = dt
         if 'CURRENT STATUS' in df.columns:
             for order_id, status_val in zip(df['ORDER ID'], df['CURRENT STATUS']):
                 if pd.notna(order_id) and pd.notna(status_val):
@@ -955,12 +973,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     today = datetime.now().date()
 
     # Build day_cols = only days that have data in the export, + today's date
-    if date_col:
-        parsed = pd.to_datetime(df[date_col], dayfirst=True, format='mixed', errors='coerce')
-        dates_with_data = set(parsed.dropna().dt.date.tolist())
-    else:
-        dates_with_data = set()
-
+    dates_with_data = set(df['_scan_date'].dropna().tolist())
     dates_with_data.add(today)
     day_cols = sorted(list(dates_with_data))
 
