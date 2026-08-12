@@ -13,250 +13,191 @@ body{overflow:hidden}.deck{width:100vw;height:100vh;overflow:hidden;position:rel
 h1{font:800 clamp(42px,5.2vw,84px) Inter,'Kantumruy Pro';line-height:1.04;margin:16px 0 16px;letter-spacing:-.02em}h2{font:700 clamp(28px,3vw,50px) 'Angkor';line-height:1.22;margin:0 0 18px}.sub{font-size:clamp(17px,1.45vw,25px);line-height:1.55;color:#334155;max-width:980px}.rule{height:6px;width:82px;background:var(--red);margin:14px 0 24px;border-radius:8px}
 .metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:28px}.metric{background:white;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 9px 26px rgba(15,23,42,.06)}.metric b{display:block;font:800 clamp(36px,4vw,62px) Inter;color:var(--red);margin:4px 0}.metric span{font-size:17px;color:#475569}.metric .label{font:700 12px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
 .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:30px 0}.node{padding:14px 19px;background:white;border:2px solid #cbd5e1;border-radius:15px;font-weight:700;font-size:20px}.arrow{font-size:26px;color:var(--red);font-weight:800}.note{background:var(--yellow);padding:17px 20px;border-radius:7px;box-shadow:3px 5px 12px rgba(0,0,0,.08);font-size:20px;line-height:1.55;max-width:900px}.twocol{display:grid;grid-template-columns:1.12fr .88fr;gap:30px;align-items:center;height:100%}.book-card{background:var(--paper);border:1px solid #d6d3d1;border-radius:19px;padding:25px;box-shadow:9px 10px 0 #d6d3d1}.big-rule{font-size:clamp(24px,2.35vw,40px);font-weight:700;line-height:1.35}
-.pill{display:inline-block;padding:8px 12px;border-radius:999px;background:#eef2ff;margin:5px 4px 0 0;font-weight:700}.footer{position:absolute;left:7vw;right:7vw;bottom:20px;display:flex;justify-content:space-between;color:#64748b;font-size:13px}.nav{position:fixed;right:26px;bottom:18px;display:flex;gap:7px;z-index:20}.nav button{border:0;background:#111827;color:#fff;border-radius:50%;width:46px;height:46px;font-size:18px;}.dots{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:20}.dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;}.dot.active{background:var(--red);width:22px;border-radius:5px}
-.image-card{background:white;border:1px solid #d6d3d1;border-radius:18px;padding:12px;box-shadow:9px 10px 0 #e5e7eb}.image-card img{display:block;width:100%;height:auto;max-height:350px;object-fit:cover;border-radius:11px}.image-caption{font-size:15px;color:#475569;margin-top:9px}.image-caption b{color:var(--ink)}
+.pill{display:inline-block;padding:8px 12px;border-radius:999px;background:#eef2ff;margin:5px 4px 0 0;font-weight:700}.footer{position:absolute;left:7vw;right:7vw;bottom:20px;display:flex;justify-content:space-between;color:#64748b;font-size:13px}.nav{position:fixed;right:26px;bottom:18px;display:flex;gap:7px;z-index:20}.nav button{border:0;background:#111827;color:#fff;border-radius:50%;width:46px;height:46px;font-size:18px;cursor:pointer}.dots{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:20}.dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;cursor:pointer}.dot.active{background:var(--red);width:22px;border-radius:5px}
+.image-card{background:white;border:1px solid #d6d3d1;border-radius:18px;padding:12px;box-shadow:9px 10px 0 #e5e7eb}.image-card img{display:block;width:100%;height:260px;object-fit:cover;border-radius:11px}.image-caption{font-size:15px;color:#475569;margin-top:9px}.image-caption b{color:var(--ink)}
 .report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.report{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;min-height:150px;box-shadow:0 7px 20px rgba(15,23,42,.05)}.report h3{font-size:17px;margin:0 0 8px}.report code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--blue);word-break:break-all}.report p{margin:8px 0;font-size:14px;line-height:1.45;color:#475569}.report a{margin-top:auto;text-decoration:none;background:#111827;color:#fff;border-radius:9px;padding:8px;text-align:center;font-weight:700;font-size:12px}.report a:hover{background:var(--red)}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:18px}.detail{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.detail b{font-size:17px}.detail p{margin:8px 0 0;color:#475569;font-size:14px;line-height:1.5}.status{display:inline-flex;min-width:54px;justify-content:center;padding:5px 8px;border-radius:8px;background:#111827;color:#fff;font:800 13px Inter;margin-right:7px}.driver-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:20px}.driver-box{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}.driver-box .code{font:800 20px Inter;color:var(--red)}.driver-box .role{font-weight:700;margin-top:6px}.driver-box .smalltext{font-size:12px;color:#64748b;margin-top:4px}
 .photo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}.photo-row img{width:100%;height:150px;object-fit:cover;border-radius:13px;border:1px solid var(--line)}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:22px}.summary{background:white;border:1px solid var(--line);border-radius:16px;padding:17px;min-height:125px}.summary strong{font:700 15px Inter;color:var(--red)}.summary h3{font-size:20px;margin:7px 0}.summary p{margin:0;color:#475569;line-height:1.45;font-size:14px}.dark-summary{background:#111827;color:#fff}.dark-summary p{color:#cbd5e1}
-.lightbox{display:none;position:fixed;inset:0;background:rgba(17,24,39,.9);z-index:100;align-items:center;justify-content:center;padding:25px}.lightbox.active{display:flex}.lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;background:#fff}.close{position:fixed;right:24px;top:20px;background:#fff;color:#111827;border:0;border-radius:9px;padding:9px 14px;font-weight:800;}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(17,24,39,.9);z-index:100;align-items:center;justify-content:center;padding:25px}.lightbox.active{display:flex}.lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;background:#fff}.close{position:fixed;right:24px;top:20px;background:#fff;color:#111827;border:0;border-radius:9px;padding:9px 14px;font-weight:800;cursor:pointer}
 @media(max-width:900px){body{overflow:auto}.deck{height:auto;min-height:100vh}.page{min-height:100vh;height:auto;padding:42px 24px 78px}.metric-row,.report-grid,.detail-grid,.summary-grid{grid-template-columns:1fr}.twocol{grid-template-columns:1fr;height:auto}.driver-flow{grid-template-columns:1fr}.photo-row{grid-template-columns:1fr}.flow{margin:22px 0}.footer{left:24px;right:24px}.nav{right:16px}.dots{bottom:24px}.image-card img{height:220px}}
 
-body.en-mode .kh-el { display: none !important; }
-body.kh-mode .en-el { display: none !important; }
-.lang-toggle { position: fixed; top: 20px; right: 24px; z-index: 100; display: flex; gap: 8px; }
-.lang-toggle button { padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-.lang-toggle button.active { background: var(--red); color: #fff; }
-.lang-toggle button:not(.active) { background: #fff; color: var(--ink); border: 1px solid #d6d3d1; }
+.langbar{position:fixed;top:18px;right:24px;z-index:30;display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+.langbar button{border:0;background:transparent;padding:8px 13px;border-radius:999px;font:700 12px Inter;cursor:pointer;color:#475569}
+.langbar button.active{background:#111827;color:#fff}
+.en-el{font-family:Inter,sans-serif}
+body.mode-kh .en-el{display:none!important}
+body.mode-en .kh-el{display:none!important}
+.dual{display:flex;flex-direction:column;gap:6px}
+.en-line{font:600 16px Inter;color:#64748b;line-height:1.45}
+.kh-line{font:600 18px 'Kantumruy Pro';color:#111827;line-height:1.55}
+h1 .en-title,h2 .en-title{font:800 32px Inter;display:block;color:#64748b;margin-top:10px;line-height:1.15}
+body.mode-en .kh-title{display:none}
+body.mode-kh .en-title{display:none}
+body.mode-en h1 .en-title,body.mode-en h2 .en-title{display:block;color:#111827}
+body.mode-kh h1 .en-title,body.mode-kh h2 .en-title{display:none}
+@media(max-width:900px){.langbar{top:10px;right:10px}}
+
+body.mode-both .en-el:not(.en-title):not(.en-line) {
+    display: block;
+    color: #64748b;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-top: 3px;
+    line-height: 1.3;
+}
+body.mode-both th .en-el:not(.en-title):not(.en-line), 
+body.mode-both td .en-el:not(.en-title):not(.en-line) {
+    margin-top: 0;
+    margin-bottom: 3px;
+}
+body.mode-both .kh-el {
+    display: block;
+}
 </style>
 </head>
-<body>
-
-<div class="lang-toggle">
-  <button id="btnKh" class="active" onclick="setLang('kh')">KH</button>
-  <button id="btnEn" onclick="setLang('en')">EN</button>
+<body class="mode-both">
+<div class="langbar">
+<button id="both" class="active">KH + EN</button><button id="kh">KH</button><button id="en">EN</button>
 </div>
 <div class="deck">
-
-<section class="page active">
-  <div class="cover">
-    <div class="small">METFONE EXPRESS · AUGUST OPERATING KPI</div><div class="rule"></div>
-    <h1><span class="kh-el">ការងារសាខា<br><span style="color:var(--red)">ត្រូវចាំ 3 ចំណុច</span></span><span class="en-el">Branch Tasks<br><span style="color:var(--red)">3 Things to Remember</span></span></h1>
-    <p class="sub"><span class="kh-el">ទទួលឱ្យទាន់ · ចាត់អ្នកដឹកឱ្យលឿន · Update ឱ្យទាន់ម៉ោង</span><span class="en-el">On-time Pickup · Fast Dispatch · Timely Update</span></p>
-    <div class="metric-row">
-      <div class="metric"><div class="label">PICKUP</div><b>98%</b><span><span class="kh-el">ទទួលឥវ៉ាន់ទាន់ពេល</span><span class="en-el">On-time Pickup</span></span></div>
-      <div class="metric"><div class="label">FIRST UPDATE</div><b>10h</b><span><span class="kh-el">306 → ចាត់អ្នកដឹក</span><span class="en-el">306 → Dispatch</span></span></div>
-      <div class="metric"><div class="label">SUCCESS</div><b>95%+</b><span><span class="kh-el"><span class="kh-el">ដឹកជោគជ័យ</span><span class="en-el">Delivery Success</span> → 410</span><span class="en-el">Delivery Success → 410</span></span></div>
-    </div>
-    <div class="note" style="margin-top:24px"><span class="kh-el"><b>ចាំតែនេះបានហើយ៖</b> កុំឱ្យឥវ៉ាន់ស្ទះ ហើយកុំឱ្យការងារហួសម៉ោង។</span><span class="en-el"><b>Just remember this:</b> Don't let parcels get stuck and don't let tasks run overdue.</span></div>
-  </div>
-  <div class="footer"><span>METFONE EXPRESS · OPERATION BOOK</span><span>01 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">01 · THE STANDARD</div><h2><span class="kh-el">តើសាខាត្រូវរក្សាកម្រិតណា?</span><span class="en-el">What standards must the branch maintain?</span></h2>
-    <div class="twocol">
-      <div>
-        <div class="book-card"><div class="big-rule">First Mile</div><p class="sub"><span class="kh-el">ភ្នំពេញ <b>3h</b> · កណ្តាល <b>4h</b> · ខេត្ត <b>4.5h</b></span><span class="en-el">Phnom Penh <b>3h</b> · Kandal <b>4h</b> · Provinces <b>4.5h</b></span></p><div class="pill">Pickup ≥ 98%</div></div>
-        <div class="book-card" style="margin-top:17px"><div class="big-rule">Last Mile</div><p class="sub"><span class="kh-el">ឥវ៉ាន់មកដល់ <b>306</b> → ត្រូវចាត់អ្នកដឹកក្នុង <b>10h SLA</b></span><span class="en-el">Parcel arrives at <b>306</b> → Must dispatch driver within <b>10h SLA</b></span></p><div class="pill">Target 1st Update 90% / 85%</div></div>
-        <div class="book-card" style="margin-top:17px"><div class="big-rule">Delivery Success</div><p class="sub"><span class="kh-el">គោលដៅសរុប <b>95%+</b> → ជោគជ័យនៅ <b>410</b></span><span class="en-el">Total Goal <b>95%+</b> → Success at <b>410</b></span></p></div>
-      </div>
-      <div class="note"><span class="kh-el"><b>SLA និយាយឱ្យងាយ៖</b><br>នេះគឺជាម៉ោងកំណត់ ដែលការងារត្រូវធ្វើឱ្យរួច។<br><br>🟢 មិនហួសម៉ោង = ទាន់ពេល<br>🔴 ហួសម៉ោង = ត្រូវដោះស្រាយភ្លាម</span><span class="en-el"><b>SLA simply means:</b><br>This is the time limit for tasks to be done.<br><br>🟢 Not overdue = On-time<br>🔴 Overdue = Must resolve immediately</span></div>
-    </div>
-  </div><div class="footer"><span>25 PROVINCES · BRANCH QUALITY TARGET</span><span>02 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">03 · BRANCH KPI TARGETS</div><h2><span class="kh-el">គោលដៅគុណភាពសាខា</span><span class="en-el">Branch Quality Targets</span></h2>
-    <div style="overflow-x:auto; background:#fff; padding:15px; border-radius:14px; border:1px solid var(--line); box-shadow:0 7px 20px rgba(15,23,42,.05); max-height: 60vh; overflow-y: auto;">
-      <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; text-align: center; background: #ffffff;">
-                        <thead>
-                            <tr style="background: #fef08a; color: #713f12; font-family: 'Kantumruy Pro', 'Inter', sans-serif; font-weight: 700; border-bottom: 2px solid #eab308;">
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">No.</span><span class="kh-el">លេខ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Code</span><span class="kh-el">កូដ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Branch Name</span><span class="kh-el">ឈ្មោះសាខា</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Zone</span><span class="kh-el">តំបន់</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;">First Mile</th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;">Last Mile</th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Ontime Pickup</span><span class="kh-el">អត្រាយក</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">1st Update</span><span class="kh-el">អត្រាស្កេន1st</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Total Success</span><span class="kh-el">សរុបជោគជ័យ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending Mega</span><span class="kh-el">កកស្ទះ Mega</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending 3 Day</span><span class="kh-el">កកស្ទះ >3ថ្ងៃ</span></th>
-                            </tr>
-                            <tr style="background: #fef3c7; color: #0f172a; font-weight: 700; border-bottom: 1.5px solid #eab308;">
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">-</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">TCT</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Total Corporation</span><span class="kh-el">សរុបក្រុមហ៊ុន</span></td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;"><span class="en-el">Overall</span><span class="kh-el">រួម</span></td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #2563eb;">4.42h</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">10.00h</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">98.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">90.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">95.04%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">1.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">4.00%</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">1</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kandal</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">2</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PNP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Phnom Penh</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #2563eb; font-weight: 700;">3.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #059669; font-weight: 700;">96.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">3</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Prey Veng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">4</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SVA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Svay Rieng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">5</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SPE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Speu</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">6</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAM</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampot</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">7</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KEP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kep</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">8</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KOH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Koh Kong</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">9</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Sihanouk</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">10</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TAK</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Takéo</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">11</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Banteay Meanchey</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">12</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Battambang</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">13</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Chhnang</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">14</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PAI</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pailin</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">15</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PUR</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pursat</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">16</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">THO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Thom</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">17</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ODD</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Oddar Meancheay</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">18</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Vihear</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">19</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Siem Reap</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">20</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KRA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kratié</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">21</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">MON</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Mondulkiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">22</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ROT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Ratanakiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">23</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Cham</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">24</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">STU</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Stung Treng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">25</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TBO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Tbong Khmum</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                        </tbody>
-                    </table>
-    </div>
-  </div><div class="footer"><span>KPI TARGETS · MASTER TABLE</span><span>03 / 09</span></div>
-</section>
-
-
-<section class="page">
-  <div class="page-grid"><div class="small">02 · THE 3 NUMBERS</div><h2><span class="kh-el">លេខ 3 ដែលគ្រប់សាខាត្រូវចាំ</span><span class="en-el">The 3 Numbers Every Branch Must Remember</span></h2>
-    <div class="metric-row">
-      <div class="metric"><div class="label">PICKUP</div><b>98%</b><span><span class="kh-el">ទទួលឥវ៉ាន់ឱ្យទាន់ពេល</span><span class="en-el">Pickup on time</span></span></div>
-      <div class="metric"><div class="label">306 → DRIVER</div><b>10h</b><span><span class="kh-el">ចាត់អ្នកដឹកក្នុង SLA</span><span class="en-el">Dispatch driver within SLA</span></span></div>
-      <div class="metric"><div class="label">SUCCESS</div><b>95%+</b><span><span class="kh-el"><span class="kh-el">ដឹកជោគជ័យ</span><span class="en-el">Delivery Success</span> → 410</span><span class="en-el">Delivery Success → 410</span></span></div>
-    </div>
-    <div class="driver-flow">
-      <div class="driver-box"><div class="code">100</div><div class="role">Order</div><div class="smalltext"><span class="kh-el">បង្កើតការបញ្ជូន</span><span class="en-el">Create dispatch</span></div></div>
-      <div class="driver-box"><div class="code">306</div><div class="role">Branch Arrival</div><div class="smalltext"><span class="kh-el">ឥវ៉ាន់មកដល់សាខា</span><span class="en-el">Parcel arrives at branch</span></div></div>
-      <div class="driver-box"><div class="code">400 / 401</div><div class="role">Driver</div><div class="smalltext"><span class="kh-el">ចាត់អ្នកដឹក / Update</span><span class="en-el">Dispatch / Update</span></div></div>
-      <div class="driver-box"><div class="code">402</div><div class="role">1st Attempt</div><div class="smalltext"><span class="kh-el">ស្កេនអ្នកទទួល</span><span class="en-el">Scan recipient</span></div></div>
-      <div class="driver-box"><div class="code">410</div><div class="role">Success</div><div class="smalltext"><span class="kh-el">ដឹកជោគជ័យ</span><span class="en-el">Delivery Success</span></div></div>
-    </div>
-    <div class="flow"><div class="node">100</div><div class="arrow">→</div><div class="node">306</div><div class="arrow">→</div><div class="node">400 / 401</div><div class="arrow">→</div><div class="node">402</div><div class="arrow">→</div><div class="node">410</div></div>
-    <div class="note"><span class="kh-el"><b>ចាំលំហូរនេះ៖</b> ឥវ៉ាន់មកដល់ហើយ កុំទុកឱ្យស្ទះនៅកណ្ដាល។</span><span class="en-el"><b>Remember this flow:</b> When parcel arrives, don't let it get stuck in the middle.</span></div>
-  </div><div class="footer"><span>STATUS FLOW · DRIVER WORKFLOW</span><span>04 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">03 · REPORTS & LINKS</div><h2><span class="kh-el">Report 6 មុខដែលសាខាត្រូវចេះប្រើ</span><span class="en-el">6 Reports Branches Must Know How to Use</span></h2>
-    <div class="twocol" style="height:auto;align-items:start;margin-top:8px">
-      <div>
-        <p class="sub" style="font-size:16px;margin:0 0 12px"><span class="kh-el">ចូលប្រព័ន្ធ <b>opsexpress.metfone.com.kh</b> ហើយបើក Report ដែលត្រូវការ។</span><span class="en-el">Log into <b>opsexpress.metfone.com.kh</b> and open the required Report.</span></p>
-        <div class="report-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:0">
-          <div class="report"><h3>1. <span class="kh-el">របាយការណ៍ចំណូល</span><span class="en-el">Revenue Report</span></h3><code>/doanh-thu-san-luong</code><p><span class="kh-el">មើលចំណូល ថ្លៃដឹក COD និង 410</span><span class="en-el">View Revenue, Delivery Fee, COD and 410</span></p><a href="https://opsexpress.metfone.com.kh/doanh-thu-san-luong" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-          <div class="report"><h3>2. <span class="kh-el">ឥវ៉ាន់កំពុងដឹក</span><span class="en-el">Delivery in Progress</span></h3><code>/bao-cao-ton-giao</code><p><span class="kh-el">មើល Driver និង 306 / 400 / 420</span><span class="en-el">View Driver and 306 / 400 / 420</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-ton-giao" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-          <div class="report"><h3>3. <span class="kh-el">ឥវ៉ាន់នៅឃ្លាំង</span><span class="en-el">Inventory in Warehouse</span></h3><code>/bao-cao-ton-kho</code><p><span class="kh-el">ពិនិត្យស្តុក 110 / 120</span><span class="en-el">Check stock 110 / 120</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-ton-kho" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-          <div class="report"><h3>4. <span class="kh-el">ស្ថានភាព Order</span><span class="en-el">Order Status</span></h3><code>/bao-cao-trang-thai-don</code><p>100 → 306 → 400 → 410</p><a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-          <div class="report"><h3>5. <span class="kh-el">KPI ទទួលឥវ៉ាន់</span><span class="en-el">Pickup KPI</span></h3><code>/bao-cao-kpi-thu</code><p>Pickup 3h / 4h / 4.5h</p><a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-thu" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-          <div class="report"><h3>6. <span class="kh-el">KPI ដឹកជូន</span><span class="en-el">Delivery KPI</span></h3><code>/bao-cao-kpi-phat</code><p>306, 401 និង 10h SLA</p><a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-phat" target="_blank"><span class="kh-el">បើក Report ↗</span><span class="en-el">Open Report ↗</span></a></div>
-        </div>
-      </div>
-      <div>
-        <div class="image-card"  style="">
-          <img src="images/tms_inventory_audit.png" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/tms_inventory_audit.png';" alt="TMS inventory audit">
-          <div class="image-caption"><b>TMS Inventory Audit</b><br></div>
-        </div>
-        <div class="book-card" style="margin-top:14px;padding:16px">
-          <b><span class="kh-el">ត្រូវពិនិត្យរាល់ថ្ងៃ</span><span class="en-el">Must check daily</span></b>
-          <p style="margin:7px 0 0;font-size:15px;line-height:1.5;color:#475569"><span class="kh-el">Driver Name · Status · Age Hours · ស្តុកពិត និងស្តុកក្នុងប្រព័ន្ធ</span><span class="en-el">Driver Name · Status · Age Hours · Physical vs System Stock</span></p>
-        </div>
-      </div>
-    </div>
-    <div class="note" style="margin-top:14px"><span class="kh-el"><b>ចំណាំ:</b> សម្រាប់ Bot Sync ត្រូវ Export ចាប់ពីថ្ងៃទី 14 ដល់ថ្ងៃបច្ចុប្បន្ន។</span><span class="en-el"><b>Note:</b> For Bot Sync, export from the 14th to the current date.</span></div>
-  </div><div class="footer"><span>WEB PORTAL · REPORT LINKS · TMS</span><span>05 / 09</span></div>
-</section>
-
-
-<section class="page">
-  <div class="page-grid"><div class="small">04 · NTN HOME PICKUP</div><h2><span class="kh-el">ម៉ោង Pickup នៅផ្ទះ</span><span class="en-el">Home Pickup Times</span></h2>
-    <div class="metric-row">
-      <div class="metric"><div class="label"><span class="kh-el">មុន 10:00</span><span class="en-el">Before 10:00</span></div><b style="color:var(--green);font-size:42px">13:00</b><span><span class="kh-el">Pickup ថ្ងៃដដែល</span><span class="en-el">Same-day Pickup</span></span></div>
-      <div class="metric"><div class="label"><span class="kh-el">10:00 ដល់ 16:00</span><span class="en-el">10:00 to 16:00</span></div><b style="color:var(--orange);font-size:42px">18:00</b><span><span class="kh-el">Pickup ថ្ងៃដដែល</span><span class="en-el">Same-day Pickup</span></span></div>
-      <div class="metric"><div class="label"><span class="kh-el">ក្រោយ 16:00</span><span class="en-el">After 16:00</span></div><b style="color:var(--red);font-size:42px">13:00</b><span><span class="kh-el">Pickup ថ្ងៃបន្ទាប់</span><span class="en-el">Next-day Pickup</span></span></div>
-    </div>
-    <div class="note" style="margin-top:22px"><span class="kh-el"><b>ចំណុចត្រូវចាំ:</b> យកម៉ោងដែលយឺតជាង រវាង Create និង Scheduled Pickup មកគិត Deadline។<br><br>ច្បាប់នេះប្រើសម្រាប់ Urban / City។ តំបន់ជនបទអាចមាន Window ខុសគ្នា។</span><span class="en-el"><b>Point to remember:</b> Take the later time between Create and Scheduled Pickup for the Deadline.<br><br>This rule is for Urban / City. Rural areas may have different windows.</span></div>
-    <div class="photo-row">
-      <div class="image-card"><img src="images/city.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/city.jpg';" alt="Phnom Penh city"><div class="image-caption"><span class="kh-el"><b>City / Urban</b><br>ឧទាហរណ៍៖ ភ្នំពេញ</span><span class="en-el"><b>City / Urban</b><br>Example: Phnom Penh</span></div></div>
-      <div class="image-card"><img src="images/district.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/district.jpg';" alt="District area"><div class="image-caption"><span class="kh-el"><b>District / Rural</b><br>តំបន់ស្រុកមាន Window អាចខុសគ្នា</span><span class="en-el"><b>District / Rural</b><br>District areas may have different windows</span></div></div>
-    </div>
-  </div><div class="footer"><span>NTN · PICKUP DEADLINE</span><span>06 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">05 · STATUS 402</div><h2><span class="kh-el">ស្កេន 402 ហើយ កុំទុកចោល</span><span class="en-el">Scanned 402, Don't leave it pending</span></h2>
-    <div class="flow"><div class="node">402</div><div class="arrow">→</div><div class="node"><span class="kh-el">Update ក្នុង 10h</span><span class="en-el">Update within 10h</span></div><div class="arrow">→</div><div class="node"><span class="kh-el">410 ឬស្ថានភាពបន្ទាប់</span><span class="en-el">410 or next status</span></div></div>
-    <div class="twocol">
-      <div>
-        <div class="book-card"><div class="big-rule"><span class="kh-el">🟢 មិនលើស 10h<br>ទាន់ពេល</span><span class="en-el">🟢 Under 10h<br>On-time</span></div></div>
-        <div class="book-card" style="margin-top:16px"><div class="big-rule"><span class="kh-el">🔴 លើស 10h<br>KPI Fail</span><span class="en-el">🔴 Over 10h<br>KPI Fail</span></div></div>
-      </div>
-      <div>
-        <div class="note"><span class="kh-el"><b>របៀបពិនិត្យ Excel:</b><br>Delivery Sheet → Filter Status 402 → Sort Timestamp → រកឥវ៉ាន់ដែលលើស 10h។<br><br><b>ច្បាប់មួយ:</b> កុំទុក Status 402 ពេញយប់។</span><span class="en-el"><b>How to check Excel:</b><br>Delivery Sheet → Filter Status 402 → Sort Timestamp → Find parcels over 10h.<br><br><b>One rule:</b> Don't leave Status 402 overnight.</span></div>
-        <div class="book-card" style="margin-top:16px"><b>First Attempt</b><p class="sub" style="font-size:18px">ពេល<span class="kh-el">ស្កេនអ្នកទទួល</span><span class="en-el">Scan recipient</span>បាន 402 ត្រូវមាន Update ស្ថានភាពបន្ទាប់ក្នុង 10 ម៉ោង។</p></div>
-      </div>
-    </div>
-  </div><div class="footer"><span>FIRST ATTEMPT · STATUS 402</span><span>07 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">06 · STATUS 410</div><h2><span class="kh-el">ដឹករួច ត្រូវ Update ឱ្យទាន់</span><span class="en-el">Delivered, Must Update Timely</span></h2>
-    <div class="metric-row">
-      <div class="metric"><div class="label">CITY</div><b>6h</b><span><span class="kh-el">Update 410 ក្នុង 6 ម៉ោង</span><span class="en-el">Update 410 within 6 hours</span></span></div>
-      <div class="metric"><div class="label">DISTRICT</div><b>9h</b><span><span class="kh-el">Update 410 ក្នុង 9 ម៉ោង</span><span class="en-el">Update 410 within 9 hours</span></span></div>
-      <div class="metric"><div class="label">GOAL</div><b>100%</b><span><span class="kh-el">កុំទុកប៊ីលហួស Window</span><span class="en-el">Don't leave bills past Window</span></span></div>
-    </div>
-    <div class="twocol" style="margin-top:20px;height:auto">
-      <div class="image-card"><img src="images/city.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/city.jpg';" alt="City"><div class="image-caption"><b>ក្រុង</b><br><span class="kh-el">Update 410 ក្នុង 6 ម៉ោង</span><span class="en-el">Update 410 within 6 hours</span></div></div>
-      <div class="image-card"><img src="images/district.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/district.jpg';" alt="District"><div class="image-caption"><b>ស្រុក</b><br><span class="kh-el">Update 410 ក្នុង 9 ម៉ោង</span><span class="en-el">Update 410 within 9 hours</span></div></div>
-    </div>
-    <div class="note" style="margin-top:18px"><span class="kh-el"><b>ចាំឃ្លានេះ:</b> ដឹករួច កុំទុក។ Update ឱ្យទាន់ម៉ោង។</span><span class="en-el"><b>Remember this:</b> Once delivered, don't leave it. Update on time.</span></div>
-  </div><div class="footer"><span>DELIVERY SUCCESS · CITY 6h · DISTRICT 9h</span><span>08 / 09</span></div>
-</section>
-
-<section class="page">
-  <div class="page-grid"><div class="small">07 · MASTER CHECK</div><h2><span class="kh-el">មុនបិទវេន សួរខ្លួនឯង 6 សំណួរ</span><span class="en-el">Before closing shift, ask yourself 6 questions</span></h2>
-    <div class="summary-grid">
-      <div class="summary"><strong>01</strong><h3><span class="kh-el">Pickup ទាន់ទេ?</span><span class="en-el">Pickup on time?</span></h3><p><span class="kh-el">គោលដៅ 98%</span><span class="en-el">Target 98%</span></p></div>
-      <div class="summary"><strong>02</strong><h3><span class="kh-el">306 ចាត់អ្នកដឹកហើយ?</span><span class="en-el">306 dispatched driver?</span></h3><p><span class="kh-el">តាម 10h SLA</span><span class="en-el">By 10h SLA</span></p></div>
-      <div class="summary"><strong>03</strong><h3><span class="kh-el">402 មាន Update?</span><span class="en-el">402 has Update?</span></h3><p><span class="kh-el">កុំឱ្យលើស 10h</span><span class="en-el">Don't exceed 10h</span></p></div>
-      <div class="summary"><strong>04</strong><h3><span class="kh-el">410 Update ទាន់?</span><span class="en-el">410 Update timely?</span></h3><p><span class="kh-el">ក្រុង 6h · ស្រុក 9h</span><span class="en-el">City 6h · District 9h</span></p></div>
-      <div class="summary"><strong>05</strong><h3><span class="kh-el">ស្តុកត្រូវគ្នា?</span><span class="en-el">Stock matching?</span></h3><p><span class="kh-el">ប្រព័ន្ធ = ឥវ៉ាន់ពិត</span><span class="en-el">System = Physical parcel</span></p></div>
-      <div class="summary dark-summary"><strong style="color:#f87171">06</strong><h3><span class="kh-el">មានឥវ៉ាន់ស្ទះទេ?</span><span class="en-el">Any stuck parcels?</span></h3><p><span class="kh-el">បើមាន ត្រូវដោះស្រាយមុនបិទវេន។</span><span class="en-el">If yes, must resolve before closing shift.</span></p></div>
-    </div>
-    <div class="note" style="margin-top:20px"><span class="kh-el"><b>ចាំតែឃ្លាមួយ:</b><br>ទទួលឱ្យទាន់ → ចាត់ឱ្យលឿន → ដឹកឱ្យបានល្អ → Update ឱ្យទាន់ → កុំឱ្យឥវ៉ាន់ស្ទះ</span><span class="en-el"><b>Remember just one phrase:</b><br>On-time Pickup → Fast Dispatch → Good Delivery → Timely Update → No Stuck Parcels</span></div>
-    <div style="margin-top:18px"><a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" target="_blank" style="display:inline-block;text-decoration:none;background:#111827;color:#fff;padding:11px 16px;border-radius:10px;font-weight:700">បើក Order Status Report ↗</a></div>
-  </div><div class="footer"><span>METFONE EXPRESS · OPERATION BOOK</span><span>09 / 09</span></div>
-</section>
+<section class="page"><div class="page-grid">
+<div class="cover">
+<div class="small">METFONE EXPRESS · AUGUST OPERATING KPI</div><div class="rule"></div>
+<div class="dual">
+<h1><span class="kh-el">ការងារសាខា<br><span style="color:var(--red)">ត្រូវចាំ 3 ចំណុច</span></span><span class="en-el en-title">3 Things Every Branch Must Remember</span></h1>
+<p class="sub"><span class="kh-el">ទទួលឱ្យទាន់ · ចាត់អ្នកដឹកឱ្យលឿន · Update ឱ្យទាន់ម៉ោង</span><span class="en-el en-line">Pick up on time · Assign the driver on time · Update on time</span></p>
+</div>
+<div class="metric-row">
+<div class="metric"><div class="label">PICKUP</div><b>98%</b><span><span class="kh-el">ទទួលឥវ៉ាន់ទាន់ពេល</span><span class="en-el en-line">On-time pickup</span></span></div>
+<div class="metric"><div class="label">FIRST UPDATE</div><b>10h</b><span><span class="kh-el">306 → ចាត់អ្នកដឹក</span><span class="en-el en-line">306 → driver assignment</span></span></div>
+<div class="metric"><div class="label">SUCCESS</div><b>95%+</b><span><span class="kh-el">ដឹកជោគជ័យ → 410</span><span class="en-el en-line">Successful delivery → 410</span></span></div>
+</div>
+<div class="note"><b><span class="kh-el">ចាំតែនេះ:</span><span class="en-el">Remember:</span></b> <span class="kh-el">កុំឱ្យឥវ៉ាន់ស្ទះ ហើយកុំឱ្យការងារហួសម៉ោង។</span><span class="en-el">Keep parcels moving and do not let work pass its SLA.</span></div>
+</div>
+</div><div class="footer"><span>METFONE EXPRESS · OPERATION BOOK</span><span>01 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">01 · THE STANDARD</div>
+<h2><span class="kh-el">តើសាខាត្រូវរក្សាកម្រិតណា?</span><span class="en-el en-title">What standard must every branch keep?</span></h2>
+<div class="twocol">
+<div>
+<div class="book-card"><div class="big-rule">First Mile</div><p class="sub"><span class="kh-el">ភ្នំពេញ <b>3h</b> · កណ្តាល <b>4h</b> · ខេត្ត <b>4.5h</b></span><span class="en-el en-line">Phnom Penh <b>3h</b> · Kandal <b>4h</b> · Provinces <b>4.5h</b></span></p><div class="pill">Pickup ≥ 98%</div></div>
+<div class="book-card" style="margin-top:17px"><div class="big-rule">Last Mile</div><p class="sub"><span class="kh-el">ឥវ៉ាន់មកដល់ <b>306</b> → ត្រូវចាត់អ្នកដឹកក្នុង <b>10h SLA</b></span><span class="en-el en-line">Parcel arrives at <b>306</b> → assign driver within <b>10h SLA</b></span></p><div class="pill">1st Update 90% / 85%</div></div>
+<div class="book-card" style="margin-top:17px"><div class="big-rule">Delivery Success</div><p class="sub"><span class="kh-el">គោលដៅសរុប <b>95%+</b> → ជោគជ័យនៅ <b>410</b></span><span class="en-el en-line">Overall target <b>95%+</b> → success at <b>410</b></span></p></div>
+</div>
+<div class="note"><b><span class="kh-el">SLA និយាយឱ្យងាយ:</span><span class="en-el">Simple SLA meaning:</span></b><br><span class="kh-el">ម៉ោងកំណត់ ដែលការងារត្រូវធ្វើឱ្យរួច។</span><span class="en-el">The time limit for completing a task.</span><br><br>🟢 <span class="kh-el">មិនហួសម៉ោង = ទាន់ពេល</span><span class="en-el">On time</span><br>🔴 <span class="kh-el">ហួសម៉ោង = ត្រូវដោះស្រាយ</span><span class="en-el">Overdue = act now</span></div>
+</div>
+</div><div class="footer"><span>25 PROVINCES · BRANCH QUALITY TARGET</span><span>02 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">02 · THE 3 NUMBERS</div>
+<h2><span class="kh-el">លេខ 3 ដែលគ្រប់សាខាត្រូវចាំ</span><span class="en-el en-title">3 Numbers Every Branch Must Remember</span></h2>
+<div class="metric-row">
+<div class="metric"><div class="label">PICKUP</div><b>98%</b><span><span class="kh-el">ទទួលឥវ៉ាន់ឱ្យទាន់ពេល</span><span class="en-el en-line">On-time pickup</span></span></div>
+<div class="metric"><div class="label">306 → DRIVER</div><b>10h</b><span><span class="kh-el">ចាត់អ្នកដឹកក្នុង SLA</span><span class="en-el en-line">Assign driver within SLA</span></span></div>
+<div class="metric"><div class="label">SUCCESS</div><b>95%+</b><span><span class="kh-el">ដឹកជោគជ័យ → 410</span><span class="en-el en-line">Successful delivery → 410</span></span></div>
+</div>
+<div class="driver-flow">
+<div class="driver-box"><div class="code">100</div><div class="role"><span class="kh-el">Order</span><span class="en-el">Order</span></div><div class="smalltext"><span class="kh-el">បង្កើតការបញ្ជូន</span><span class="en-el">Order created</span></div></div>
+<div class="driver-box"><div class="code">306</div><div class="role"><span class="kh-el">មកដល់សាខា</span><span class="en-el">Branch Arrival</span></div><div class="smalltext"><span class="kh-el">ឥវ៉ាន់មកដល់សាខា</span><span class="en-el">Parcel arrives</span></div></div>
+<div class="driver-box"><div class="code">400 / 401</div><div class="role"><span class="kh-el">អ្នកដឹក</span><span class="en-el">Driver</span></div><div class="smalltext"><span class="kh-el">ចាត់អ្នកដឹក / Update</span><span class="en-el">Assign / update</span></div></div>
+<div class="driver-box"><div class="code">402</div><div class="role"><span class="kh-el">ស្កេនលើកទី1</span><span class="en-el">1st Attempt</span></div><div class="smalltext"><span class="kh-el">ស្កេនអ្នកទទួល</span><span class="en-el">Receiver scanned</span></div></div>
+<div class="driver-box"><div class="code">410</div><div class="role"><span class="kh-el">ជោគជ័យ</span><span class="en-el">Success</span></div><div class="smalltext"><span class="kh-el">ដឹកជោគជ័យ</span><span class="en-el">Delivered</span></div></div>
+</div>
+<div class="flow"><div class="node">100</div><div class="arrow">→</div><div class="node">306</div><div class="arrow">→</div><div class="node">400 / 401</div><div class="arrow">→</div><div class="node">402</div><div class="arrow">→</div><div class="node">410</div></div>
+<div class="note"><b><span class="kh-el">ចាំលំហូរនេះ:</span><span class="en-el">Remember this flow:</span></b> <span class="kh-el">ឥវ៉ាន់មកដល់ហើយ កុំទុកឱ្យស្ទះនៅកណ្ដាល។</span><span class="en-el">Once it arrives, keep it moving.</span></div>
+</div><div class="footer"><span>STATUS FLOW · DRIVER WORKFLOW</span><span>03 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">03 · REPORTS & LINKS</div>
+<h2><span class="kh-el">Report 6 មុខដែលសាខាត្រូវចេះប្រើ</span><span class="en-el en-title">6 Reports Every Branch Should Know</span></h2>
+<div class="twocol" style="height:auto;align-items:start;margin-top:8px">
+<div>
+<p class="sub" style="font-size:16px;margin:0 0 12px"><span class="kh-el">ចូលប្រព័ន្ធ <b>opsexpress.metfone.com.kh</b> ហើយបើក Report ដែលត្រូវការ។</span><span class="en-el en-line">Open <b>opsexpress.metfone.com.kh</b> and choose the report you need.</span></p>
+<div class="report-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:0">
+<div class="report"><h3>1. <span class="kh-el">របាយការណ៍ចំណូល</span><span class="en-el">Revenue Report</span></h3><code>/doanh-thu-san-luong</code><p><span class="kh-el">ចំណូល, COD និង 410</span><span class="en-el">Revenue, COD and 410</span></p><a href="https://opsexpress.metfone.com.kh/doanh-thu-san-luong" target="_blank">Open Report ↗</a></div>
+<div class="report"><h3>2. <span class="kh-el">ឥវ៉ាន់កំពុងដឹក</span><span class="en-el">Delivery Backlog</span></h3><code>/bao-cao-ton-giao</code><p><span class="kh-el">Driver និង 306 / 400 / 420</span><span class="en-el">Driver and 306 / 400 / 420</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-ton-giao" target="_blank">Open Report ↗</a></div>
+<div class="report"><h3>3. <span class="kh-el">ឥវ៉ាន់នៅឃ្លាំង</span><span class="en-el">Warehouse Stock</span></h3><code>/bao-cao-ton-kho</code><p><span class="kh-el">ស្តុក 110 / 120</span><span class="en-el">Stock 110 / 120</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-ton-kho" target="_blank">Open Report ↗</a></div>
+<div class="report"><h3>4. <span class="kh-el">ស្ថានភាព Order</span><span class="en-el">Order Status</span></h3><code>/bao-cao-trang-thai-don</code><p>100 → 306 → 400 → 410</p><a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" target="_blank">Open Report ↗</a></div>
+<div class="report"><h3>5. <span class="kh-el">KPI ទទួលឥវ៉ាន់</span><span class="en-el">Receiving KPI</span></h3><code>/bao-cao-kpi-thu</code><p><span class="kh-el">Pickup 3h / 4h / 4.5h</span><span class="en-el">Pickup 3h / 4h / 4.5h</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-thu" target="_blank">Open Report ↗</a></div>
+<div class="report"><h3>6. <span class="kh-el">KPI ដឹកជូន</span><span class="en-el">Delivery KPI</span></h3><code>/bao-cao-kpi-phat</code><p><span class="kh-el">306, 401 និង 10h SLA</span><span class="en-el">306, 401 and 10h SLA</span></p><a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-phat" target="_blank">Open Report ↗</a></div>
+</div>
+</div>
+<div>
+<div class="image-card" onclick="openImage('images/tms_inventory_audit.png','https://theanlegendary.github.io/run-py/images/tms_inventory_audit.png')" style="cursor:pointer">
+<img src="images/tms_inventory_audit.png" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/tms_inventory_audit.png';" alt="TMS inventory audit">
+<div class="image-caption"><b>TMS Inventory Audit</b><br><span class="kh-el">ចុចលើរូបដើម្បីមើលធំ</span><span class="en-el">Click to enlarge</span></div>
+</div>
+<div class="book-card" style="margin-top:14px;padding:16px"><b><span class="kh-el">ត្រូវពិនិត្យរាល់ថ្ងៃ</span><span class="en-el">Check every day</span></b><p style="margin:7px 0 0;font-size:15px;line-height:1.5;color:#475569">Driver Name · Status · Age Hours · <span class="kh-el">ស្តុកពិត និងស្តុកក្នុងប្រព័ន្ធ</span><span class="en-el">physical stock vs system stock</span></p></div>
+</div>
+</div>
+<div class="note" style="margin-top:14px"><b><span class="kh-el">ចំណាំ:</span><span class="en-el">Note:</span></b> <span class="kh-el">សម្រាប់ Bot Sync ត្រូវ Export ចាប់ពីថ្ងៃទី 14 ដល់ថ្ងៃបច្ចុប្បន្ន។</span><span class="en-el">For Bot Sync, export from the 14th of the month through today.</span></div>
+</div><div class="footer"><span>WEB PORTAL · REPORT LINKS · TMS</span><span>04 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">04 · NTN HOME PICKUP</div>
+<h2><span class="kh-el">ម៉ោង Pickup នៅផ្ទះ</span><span class="en-el en-title">NTN Home Pickup Deadline</span></h2>
+<div class="metric-row">
+<div class="metric"><div class="label">មុន 10:00</div><b style="color:var(--green);font-size:42px">13:00</b><span><span class="kh-el">ថ្ងៃដដែល</span><span class="en-el en-line">Same day</span></span></div>
+<div class="metric"><div class="label">10:00 ដល់ 16:00</div><b style="color:var(--orange);font-size:42px">18:00</b><span><span class="kh-el">ថ្ងៃដដែល</span><span class="en-el en-line">Same day</span></span></div>
+<div class="metric"><div class="label">ក្រោយ 16:00</div><b style="color:var(--red);font-size:42px">13:00</b><span><span class="kh-el">ថ្ងៃបន្ទាប់</span><span class="en-el en-line">Next day</span></span></div>
+</div>
+<div class="note" style="margin-top:22px"><b><span class="kh-el">ចំណុចត្រូវចាំ:</span><span class="en-el">Remember:</span></b> <span class="kh-el">យកម៉ោងដែលយឺតជាង រវាង Create និង Scheduled Pickup មកគិត Deadline។ ច្បាប់នេះសម្រាប់ Urban / City។</span><span class="en-el">Use the later time between Create and Scheduled Pickup. This rule is for Urban / City areas.</span></div>
+<div class="photo-row">
+<div class="image-card"><img src="images/city.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/city.jpg';" alt="Phnom Penh city"><div class="image-caption"><b>City / Urban</b><br><span class="kh-el">ឧទាហរណ៍៖ ភ្នំពេញ</span><span class="en-el">Example: Phnom Penh</span></div></div>
+<div class="image-card"><img src="images/district.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/district.jpg';" alt="District area"><div class="image-caption"><b>District / Rural</b><br><span class="kh-el">តំបន់ស្រុកអាចមាន Window ខុសគ្នា</span><span class="en-el">Rural areas may have a different window</span></div></div>
+</div>
+</div><div class="footer"><span>NTN · PICKUP DEADLINE</span><span>05 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">05 · STATUS 402</div>
+<h2><span class="kh-el">ស្កេន 402 ហើយ កុំទុកចោល</span><span class="en-el en-title">Scanned 402. Do not leave it stuck.</span></h2>
+<div class="flow"><div class="node">402</div><div class="arrow">→</div><div class="node"><span class="kh-el">Update ក្នុង 10h</span><span class="en-el">Update within 10h</span></div><div class="arrow">→</div><div class="node">410 <span class="kh-el">ឬស្ថានភាពបន្ទាប់</span><span class="en-el">or next status</span></div></div>
+<div class="twocol">
+<div><div class="book-card"><div class="big-rule">🟢 ≤ 10h<br><span class="kh-el">ទាន់ពេល</span><span class="en-el en-line">On time</span></div></div><div class="book-card" style="margin-top:16px"><div class="big-rule">🔴 &gt; 10h<br><span class="kh-el">KPI Fail</span><span class="en-el en-line">KPI Fail</span></div></div></div>
+<div><div class="note"><b><span class="kh-el">របៀបពិនិត្យ Excel:</span><span class="en-el">Excel check:</span></b><br>Delivery Sheet → Filter Status 402 → Sort Timestamp → <span class="kh-el">រកឥវ៉ាន់ដែលលើស 10h</span><span class="en-el">find parcels older than 10h</span>.<br><br><b><span class="kh-el">ច្បាប់មួយ:</span><span class="en-el">One rule:</span></b> <span class="kh-el">កុំទុក Status 402 ពេញយប់។</span><span class="en-el">Do not leave 402 overnight.</span></div>
+<div class="book-card" style="margin-top:16px"><b>First Attempt</b><p class="sub" style="font-size:18px"><span class="kh-el">ពេលស្កេនអ្នកទទួលបាន 402 ត្រូវមាន Update ស្ថានភាពបន្ទាប់ក្នុង 10 ម៉ោង។</span><span class="en-el en-line">After receiver scan 402, the next status must be updated within 10 hours.</span></p></div></div>
+</div>
+</div><div class="footer"><span>FIRST ATTEMPT · STATUS 402</span><span>06 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">06 · STATUS 410</div>
+<h2><span class="kh-el">ដឹករួច ត្រូវ Update ឱ្យទាន់</span><span class="en-el en-title">Delivered. Update on time.</span></h2>
+<div class="metric-row">
+<div class="metric"><div class="label">CITY</div><b>6h</b><span><span class="kh-el">Update 410 ក្នុង 6 ម៉ោង</span><span class="en-el en-line">Update 410 within 6 hours</span></span></div>
+<div class="metric"><div class="label">DISTRICT</div><b>9h</b><span><span class="kh-el">Update 410 ក្នុង 9 ម៉ោង</span><span class="en-el en-line">Update 410 within 9 hours</span></span></div>
+<div class="metric"><div class="label">GOAL</div><b>100%</b><span><span class="kh-el">កុំទុកប៊ីលហួស Window</span><span class="en-el en-line">No overdue bills</span></span></div>
+</div>
+<div class="twocol" style="margin-top:20px;height:auto">
+<div class="image-card"><img src="images/city.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/city.jpg';" alt="City"><div class="image-caption"><b><span class="kh-el">ក្រុង</span><span class="en-el">City</span></b><br><span class="kh-el">Update 410 ក្នុង 6 ម៉ោង</span><span class="en-el">Update 410 within 6 hours</span></div></div>
+<div class="image-card"><img src="images/district.jpg" onerror="this.onerror=null;this.src='https://theanlegendary.github.io/run-py/images/district.jpg';" alt="District"><div class="image-caption"><b><span class="kh-el">ស្រុក</span><span class="en-el">District</span></b><br><span class="kh-el">Update 410 ក្នុង 9 ម៉ោង</span><span class="en-el">Update 410 within 9 hours</span></div></div>
+</div>
+<div class="note" style="margin-top:18px"><b><span class="kh-el">ចាំឃ្លានេះ:</span><span class="en-el">Remember:</span></b> <span class="kh-el">ដឹករួច កុំទុក។ Update ឱ្យទាន់ម៉ោង។</span><span class="en-el">Delivered, then update. Do not leave it waiting.</span></div>
+</div><div class="footer"><span>DELIVERY SUCCESS · CITY 6h · DISTRICT 9h</span><span>07 / 08</span></div></section>
+<section class="page"><div class="page-grid">
+<div class="small">07 · MASTER CHECK</div>
+<h2><span class="kh-el">មុនបិទវេន សួរខ្លួនឯង 6 សំណួរ</span><span class="en-el en-title">Before closing the shift, ask 6 questions</span></h2>
+<div class="summary-grid">
+<div class="summary"><strong>01</strong><h3><span class="kh-el">Pickup ទាន់ទេ?</span><span class="en-el">Pickup on time?</span></h3><p>98%</p></div>
+<div class="summary"><strong>02</strong><h3><span class="kh-el">306 ចាត់អ្នកដឹកហើយ?</span><span class="en-el">306 assigned?</span></h3><p>10h SLA</p></div>
+<div class="summary"><strong>03</strong><h3><span class="kh-el">402 មាន Update?</span><span class="en-el">402 updated?</span></h3><p>Within 10h</p></div>
+<div class="summary"><strong>04</strong><h3><span class="kh-el">410 Update ទាន់?</span><span class="en-el">410 updated?</span></h3><p>City 6h · District 9h</p></div>
+<div class="summary"><strong>05</strong><h3><span class="kh-el">ស្តុកត្រូវគ្នា?</span><span class="en-el">Stock matches?</span></h3><p><span class="kh-el">ប្រព័ន្ធ = ឥវ៉ាន់ពិត</span><span class="en-el">System = physical stock</span></p></div>
+<div class="summary dark-summary"><strong style="color:#f87171">06</strong><h3><span class="kh-el">មានឥវ៉ាន់ស្ទះទេ?</span><span class="en-el">Any overdue parcel?</span></h3><p><span class="kh-el">មាន ត្រូវដោះស្រាយមុនបិទវេន។</span><span class="en-el">Clear it before closing.</span></p></div>
+</div>
+<div class="note" style="margin-top:20px"><b><span class="kh-el">ចាំតែឃ្លាមួយ:</span><span class="en-el">One line to remember:</span></b><br><span class="kh-el">ទទួលឱ្យទាន់ → ចាត់ឱ្យលឿន → ដឹកឱ្យបានល្អ → Update ឱ្យទាន់ → កុំឱ្យឥវ៉ាន់ស្ទះ</span><span class="en-el">Pick up on time → assign fast → deliver well → update on time → keep parcels moving</span></div>
+<div style="margin-top:18px"><a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" target="_blank" style="display:inline-block;text-decoration:none;background:#111827;color:#fff;padding:11px 16px;border-radius:10px;font-weight:700"><span class="kh-el">បើក Order Status Report ↗</span><span class="en-el">Open Order Status Report ↗</span></a></div>
+</div><div class="footer"><span>METFONE EXPRESS · OPERATION BOOK</span><span>08 / 08</span></div></section>
 
 <div class="dots"></div><div class="nav"><button id="prev">‹</button><button id="next">›</button></div>
-
+<div class="lightbox" id="lightbox"><button class="close" onclick="closeImage()">Close</button><img id="lightboxImg" alt="Preview"></div>
 </div>
 <script>
 const pages=[...document.querySelectorAll('.page')],dots=document.querySelector('.dots');let i=0;
 pages.forEach((_,n)=>{const d=document.createElement('span');d.className='dot'+(n===0?' active':'');d.onclick=()=>show(n);dots.appendChild(d)});
-function show(n){i=(n+pages.length)%pages.length;pages.forEach((p,k)=>p.classList.toggle('active',k===i));[...dots.children].forEach((d,k)=>d.classList.toggle('active',k===i));}
+function show(n){i=(n+pages.length)%pages.length;pages.forEach((p,k)=>p.classList.toggle('active',k===i));[...dots.children].forEach((d,k)=>d.classList.toggle('active',k===i))}
 document.getElementById('prev').onclick=()=>show(i-1);document.getElementById('next').onclick=()=>show(i+1);
-document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(i+1);if(e.key==='ArrowLeft')show(i-1);});
-
-function setLang(lang) {
-  document.body.className = lang + '-mode';
-  document.getElementById('btnKh').className = (lang === 'kh' ? 'active' : '');
-  document.getElementById('btnEn').className = (lang === 'en' ? 'active' : '');
-}
-setLang('kh');
-</script>
-</body>
-</html>
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(i+1);if(e.key==='ArrowLeft')show(i-1);if(e.key==='Escape')closeImage()});
+function openImage(local,remote){const img=document.getElementById('lightboxImg');img.src=local;img.onerror=()=>{img.onerror=null;img.src=remote};document.getElementById('lightbox').classList.add('active')}
+function closeImage(){document.getElementById('lightbox').classList.remove('active')}
+const body=document.body;
+function setLang(m){body.classList.remove('mode-kh','mode-en','mode-both');body.classList.add('mode-'+m);document.querySelectorAll('.langbar button').forEach(b=>b.classList.remove('active'));document.getElementById(m==='both'?'both':m).classList.add('active')}
+document.getElementById('both').onclick=()=>setLang('both');
+document.getElementById('kh').onclick=()=>setLang('kh');
+document.getElementById('en').onclick=()=>setLang('en');
+</script></body></html>
