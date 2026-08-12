@@ -251,6 +251,11 @@ function show(n){i=(n+pages.length)%pages.length;pages.forEach((p,k)=>p.classLis
 document.getElementById('prev').onclick=()=>show(i-1);document.getElementById('next').onclick=()=>show(i+1);
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(i+1);if(e.key==='ArrowLeft')show(i-1);});
 
+function setLang(lang) {
+  document.body.className = lang + '-mode';
+  document.getElementById('btnKh').className = (lang === 'kh' ? 'active' : '');
+  document.getElementById('btnEn').className = (lang === 'en' ? 'active' : '');
+}
 setLang('kh');
 </script>
 </body>
