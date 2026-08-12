@@ -1370,6 +1370,14 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
 
     for rn in ALL_TABS:
         df_t = dm[dm["_report_class"] == rn].copy()
+
+        # STRICT USER DIRECTIVE: NTN service orders ONLY show in Pickup. Exclude NTN from Delivery, Transit, and Branch (Not Assign).
+        if rn in ('Delivery', 'Transit', 'Branch'):
+            note_service_cols = [c for c in df_t.columns if any(k in str(c).upper() for k in ('SERVICE', 'VAS', 'NOTE', 'EXTRA'))]
+            if note_service_cols:
+                ntn_mask = df_t[note_service_cols].astype(str).apply(lambda row: row.str.upper().str.contains('NTN', na=False).any(), axis=1)
+                df_t = df_t[~ntn_mask].copy()
+
         if target_handles:
             filter_col = REPORT_FILTER_COLS[rn]
             if filter_col in df_t.columns:
