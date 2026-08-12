@@ -1342,12 +1342,257 @@
             </div>
         </div>
 
-        <!-- SLIDE 5 VIEW: MASTER EXECUTIVE SUMMARY OF ALL 4 SLIDES -->
+        <!-- SLIDE 5: NTN HOME PICKUP DEADLINE RULES -->
         <div id="slide5" class="slide-view">
             <div class="left-content">
                 <div class="eyebrow-line">
-                    <span class="en-el">Slide 05 · Master Operational Executive Summary</span>
-                    <span class="kh-el">ស្លាយ ០៥ · សេចក្តីសង្ខេបប្រតិបត្តិការ</span>
+                    <span class="en-el">Slide 05 · NTN Home Pickup — Deadline Rules</span>
+                    <span class="kh-el">ស្លាយ ០៥ · NTN ម៉ោងទទួលអីវ៉ាន់នៅផ្ទះ</span>
+                </div>
+
+                <h1 class="hero-title-bold en-el" style="font-size: 3rem;">
+                    Pickup Deadline.<br><span>Know your window.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
+                    ម៉ោងកំណត់ Pickup<br><span>ត្រូវស្គាល់ប្រព័ន្ធ</span>
+                </h1>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">
+                            <span class="en-el">⏰ BEFORE 10:00</span>
+                            <span class="kh-el">⏰ មុន ១០:០០</span>
+                        </div>
+                        <div class="status-desc-text en-el">If the later of (Order Creation Time, Final Scheduled Pickup Time) is <b>before 10:00 on Day N</b> → Pickup deadline is <b style="color:#16a34a">13:00 on Day N</b>.</div>
+                        <div class="status-desc-text kh-el">បើ Order ចូល/ម៉ោងPick-up ចុងក្រោយ <b>មុន ១០:០០</b> → ថ្ងៃ N → ត្រូវ Pick-up ត្រឹម <b style="color:#16a34a">13:00 ថ្ងៃ N</b>。</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #d97706;">
+                        <div class="status-code-badge" style="background: #d97706;">
+                            <span class="en-el">⏰ 10:00 – 16:00</span>
+                            <span class="kh-el">⏰ ១០:០០ – ១៦:០០</span>
+                        </div>
+                        <div class="status-desc-text en-el">If the later of (Order Creation Time, Final Scheduled Pickup Time) is <b>between 10:00 and 16:00 on Day N</b> → Pickup deadline is <b style="color:#d97706">18:00 on Day N</b>.</div>
+                        <div class="status-desc-text kh-el">បើ Order ចូល/ម៉ោងPick-up ចុងក្រោយ <b>ពី ១០:០០ ដល់ ១៦:០០</b> ថ្ងៃ N → ត្រូវ Pick-up ត្រឹម <b style="color:#d97706">18:00 ថ្ងៃ N</b>。</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #dc2626;">
+                        <div class="status-code-badge" style="background: #dc2626;">
+                            <span class="en-el">⏰ AFTER 16:00</span>
+                            <span class="kh-el">⏰ ក្រោយ ១៦:០០</span>
+                        </div>
+                        <div class="status-desc-text en-el">If the later of (Order Creation Time, Final Scheduled Pickup Time) is <b>after 16:00 on Day N</b> → Pickup deadline is <b style="color:#dc2626">13:00 on Day N+1</b>.</div>
+                        <div class="status-desc-text kh-el">បើ Order ចូល/ម៉ោងPick-up ចុងក្រោយ <b>ក្រោយ ១៦:០០</b> ថ្ងៃ N → ត្រូវ Pick-up ត្រឹម <b style="color:#dc2626">13:00 ថ្ងៃ N+1</b>。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-exhibit">
+                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
+                    <span class="en-el">📦 NTN Urban Area Pickup Window (Day N Rule)</span>
+                    <span class="kh-el">📦 ផ្ទៃក្រុង NTN — ច្បាប់ Window ថ្ងៃ N</span>
+                </div>
+                <div style="background: var(--paper-yellow-light); border: 2px solid var(--paper-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                    <div style="font-family: 'Angkor', serif; font-size: 1rem; color: #713f12; border-bottom: 1.5px dashed var(--paper-border); padding-bottom: 10px;">
+                        <span class="en-el">📋 Rule: Later of (Create Time, Scheduled Time)</span>
+                        <span class="kh-el">📋 ច្បាប់: យកម៉ោងក្រោយជាង (Create vs Scheduled)</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px; background: #dcfce7; border: 1.5px solid #16a34a; border-radius: 8px; padding: 12px;">
+                            <div style="font-size: 2rem;">🟢</div>
+                            <div style="font-size: 0.9rem; color: #14532d; font-weight: 700;">
+                                <div class="en-el">≤ 10:00 → Must finish pickup by 13:00 same day</div>
+                                <div class="kh-el">≤ ១០:០០ → ត្រូវ Pickup ត្រឹម ១៣:០០ ថ្ងៃដដែល</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; background: #fef3c7; border: 1.5px solid #d97706; border-radius: 8px; padding: 12px;">
+                            <div style="font-size: 2rem;">🟡</div>
+                            <div style="font-size: 0.9rem; color: #78350f; font-weight: 700;">
+                                <div class="en-el">10:00–16:00 → Must finish pickup by 18:00 same day</div>
+                                <div class="kh-el">១០:០០–១៦:០០ → ត្រូវ Pickup ត្រឹម ១៨:០០ ថ្ងៃដដែល</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; background: #fee2e2; border: 1.5px solid #dc2626; border-radius: 8px; padding: 12px;">
+                            <div style="font-size: 2rem;">🔴</div>
+                            <div style="font-size: 0.9rem; color: #7f1d1d; font-weight: 700;">
+                                <div class="en-el">&gt; 16:00 → Must finish pickup by 13:00 NEXT day</div>
+                                <div class="kh-el">&gt; ១៦:០០ → ត្រូវ Pickup ត្រឹម ១៣:០០ ថ្ងៃ​បន្ទាប់</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sticky-text-wrapper" style="margin-top: auto;">
+                        <div class="en-el">📌 <b>Urban Area Only.</b> These SLAs apply within the province. Rural/remote areas may have different windows.</div>
+                        <div class="kh-el sticky-kh-text">📌 <b>ខេត្តក្នុង (Urban).</b> ច្បាប់នេះប្រើសម្រាប់ក្នុងខេត្ត។ ជនបទ/ព្រៃ ប្រហែលមាន Window ខុស។</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: FIRST-ATTEMPT SUCCESS RATE -->
+        <div id="slide6" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">
+                    <span class="en-el">Slide 06 · First-Attempt Success Rate (Status 402)</span>
+                    <span class="kh-el">ស្លាយ ០៦ · អត្រាជោគជ័យដំបូង (ស្ថានភាព ៤០២)</span>
+                </div>
+
+                <h1 class="hero-title-bold en-el" style="font-size: 3rem;">
+                    First attempt.<br><span>Update within 10h.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
+                    ការដឹកលើកទី១<br><span>Update ក្នុង ១០ ម៉ោង</span>
+                </h1>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">WHAT IS IT?</div>
+                        <div class="status-desc-text en-el"><b>First-Attempt Success Rate</b> measures how often a driver successfully delivers on the very first trip, and whether the system is updated (next status after 402) within <b>10 hours</b> of scanning the receiver.</div>
+                        <div class="status-desc-text kh-el"><b>អត្រាជោគជ័យដំបូង</b> វាស់ចំនួនដំណើរការដែលអ្នកដឹក deliver បានជោគជ័យនៅលើកទីមួយ ហើយប្រព័ន្ធ Update (status បន្ទាប់ 402) ត្រូវបានធ្វើក្នុង <b>១០ ម៉ោង</b> ពីពេល scan អ្នកទទួល។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #16a34a;">
+                        <div class="status-code-badge" style="background: #16a34a;">HOW TO COMPLY</div>
+                        <div class="status-desc-text en-el">After scanning the receiver (status <b>402</b>), staff must update the <b>next delivery status</b> (success or attempt) within <b>10 hours</b>. Do NOT leave a parcel stuck at 402 overnight!</div>
+                        <div class="status-desc-text kh-el">បន្ទាប់ពី scan អ្នកទទួល (ស្ថានភាព <b>402</b>) បុគ្គលិកត្រូវ Update <b>ស្ថានភាពដឹកបន្ទាប់</b> (ជោគជ័យ ឬ ព្យាយាម) ក្នុង <b>១០ ម៉ោង</b>។ កុំទុកអីវ៉ាន់ stuck ៤០២ ពេញ​យប់!</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #7c3aed;">
+                        <div class="status-code-badge" style="background: #7c3aed;">EXCEL CHECK</div>
+                        <div class="status-desc-text en-el">In the Excel report, filter the <b>Delivery sheet</b> for status <b>402</b>. Look at the timestamp column. Any row older than <b>10 hours</b> without the next update = KPI FAIL ❌</div>
+                        <div class="status-desc-text kh-el">ក្នុង Excel ត្រង <b>Delivery sheet</b> ដោយ status <b>402</b>។ មើលឈ្មោះ timestamp column ។ Row ណាដែល <b>ធំ ១០ ម៉ោង</b> ដោយ​គ្មាន Update = KPI FAIL ❌</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-exhibit">
+                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
+                    <span class="en-el">📊 10H KPI Clock — First Attempt Rule</span>
+                    <span class="kh-el">📊 ម៉ោង KPI ១០ ម៉ោង — ច្បាប់ First Attempt</span>
+                </div>
+                <div style="background: var(--paper-yellow-light); border: 2px solid var(--paper-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                    <div style="font-family: 'Angkor', serif; font-size: 1rem; color: #713f12; border-bottom: 1.5px dashed var(--paper-border); padding-bottom: 10px;">
+                        <span class="en-el">Flow: 402 → ✅ Next Status (within 10h)</span>
+                        <span class="kh-el">លំហូរ: 402 → ✅ Status បន្ទាប់ (ក្នុង 10 ម៉ោង)</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="background: #eff6ff; border: 1.5px solid #2563eb; border-radius: 8px; padding: 14px;">
+                            <div style="font-family: monospace; font-size: 0.9rem; color: #1e3a8a; font-weight: 700;">
+                                <span class="en-el">Scan Receiver (402) → Update Next Status → ✅ KPI PASS</span>
+                                <span class="kh-el">Scan អ្នកទទួល (402) → Update Status បន្ទាប់ → ✅ KPI PASS</span>
+                            </div>
+                        </div>
+                        <div style="background: #fef2f2; border: 1.5px solid #dc2626; border-radius: 8px; padding: 14px;">
+                            <div style="font-size: 0.9rem; color: #7f1d1d; font-weight: 700;">
+                                <span class="en-el">❌ Scan (402) → No update for 10+ hours → KPI FAIL</span>
+                                <span class="kh-el">❌ Scan (402) → គ្មាន update ១០ ម៉ោង+ → KPI FAIL</span>
+                            </div>
+                        </div>
+                        <div style="background: #f0fdf4; border: 1.5px solid #16a34a; border-radius: 8px; padding: 12px; display:flex; gap:10px; align-items:center;">
+                            <div style="font-size: 2.2rem;">⏱️</div>
+                            <div style="font-size: 0.85rem; color: #14532d; font-weight: 700;">
+                                <div class="en-el">Target: Update EVERY parcel at 402 within <b>10 hours</b> — no exceptions!</div>
+                                <div class="kh-el">គោលដៅ: Update <b>គ្រប់</b>អីវ៉ាន់ ១០ ម៉ោង ក្រោយ 402 — គ្មានករណីលើក!</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sticky-text-wrapper" style="margin-top:auto;">
+                        <div class="en-el">📌 Check your Delivery Excel daily! Filter by Status 402 and sort by timestamp to find overdue parcels.</div>
+                        <div class="kh-el sticky-kh-text">📌 ពិនិត្យ Excel Delivery ប្រចាំថ្ងៃ! ត្រង Status 402 ហើយ sort timestamp ដើម្បីរកអីវ៉ាន់ហួស!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: DELIVERY SUCCESS UPDATE RATE -->
+        <div id="slide7" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">
+                    <span class="en-el">Slide 07 · Delivery Success Update Rate</span>
+                    <span class="kh-el">ស្លាយ ០៧ · អត្រា Update ការដឹកជោគជ័យ</span>
+                </div>
+
+                <h1 class="hero-title-bold en-el" style="font-size: 3rem;">
+                    Deliver. Update.<br><span>On time, every time.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
+                    ដឹក. Update.<br><span>ទាន់ម៉ោង គ្រប់លើក</span>
+                </h1>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">IN CITY</div>
+                        <div class="status-desc-text en-el"><b>City / Urban Area:</b> Average time to update a successful delivery is <b style="color:#2563eb">6 hours</b> after the delivery event. Staff must update status to 410 within this window.</div>
+                        <div class="status-desc-text kh-el"><b>ក្នុងក្រុង / ខេត្ត:</b> ពេលវេលាជាមធ្យម​ update ការដឹកជោគជ័យ = <b style="color:#2563eb">6 ម៉ោង</b> ក្រោយការដឹក។ បុគ្គលិក update 410 ក្នុង window នេះ។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #d97706;">
+                        <div class="status-code-badge" style="background: #d97706;">IN DISTRICT</div>
+                        <div class="status-desc-text en-el"><b>District / Rural Area:</b> Average time to update a successful delivery is <b style="color:#d97706">9 hours</b> after the delivery event, due to longer distances and connectivity.</div>
+                        <div class="status-desc-text kh-el"><b>ស្រុក / ជនបទ:</b> ពេលវេលាជាមធ្យម update ការដឹកជោគជ័យ = <b style="color:#d97706">9 ម៉ោង</b> ក្រោយការដឹក ដោយសារចម្ងាយ និង connectivity ។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #16a34a;">
+                        <div class="status-code-badge" style="background: #16a34a;">EXCEL CHECK</div>
+                        <div class="status-desc-text en-el">In the Excel report: open <b>Delivery sheet</b> → check <b>Age column</b> or timestamp. Bills delivered but NOT updated to 410 within 6h (city) / 9h (district) are KPI failures — clear them day by day!</div>
+                        <div class="status-desc-text kh-el">ក្នុង Excel: បើក <b>Delivery sheet</b> → ពិនិត្យ <b>Age column</b> ឬ timestamp។ Bills ណាដែលដឹករួច តែ NOT update 410 ក្នុង 6h (ក្រុង) / 9h (ស្រុក) = KPI fail — clear ជារៀងរាល់ថ្ងៃ!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-exhibit">
+                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
+                    <span class="en-el">📊 Success Update Rate — City vs District</span>
+                    <span class="kh-el">📊 អត្រា Update — ក្រុង vs ស្រុក</span>
+                </div>
+                <div style="background: var(--paper-yellow-light); border: 2px solid var(--paper-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 14px; height: 100%;">
+                    <div style="font-family: 'Angkor', serif; font-size: 1rem; color: #713f12; border-bottom: 1.5px dashed var(--paper-border); padding-bottom: 10px;">
+                        <span class="en-el">📋 Average Update Window After Delivery Event</span>
+                        <span class="kh-el">📋 Window Update ជាមធ្យម ក្រោយការដឹក</span>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1; background: #eff6ff; border: 2px solid #2563eb; border-radius: 10px; padding: 16px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                            <div style="font-size: 2.5rem;">🏙️</div>
+                            <div style="font-family:'Angkor',serif; font-size:1.1rem; color:#1e3a8a; text-align:center;">
+                                <span class="en-el">CITY</span><span class="kh-el">ក្រុង</span>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 900; color: #2563eb;">6h</div>
+                            <div style="font-size: 0.8rem; color: #1e40af; font-weight:600; text-align:center;">
+                                <span class="en-el">Average update after delivery</span>
+                                <span class="kh-el">Update ជាមធ្យម ក្រោយដឹក</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; background: #fef3c7; border: 2px solid #d97706; border-radius: 10px; padding: 16px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                            <div style="font-size: 2.5rem;">🌾</div>
+                            <div style="font-family:'Angkor',serif; font-size:1.1rem; color:#92400e; text-align:center;">
+                                <span class="en-el">DISTRICT</span><span class="kh-el">ស្រុក</span>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 900; color: #d97706;">9h</div>
+                            <div style="font-size: 0.8rem; color: #78350f; font-weight:600; text-align:center;">
+                                <span class="en-el">Average update after delivery</span>
+                                <span class="kh-el">Update ជាមធ្យម ក្រោយដឹក</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: #f0fdf4; border: 1.5px solid #16a34a; border-radius: 8px; padding: 12px;">
+                        <div style="font-size:0.85rem; color:#14532d; font-weight:700;">
+                            <span class="en-el">✅ Daily Action: Open Excel → Delivery tab → Sort by Age → Clear bills older than your zone window (6h city / 9h district) day by day!</span>
+                            <span class="kh-el">✅ ការងារប្រចាំថ្ងៃ: Excel → Delivery tab → Sort by Age → Clear bills ហួស window (6h ក្រុង / 9h ស្រុក) ជារៀងរាល់ថ្ងៃ!</span>
+                        </div>
+                    </div>
+                    <div class="sticky-text-wrapper" style="margin-top:auto;">
+                        <div class="en-el">📌 <b>KPI Goal:</b> 100% of successful deliveries updated within the defined window — no stale unupdated bills allowed!</div>
+                        <div class="kh-el sticky-kh-text">📌 <b>គោលដៅ KPI:</b> ១០០% ការដឹកជោគជ័យ update ក្នុង window — គ្មាន bill ស្ទះ!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8 VIEW: MASTER EXECUTIVE SUMMARY OF ALL 7 SLIDES -->
+        <div id="slide8" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">
+                    <span class="en-el">Slide 08 · Master Operational Executive Summary</span>
+                    <span class="kh-el">ស្លាយ ០៨ · សេចក្តីសង្ខេបប្រតិបត្តិការ</span>
                 </div>
                 
                 <h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
@@ -1367,8 +1612,8 @@
 
             <div class="right-exhibit">
                 <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-                    <span class="en-el">📋 Master Operational Summary (Slides 1 to 4)</span>
-                    <span class="kh-el">📋 សេចក្តីសង្ខេបប្រតិបត្តិការ (ស្លាយ ១ ដល់ ៤)</span>
+                    <span class="en-el">📋 Master Operational Summary (Slides 1 to 7)</span>
+                    <span class="kh-el">📋 សេចក្តីសង្ខេបប្រតិបត្តិការ (ស្លាយ ១ ដល់ ៧)</span>
                 </div>
                 <div class="summary-grid-box">
                     <div class="summary-card-item">
@@ -1477,6 +1722,9 @@
                     <div class="dot" id="dot3" onclick="goToSlide(3)"></div>
                     <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
                     <div class="dot" id="dot5" onclick="goToSlide(5)"></div>
+                    <div class="dot" id="dot6" onclick="goToSlide(6)"></div>
+                    <div class="dot" id="dot7" onclick="goToSlide(7)"></div>
+                    <div class="dot" id="dot8" onclick="goToSlide(8)"></div>
                 </div>
                 <button class="book-turn-btn" id="nextBtn" onclick="nextSlide()">
                     <span class="en-el">NEXT PAGE</span><span class="kh-el">ទំព័របន្ទាប់</span> 📖
@@ -1501,19 +1749,25 @@
         let currentSlide = 1;
 
         const slideTitlesEn = {
-            1: "Slide 1 of 5 · August Quality Targets",
-            2: "Slide 2 of 5 · Simple Guide for 3 Core KPIs",
-            3: "Slide 3 of 5 · Web Portal 6 KPI Reports Export Guide",
-            4: "Slide 4 of 5 · End of Day Inventory Lesson",
-            5: "Slide 5 of 5 · Master Executive Summary (Slides 1 to 4)"
+            1: "Slide 1 of 8 · August Quality Targets",
+            2: "Slide 2 of 8 · Simple Guide for 3 Core KPIs",
+            3: "Slide 3 of 8 · Web Portal 6 KPI Reports Export Guide",
+            4: "Slide 4 of 8 · End of Day Inventory Lesson",
+            5: "Slide 5 of 8 · NTN Home Pickup Deadline Rules",
+            6: "Slide 6 of 8 · First-Attempt Success Rate (402)",
+            7: "Slide 7 of 8 · Delivery Success Update Rate",
+            8: "Slide 8 of 8 · Master Executive Summary (Slides 1 to 7)"
         };
 
         const slideTitlesKh = {
-            1: "ស្លាយ ១ នៃ ៥ · គោលដៅគុណភាពខែសីហា",
-            2: "ស្លាយ ២ នៃ ៥ · ការណែនាំ KPI ទាំង ៣",
-            3: "ស្លាយ ៣ នៃ ៥ · ការទាញយករាយការណ៍ ៦ប្រភេទ",
-            4: "ស្លាយ ៤ នៃ ៥ · ការស្កេនពិនិត្យស្តុកចុងវេន",
-            5: "ស្លាយ ៥ នៃ ៥ · សេចក្តីសង្ខេបប្រតិបត្តិការ Master"
+            1: "ស្លាយ ១ នៃ ៨ · គោលដៅគុណភាពខែសីហា",
+            2: "ស្លាយ ២ នៃ ៨ · ការណែនាំ KPI ទាំង ៣",
+            3: "ស្លាយ ៣ នៃ ៨ · ការទាញយករាយការណ៍ ៦ប្រភេទ",
+            4: "ស្លាយ ៤ នៃ ៨ · ការស្កេនពិនិត្យស្តុកចុងវេន",
+            5: "ស្លាយ ៥ នៃ ៨ · NTN ម៉ោងទទួលអីវ៉ាន់នៅផ្ទះ",
+            6: "ស្លាយ ៦ នៃ ៨ · អត្រាជោគជ័យដំបូង (402)",
+            7: "ស្លាយ ៧ នៃ ៨ · អត្រា Update ការដឹកជោគជ័យ",
+            8: "ស្លាយ ៨ នៃ ៨ · សេចក្តីសង្ខេបប្រតិបត្តិការ Master"
         };
 
         function setLanguage(lang) {
@@ -1536,10 +1790,10 @@
 
             if (isKhmer) {
                 document.getElementById('slideTag').innerHTML = `<span class="kh-el">${slideTitlesKh[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="kh-el">ទំព័រ ${khNum} / ០៥ &nbsp;·&nbsp; METFONE EXPRESS</span>`;
+                document.getElementById('pageMark').innerHTML = `<span class="kh-el">ទំព័រ ${khNum} / ០៨ &nbsp;·&nbsp; METFONE EXPRESS</span>`;
             } else {
                 document.getElementById('slideTag').innerHTML = `<span class="en-el">${slideTitlesEn[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="en-el">PAGE ${numStr} / 05 &nbsp;·&nbsp; METFONE EXPRESS</span>`;
+                document.getElementById('pageMark').innerHTML = `<span class="en-el">PAGE ${numStr} / 08 &nbsp;·&nbsp; METFONE EXPRESS</span>`;
             }
         }
 
@@ -1554,11 +1808,11 @@
             updatePageMark();
 
             document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 5);
+            document.getElementById('nextBtn').disabled = (slideNum === 8);
         }
 
         function nextSlide() {
-            if (currentSlide < 5) goToSlide(currentSlide + 1);
+            if (currentSlide < 8) goToSlide(currentSlide + 1);
         }
 
         function prevSlide() {
