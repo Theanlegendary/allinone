@@ -726,7 +726,39 @@
                 font-size: 0.75rem !important;
             }
         }
-    </style>
+    
+.btn-detail {
+    background: #e2e8f0;
+    border: none;
+    color: #475569;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+    transition: background 0.2s;
+}
+.btn-detail:hover { background: #cbd5e1; }
+.kpi-detail {
+    display: none;
+    margin-top: 12px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #334155;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--red);
+    text-align: left;
+    font-weight: 500;
+}
+.kpi-detail.show {
+    display: block;
+}
+</style>
 </head>
 <body class="mode-both">
 
