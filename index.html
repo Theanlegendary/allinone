@@ -1,1595 +1,937 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metfone Express — August Operating KPI 5-Slide Master Deck</title>
-    <!-- Import Telegram WebApp JS -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Google Fonts: Angkor (Titles Only) + Kantumruy Pro (Clean Body/Captions) + Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Angkor&family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Operationtrainningmfe</title>
+    <!-- Google Fonts: Inter, Kantumruy Pro, Merriweather -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
     <style>
         :root {
+            /* 3-Color Strict Harmonious Palette */
+            --c-red: #e11b22;         /* 1. Brand Accent */
+            --c-dark: #0f172a;        /* 2. Deep Slate */
+            --c-blue: #2563eb;        /* 3. Operational Blue */
+            
+            --c-body: #334155;
+            --c-muted: #64748b;
+            --bg-page: #faf9f6;
             --bg-white: #ffffff;
-            --brand-red: #e11b22;
-            --text-black: #090d16;
-            --text-dark: #1e293b;
-            --text-muted: #475569;
-            --border-dark: #0f172a;
-            --border-light: #cbd5e1;
-            --paper-yellow: #fef08a;
-            --paper-yellow-light: #fef9c3;
-            --paper-text: #713f12;
-            --paper-border: #eab308;
-            --node-blue: #1d4ed8;
-            --node-green: #047857;
-            --bg-card: #f8fafc;
+            --border-subtle: #eae8e1;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 400;
-        }
-
-        html, body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: var(--bg-white);
-            color: var(--text-black);
+            font-family: 'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
+            scroll-behavior: smooth;
         }
 
-        /* 16:9 Landscape Canvas */
-        .landscape-canvas {
-            width: 100vw;
+        body {
+            background-color: var(--bg-page);
+            color: var(--c-body);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 18px;
+            line-height: 1.65;
+        }
+
+        /* 1. DESKTOP LEFT SIDEBAR */
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            background-color: var(--bg-white);
+            border-right: 1px solid var(--border-subtle);
             height: 100vh;
             display: flex;
-            position: relative;
-            background: #ffffff;
-            overflow: hidden;
-            perspective: 1200px;
-        }
-
-        /* Far Left Vertical Stamp Margin */
-        .side-stamp {
-            position: absolute;
-            left: 20px;
-            bottom: 120px;
-            transform: rotate(-90deg);
-            transform-origin: left bottom;
-            font-family: 'Angkor', serif;
-            font-size: 0.9rem;
-            letter-spacing: 0.2em;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        /* Top Bar Layout */
-        .top-nav {
-            position: absolute;
-            top: 18px;
-            left: 20px;
-            right: 35px;
-            display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            align-items: center;
+            overflow-y: auto;
             z-index: 100;
         }
 
-        .logo-box {
+        .sidebar-header {
+            padding: 36px 30px 20px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 16px;
         }
 
-        .brand-logo-img {
-            height: 48px;
+        .logo-img {
+            height: 52px;
             object-fit: contain;
-            display: block;
+            align-self: flex-start;
         }
 
-        /* TITLES ONLY USE ANGKOR FONT */
-        .nav-header-text {
-            font-family: 'Angkor', serif;
-            font-size: 1.15rem;
-            color: var(--text-black);
-            letter-spacing: 0.04em;
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            padding: 8px 16px;
+            gap: 6px;
+            flex: 1;
         }
 
-        .nav-right-controls {
+        .nav-link {
             display: flex;
             align-items: center;
             gap: 14px;
-        }
-
-        .lang-switcher-box {
-            background: #f1f5f9;
-            border: 2px solid var(--text-black);
-            padding: 4px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-        }
-
-        .lang-btn {
-            background: transparent;
-            border: none;
-            padding: 6px 14px;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .lang-btn.active {
-            background: var(--brand-red);
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(225, 27, 34, 0.3);
-        }
-
-        .nav-right-tag {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
+            padding: 12px 18px;
+            color: var(--c-muted);
+            text-decoration: none;
             font-size: 0.95rem;
             font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        /* Slide Views Switcher */
-        .slide-view {
-            display: none;
-            width: 100%;
-            height: 100%;
-            transform-origin: left center;
-        }
-
-        .slide-view.active {
-            display: grid;
-            grid-template-columns: 1.1fr 1.2fr;
-            padding: 80px 30px 80px 75px;
-            gap: 25px;
-            align-items: center;
-            animation: bookPageFlip 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        @keyframes bookPageFlip {
-            from {
-                opacity: 0;
-                transform: rotateY(-15deg) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: rotateY(0deg) scale(1);
-            }
-        }
-
-        /* LEFT CONTENT COLUMN */
-        .left-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-width: 720px;
-            max-height: 82vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .eyebrow-line {
-            font-family: 'Angkor', serif;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            letter-spacing: 0.12em;
-            color: var(--brand-red);
-            text-transform: uppercase;
-        }
-
-        .eyebrow-line::before {
-            content: '';
-            width: 40px;
-            height: 5px;
-            background: var(--brand-red);
-            border-radius: 4px;
-        }
-
-        .hero-title-bold {
-            font-family: 'Angkor', serif;
-            font-size: 3.4rem;
-            line-height: 1.2;
-            color: var(--text-black);
-            letter-spacing: -0.01em;
-        }
-
-        .hero-title-bold span {
-            color: var(--brand-red);
-        }
-
-        /* CLEAN BODY TEXT AND CAPTIONS (KANTUMRUY PRO - REGULAR WEIGHT) */
-        .sub-english {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.15rem;
-            color: var(--text-dark);
-            line-height: 1.5;
-            font-weight: 400;
-        }
-
-        .sub-khmer {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 1.1rem;
-            color: #991b1b;
-            line-height: 1.6;
-            background: #fff1f2;
-            padding: 12px 16px;
             border-radius: 10px;
-            border-left: 5px solid var(--brand-red);
-            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.08);
-            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        /* STRICT DUAL LANGUAGE TOGGLE SCOPING */
-        body.mode-en .kh-el { display: none !important; }
-        body.mode-kh .en-el { display: none !important; }
-
-        .status-flow-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .nav-link:hover {
+            color: var(--c-dark);
+            background: #f1f5f9;
         }
 
-        .status-step-card {
-            background: #f8fafc;
-            border: 2px solid var(--text-black);
-            border-left: 6px solid var(--brand-red);
-            padding: 12px 16px;
-            border-radius: 10px;
+        .nav-link.active {
+            color: var(--c-red);
+            background: #fee2e2;
+            font-weight: 700;
+        }
+
+        .nav-circle-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
-            gap: 14px;
-        }
-
-        .status-code-badge {
-            font-family: 'Angkor', serif;
-            background: var(--text-black);
-            color: #ffffff;
-            font-size: 1rem;
-            padding: 6px 14px;
-            border-radius: 8px;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
             flex-shrink: 0;
         }
 
-        .status-desc-text {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 1.05rem;
-            color: #1e293b;
-            line-height: 1.5;
-            font-weight: 500;
+        .nav-link.active .nav-circle-num {
+            background: var(--c-red);
+            color: #ffffff;
         }
 
-        body.mode-kh .status-desc-text {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 500;
-            line-height: 1.6;
-            color: #0f172a;
+        .sidebar-footer {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        /* Right Visual Slide Paper Frame */
-        .right-exhibit {
-            width: 100%;
-            height: 100%;
-            max-height: 640px;
+        /* LANGUAGE SWITCH PILLS (EN / KH) */
+        .lang-switch-pills {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 4px;
+            width: 140px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--c-muted);
+            padding: 6px 0;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
             background: #ffffff;
-            border: 3px solid var(--text-black);
-            border-radius: 14px;
-            box-shadow: 14px 14px 0px rgba(9, 13, 22, 0.1);
-            position: relative;
-            padding: 16px 20px;
+            color: var(--c-red);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 2. MOBILE TOP APP BAR & HORIZONTAL PILLS (FOR CEO ON PHONE) */
+        .mobile-header-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-subtle);
+            z-index: 200;
+            padding: 12px 16px 8px;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+
+        .mobile-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .mobile-logo {
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .mobile-horizontal-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .mobile-horizontal-pills::-webkit-scrollbar { display: none; }
+
+        .mob-pill {
+            flex-shrink: 0;
+            background: #f1f5f9;
+            color: var(--c-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .mob-pill.active {
+            background: var(--c-red);
+            color: #ffffff;
+        }
+
+        /* 3. MAIN SCROLLABLE CONTENT VIEWPORT (CENTERED & BIGGER) */
+        .content-viewport {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 56px 80px 450px;
+        }
+
+        .article-container {
+            width: 100%;
+            max-width: 860px;
+            display: flex;
+            flex-direction: column;
+            gap: 80px;
+        }
+
+        /* CHAPTER SECTION */
+        .chapter-block {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-bottom: 72px;
+            border-bottom: 1px solid var(--border-subtle);
+            scroll-margin-top: 56px;
+        }
+
+        #chap-5 {
+            min-height: 75vh;
+            border-bottom: none;
+        }
+
+        .chapter-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--c-red);
+        }
+
+        .chapter-heading {
+            font-family: 'Merriweather', serif;
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--c-dark);
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+        }
+
+        .chapter-lead {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: var(--c-dark);
+            font-weight: 500;
+        }
+
+        /* INTRO PICTURES GRID */
+        .intro-gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 12px;
+        }
+
+        .intro-picture-card {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intro-picture-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* Clean Circle Points */
+        .points-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .point-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .point-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--c-red);
+            margin-top: 9px;
+            flex-shrink: 0;
+        }
+
+        .point-circle.blue {
+            background: var(--c-blue);
+        }
+
+        .point-text strong {
+            font-weight: 700;
+            color: var(--c-dark);
+        }
+
+        /* 10-Hour Big Clean Highlight */
+        .ten-hour-box {
+            background: #ffffff;
+            border-left: 4px solid var(--c-red);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin-top: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+            border-top: 1px solid var(--border-subtle);
+            border-right: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .ten-hour-box p {
+            font-size: 1.05rem;
+            color: var(--c-dark);
+            font-weight: 600;
+        }
+
+        /* DUAL VIDEO ROW FOR ROLES & ASSIGNMENT */
+        .dual-video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        /* TIKTOK 9:16 PHONE VIDEO CONTAINER */
+        .phone-mockup {
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            width: 100%;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .tab-switcher {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            border-bottom: 2px solid var(--border-light);
-            padding-bottom: 8px;
-        }
-
-        .exhibit-tab {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 600;
-            background: #f1f5f9;
-            border: 2px solid var(--border-light);
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            padding: 8px 6px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .exhibit-tab.active {
-            background: var(--text-black);
-            color: #ffffff;
-            border-color: var(--text-black);
-        }
-
-        /* REAL PAPER STICKY NOTE COVER STYLE */
-        .sticky-note-under {
-            background: var(--paper-yellow);
-            color: var(--paper-text);
-            padding: 12px 18px;
-            border-radius: 4px 4px 16px 4px; /* Sticky paper folded corner */
-            font-size: 0.95rem;
-            border: 1.5px solid var(--paper-border);
-            box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.12), inset 0 -4px 8px rgba(0,0,0,0.03);
-            line-height: 1.5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+        .phone-screen {
             width: 100%;
-            position: relative;
-        }
-
-        .sticky-kh-text {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 500;
-        }
-
-        .badge-tag-inline {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
-            background: #d97706;
-            color: #ffffff;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        /* REAL PAPER STICKY COVER CARDS FOR KPIS */
-        .kpi-demo-card {
-            flex: 1;
-            background: var(--paper-yellow-light);
-            border: 2px solid var(--paper-border);
-            border-radius: 4px 4px 16px 4px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 12px;
-            box-shadow: 4px 6px 14px rgba(0,0,0,0.08);
-        }
-
-        .kpi-demo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px dashed var(--paper-border);
-            padding-bottom: 8px;
-        }
-
-        .kpi-demo-title {
-            font-family: 'Angkor', serif;
-            font-size: 1.15rem;
-            color: #713f12;
-        }
-
-        .kpi-demo-target {
-            background: #ffffff;
-            color: #047857;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            border: 1.5px solid #059669;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .kpi-demo-body {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #451a03;
-            font-weight: 500;
-        }
-
-        .kpi-demo-formula {
-            background: #451a03;
-            color: #fef08a;
-            font-family: monospace;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        /* DISPLAY FRAME FOR SLIDES */
-        .exhibit-display-frame {
-            flex: 1;
-            width: 100%;
-            background: #ffffff;
-            border: 2px solid var(--border-light);
-            border-radius: 10px;
+            aspect-ratio: 9 / 16;
+            background: #000000;
+            border-radius: 14px;
             overflow: hidden;
             position: relative;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .exhibit-img {
+        .phone-screen video {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
         }
 
-        /* MASTER SUMMARY CARDS ON SLIDE 5 */
-        .summary-grid-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .summary-card-item {
-            background: var(--paper-yellow-light);
-            border: 2px solid var(--paper-border);
-            border-radius: 4px 4px 12px 4px;
-            padding: 14px;
+        .phone-footer {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 3px 5px 10px rgba(0,0,0,0.06);
-        }
-
-        .summary-card-header {
-            font-family: 'Angkor', serif;
-            font-size: 1.05rem;
-            color: #713f12;
-            border-bottom: 1.5px dashed var(--paper-border);
-            padding-bottom: 6px;
-        }
-
-        .summary-card-text {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #451a03;
-            font-weight: 500;
-        }
-
-        /* NAVIGATION BAR */
-        .bottom-nav {
-            position: fixed;
-            bottom: 20px;
-            left: 75px;
-            right: 35px;
-            display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            z-index: 9999;
-            pointer-events: none;
+            padding: 0 6px 2px;
         }
 
-        .page-mark {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
+        .phone-tag {
+            font-size: 0.78rem;
             font-weight: 700;
-            font-size: 0.85rem;
-            color: var(--text-black);
-            background: rgba(255, 255, 255, 0.92);
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 2px solid var(--text-black);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            pointer-events: auto;
+            color: var(--c-dark);
+            font-family: monospace;
         }
 
-        .nav-controls-box {
-            background: var(--text-black);
-            color: #ffffff;
-            padding: 8px 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 8px 24px rgba(9, 13, 22, 0.25);
-            border: 2px solid #ffffff;
-            pointer-events: auto;
-        }
-
-        .book-turn-btn {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
+        .phone-link {
+            font-size: 0.8rem;
             font-weight: 700;
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            color: var(--c-blue);
+            text-decoration: none;
         }
 
-        .book-turn-btn:hover:not(:disabled) {
-            color: var(--brand-red);
-            transform: scale(1.05);
+        .phone-link:hover {
+            text-decoration: underline;
         }
 
-        .book-turn-btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
+        /* Language visibility: DEFAULT KHMER */
+        .en-text { display: none; }
+        .kh-text { display: block; }
+        
+        body:not(.lang-kh) .en-text { display: block; }
+        body:not(.lang-kh) .kh-text { display: none; }
+
+        body.lang-kh .chapter-heading {
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 700;
         }
 
-        .slide-dots {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.35);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .dot.active {
-            background: var(--brand-red);
-            width: 24px;
-            border-radius: 10px;
-        }
-
-        /* Lightbox Modal */
-        .lightbox-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(9, 13, 22, 0.95);
-            z-index: 999999;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .lightbox-modal.active { display: flex; }
-
-        .lightbox-box {
-            width: 95vw;
-            height: 90vh;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            position: relative;
-        }
-
-        .lightbox-close {
-            font-family: 'Angkor', serif;
-            position: absolute;
-            top: 16px; right: 16px;
-            background: var(--text-black);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        /* ── RESPONSIVE MOBILE STYLES (PHONES & TABLETS) ──────────── */
-        @media (max-width: 900px) {
-            html, body {
-                height: auto !important;
-                min-height: 100vh;
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
+        /* 4. MOBILE RESPONSIVENESS (< 860px) */
+        @media (max-width: 860px) {
+            body {
+                flex-direction: column;
             }
-
-            .landscape-canvas {
-                height: auto !important;
-                min-height: 100vh;
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
-                padding-bottom: 90px;
+            .sidebar {
+                display: none;
             }
-
-            .side-stamp {
-                display: none !important;
+            .mobile-header-bar {
+                display: flex;
             }
-
-            .top-nav {
-                position: relative !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                padding: 12px 16px !important;
-                flex-wrap: wrap !important;
-                gap: 10px !important;
-                background: #ffffff;
-                border-bottom: 2px solid var(--text-black);
+            .content-viewport {
+                padding: 120px 20px 240px;
+                height: 100vh;
             }
-
-            .logo-box {
-                gap: 10px !important;
+            .chapter-block {
+                scroll-margin-top: 120px;
+                gap: 18px;
+                padding-bottom: 50px;
             }
-
-            .brand-logo-img {
-                height: 36px !important;
+            .chapter-heading {
+                font-size: 1.85rem;
             }
-
-            .nav-header-text {
-                font-size: 0.95rem !important;
+            .chapter-lead {
+                font-size: 1.08rem;
             }
-
-            .nav-right-controls {
-                width: 100% !important;
-                justify-content: space-between !important;
+            .point-row {
+                font-size: 0.95rem;
+                gap: 12px;
             }
-
-            .slide-view.active {
-                grid-template-columns: 1fr !important;
-                padding: 16px 16px 100px 16px !important;
-                gap: 20px !important;
-                height: auto !important;
+            .intro-gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
-
-            .hero-title-bold {
-                font-size: 2.1rem !important;
+            .dual-video-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
-
-            .hero-title-bold.kh-el {
-                font-size: 1.9rem !important;
-            }
-
-            .sub-english, .sub-khmer {
-                font-size: 0.95rem !important;
-            }
-
-            .right-exhibit {
-                max-height: none !important;
-                height: auto !important;
-                box-shadow: 6px 6px 0px rgba(9, 13, 22, 0.1) !important;
-                padding: 14px !important;
-            }
-
-            .summary-grid-box {
-                grid-template-columns: 1fr !important;
-            }
-
-            .tab-switcher {
-                grid-template-columns: 1fr !important;
-                gap: 4px !important;
-            }
-
-            .exhibit-tab {
-                font-size: 0.82rem !important;
-                padding: 8px 4px !important;
-            }
-
-            .sticky-note-under {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 8px !important;
-                padding: 10px 14px !important;
-            }
-
-            .bottom-nav {
-                left: 10px !important;
-                right: 10px !important;
-                bottom: 12px !important;
-                flex-direction: row !important;
-                gap: 8px !important;
-            }
-
-            .page-mark {
-                font-size: 0.72rem !important;
-                padding: 4px 8px !important;
-            }
-
-            .nav-controls-box {
-                padding: 6px 14px !important;
-                gap: 10px !important;
-            }
-
-            .book-turn-btn {
-                font-size: 0.75rem !important;
+            .phone-mockup {
+                max-width: 100%;
+                margin: 10px auto 0;
             }
         }
     </style>
 </head>
-<body class="mode-both">
+<body class="lang-kh">
 
-    <div class="landscape-canvas">
+    <!-- MOBILE TOP HEADER & NAVIGATION PILLS -->
+    <header class="mobile-header-bar">
+        <div class="mobile-top-row">
+            <img alt="Metfone Express" class="mobile-logo" src="./images/metfone_express_logo.png" onerror="this.src='https://opsexpress.metfone.com.kh/assets/images/logo.png'"/>
+            <div class="lang-switch-pills">
+                <button class="lang-btn" id="btnEnMob" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnKhMob" onclick="setLanguage('kh')">KH</button>
+            </div>
+        </div>
+        <nav class="mobile-horizontal-pills">
+            <a href="#chap-0" class="mob-pill active" onclick="setActiveMobPill(this)">0. Introduce</a>
+            <a href="#chap-1" class="mob-pill" onclick="setActiveMobPill(this)">1. KPI</a>
+            <a href="#chap-2" class="mob-pill" onclick="setActiveMobPill(this)">2. 10h Rule</a>
+            <a href="#chap-3" class="mob-pill" onclick="setActiveMobPill(this)">3. Inventory</a>
+            <a href="#chap-4" class="mob-pill" onclick="setActiveMobPill(this)">4. Roles</a>
+            <a href="#chap-5" class="mob-pill" onclick="setActiveMobPill(this)">5. Route</a>
+        </nav>
+    </header>
+
+    <!-- 1. DESKTOP LEFT SIDEBAR -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <img alt="Metfone Express" class="logo-img" src="./images/metfone_express_logo.png" onerror="this.src='https://opsexpress.metfone.com.kh/assets/images/logo.png'"/>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#chap-0" class="nav-link active" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">0</span>
+                    <span class="en-text">Introduce</span>
+                    <span class="kh-text">សេចក្តីផ្តើម</span>
+                </a>
+                <a href="#chap-1" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">1</span>
+                    <span class="en-text">KPI & Updates</span>
+                    <span class="kh-text">KPI & ស្ថានភាព</span>
+                </a>
+                <a href="#chap-2" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">2</span>
+                    <span class="en-text">10-Hour Rule</span>
+                    <span class="kh-text">ច្បាប់ ១០ ម៉ោង</span>
+                </a>
+                <a href="#chap-3" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">3</span>
+                    <span class="en-text">Pending Inventory</span>
+                    <span class="kh-text">ឥវ៉ាន់កកស្ទះ (Video)</span>
+                </a>
+                <a href="#chap-4" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">4</span>
+                    <span class="en-text">Roles & Assignment</span>
+                    <span class="kh-text">ការចាត់តាំង & សិទ្ធិ (Video)</span>
+                </a>
+                <a href="#chap-5" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">5</span>
+                    <span class="en-text">Arrange in Convenient Route</span>
+                    <span class="kh-text">ការរៀបចំខ្សែផ្លូវដឹក & យក</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="lang-switch-pills">
+                <button class="lang-btn" id="btnEn" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnKh" onclick="setLanguage('kh')">KH</button>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--c-muted); text-align: center;">
+                © 2026 Metfone Express
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN STREAMLINED BOOK CONTENT -->
+    <main class="content-viewport" id="contentViewport">
+        <div class="article-container">
+
+            <!-- LESSON 0: INTRODUCE (ONLY 2 INFOGRAPHIC PICTURES - NO TEXT DETAIL) -->
+            <section class="chapter-block" id="chap-0">
+                <div class="chapter-tag">
+                    <span>Lesson 00</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Introduce</h2>
+                <h2 class="chapter-heading kh-text">សេចក្តីផ្តើម</h2>
+
+                <div class="intro-gallery-grid">
+                    <div class="intro-picture-card">
+                        <img src="./images/intro_step1.jpg" alt="Operational Principle - Pickup"/>
+                    </div>
+                    <div class="intro-picture-card">
+                        <img src="./images/intro_step2.jpg" alt="Operational Principle - Delivery"/>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LESSON 01: KPI & UPDATES -->
+            <section class="chapter-block" id="chap-1">
+                <div class="chapter-tag">
+                    <span>Lesson 01</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">KPI & Status Updates</h2>
+                <h2 class="chapter-heading kh-text">KPI និងការ Update ស្ថានភាព</h2>
+
+                <div class="chapter-lead en-text">
+                    Pick up on time, deliver safely, and update the app immediately.
+                </div>
+                <div class="chapter-lead kh-text">
+                    ទៅយកទាន់ពេល ដឹកជញ្ជូនសុវត្ថិភាព និង Update លើ App ភ្លាមៗ។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Pickup:</strong>
+                            <strong class="kh-text">ការទៅយក៖</strong>
+                            <span class="en-text">Contact sender quickly, check package, and scan in the app right away.</span>
+                            <span class="kh-text">ទាក់ទងអ្នកផ្ញើឱ្យលឿន ពិនិត្យឥវ៉ាន់ និងស្កេនចូល App ភ្លាមៗ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Delivery:</strong>
+                            <strong class="kh-text">ការដឹកជូន៖</strong>
+                            <span class="en-text">Call receiver ahead, deliver safely, and collect exact COD/fee.</span>
+                            <span class="kh-text">ទូរស័ព្ទទៅអ្នកទទួលជាមុន ប្រគល់ឥវ៉ាន់ និងប្រមូលប្រាក់ COD/ថ្លៃដឹកឱ្យត្រឹមត្រូវ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">True Status:</strong>
+                            <strong class="kh-text">ស្ថានភាពពិត៖</strong>
+                            <span class="en-text">Always choose the real status (Picked Up, Delivered, or Failed with actual reason). Never guess.</span>
+                            <span class="kh-text">ជ្រើសរើសស្ថានភាពជាក់ស្តែង (បានទទួល បានដឹក ឬមិនបានសម្រេចដោយបញ្ជាក់មូលហេតុពិត)។ ហាមស្មាន។</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LESSON 02: THE 10-HOUR RULE -->
+            <section class="chapter-block" id="chap-2">
+                <div class="chapter-tag">
+                    <span>Lesson 02</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">The 10-Hour Rule</h2>
+                <h2 class="chapter-heading kh-text">ច្បាប់កំណត់ពេល ១០ ម៉ោង</h2>
+
+                <div class="chapter-lead en-text">
+                    Update the bill status within 10 hours of assignment.
+                </div>
+                <div class="chapter-lead kh-text">
+                    ត្រូវតែ Update ស្ថានភាពឥវ៉ាន់ក្នុងរង្វង់ ១០ ម៉ោងបន្ទាប់ពីទទួលការចាត់តាំង។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">10h Limit:</strong>
+                            <strong class="kh-text">កំហិត ១០h៖</strong>
+                            <span class="en-text">Timer starts the moment the bill is assigned to your account.</span>
+                            <span class="kh-text">ការរាប់ម៉ោងចាប់ផ្តើមភ្លាមៗនៅពេលឥវ៉ាន់ចូលក្នុងគណនីរបស់អ្នក។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Example:</strong>
+                            <strong class="kh-text">ករណីជាក់ស្តែង៖</strong>
+                            <span class="en-text">Assigned at <b>08:00 AM</b> ➔ Must update status before <b>06:00 PM</b> same day.</span>
+                            <span class="kh-text">ចាត់តាំងម៉ោង <b>០៨:០០ ព្រឹក</b> ➔ ត្រូវតែ Update មុនម៉ោង <b>០៦:០០ ល្ងាច</b> ថ្ងៃដដែល។</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ten-hour-box">
+                    <p class="en-text">🟢 Within 10 Hours = On-Time | 🔴 Over 10 Hours = Overdue (KPI penalty)</p>
+                    <p class="kh-text">🟢 ក្នុងរង្វង់ ១០ ម៉ោង = ទាន់ពេល | 🔴 លើស ១០ ម៉ោង = យឺតយ៉ាវ (ខូច KPI)</p>
+                </div>
+            </section>
+
+            <!-- LESSON 03: PENDING INVENTORY -->
+            <section class="chapter-block" id="chap-3">
+                <div class="chapter-tag">
+                    <span>Lesson 03</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Pending Inventory</h2>
+                <h2 class="chapter-heading kh-text">ការគ្រប់គ្រងឥវ៉ាន់កកស្ទះ</h2>
+
+                <div class="chapter-lead en-text">
+                    Check and clear your route pending list every day.
+                </div>
+                <div class="chapter-lead kh-text">
+                    ពិនិត្យ និងដោះស្រាយឥវ៉ាន់សល់តាមផ្លូវដឹករបស់ខ្លួនជារៀងរាល់ថ្ងៃ។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Check App:</strong>
+                            <strong class="kh-text">មើលលើ App៖</strong>
+                            <span class="en-text">Review open and pending bills in your route throughout the day.</span>
+                            <span class="kh-text">តាមដានឥវ៉ាន់ Pending ក្នុងផ្លូវរបស់ខ្លួនឯងឱ្យបានញឹកញាប់។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Self-Management:</strong>
+                            <strong class="kh-text">ម្ចាស់ការខ្លួនឯង៖</strong>
+                            <span class="en-text">Proactively clear open bills without waiting for reminders.</span>
+                            <span class="kh-text">ចាត់ចែងដោះស្រាយឥវ៉ាន់ដែលនៅសល់ដោយខ្លួនឯង ដោយមិនរង់ចាំការដាស់តឿន។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Manager & CS Help:</strong>
+                            <strong class="kh-text">ការជួយពី Manager & CS៖</strong>
+                            <span class="en-text">Branch Manager and CS staff assist with re-assigning heavy volumes.</span>
+                            <span class="kh-text">ប្រធានសាខា និង CS ជួយសម្របសម្រួល និងបែងចែកឥវ៉ាន់ពេលមានចំនួនច្រើន។</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9:16 Phone Video -->
+                <div class="phone-mockup" style="max-width: 350px; margin: 20px auto 0;">
+                    <div class="phone-footer">
+                        <span class="phone-tag">video: inventory</span>
+                        <a href="./videos/inventory.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                    </div>
+                    <div class="phone-screen">
+                        <video id="vid-inventory" controls playsinline webkit-playsinline preload="metadata">
+                            <source src="./videos/inventory.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LESSON 04: USER ROLES & BILL ASSIGNMENT (MANAGER ASSIGN & SHIPPER SELF-ASSIGN TOGETHER) -->
+            <section class="chapter-block" id="chap-4">
+                <div class="chapter-tag">
+                    <span>Lesson 04</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Roles & Bill Assignment</h2>
+                <h2 class="chapter-heading kh-text">តួនាទី & ការចាត់តាំងវិក្កយបត្រ</h2>
+
+                <div class="chapter-lead en-text">
+                    Bills can be assigned by Managers or self-assigned by Shippers to earn commission.
+                </div>
+                <div class="chapter-lead kh-text">
+                    វិក្កយបត្រអាចចាត់តាំងដោយ Manager ឬ Shipper ចាត់តាំងមកខ្លួនឯងផ្ទាល់ដើម្បីទទួល Commission។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Manager / CS Assign:</strong>
+                            <strong class="kh-text">Manager/CS ចាត់តាំង៖</strong>
+                            <span class="en-text">Branch Manager or CS assigns open orders directly to shippers based on route capacity.</span>
+                            <span class="kh-text">Manager ឬ CS ចាត់តាំងឥវ៉ាន់ផ្ទាល់ទៅកាន់ Shipper តាមតំបន់ផ្លូវដឹក។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Shipper Self-Assign:</strong>
+                            <strong class="kh-text">Shipper ចាត់ខ្លួនឯង៖</strong>
+                            <span class="en-text">Shippers with assigned permissions can self-assign available bills directly in the app without asking.</span>
+                            <span class="kh-text">Shipper ដែលមានសិទ្ធិ អាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯងបានភ្លាមៗលើ App ដោយមិនបាច់សុំការអនុញ្ញាតគ្រប់ពេលឡើយ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Commission Earnings:</strong>
+                            <strong class="kh-text">កម្រៃជើងសារ (Commission)៖</strong>
+                            <span class="en-text">Commission is calculated based on the applicable bill amount for work handled and completed by your account.</span>
+                            <span class="kh-text">Commission ត្រូវបានគណនាផ្អែកលើទំហំទឹកប្រាក់នៃឥវ៉ាន់ជាក់ស្តែងដែលអ្នកបានបំពេញការងារជោគជ័យ។</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DUAL 9:16 VIDEOS SIDE-BY-SIDE -->
+                <div class="dual-video-grid">
+                    <!-- Video: manager_assign -->
+                    <div class="phone-mockup">
+                        <div class="phone-footer">
+                            <span class="phone-tag">video: manager_assign</span>
+                            <a href="./videos/manager_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                        </div>
+                        <div class="phone-screen">
+                            <video id="vid-mgr" controls playsinline webkit-playsinline preload="metadata">
+                                <source src="./videos/manager_assign.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+
+                    <!-- Video: shipper_assign -->
+                    <div class="phone-mockup">
+                        <div class="phone-footer">
+                            <span class="phone-tag">video: shipper_assign</span>
+                            <a href="./videos/shipper_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                        </div>
+                        <div class="phone-screen">
+                            <video id="vid-shp" controls playsinline webkit-playsinline preload="metadata">
+                                <source src="./videos/shipper_assign.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LESSON 05: ARRANGE BILLS IN CONVENIENT ROUTE (DELIVERY & PICKUP ROUTE) -->
+            <section class="chapter-block" id="chap-5">
+                <div class="chapter-tag">
+                    <span>Lesson 05</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Arrange Bills in Convenient Route</h2>
+                <h2 class="chapter-heading kh-text">ការរៀបចំវិក្កយបត្រតាមខ្សែផ្លូវងាយស្រួល (ដឹក & យក)</h2>
+
+                <div class="chapter-lead en-text">
+                    Organize your delivery and pickup bills in sequence before going out to save fuel, time, and stay inside the 10h SLA.
+                </div>
+                <div class="chapter-lead kh-text">
+                    រៀបចំវិក្កយបត្រដឹក (Delivery) និងទទួល (Pickup) ជាលំដាប់លំដោយមុនចេញដំណើរ ដើម្បីចំណេញសាំង ពេលវេលា និងទាន់ម៉ោង ១០h។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Combine Pickup & Delivery:</strong>
+                            <strong class="kh-text">បញ្ចូលផ្លូវដឹក និងទទួលជាមួយគ្នា៖</strong>
+                            <span class="en-text">Group nearby pickup points and delivery destinations located on the same street or neighborhood together.</span>
+                            <span class="kh-text">ប្រមូលកន្លែងទៅយក (Pickup) និងកន្លែងទៅដឹក (Delivery) ដែលនៅលើផ្លូវ ឬភូមិ/ឃុំក្បែរៗគ្នាជាមួយគ្នា។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Prioritize by Deadline:</strong>
+                            <strong class="kh-text">ផ្តល់អាទិភាពតាមម៉ោងកំណត់៖</strong>
+                            <span class="en-text">Place urgent pickups and bills close to the 10-hour limit at the beginning of your trip.</span>
+                            <span class="kh-text">ដាក់វិក្កយបត្រទទួលបន្ទាន់ និងវិក្កយបត្រជិតផុតកំណត់ ១០ ម៉ោងនៅដើមខ្សែផ្លូវ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Continuous Efficient Loop:</strong>
+                            <strong class="kh-text">ខ្សែផ្លូវធ្វើដំណើរជារង្វង់៖</strong>
+                            <span class="en-text">Plan a clean circular loop starting from the branch, completing stops in order, and returning without driving back-and-forth.</span>
+                            <span class="kh-text">រៀបចំខ្សែផ្លូវដើរជារង្វង់បន្តបន្ទាប់ពីសាខា ដោយបំពេញការងារតាមលំដាប់ និងមិនជិះកាត់ចុះកាត់ឡើងឡើយ។</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+<script>
+    // Smooth Scroll spy for sidebar links and mobile pills
+    const scrollContainer = document.getElementById('contentViewport');
+    const sections = document.querySelectorAll('.chapter-block');
+    const navItems = document.querySelectorAll('.nav-link');
+    const mobPills = document.querySelectorAll('.mob-pill');
+
+    scrollContainer.addEventListener('scroll', () => {
+        const scrollBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
         
-        <div class="side-stamp">METFONE EXPRESS · AUGUST OPERATING KPI MASTER DECK</div>
-
-        <!-- Top Navigation -->
-        <div class="top-nav">
-            <div class="logo-box">
-                <img src="images/metfone_express_logo.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/metfone_express_logo.png';" alt="Metfone Express Logo" class="brand-logo-img">
-                <div class="nav-header-text en-el">METFONE EXPRESS OPERATING KPI MASTER GUIDELINES</div>
-                <div class="nav-header-text kh-el">មជ្ឈមណ្ឌល METFONE EXPRESS · សៀវភៅណែនាំ KPI ប្រតិបត្តិការ</div>
-            </div>
-
-            <div class="nav-right-controls">
-                <div class="lang-switcher-box">
-                    <button class="lang-btn active" id="btnBoth" onclick="setLanguage('both')">🌐 EN+KH</button>
-                    <button class="lang-btn" id="btnEn" onclick="setLanguage('en')">🇬🇧 EN</button>
-                    <button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">🇰🇭 KH</button>
-                </div>
-                <div class="nav-right-tag" id="slideTag">
-                    <span class="en-el">Slide 1 of 5 · Branch Quality Guidelines</span>
-                    <span class="kh-el">ស្លាយ ១ នៃ ៥ · គោលការណ៍ណែនាំគុណភាពសាខា</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 1 VIEW: AUGUST 2026 BRANCH QUALITY TARGETS -->
-        <div id="slide1" class="slide-view active">
-            <div class="left-content">
-                <div class="eyebrow-line">
-                    <span class="en-el">Slide 01 · 25 Provinces Branch Operating SLA Guidelines</span>
-                    <span class="kh-el">ស្លាយ ០១ · គោលការណ៍ណែនាំ SLA ប្រតិបត្តិការសាខាទាំង ២៥ ខេត្តក្រុង</span>
-                </div>
-                
-                <h1 class="hero-title-bold en-el">
-                    Branch KPI.<br><span>Master Guidelines.</span>
-                </h1>
-                <h1 class="hero-title-bold kh-el">
-                    គោលការណ៍ KPI សាខា<br><span>សៀវភៅណែនាំប្រតិបត្តិការ</span>
-                </h1>
-
-                <p class="sub-english en-el">
-                    <b>Standard Operating Guidelines:</b> Master quality targets & SLA standards assigned to all 25 provincial branches.
-                </p>
-                <p class="sub-khmer kh-el">
-                    <b>សៀវភៅណែនាំស្តង់ដារប្រតិបត្តិការ៖</b> គោលដៅគុណភាព និងស្តង់ដារ SLA សម្រាប់សាខារាជធានី-ខេត្តទាំង 25។
-                </p>
-
-                <div class="status-flow-container">
-                    <div class="status-step-card" style="border-left-color: #2563eb;">
-                        <div class="status-code-badge" style="background: #2563eb;">FIRST MILE</div>
-                        <div class="status-desc-text en-el">Phnom Penh: <b>3.00h</b> | Kandal: <b>4.00h</b> | Provinces: <b>4.50h</b> (TCT Avg: <b>4.42h</b>).</div>
-                        <div class="status-desc-text kh-el">ភ្នំពេញ៖ <b>3.00h</b> | កណ្តាល៖ <b>4.00h</b> | ខេត្តផ្សេងៗ៖ <b>4.50h</b> (TCT ៖ <b>4.42h</b>)។</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #059669;">
-                        <div class="status-code-badge" style="background: #059669;">LAST MILE</div>
-                        <div class="status-desc-text en-el">Standard <b>10.00 Hours SLA</b> across all 25 branches nationwide!</div>
-                        <div class="status-desc-text kh-el">ស្តង់ដារ <b>10.00ម៉ោង SLA</b> សម្រាប់គ្រប់សាខាទាំង 25 ពេញប្រទេស!</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #7c3aed;">
-                        <div class="status-code-badge" style="background: #7c3aed;">ONTIME PICKUP</div>
-                        <div class="status-desc-text en-el">Minimum <b>98.00% On-time Pickup Rate</b> target for all branches.</div>
-                        <div class="status-desc-text kh-el">គោលដៅអត្រាទទួលអីវ៉ាន់ទាន់ពេលយ៉ាងតិច <b>98.00%</b> គ្រប់សាខា។</div>
-                    </div>
-                </div>
-
-                <!-- SLA EXPLANATION YELLOW STICKY PAPER NOTE ON SCREEN -->
-                <div class="sticky-note-under" style="margin-top: 10px; background: #fef08a; border: 2px solid #eab308; border-radius: 4px 4px 16px 4px; box-shadow: 4px 6px 12px rgba(0,0,0,0.1); transform: rotate(-0.5deg);">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">
-                            📌 <b>WHAT IS SLA? (Service Level Agreement)</b><br>
-                            • <b>Simple Meaning:</b> SLA is the <b>MAXIMUM TIME LIMIT</b> to finish a task!<br>
-                            • <b>Last Mile SLA (10h):</b> Must assign driver within <b>10 hours</b> after branch arrival (306).<br>
-                            • <b>Before SLA Limit</b> ➔ 🟢 <b>On-Time</b> | <b>After SLA Limit</b> ➔ 🔴 <b>Overdue!</b>
-                        </div>
-                        <div class="kh-el sticky-kh-text">
-                            📌 <b>តើ SLA ជាអ្វី? (Service Level Agreement)</b><br>
-                            • <b>ន័យងាយយល់៖</b> SLA គឺជា <b>"កំហិតម៉ោងកំណត់"</b> ក្នុងការធ្វើការងារឱ្យរួចរាល់!<br>
-                            • <b>Last Mile SLA (១០ម៉ោង)៖</b> ត្រូវចាត់អ្នកដឹកឱ្យបានមុន <b>១០ម៉ោង</b> ក្រោយអីវ៉ាន់ដល់សាខា (306)។<br>
-                            • <b>ធ្វើទាន់ពេល</b> ➔ 🟢 <b>ទាន់ពេល (On-Time)</b> | <b>ធ្វើហួសពេល</b> ➔ 🔴 <b>យឺតយ៉ាវ (Overdue)!</b>
-                        </div>
-                    </div>
-                    <div class="badge-tag-inline" style="align-self: flex-start;">
-                        <span class="en-el">📌 WHAT IS SLA?</span>
-                        <span class="kh-el">📌 ន័យ SLA ងាយៗ</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-exhibit">
-                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-                    <span class="en-el">📌 Master Guidelines: Branch Quality Targets (25 Provinces)</span>
-                    <span class="kh-el">📌 ឧបសម្ព័ន្ធ៖ គោលការណ៍ណែនាំគោលដៅគុណភាពសាខា ទាំង២៥ខេត្តក្រុង</span>
-                </div>
-                <div class="exhibit-display-frame" style="overflow: auto; display: block; padding: 0;" onclick="openLightbox()">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; text-align: center; background: #ffffff;">
-                        <thead>
-                            <tr style="background: #fef08a; color: #713f12; font-family: 'Kantumruy Pro', 'Inter', sans-serif; font-weight: 700; border-bottom: 2px solid #eab308;">
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">No.</span><span class="kh-el">លេខ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Code</span><span class="kh-el">កូដ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Branch Name</span><span class="kh-el">ឈ្មោះសាខា</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Zone</span><span class="kh-el">តំបន់</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;">First Mile</th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;">Last Mile</th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Ontime Pickup</span><span class="kh-el">អត្រាយក</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">1st Update</span><span class="kh-el">អត្រាស្កេន1st</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Total Success</span><span class="kh-el">សរុបជោគជ័យ</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending Mega</span><span class="kh-el">កកស្ទះ Mega</span></th>
-                                <th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending 3 Day</span><span class="kh-el">កកស្ទះ >3ថ្ងៃ</span></th>
-                            </tr>
-                            <tr style="background: #fef3c7; color: #0f172a; font-weight: 700; border-bottom: 1.5px solid #eab308;">
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">-</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">TCT</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Total Corporation</span><span class="kh-el">សរុបក្រុមហ៊ុន</span></td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;"><span class="en-el">Overall</span><span class="kh-el">រួម</span></td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #2563eb;">4.42h</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">10.00h</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">98.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">90.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">95.04%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">1.00%</td>
-                                <td style="padding: 3px; border: 1px solid #cbd5e1;">4.00%</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">1</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kandal</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">2</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PNP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Phnom Penh</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #2563eb; font-weight: 700;">3.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #059669; font-weight: 700;">96.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">3</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Prey Veng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">4</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SVA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Svay Rieng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 1</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">5</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SPE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Speu</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">6</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAM</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampot</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">7</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KEP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kep</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">8</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KOH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Koh Kong</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">9</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Sihanouk</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">10</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TAK</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Takéo</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 2</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">11</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Banteay Meanchey</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">12</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Battambang</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">13</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Chhnang</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">14</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PAI</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pailin</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">15</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PUR</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pursat</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 3</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">16</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">THO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Thom</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">17</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ODD</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Oddar Meancheay</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">18</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Vihear</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">19</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Siem Reap</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 4</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">20</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KRA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kratié</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">21</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">MON</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Mondulkiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">22</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ROT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Ratanakiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">23</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Cham</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">24</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">STU</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Stung Treng</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                            <tr><td style="padding: 3px; border: 1px solid #e2e8f0;">25</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TBO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Tbong Khmum</td><td style="padding: 3px; border: 1px solid #e2e8f0;">Vùng 5</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="sticky-note-under">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">📌 <b>August SLA Targets:</b> First Mile (4.42h), Last Mile (10h), Pickup (98%), 1st Update (90%)</div>
-                        <div class="kh-el sticky-kh-text">📌 <b>គោលដៅ SLA ខែសីហា៖</b> First Mile (4.42h), Last Mile (10h), Pickup (98%), 1st Update (90%)</div>
-                    </div>
-                    <div class="badge-tag-inline">
-                        <span class="en-el">📌 STICKY PAPER COVER</span>
-                        <span class="kh-el">📌 តារាងគោលដៅ SLA</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 2 VIEW: INTERPRETATION OF 3 MAIN KPIS -->
-        <div id="slide2" class="slide-view">
-            <div class="left-content">
-                <div class="eyebrow-line">
-                    <span class="en-el">Slide 02 · Simple Guide for 3 Core KPIs</span>
-                    <span class="kh-el">ស្លាយ ០២ · ការណែនាំ KPI ទាំង ៣ យ៉ាងងាយៗ</span>
-                </div>
-                
-                <h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    3 Core KPIs.<br><span>Exact Breakdown.</span>
-                </h1>
-                <h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    KPI ទាំង៣សំខាន់<br><span>ការបកស្រាយលម្អិត</span>
-                </h1>
-
-                <div class="status-flow-container">
-                    <div class="status-step-card" style="border-left-color: #2563eb;">
-                        <div class="status-code-badge" style="background: #2563eb;">1st PICKUP</div>
-                        <div class="status-desc-text en-el"><b>1st Pickup KPI:</b> Order creation to courier pickup (PNP 3h, Kandal 4h, Prov 4.5h). Target: <b>98%</b>.</div>
-                        <div class="status-desc-text kh-el"><b>1st Pickup KPI (អីវ៉ាន់ត្រូវយក)៖</b> ពេលបង្កើតដល់ពេលយក (ភ្នំពេញ 3h, កណ្តាល 4h, ខេត្ត 4.5h)។ គោលដៅ៖ <b>៩៨%</b>។</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #d97706;">
-                        <div class="status-code-badge" style="background: #d97706;">1st DELIVERY (306)</div>
-                        <div class="status-desc-text en-el"><b>1st Update after 306:</b> Branch arrival (306) to driver assign (400/401) within <b>10h SLA</b>. Target: <b>90%/85%</b>.</div>
-                        <div class="status-desc-text kh-el"><b>1st Update ក្រោយ 306 (អីវ៉ាន់ដល់សាខា)៖</b> ដល់សាខា (306) ទៅចាត់អ្នកដឹក (400/401) ក្នុង <b>10h SLA</b>។ គោលដៅ៖ <b>៩០%/៨៥%</b>។</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #059669;">
-                        <div class="status-code-badge" style="background: #059669;">TOTAL KPI COUNT</div>
-                        <div class="status-desc-text en-el"><b>Success vs Failed Count:</b> Success Delivered 410 (Target: <b>95%+</b>) vs Overdue (>10h/>48h/Return 520).</div>
-                        <div class="status-desc-text kh-el"><b>សរុប KPI (ជោគជ័យ ធៀបនឹង បរាជ័យ)៖</b> ដឹកជោគជ័យ 410 (គោលដៅ៖ <b>៩៥%+</b>) ធៀបនឹង កកស្ទះ/យឺតយ៉ាវ (>10h/>48h/ត្រឡប់ 520)។</div>
-                    </div>
-                </div>
-
-                <!-- SLA EXPLANATION YELLOW STICKY PAPER NOTE ON SCREEN -->
-                <div class="sticky-note-under" style="margin-top: 10px; background: #fef08a; border: 2px solid #eab308; border-radius: 4px 4px 16px 4px; box-shadow: 4px 6px 12px rgba(0,0,0,0.1); transform: rotate(-0.5deg);">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">
-                            📌 <b>WHAT IS SLA? (Service Level Agreement)</b><br>
-                            • <b>Simple Meaning:</b> SLA is the <b>MAXIMUM TIME LIMIT</b> to finish a task!<br>
-                            • <b>Last Mile SLA (10h):</b> Must assign driver within <b>10 hours</b> after branch arrival (306).<br>
-                            • <b>Before SLA Limit</b> ➔ 🟢 <b>On-Time</b> | <b>After SLA Limit</b> ➔ 🔴 <b>Overdue!</b>
-                        </div>
-                        <div class="kh-el sticky-kh-text">
-                            📌 <b>តើ SLA ជាអ្វី? (Service Level Agreement)</b><br>
-                            • <b>ន័យងាយយល់៖</b> SLA គឺជា <b>"កំហិតម៉ោងកំណត់"</b> ក្នុងការធ្វើការងារឱ្យរួចរាល់!<br>
-                            • <b>Last Mile SLA (១០ម៉ោង)៖</b> ត្រូវចាត់អ្នកដឹកឱ្យបានមុន <b>១០ម៉ោង</b> ក្រោយអីវ៉ាន់ដល់សាខា (306)។<br>
-                            • <b>ធ្វើទាន់ពេល</b> ➔ 🟢 <b>ទាន់ពេល (On-Time)</b> | <b>ធ្វើហួសពេល</b> ➔ 🔴 <b>យឺតយ៉ាវ (Overdue)!</b>
-                        </div>
-                    </div>
-                    <div class="badge-tag-inline" style="align-self: flex-start;">
-                        <span class="en-el">📌 WHAT IS SLA?</span>
-                        <span class="kh-el">📌 ន័យ SLA ងាយៗ</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-exhibit">
-                <div class="tab-switcher">
-                    <button class="exhibit-tab active" onclick="switchExhibitSlide2('kpi1', this)">
-                        <span class="en-el">1st Pickup KPI</span>
-                        <span class="kh-el">1. 1st Pickup KPI</span>
-                    </button>
-                    <button class="exhibit-tab" onclick="switchExhibitSlide2('kpi2', this)">
-                        <span class="en-el">1st Delivery after 306</span>
-                        <span class="kh-el">2. 1st Delivery ក្រោយ 306</span>
-                    </button>
-                    <button class="exhibit-tab" onclick="switchExhibitSlide2('kpi3', this)">
-                        <span class="en-el">Total Success vs Failed</span>
-                        <span class="kh-el">3. សរុប ជោគជ័យ / បរាជ័យ</span>
-                    </button>
-                </div>
-
-                <!-- Tab 1 Demo Card: 1st Pickup KPI -->
-                <div id="demoKpi1" class="kpi-demo-card">
-                    <div class="kpi-demo-header">
-                        <div class="kpi-demo-title">
-                            <span class="en-el">1. 100 → 210 (Pickup Courier)</span>
-                            <span class="kh-el">១. បង្កើតអីវ៉ាន់ → ស្កេនយក (210)</span>
-                        </div>
-                        <div class="kpi-demo-target">
-                            <span class="en-el">Goal: 98%</span>
-                            <span class="kh-el">គោលដៅ៖ ៩៨%</span>
-                        </div>
-                    </div>
-                    <div class="kpi-demo-body">
-                        <div class="en-el">
-                            <b>Create Order → Pickup Courier Immediately</b><br>
-                            • Scan pickup attempt before SLA limit (3h PNP, 4h KAN, 4.5h Prov).<br>
-                            <b>Simple Rule:</b> Order created → Courier picks up on time!
-                        </div>
-                        <div class="kh-el">
-                            <b>បង្កើតអីវ៉ាន់ → ស្កេនយក ភ្លាមៗ</b><br>
-                            • ស្កេនទទួលអីវ៉ាន់ ក្នុង SLA (3h-4.5h) | គោលដៅ ៩៨%<br>
-                            <b>ច្បាប់ងាយៗ៖</b> អតិថិជនបង្កើតអីវ៉ាន់ → អ្នកដឹកទៅយកអីវ៉ាន់ទាន់ពេល!
-                        </div>
-                    </div>
-                    <div class="kpi-demo-formula">
-                        <span class="en-el">Pickup Rate = (On-Time Pickups / Total Orders) * 100%</span>
-                        <span class="kh-el">អត្រាយកអីវ៉ាន់ = (យកទាន់ពេល / សរុបអីវ៉ាន់) * ១០០%</span>
-                    </div>
-                </div>
-
-                <!-- Tab 2 Demo Card: 1st Update Delivery KPI after 306 -->
-                <div id="demoKpi2" class="kpi-demo-card" style="display: none;">
-                    <div class="kpi-demo-header">
-                        <div class="kpi-demo-title">
-                            <span class="en-el">2. 306 → 400 / 401 (Driver Assign)</span>
-                            <span class="kh-el">២. 306 → 400/401 (ចាត់អ្នកដឹក)</span>
-                        </div>
-                        <div class="kpi-demo-target">
-                            <span class="en-el">Goal: 90% / 85%</span>
-                            <span class="kh-el">គោលដៅ៖ ៩០% / ៨៥%</span>
-                        </div>
-                    </div>
-                    <div class="kpi-demo-body">
-                        <div class="en-el">
-                            <b>306 → 400/401 Immediately</b><br>
-                            • Scan 1st update attempt before <b>10:00 Hours SLA</b>!<br>
-                            <b>Simple Rule:</b> Package arrives at branch (306) → Assign driver (400/401) immediately!
-                        </div>
-                        <div class="kh-el">
-                            <b>306 → 400/401 ភ្លាមៗ</b><br>
-                            • ស្កេនប្រតិបត្តិការដំបូង មុន <b>១០:០០ ម៉ោង SLA</b>!<br>
-                            <b>ច្បាប់ងាយៗ៖</b> អីវ៉ាន់ដល់សាខា (306) → ចាត់អ្នកដឹកឱ្យទៅដឹក (400/401) ភ្លាមៗ!
-                        </div>
-                    </div>
-                    <div class="kpi-demo-formula">
-                        <span class="en-el">1st Update Rate = (Orders Updated in 10h / Total Branch Orders) * 100%</span>
-                        <span class="kh-el">អត្រាស្កេនដំបូង = (ស្កេនក្នុង10h / សរុបអីវ៉ាន់សាខា) * ១០០%</span>
-                    </div>
-                </div>
-
-                <!-- Tab 3 Demo Card: Total Success vs Failed KPI Count -->
-                <div id="demoKpi3" class="kpi-demo-card" style="display: none;">
-                    <div class="kpi-demo-header">
-                        <div class="kpi-demo-title">
-                            <span class="en-el">3. 400 → 410 (Delivered Success)</span>
-                            <span class="kh-el">៣. 400 → 410 (ដឹកជោគជ័យ)</span>
-                        </div>
-                        <div class="kpi-demo-target">
-                            <span class="en-el">Goal: 96% / 95%</span>
-                            <span class="kh-el">គោលដៅ៖ ៩៦% / ៩៥%</span>
-                        </div>
-                    </div>
-                    <div class="kpi-demo-body">
-                        <div class="en-el">
-                            <b>400 → 410 Delivered Success</b><br>
-                            • 🟢 Delivered on-time | Goal: <b>96% PNP / 95% Provinces</b>.<br>
-                            • 🔴 Reduce Red Overdue (>10h / >48h / Return 520)!
-                        </div>
-                        <div class="kh-el">
-                            <b>400 → 410 ដឹកជោគជ័យ ភ្លាមៗ</b><br>
-                            • 🟢 ដឹកជូនអតិថិជនជោគជ័យ | គោលដៅ <b>៩៦% (ភ្នំពេញ) / ៩៥% (ខេត្ត)</b>។<br>
-                            • 🔴 កាត់បន្ថយចំនួនកកស្ទះយឺតយ៉ាវ (លើស >10h / >48h / ត្រឡប់ 520)!
-                        </div>
-                    </div>
-                    <div class="kpi-demo-formula">
-                        <span class="en-el">Total Success Rate = (Delivered 410 / Total Month Orders) * 100%</span>
-                        <span class="kh-el">អត្រាដឹកជោគជ័យ = (សរុបដឹក410 / សរុបអីវ៉ាន់ក្នុងខែ) * ១០០%</span>
-                    </div>
-                </div>
-
-                <div class="sticky-note-under">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">📌 <b>3 Core Rules:</b> 1st Pickup (98%) | 1st Delivery (90%) | Total Success (95%+)</div>
-                        <div class="kh-el sticky-kh-text">📌 <b>ច្បាប់ធំទាំង៣៖</b> 1st Pickup (98%) | 1st Delivery (90%) | ដឹកជោគជ័យ (95%+)</div>
-                    </div>
-                    <div class="badge-tag-inline">
-                        <span class="en-el">📌 3 CORE KPIS</span>
-                        <span class="kh-el">📌 KPI ទាំង៣សំខាន់</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 3 VIEW: HOW TO EXPORT 6 CORE KPI REPORTS -->
-        <div id="slide3" class="slide-view">
-            <div class="left-content">
-                <div class="eyebrow-line">
-                    <span class="en-el">Slide 03 · Web Portal 6 KPI Reports Export Guide</span>
-                    <span class="kh-el">ស្លាយ ០៣ · ការណែនាំទាញយករាយការណ៍ ៦ប្រភេទ លើប្រព័ន្ធវេបសាយ</span>
-                </div>
-                
-                <h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    Web Portal.<br><span>Export 6 Reports.</span>
-                </h1>
-                <h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    ប្រព័ន្ធវេបសាយ<br><span>ទាញយករាយការណ៍ 6ប្រភេទ</span>
-                </h1>
-
-                <p class="sub-english en-el">
-                    <b>What data do you get when exporting?</b> Detailed operational columns & performance audit rules for all 6 Excel exports from <code>opsexpress.metfone.com.kh</code>.
-                </p>
-                <p class="sub-khmer kh-el">
-                    <b>តើអ្នកទទួលបានទិន្នន័យអ្វីខ្លះនៅពេលទាញយក?</b> ព័ត៌មានលម្អិតនៃតារាងទិន្នន័យ Excel និងរបៀបពិនិត្យមើលលទ្ធផលសាខា សម្រាប់រាយការណ៍ទាំង ៦។
-                </p>
-
-                <!-- EXCEL COLUMNS & PERFORMANCE AUDIT BREAKDOWN LIST (SHORT KEYPOINTS) -->
-                <div class="status-flow-container" style="max-height: 48vh; overflow-y: auto;">
-                    <div class="status-step-card" style="border-left-color: #2563eb; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #2563eb; font-size: 0.8rem;">1. REVENUE (/doanh-thu-san-luong)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #2563eb;">REVENUE & VOLUME</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📊 <b>Excel Data:</b> Order ID, Freight Fee, COD ($), Status (410).<br>
-                            🎯 <b>Branch Check:</b> Monthly revenue, COD cash, Success Rate (95%+).
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📊 <b>ទិន្នន័យ Excel៖</b> លេខអីវ៉ាន់, ថ្លៃដឹក, ប្រាក់ COD, ស្ថានភាព (410)។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> ផ្ទៀងផ្ទាត់ចំណូល, ប្រាក់ COD, អត្រាដឹកជោគជ័យ (95%+)។
-                        </div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #d97706; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #d97706; font-size: 0.8rem;">2. INVENTORY DELIVERY (/bao-cao-ton-giao)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #d97706;">DELIVERY BACKLOG</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📦 <b>Excel Data:</b> Driver Name, Status (306/400/420), Age Hours.<br>
-                            🎯 <b>Branch Check:</b> Overdue stock (>10h SLA / >48h), assign drivers.
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📦 <b>ទិន្នន័យ Excel៖</b> ឈ្មោះអ្នកដឹក, ស្ថានភាព (306/400/420), ចំនួនម៉ោង។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> រកអីវ៉ាន់យឺតយ៉ាវ (>10h / >48h), ចាត់អ្នកដឹក។
-                        </div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #7c3aed; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #7c3aed; font-size: 0.8rem;">3. INVENTORY RECEIVING (/bao-cao-ton-kho)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #7c3aed;">RECEIVING BACKLOG</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            🏢 <b>Excel Data:</b> Hub Code, Pickup Time, Holding Status (110/120).<br>
-                            🎯 <b>Branch Check:</b> Stock stuck in hub before loading trucks.
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            🏢 <b>ទិន្នន័យ Excel៖</b> កូដឃ្លាំង, ម៉ោងស្កេនយក, ស្ថានភាពឃ្លាំង (110/120)។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> ពិនិត្យអីវ៉ាន់កកស្ទះក្នុងឃ្លាំងមុនលើកឡើងឡាន។
-                        </div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #059669; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #059669; font-size: 0.8rem;">4. ORDER STATUS DETAIL (/bao-cao-trang-thai-don)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #059669;">MASTER BOT SOURCE</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📝 <b>Excel Data:</b> Full history (100 → 306 → 400 → 410), Delay notes.<br>
-                            🎯 <b>Branch Check:</b> Master file for Telegram Bot & customer claims.
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            📝 <b>ទិន្នន័យ Excel៖</b> ប្រវត្តិស្ថានភាព (100 → 306 → 400 → 410), កំណត់ចំណាំ។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> ឯកសារដើមសម្រាប់ Telegram Bot & ដោះស្រាយការតវ៉ា។
-                        </div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #0284c7; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #0284c7; font-size: 0.8rem;">5. RECEIVING KPI (/bao-cao-kpi-thu)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #0284c7;">FIRST MILE PICKUP</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            ⏱️ <b>Excel Data:</b> Courier Name, Pickup Time, Target (3h/4h/4.5h).<br>
-                            🎯 <b>Branch Check:</b> Courier pickup speed & Branch Pickup Target (98%).
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            ⏱️ <b>ទិន្នន័យ Excel៖</b> ឈ្មោះអ្នកដឹក, ម៉ោងយក, គោលដៅ (3h/4h/4.5h)។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> ល្បឿនយកអីវ៉ាន់ & គោលដៅសាខា (98%)។
-                        </div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #e11b22; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <div class="status-code-badge" style="background: #e11b22; font-size: 0.8rem;">6. DELIVERY KPI (/bao-cao-kpi-phat)</div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: #e11b22;">LAST MILE DELIVERY</div>
-                        </div>
-                        <div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            🚚 <b>Excel Data:</b> Driver Name, Arrival (306), 1st Update (401).<br>
-                            🎯 <b>Branch Check:</b> 10h SLA compliance & 1st Update Target (90%/85%).
-                        </div>
-                        <div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;">
-                            🚚 <b>ទិន្នន័យ Excel៖</b> ឈ្មោះអ្នកដឹក, ម៉ោងដល់ (306), ម៉ោងស្កេនដំបូង (401)។<br>
-                            🎯 <b>ការពិនិត្យសាខា៖</b> គោរពតាម 10h SLA & គោលដៅស្កេនដំបូង (90%/85%)។
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-exhibit">
-                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-                    <span class="en-el">🌐 6 Core Metfone Express KPI Web Portal Endpoints</span>
-                    <span class="kh-el">🌐 តំណទាញយករាយការណ៍ KPI ទាំង៦ លើប្រព័ន្ធវេបសាយ</span>
-                </div>
-                <div class="report-links-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">1. Revenue Report</span>
-                            <span class="kh-el">១. រាយការណ៍ចំណូល</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/doanh-thu-san-luong</div>
-                        <a href="https://opsexpress.metfone.com.kh/doanh-thu-san-luong" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">2. Inventory Delivery</span>
-                            <span class="kh-el">២. រាយការណ៍ស្តុកកកស្ទះដឹក</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-ton-giao</div>
-                        <a href="https://opsexpress.metfone.com.kh/bao-cao-ton-giao" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">3. Inventory Receiving</span>
-                            <span class="kh-el">៣. រាយការណ៍ស្តុកកកស្ទះទទួល</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-ton-kho</div>
-                        <a href="https://opsexpress.metfone.com.kh/bao-cao-ton-kho" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">4. Order Status Detail</span>
-                            <span class="kh-el">៤. រាយការណ៍ស្ថានភាពអីវ៉ាន់</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-trang-thai-don</div>
-                        <a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">5. Receiving KPI (Pickup)</span>
-                            <span class="kh-el">៥. រាយការណ៍ KPI ទទួលអីវ៉ាន់</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-kpi-thu</div>
-                        <a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-thu" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                    <div class="kpi-demo-card" style="padding: 10px;">
-                        <div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-                            <span class="en-el">6. Delivery KPI (LM)</span>
-                            <span class="kh-el">៦. រាយការណ៍ KPI ដឹកអីវ៉ាន់</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-kpi-phat</div>
-                        <a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-phat" target="_blank" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;">
-                            <span class="en-el">OPEN LINK ↗</span>
-                            <span class="kh-el">បើកតំណ ↗</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="sticky-note-under">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">📌 <b>Export Tip:</b> Filter from the 14th of month to today for full bot sync!</div>
-                        <div class="kh-el sticky-kh-text">📌 <b>គន្លឹះទាញយក៖</b> ជ្រើសរើសថ្ងៃពីថ្ងៃទី 14 ដល់ថ្ងៃនេះ សម្រាប់ការសមកាលកម្ម Bot!</div>
-                    </div>
-                    <div class="badge-tag-inline">
-                        <span class="en-el">📌 EXPORT DIRECTORY</span>
-                        <span class="kh-el">📌 តំណទាញយករាយការណ៍</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 4 VIEW: END OF DAY INVENTORY AUDIT LESSON -->
-        <div id="slide4" class="slide-view">
-            <div class="left-content">
-                <div class="eyebrow-line">
-                    <span class="en-el">Slide 04 · Scan Inventory Audit Before Shift Closing</span>
-                    <span class="kh-el">ស្លាយ ០៤ · ការស្កេនពិនិត្យស្តុក មុនបិទកន្លែង</span>
-                </div>
-                
-                <h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    Scan inventory.<br><span>Close shift clean.</span>
-                </h1>
-                <h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    ស្កេនពិនិត្យស្តុក<br><span>មុនពេលបិទកន្លែង</span>
-                </h1>
-
-                <div class="status-flow-container">
-                    <div class="status-step-card" style="border-left-color: #2563eb;">
-                        <div class="status-code-badge" style="background: #2563eb;">
-                            <span class="en-el">STEP 1</span>
-                            <span class="kh-el">ជំហានទី ១</span>
-                        </div>
-                        <div class="status-desc-text en-el"><b>Step 1 · Scan Branch Inventory:</b> Open App → Go to "Scan In Inventory" → Scan every physical package inside the branch.</div>
-                        <div class="status-desc-text kh-el"><b>ជំហានទី ១ · ស្កេនអីវ៉ាន់ក្នុងសាខា៖</b> បើក App → ចូលមុខងារ "Scan ចូលស្តុក" → ស្កេនអីវ៉ាន់ទាំងអស់ដែលនៅក្នុងសាខា។</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #059669;">
-                        <div class="status-code-badge" style="background: #059669;">
-                            <span class="en-el">STEP 2</span>
-                            <span class="kh-el">ជំហានទី ២</span>
-                        </div>
-                        <div class="status-desc-text en-el"><b>Step 2 · Reconcile Inventory:</b> Compare scanned count with system stock (306/400). Resolve any discrepancy immediately.</div>
-                        <div class="status-desc-text kh-el"><b>ជំហានទី ២ · ផ្ទៀងផ្ទាត់ស្តុក៖</b> ប្រៀបធៀបចំនួនអីវ៉ាន់ដែលបានស្កេន ជាមួយចំនួនអីវ៉ាន់ក្នុងប្រព័ន្ធ (306/400)។ ប្រសិនបើមានភាពខុសគ្នា ត្រូវស្វែងរក និងដោះស្រាយភ្លាមៗ។</div>
-                    </div>
-
-                    <div class="status-step-card" style="border-left-color: #7c3aed;">
-                        <div class="status-code-badge" style="background: #7c3aed;">
-                            <span class="en-el">STEP 3</span>
-                            <span class="kh-el">ជំហានទី ៣</span>
-                        </div>
-                        <div class="status-desc-text en-el"><b>Step 3 · Verify Bot &amp; Close Shift:</b> Reconcile results with Bot and confirm delivered packages are updated to Status 410 before closing.</div>
-                        <div class="status-desc-text kh-el"><b>ជំហានទី ៣ · ពិនិត្យ Bot និងបិទកន្លែង៖</b> ផ្ទៀងផ្ទាត់លទ្ធផលជាមួយ Bot និងបញ្ជាក់ថាអីវ៉ាន់ដែលបានដឹកជោគជ័យ ត្រូវបានអាប់ដេតទៅស្ថានភាព 410 មុនបិទវេន។</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-exhibit">
-                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-                    <span class="en-el">📦 TMS App End-of-Day Inventory Audit Protocol</span>
-                    <span class="kh-el">📦 របៀបស្កេនពិនិត្យស្តុកបិទវេន លើ TMS App</span>
-                </div>
-                <div class="exhibit-display-frame" onclick="openLightbox()">
-                    <img id="exhibitImgSlide4" src="images/tms_inventory_audit.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/tms_inventory_audit.png';" alt="TMS Inventory Audit Summary" class="exhibit-img">
-                </div>
-                <div class="sticky-note-under">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">📌 <b>EOD Rule:</b> Zero un-scanned packages left before closing shift!</div>
-                        <div class="kh-el sticky-kh-text">📌 <b>ច្បាប់បិទវេន៖</b> ស្កេនអីវ៉ាន់ក្នុងស្តុកឱ្យអស់ មុនពេលបិទវេន!</div>
-                    </div>
-                    <div class="badge-tag-inline">
-                        <span class="en-el">📌 EOD AUDIT PASSED</span>
-                        <span class="kh-el">📌 ស្កេនបិទវេនរួចរាល់</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 5 VIEW: MASTER EXECUTIVE SUMMARY OF ALL 4 SLIDES -->
-        <div id="slide5" class="slide-view">
-            <div class="left-content">
-                <div class="eyebrow-line">
-                    <span class="en-el">Slide 05 · Master Operational Executive Summary</span>
-                    <span class="kh-el">ស្លាយ ០៥ · សេចក្តីសង្ខេបប្រតិបត្តិការ</span>
-                </div>
-                
-                <h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    Master Summary.<br><span>Key Standard Rules.</span>
-                </h1>
-                <h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    សេចក្តីសង្ខេបប្រតិបត្តិការ<br><span>ចំណុចសំខាន់ៗ</span>
-                </h1>
-
-                <p class="sub-english en-el">
-                    <b>Executive Summary:</b> Master guidelines for quality targets, key status codes, daily audit tasks, and shift closing steps.
-                </p>
-                <p class="sub-khmer kh-el">
-                    <b>សេចក្តីសង្ខេបប្រតិបត្តិការ៖</b> សៀវភៅណែនាំមេសម្រាប់ គោលដៅគុណភាព ស្ថានភាពសំខាន់ ការត្រួតពិនិត្យប្រចាំថ្ងៃ និងការបិទវេន។
-                </p>
-            </div>
-
-            <div class="right-exhibit">
-                <div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-                    <span class="en-el">📋 Master Operational Summary (Slides 1 to 4)</span>
-                    <span class="kh-el">📋 សេចក្តីសង្ខេបប្រតិបត្តិការ (ស្លាយ ១ ដល់ ៤)</span>
-                </div>
-                <div class="summary-grid-box">
-                    <div class="summary-card-item">
-                        <div class="summary-card-header">
-                            <span class="en-el">1. Quality Targets</span>
-                            <span class="kh-el">១. គោលដៅគុណភាព</span>
-                        </div>
-                        <div class="summary-card-text">
-                            <div class="en-el">
-                                • <b>First Mile:</b> 3h / 4h / 4.5h<br>
-                                • <b>Last Mile:</b> 10h SLA<br>
-                                • <b>Home Pickup:</b> ≥98%
-                            </div>
-                            <div class="kh-el">
-                                • <b>First Mile:</b> 3h / 4h / 4.5h<br>
-                                • <b>Last Mile:</b> 10h SLA<br>
-                                • <b>Home Pickup:</b> ≥98%
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="summary-card-item">
-                        <div class="summary-card-header">
-                            <span class="en-el">2. Key Status Codes</span>
-                            <span class="kh-el">២. ស្ថានភាពសំខាន់</span>
-                        </div>
-                        <div class="summary-card-text">
-                            <div class="en-el">
-                                • <b>306</b> → Arrived at Branch<br>
-                                • <b>400 / 401</b> → Assign Driver<br>
-                                • <b>410</b> → Delivered Successfully
-                            </div>
-                            <div class="kh-el">
-                                • <b>306</b> → ដល់សាខា<br>
-                                • <b>400 / 401</b> → ចាត់អ្នកដឹក<br>
-                                • <b>410</b> → ដឹកជោគជ័យ
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="summary-card-item">
-                        <div class="summary-card-header">
-                            <span class="en-el">3. Daily Check Routine</span>
-                            <span class="kh-el">៣. ត្រួតពិនិត្យប្រចាំថ្ងៃ</span>
-                        </div>
-                        <div class="summary-card-text">
-                            <div class="en-el">
-                                • Audit KPI<br>
-                                • Audit Inventory<br>
-                                • Reconcile Bot Reports
-                            </div>
-                            <div class="kh-el">
-                                • ពិនិត្យ KPI<br>
-                                • ពិនិត្យស្តុក<br>
-                                • ផ្ទៀងផ្ទាត់ Bot
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="summary-card-item">
-                        <div class="summary-card-header">
-                            <span class="en-el">4. Before Shift Closing</span>
-                            <span class="kh-el">៤. មុនបិទវេន</span>
-                        </div>
-                        <div class="summary-card-text">
-                            <div class="en-el">
-                                • Scan Inventory Stock<br>
-                                • Reconcile System Stock<br>
-                                • Confirm Update Status (success or not success)
-                            </div>
-                            <div class="kh-el">
-                                • ស្កេនស្តុក<br>
-                                • ផ្ទៀងផ្ទាត់ស្តុក<br>
-                                • បញ្ជាក់ប្រតិប្តិការ Update Status (success or not success)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="sticky-note-under">
-                    <div class="sticky-text-wrapper">
-                        <div class="en-el">📌 <b>Key Takeaway:</b> Accurate • On-Time • Zero Overdue Packages</div>
-                        <div class="kh-el sticky-kh-text">📌 <b>ចំណុចសំខាន់៖</b> ត្រឹមត្រូវ • ទាន់ពេល • គ្មានអីវ៉ាន់កកស្ទះ</div>
-                    </div>
-                    <div class="badge-tag-inline">
-                        <span class="en-el">📌 ACCURATE • ON-TIME</span>
-                        <span class="kh-el">📌 ត្រឹមត្រូវ • ទាន់ពេល</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation Bar -->
-        <div class="bottom-nav">
-            <div class="page-mark" id="pageMark">
-                <span class="en-el">PAGE 01 / 05 &nbsp;·&nbsp; METFONE EXPRESS</span>
-                <span class="kh-el">ទំព័រ ០១ / ០៥ &nbsp;·&nbsp; METFONE EXPRESS</span>
-            </div>
-            
-            <div class="nav-controls-box">
-                <button class="book-turn-btn" id="prevBtn" onclick="prevSlide()" disabled>
-                    📖 <span class="en-el">PREV PAGE</span><span class="kh-el">ទំព័រមុន</span>
-                </button>
-                <div class="slide-dots">
-                    <div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
-                    <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
-                    <div class="dot" id="dot3" onclick="goToSlide(3)"></div>
-                    <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
-                    <div class="dot" id="dot5" onclick="goToSlide(5)"></div>
-                </div>
-                <button class="book-turn-btn" id="nextBtn" onclick="nextSlide()">
-                    <span class="en-el">NEXT PAGE</span><span class="kh-el">ទំព័របន្ទាប់</span> 📖
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Lightbox Modal -->
-    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
-        <div class="lightbox-box" onclick="event.stopPropagation()">
-            <button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
-            <div style="font-weight: 900; font-size: 1.2rem; color: #0f172a; font-family: 'Angkor', serif;" id="lightboxTitle">Report Table Preview</div>
-            <div style="flex: 1; overflow: hidden; background: #ffffff; border: 2px solid var(--border-light); border-radius: 8px; padding: 8px;">
-                <img id="lightboxFullImg" src="images/branch_kpi_appendix_august2026.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/thop001_branch_sharp.png';" class="lightbox-img-full">
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let currentSlide = 1;
-
-        const slideTitlesEn = {
-            1: "Slide 1 of 5 · August Quality Targets",
-            2: "Slide 2 of 5 · Simple Guide for 3 Core KPIs",
-            3: "Slide 3 of 5 · Web Portal 6 KPI Reports Export Guide",
-            4: "Slide 4 of 5 · End of Day Inventory Lesson",
-            5: "Slide 5 of 5 · Master Executive Summary (Slides 1 to 4)"
-        };
-
-        const slideTitlesKh = {
-            1: "ស្លាយ ១ នៃ ៥ · គោលដៅគុណភាពខែសីហា",
-            2: "ស្លាយ ២ នៃ ៥ · ការណែនាំ KPI ទាំង ៣",
-            3: "ស្លាយ ៣ នៃ ៥ · ការទាញយករាយការណ៍ ៦ប្រភេទ",
-            4: "ស្លាយ ៤ នៃ ៥ · ការស្កេនពិនិត្យស្តុកចុងវេន",
-            5: "ស្លាយ ៥ នៃ ៥ · សេចក្តីសង្ខេបប្រតិបត្តិការ Master"
-        };
-
-        function setLanguage(lang) {
-            document.body.className = 'mode-' + lang;
-            document.getElementById('btnBoth').classList.remove('active');
-            document.getElementById('btnEn').classList.remove('active');
-            document.getElementById('btnKh').classList.remove('active');
-
-            if (lang === 'both') document.getElementById('btnBoth').classList.add('active');
-            if (lang === 'en') document.getElementById('btnEn').classList.add('active');
-            if (lang === 'kh') document.getElementById('btnKh').classList.add('active');
-
-            updatePageMark();
+        // If scrolled near the bottom, always highlight the last chapter
+        if (scrollBottom < 160) {
+            navItems.forEach(item => item.classList.remove('active'));
+            navItems[navItems.length - 1].classList.add('active');
+            mobPills.forEach(p => p.classList.remove('active'));
+            mobPills[mobPills.length - 1].classList.add('active');
+            return;
         }
 
-        function updatePageMark() {
-            let isKhmer = document.body.classList.contains('mode-kh');
-            let numStr = (currentSlide < 10 ? '0' : '') + currentSlide;
-            let khNum = numStr.replace(/0/g, '០').replace(/1/g, '១').replace(/2/g, '២').replace(/3/g, '៣').replace(/4/g, '៤').replace(/5/g, '៥');
+        let currentSectionId = '';
+        const scrollPos = scrollContainer.scrollTop + (window.innerWidth <= 860 ? 140 : 180);
 
-            if (isKhmer) {
-                document.getElementById('slideTag').innerHTML = `<span class="kh-el">${slideTitlesKh[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="kh-el">ទំព័រ ${khNum} / ០៥ &nbsp;·&nbsp; METFONE EXPRESS</span>`;
-            } else {
-                document.getElementById('slideTag').innerHTML = `<span class="en-el">${slideTitlesEn[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="en-el">PAGE ${numStr} / 05 &nbsp;·&nbsp; METFONE EXPRESS</span>`;
+        sections.forEach(sec => {
+            const top = sec.offsetTop;
+            const height = sec.offsetHeight;
+            if (scrollPos >= top && scrollPos < top + height) {
+                currentSectionId = sec.getAttribute('id');
             }
+        });
+
+        if (currentSectionId) {
+            navItems.forEach(item => {
+                const href = item.getAttribute('href').substring(1);
+                item.classList.toggle('active', href === currentSectionId);
+            });
+            mobPills.forEach(p => {
+                const href = p.getAttribute('href').substring(1);
+                const isActive = href === currentSectionId;
+                p.classList.toggle('active', isActive);
+                if (isActive) {
+                    p.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            });
         }
+    });
 
-        function goToSlide(slideNum) {
-            currentSlide = slideNum;
-            document.querySelectorAll('.slide-view').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-            
-            document.getElementById('slide' + slideNum).classList.add('active');
-            document.getElementById('dot' + slideNum).classList.add('active');
+    function setActiveChapter(element) {
+        navItems.forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-            updatePageMark();
+    function setActiveMobPill(element) {
+        mobPills.forEach(p => p.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-            document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 5);
+    // Language switcher (EN / KH)
+    function setLanguage(lang) {
+        const body = document.body;
+        const btnEn = document.getElementById('btnEn');
+        const btnKh = document.getElementById('btnKh');
+        const btnEnMob = document.getElementById('btnEnMob');
+        const btnKhMob = document.getElementById('btnKhMob');
+
+        if (lang === 'kh') {
+            body.classList.add('lang-kh');
+            if (btnKh) btnKh.classList.add('active');
+            if (btnEn) btnEn.classList.remove('active');
+            if (btnKhMob) btnKhMob.classList.add('active');
+            if (btnEnMob) btnEnMob.classList.remove('active');
+        } else {
+            body.classList.remove('lang-kh');
+            if (btnEn) btnEn.classList.add('active');
+            if (btnKh) btnKh.classList.remove('active');
+            if (btnEnMob) btnEnMob.classList.add('active');
+            if (btnKhMob) btnKhMob.classList.remove('active');
         }
+    }
+</script>
 
-        function nextSlide() {
-            if (currentSlide < 5) goToSlide(currentSlide + 1);
-        }
-
-        function prevSlide() {
-            if (currentSlide > 1) goToSlide(currentSlide - 1);
-        }
-
-        function switchExhibitSlide2(tabKey, btnElement) {
-            document.querySelectorAll('#slide2 .exhibit-tab').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            document.getElementById('demoKpi1').style.display = 'none';
-            document.getElementById('demoKpi2').style.display = 'none';
-            document.getElementById('demoKpi3').style.display = 'none';
-
-            if (tabKey === 'kpi1') document.getElementById('demoKpi1').style.display = 'flex';
-            if (tabKey === 'kpi2') document.getElementById('demoKpi2').style.display = 'flex';
-            if (tabKey === 'kpi3') document.getElementById('demoKpi3').style.display = 'flex';
-        }
-
-        function openLightbox() {
-            let activeSlideImg = document.querySelector('#slide' + currentSlide + ' .exhibit-img');
-            if (activeSlideImg) {
-                document.getElementById('lightboxFullImg').src = activeSlideImg.src;
-                document.getElementById('lightboxTitle').innerText = slideTitlesEn[currentSlide];
-                document.getElementById('lightboxModal').classList.add('active');
-            }
-        }
-
-        function closeLightbox() {
-            document.getElementById('lightboxModal').classList.remove('active');
-        }
-    </script>
 </body>
 </html>
