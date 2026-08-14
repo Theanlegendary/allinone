@@ -5,7 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Operationtrainningmfe</title>
     <!-- Google Fonts: Inter, Kantumruy Pro, Merriweather -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
     <style>
         :root {
             /* 3-Color Strict Harmonious Palette */
@@ -130,7 +130,7 @@
             background: #f1f5f9;
             border-radius: 24px;
             padding: 4px;
-            width: 140px;
+            width: 110px;
         }
 
         .lang-btn {
@@ -138,7 +138,7 @@
             border: none;
             background: transparent;
             color: var(--c-muted);
-            padding: 6px 0;
+            padding: 5px 0;
             font-size: 0.85rem;
             font-weight: 800;
             border-radius: 20px;
@@ -153,7 +153,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* 2. MOBILE TOP APP BAR & HORIZONTAL PILLS (FOR CEO ON PHONE) */
+        /* 2. MOBILE TOP APP BAR & HAMBURGER DRAWER */
         .mobile-header-bar {
             display: none;
             position: fixed;
@@ -162,51 +162,144 @@
             right: 0;
             background: var(--bg-white);
             border-bottom: 1px solid var(--border-subtle);
-            z-index: 200;
-            padding: 12px 16px 8px;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
-        }
-
-        .mobile-top-row {
-            display: flex;
+            z-index: 300;
+            padding: 10px 16px;
             align-items: center;
             justify-content: space-between;
-            width: 100%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
 
         .mobile-logo {
-            height: 38px;
+            height: 36px;
             object-fit: contain;
         }
 
-        .mobile-horizontal-pills {
+        .mobile-right-controls {
             display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
+            align-items: center;
+            gap: 12px;
         }
-        .mobile-horizontal-pills::-webkit-scrollbar { display: none; }
 
-        .mob-pill {
-            flex-shrink: 0;
+        .hamburger-btn {
             background: #f1f5f9;
-            color: var(--c-muted);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
-            white-space: nowrap;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0;
         }
 
-        .mob-pill.active {
-            background: var(--c-red);
-            color: #ffffff;
+        .hamburger-btn span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--c-dark);
+            border-radius: 2px;
+            transition: all 0.25s ease;
+        }
+
+        .hamburger-btn.open span:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+        .hamburger-btn.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-btn.open span:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* MOBILE SLIDE-OUT DRAWER MENU */
+        .mobile-drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 350;
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-drawer-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 290px;
+            height: 100vh;
+            background: var(--bg-white);
+            z-index: 400;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 20px;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .mobile-drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 12px;
+        }
+
+        .drawer-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--c-dark);
+        }
+
+        .drawer-close {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--c-muted);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .drawer-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .drawer-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--c-dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .drawer-link.active {
+            background: #fee2e2;
+            color: var(--c-red);
+            font-weight: 700;
         }
 
         /* 3. MAIN SCROLLABLE CONTENT VIEWPORT (CENTERED & BIGGER) */
@@ -269,7 +362,7 @@
             font-weight: 500;
         }
 
-        /* INTRO PICTURES GRID */
+        /* INTRO PICTURES GRID & SUMMARY DETAIL */
         .intro-gallery-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -280,11 +373,12 @@
         .intro-picture-card {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
+            transition: transform 0.2s ease;
         }
 
         .intro-picture-card img {
@@ -292,6 +386,55 @@
             height: auto;
             display: block;
             object-fit: cover;
+        }
+
+        .intro-card-footer {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #ffffff;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .intro-badge {
+            align-self: flex-start;
+            background: #fee2e2;
+            color: var(--c-red);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        .intro-card-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--c-dark);
+            line-height: 1.35;
+        }
+
+        .intro-card-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.92rem;
+            color: var(--c-body);
+            line-height: 1.5;
+        }
+
+        .intro-step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .intro-step-num {
+            font-weight: 800;
+            color: var(--c-red);
+            flex-shrink: 0;
         }
 
         /* Clean Circle Points */
@@ -436,19 +579,19 @@
                 display: flex;
             }
             .content-viewport {
-                padding: 120px 20px 240px;
+                padding: 84px 16px 240px;
                 height: 100vh;
             }
             .chapter-block {
-                scroll-margin-top: 120px;
-                gap: 18px;
-                padding-bottom: 50px;
+                scroll-margin-top: 84px;
+                gap: 16px;
+                padding-bottom: 44px;
             }
             .chapter-heading {
                 font-size: 1.85rem;
             }
             .chapter-lead {
-                font-size: 1.08rem;
+                font-size: 1.05rem;
             }
             .point-row {
                 font-size: 0.95rem;
@@ -456,7 +599,10 @@
             }
             .intro-gallery-grid {
                 grid-template-columns: 1fr;
-                gap: 16px;
+                gap: 20px;
+            }
+            .intro-card-footer {
+                padding: 16px;
             }
             .dual-video-grid {
                 grid-template-columns: 1fr;
@@ -471,24 +617,67 @@
 </head>
 <body class="lang-kh">
 
-    <!-- MOBILE TOP HEADER & NAVIGATION PILLS -->
+    <!-- MOBILE TOP HEADER WITH LOGO, EN/KH TOGGLE & HAMBURGER MENU -->
     <header class="mobile-header-bar">
-        <div class="mobile-top-row">
-            <img alt="Metfone Express" class="mobile-logo" src="./images/metfone_express_logo.png" onerror="this.src='https://opsexpress.metfone.com.kh/assets/images/logo.png'"/>
+        <img alt="Metfone Express" class="mobile-logo" src="./images/metfone_express_logo.png" onerror="this.src='https://opsexpress.metfone.com.kh/assets/images/logo.png'"/>
+        <div class="mobile-right-controls">
             <div class="lang-switch-pills">
                 <button class="lang-btn" id="btnEnMob" onclick="setLanguage('en')">EN</button>
                 <button class="lang-btn active" id="btnKhMob" onclick="setLanguage('kh')">KH</button>
             </div>
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
-        <nav class="mobile-horizontal-pills">
-            <a href="#chap-0" class="mob-pill active" onclick="setActiveMobPill(this)">0. Introduce</a>
-            <a href="#chap-1" class="mob-pill" onclick="setActiveMobPill(this)">1. KPI</a>
-            <a href="#chap-2" class="mob-pill" onclick="setActiveMobPill(this)">2. 10h Rule</a>
-            <a href="#chap-3" class="mob-pill" onclick="setActiveMobPill(this)">3. Inventory</a>
-            <a href="#chap-4" class="mob-pill" onclick="setActiveMobPill(this)">4. Roles</a>
-            <a href="#chap-5" class="mob-pill" onclick="setActiveMobPill(this)">5. Route</a>
-        </nav>
     </header>
+
+    <!-- MOBILE DRAWER BACKDROP & SLIDE-OUT MENU -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div>
+            <div class="drawer-header">
+                <span class="drawer-title">មាតិកាបណ្តុះបណ្តាល</span>
+                <button class="drawer-close" onclick="toggleDrawer()">✕</button>
+            </div>
+            <nav class="drawer-menu">
+                <a href="#chap-0" class="drawer-link active" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">0</span>
+                    <span class="en-text">0. Introduce</span>
+                    <span class="kh-text">០. សេចក្តីផ្តើម (Infographics)</span>
+                </a>
+                <a href="#chap-1" class="drawer-link" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">1</span>
+                    <span class="en-text">1. KPI & Updates</span>
+                    <span class="kh-text">១. KPI & ស្ថានភាព</span>
+                </a>
+                <a href="#chap-2" class="drawer-link" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">2</span>
+                    <span class="en-text">2. 10-Hour Rule</span>
+                    <span class="kh-text">២. ច្បាប់ ១០ ម៉ោង</span>
+                </a>
+                <a href="#chap-3" class="drawer-link" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">3</span>
+                    <span class="en-text">3. Pending Inventory</span>
+                    <span class="kh-text">៣. ឥវ៉ាន់កកស្ទះ (Video)</span>
+                </a>
+                <a href="#chap-4" class="drawer-link" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">4</span>
+                    <span class="en-text">4. Roles & Assignment</span>
+                    <span class="kh-text">៤. ការចាត់តាំង & សិទ្ធិ (Video)</span>
+                </a>
+                <a href="#chap-5" class="drawer-link" onclick="handleDrawerNav(this)">
+                    <span class="nav-circle-num">5</span>
+                    <span class="en-text">5. Convenient Route</span>
+                    <span class="kh-text">៥. ខ្សែផ្លូវដឹក & យក</span>
+                </a>
+            </nav>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--c-muted); text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+            © 2026 Metfone Express Operations
+        </div>
+    </div>
 
     <!-- 1. DESKTOP LEFT SIDEBAR -->
     <aside class="sidebar">
@@ -546,7 +735,7 @@
     <main class="content-viewport" id="contentViewport">
         <div class="article-container">
 
-            <!-- LESSON 0: INTRODUCE (ONLY 2 INFOGRAPHIC PICTURES - NO TEXT DETAIL) -->
+            <!-- LESSON 0: INTRODUCE (2 INFOGRAPHIC PICTURES WITH SHORT TITLE & SHORT DETAILS FOR TELEGRAM GROUP) -->
             <section class="chapter-block" id="chap-0">
                 <div class="chapter-tag">
                     <span>Lesson 00</span>
@@ -555,12 +744,58 @@
                 <h2 class="chapter-heading en-text">Introduce</h2>
                 <h2 class="chapter-heading kh-text">សេចក្តីផ្តើម</h2>
 
+                <div class="chapter-lead en-text">
+                    Core operational principles for parcel pickup and delivery workflows.
+                </div>
+                <div class="chapter-lead kh-text">
+                    គោលការណ៍គ្រឹះស្តីពីដំណើរការប្រតិបត្តិការទទួលផ្ញើ និងដឹកជញ្ជូនបញ្ញើ។
+                </div>
+
                 <div class="intro-gallery-grid">
+                    <!-- Card 1: Pickup / Sending -->
                     <div class="intro-picture-card">
                         <img src="./images/intro_step1.jpg" alt="Operational Principle - Pickup"/>
+                        <div class="intro-card-footer">
+                            <span class="intro-badge en-text">Steps 01 - 03</span>
+                            <span class="intro-badge kh-text">ដំណាក់កាល ០១ - ០៣</span>
+                            
+                            <h3 class="intro-card-title en-text">Pickup & Dispatch Operations</h3>
+                            <h3 class="intro-card-title kh-text">គោលការណ៍ប្រតិបត្តិការផ្ញើ</h3>
+
+                            <div class="intro-card-steps en-text">
+                                <div class="intro-step-item"><span class="intro-step-num">1.</span> <span><b>Inspect Parcel:</b> Greet customer, check weight, size & packaging.</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">2.</span> <span><b>Create Bill:</b> Enter details accurately, attach label & confirm COD.</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">3.</span> <span><b>Dispatch:</b> Sort by route, ready 30m early & hand over to truck.</span></div>
+                            </div>
+                            <div class="intro-card-steps kh-text">
+                                <div class="intro-step-item"><span class="intro-step-num">១.</span> <span><b>ពិនិត្យឥវ៉ាន់៖</b> ស្វាគមន៍ភ្ញៀវ ផ្ទៀងផ្ទាត់ទម្ងន់ ទំហំ និងការវេចខ្ចប់។</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">២.</span> <span><b>បង្កើតបុងបញ្ញើ៖</b> បញ្ចូលលេខទូរស័ព្ទ បិទស្ទីកឃ័រ និងផ្ទៀង Fee/COD។</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">៣.</span> <span><b>ចាត់ចែងដឹកជញ្ជូន៖</b> រៀបចំទុក ៣០ នាទីមុនឡានមកដល់ & ស្កេនផ្ទេរ។</span></div>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Card 2: Delivery / Receiving -->
                     <div class="intro-picture-card">
                         <img src="./images/intro_step2.jpg" alt="Operational Principle - Delivery"/>
+                        <div class="intro-card-footer">
+                            <span class="intro-badge en-text">Steps 04 - 06</span>
+                            <span class="intro-badge kh-text">ដំណាក់កាល ០៤ - ០៦</span>
+                            
+                            <h3 class="intro-card-title en-text">Receiving & Delivery Operations</h3>
+                            <h3 class="intro-card-title kh-text">គោលការណ៍ប្រតិបត្តិការដឹក</h3>
+
+                            <div class="intro-card-steps en-text">
+                                <div class="intro-step-item"><span class="intro-step-num">4.</span> <span><b>Receive & Unload:</b> Verify branch code, scan from Mega Truck & assign.</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">5.</span> <span><b>Contact Customer:</b> Call customer 30 minutes before delivering.</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">6.</span> <span><b>Payment & Complete:</b> Scan KHQR / collect COD & update complete.</span></div>
+                            </div>
+                            <div class="intro-card-steps kh-text">
+                                <div class="intro-step-item"><span class="intro-step-num">៤.</span> <span><b>ទទួល & ផ្ទេរចូលសាខា៖</b> ផ្ទៀងកូដសាខា ស្កេនទទួលពីឡាន & ចាត់អ្នកដឹក។</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">៥.</span> <span><b>ទាក់ទងអតិថិជន៖</b> ខលប្រាប់ភ្ញៀវ ៣០ នាទីមុនចេញដំណើរទៅដឹក។</span></div>
+                                <div class="intro-step-item"><span class="intro-step-num">៦.</span> <span><b>ទូទាត់ប្រាក់ & បញ្ចប់៖</b> ស្កេន KHQR ប្រមូល COD & Update ជោគជ័យ។</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -854,11 +1089,11 @@
     </main>
 
 <script>
-    // Smooth Scroll spy for sidebar links and mobile pills
+    // Smooth Scroll spy for desktop sidebar & mobile drawer
     const scrollContainer = document.getElementById('contentViewport');
     const sections = document.querySelectorAll('.chapter-block');
     const navItems = document.querySelectorAll('.nav-link');
-    const mobPills = document.querySelectorAll('.mob-pill');
+    const drawerLinks = document.querySelectorAll('.drawer-link');
 
     scrollContainer.addEventListener('scroll', () => {
         const scrollBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
@@ -866,14 +1101,14 @@
         // If scrolled near the bottom, always highlight the last chapter
         if (scrollBottom < 160) {
             navItems.forEach(item => item.classList.remove('active'));
-            navItems[navItems.length - 1].classList.add('active');
-            mobPills.forEach(p => p.classList.remove('active'));
-            mobPills[mobPills.length - 1].classList.add('active');
+            drawerLinks.forEach(item => item.classList.remove('active'));
+            if (navItems.length) navItems[navItems.length - 1].classList.add('active');
+            if (drawerLinks.length) drawerLinks[drawerLinks.length - 1].classList.add('active');
             return;
         }
 
         let currentSectionId = '';
-        const scrollPos = scrollContainer.scrollTop + (window.innerWidth <= 860 ? 140 : 180);
+        const scrollPos = scrollContainer.scrollTop + (window.innerWidth <= 860 ? 100 : 180);
 
         sections.forEach(sec => {
             const top = sec.offsetTop;
@@ -888,13 +1123,9 @@
                 const href = item.getAttribute('href').substring(1);
                 item.classList.toggle('active', href === currentSectionId);
             });
-            mobPills.forEach(p => {
-                const href = p.getAttribute('href').substring(1);
-                const isActive = href === currentSectionId;
-                p.classList.toggle('active', isActive);
-                if (isActive) {
-                    p.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                }
+            drawerLinks.forEach(item => {
+                const href = item.getAttribute('href').substring(1);
+                item.classList.toggle('active', href === currentSectionId);
             });
         }
     });
@@ -904,9 +1135,28 @@
         element.classList.add('active');
     }
 
-    function setActiveMobPill(element) {
-        mobPills.forEach(p => p.classList.remove('active'));
+    // Mobile Hamburger Menu Drawer Toggle
+    function toggleDrawer() {
+        const drawer = document.getElementById('mobileDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const isOpen = drawer.classList.contains('open');
+
+        if (isOpen) {
+            drawer.classList.remove('open');
+            overlay.classList.remove('active');
+            hamburgerBtn.classList.remove('open');
+        } else {
+            drawer.classList.add('open');
+            overlay.classList.add('active');
+            hamburgerBtn.classList.add('open');
+        }
+    }
+
+    function handleDrawerNav(element) {
+        drawerLinks.forEach(link => link.classList.remove('active'));
         element.classList.add('active');
+        toggleDrawer();
     }
 
     // Language switcher (EN / KH)
