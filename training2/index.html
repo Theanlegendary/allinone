@@ -3,118 +3,160 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Metfone Express — Branch Staff Operations & KPI Portal</title>
+    <title>Metfone Express — Branch Operations & KPI Master Guide</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
     <style>
         :root {
-            --bg-page: #f8fafc;
-            --bg-white: #ffffff;
-            --brand-red: #e11b22;
-            --brand-red-light: #fee2e2;
-            --brand-dark: #0f172a;
-            --text-main: #1e293b;
+            --sidebar-bg: #0b1a2d;
+            --sidebar-active: #e11b22;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+            --sidebar-hover: #132844;
+            --bg-body: #f8fafc;
+            --bg-content: #ffffff;
+            --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            
-            /* TOPIK-Style Soft Pastel Palette */
-            --pastel-blue-bg: #e0f2fe;
-            --pastel-blue-text: #0369a1;
-            --pastel-yellow-bg: #fef9c3;
-            --pastel-yellow-text: #854d0e;
-            --pastel-green-bg: #dcfce7;
-            --pastel-green-text: #15803d;
-            --pastel-purple-bg: #f3e8ff;
-            --pastel-purple-text: #6b21a8;
-            --pastel-rose-bg: #ffe4e6;
-            --pastel-rose-text: #9f1239;
+            --brand-red: #e11b22;
+            --brand-blue: #1d4ed8;
+            --border-light: #e2e8f0;
+            --card-yellow: #fef9c3;
+            --card-yellow-border: #fef08a;
+            --card-yellow-text: #854d0e;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: #f1f5f9;
-            color: var(--text-main);
+            background-color: var(--bg-body);
+            color: var(--text-dark);
             display: flex;
-            justify-content: center;
-            padding: 24px 16px 60px;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Centered Portal Container like TOPIK */
-        .portal-wrapper {
-            width: 100%;
-            max-width: 1140px;
-            background: var(--bg-white);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
+        /* 1. FIXED LEFT SIDEBAR (Dictionary Style) */
+        .left-nav-sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--sidebar-bg);
+            color: #ffffff;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding: 24px;
-        }
-
-        /* Top Header */
-        .portal-header {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
+            overflow-y: auto;
+            z-index: 100;
         }
 
-        .header-brand {
+        .sidebar-brand {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-logo-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.45rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.02em;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
         }
 
-        .brand-logo-img {
-            height: 38px;
-            object-fit: contain;
+        .brand-logo-title span {
+            color: var(--brand-red);
         }
 
-        .brand-text-block h1 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--brand-dark);
-            letter-spacing: -0.01em;
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
-        .brand-text-block p {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 500;
+        .nav-links-menu {
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0;
+            gap: 2px;
+            flex: 1;
         }
 
-        .header-controls {
+        .nav-item {
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 12px 24px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            position: relative;
         }
 
-        .lang-btn-group {
+        .nav-item:hover {
+            color: #ffffff;
+            background: var(--sidebar-hover);
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background: var(--sidebar-active);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 8px 0 8px 10px;
+            border-style: solid;
+            border-color: transparent transparent transparent var(--sidebar-active);
+        }
+
+        .nav-item-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
-            background: #f1f5f9;
-            padding: 3px;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lang-toggle-box {
+            display: flex;
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            border: 1px solid var(--border-color);
+            padding: 3px;
         }
 
         .lang-btn {
+            flex: 1;
             border: none;
             background: transparent;
-            padding: 5px 14px;
-            font-size: 0.8rem;
+            color: #94a3b8;
+            padding: 6px 0;
+            font-size: 0.78rem;
             font-weight: 700;
-            color: var(--text-muted);
             border-radius: 16px;
             cursor: pointer;
+            text-align: center;
             transition: all 0.2s;
         }
 
@@ -123,769 +165,792 @@
             color: #ffffff;
         }
 
-        /* SECTION 1: TOP BANNER & SLA SCHEDULE (TOPIK TOP ROW) */
-        .top-row-grid {
-            display: grid;
-            grid-template-columns: 1.1fr 1.9fr;
-            gap: 16px;
+        /* 2. MAIN SCROLLABLE CONTENT AREA */
+        .main-scroll-container {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 40px 48px 100px;
         }
 
-        .hero-banner-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: #ffffff;
-            border-radius: 6px;
-            padding: 22px 24px;
+        .content-inner-layout {
+            width: 100%;
+            max-width: 1080px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 48px;
+            align-items: start;
+        }
+
+        .lessons-column {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
+            gap: 64px;
         }
 
-        .hero-banner-tag {
-            background: var(--brand-red);
-            color: #ffffff;
-            font-size: 0.72rem;
-            font-weight: 800;
+        /* LESSON SECTION STYLING (Merriam-Webster Editorial Style) */
+        .lesson-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 48px;
+            border-bottom: 1px solid var(--border-light);
+            scroll-margin-top: 40px;
+        }
+
+        .lesson-header-group {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .lesson-word-title {
+            font-family: 'Merriweather', serif;
+            font-size: 2.3rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            letter-spacing: -0.03em;
+        }
+
+        .lesson-pos-tag {
+            font-family: 'Merriweather', italic, serif;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .lesson-pronounce {
+            font-size: 0.85rem;
+            color: #475569;
+            background: #f1f5f9;
             padding: 3px 8px;
             border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            width: fit-content;
+            font-family: monospace;
         }
 
-        .hero-banner-title {
-            font-size: 1.35rem;
-            font-weight: 800;
-            line-height: 1.3;
-            margin-bottom: 8px;
-        }
-
-        .hero-banner-desc {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            line-height: 1.45;
-        }
-
-        .schedule-table-card {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 16px 20px;
-            background: var(--bg-white);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .schedule-header {
-            display: flex;
+        /* Quick definition toggle like screenshot */
+        .simple-def-banner {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            font-size: 0.95rem;
+            gap: 8px;
+            font-size: 0.8rem;
             font-weight: 700;
-            color: var(--brand-dark);
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 10px;
-            margin-bottom: 12px;
-        }
-
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .schedule-item {
-            background: #f8fafc;
-            border-radius: 6px;
-            padding: 10px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            border: 1px solid #edf2f7;
-        }
-
-        .schedule-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            background: #e2e8f0;
-            color: #475569;
-            padding: 2px 6px;
-            border-radius: 3px;
+            color: #0369a1;
+            background: #e0f2fe;
+            padding: 4px 12px;
+            border-radius: 20px;
             width: fit-content;
         }
 
-        .schedule-item-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--brand-dark);
-        }
-
-        .schedule-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            line-height: 1.3;
-        }
-
-        /* SECTION 2: 4-COLUMN CORE OPERATIONS (TOPIK BLUE/YELLOW MAIN ROW) */
-        .portal-main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 16px;
-        }
-
-        .actions-pastel-box {
-            background: var(--pastel-blue-bg);
-            border-radius: 6px;
-            padding: 18px 20px;
+        /* Definition sense list */
+        .def-sense-block {
             display: flex;
             flex-direction: column;
             gap: 14px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #1e293b;
         }
 
-        .section-mini-title {
-            font-size: 0.85rem;
+        .sense-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .sense-letter {
             font-weight: 800;
-            color: var(--pastel-blue-text);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .action-cards-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .action-click-card {
-            background: var(--bg-white);
-            border-radius: 6px;
-            padding: 14px 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-            border: 1px solid rgba(0,0,0,0.04);
-        }
-
-        .action-click-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-
-        .action-icon {
-            font-size: 1.8rem;
-            line-height: 1;
-        }
-
-        .action-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--brand-dark);
-            line-height: 1.25;
-        }
-
-        .action-sub {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            line-height: 1.3;
-        }
-
-        /* Right Yellow Side (10-Hour Rule) */
-        .rule-pastel-box {
-            background: var(--pastel-yellow-bg);
-            border-radius: 6px;
-            padding: 18px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .rule-mini-title {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: var(--pastel-yellow-text);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .rule-content-card {
-            background: var(--bg-white);
-            border-radius: 6px;
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            border: 1px solid rgba(0,0,0,0.04);
-            height: 100%;
-            justify-content: center;
-        }
-
-        .rule-hero-num {
-            font-size: 1.8rem;
-            font-weight: 900;
             color: var(--brand-red);
-            line-height: 1;
+            font-family: 'Merriweather', serif;
+            min-width: 20px;
         }
 
-        .rule-desc {
-            font-size: 0.8rem;
-            color: var(--brand-dark);
-            line-height: 1.4;
+        .sense-text strong {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .example-quote-box {
+            background: #f8fafc;
+            border-left: 3px solid #cbd5e1;
+            padding: 12px 18px;
+            margin-top: 8px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .example-quote-box span {
             font-weight: 600;
+            color: #0f172a;
         }
 
-        /* SECTION 3: VIDEO LEARNING HUB (INVENTORY + SHIPPER ASSIGNMENT) */
-        .video-hub-section {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            background: var(--bg-white);
+        /* VIDEO CARDS (inventory / manager_assign / shipper_assign) */
+        .video-guide-card {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            margin-top: 12px;
         }
 
-        .section-header-row {
+        .video-guide-header {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
         }
 
-        .section-title-bold {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--brand-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .video-guide-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: #38bdf8;
         }
 
-        .video-two-col-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .video-player-card {
-            background: #f8fafc;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #edf2f7;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .video-screen-container {
+        .video-container-box {
             width: 100%;
             aspect-ratio: 16 / 9;
-            background: #090d16;
+            background: #000000;
             position: relative;
         }
 
-        .video-screen-container video {
+        .video-container-box video {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
 
-        .video-info-box {
-            padding: 14px 16px;
+        .video-guide-footer {
+            padding: 14px 18px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .video-guide-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .video-open-btn {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--brand-blue);
+            text-decoration: none;
+        }
+
+        .video-open-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* 3. RIGHT FLOATING SIDEBAR (Top Lookups & SLA Cheat Sheet) */
+        .right-sticky-sidebar {
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card-widget {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .widget-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        .widget-title-text {
+            font-family: 'Merriweather', serif;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .quick-lookup-list {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .video-tag-pill {
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 2px 8px;
+        .lookup-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-yellow);
+            padding: 8px 12px;
             border-radius: 4px;
-            width: fit-content;
-        }
-
-        .tag-blue { background: #dbeafe; color: #1e40af; }
-        .tag-purple { background: #f3e8ff; color: #6b21a8; }
-
-        .video-card-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--brand-dark);
-        }
-
-        .video-card-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        .video-link-btn {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #2563eb;
             text-decoration: none;
-            margin-top: 4px;
-            display: inline-block;
-        }
-
-        .video-link-btn:hover {
-            text-decoration: underline;
-        }
-
-        /* SECTION 4: 4-COLUMN MODULE TILES (TOPIK BOTTOM PASTEL ROW) */
-        .bottom-modules-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-        }
-
-        .module-tile {
-            border-radius: 6px;
-            padding: 16px 14px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 12px;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-
-        .module-tile:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-
-        .tile-green  { background: var(--pastel-green-bg); color: var(--pastel-green-text); }
-        .tile-yellow { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
-        .tile-blue   { background: var(--pastel-blue-bg); color: var(--pastel-blue-text); }
-        .tile-rose   { background: var(--pastel-rose-bg); color: var(--pastel-rose-text); }
-
-        .module-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .module-icon-box {
-            font-size: 1.6rem;
-            line-height: 1;
-        }
-
-        .module-body h3 {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: var(--brand-dark);
-            margin-bottom: 4px;
-            line-height: 1.25;
-        }
-
-        .module-body p {
-            font-size: 0.75rem;
-            color: #475569;
-            line-height: 1.35;
-        }
-
-        .module-arrow {
+            color: var(--card-yellow-text);
             font-size: 0.85rem;
-            font-weight: 800;
-            align-self: flex-end;
-        }
-
-        /* SECTION 5: DAILY 7-STEP WORKFLOW ACCORDION / CHECKLIST */
-        .workflow-box {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            background: #ffffff;
-        }
-
-        .step-pills-row {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-top: 14px;
-        }
-
-        .step-pill {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px 8px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .step-pill-num {
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: var(--brand-red);
-            background: #fee2e2;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-
-        .step-pill-text {
-            font-size: 0.75rem;
             font-weight: 700;
-            color: var(--brand-dark);
-            line-height: 1.2;
+            transition: transform 0.15s;
         }
 
-        /* Bottom Promo Banner like TOPIK Study in Korea */
-        .bottom-banner-clean {
-            background: linear-gradient(90deg, #e11b22 0%, #b91c1c 100%);
-            border-radius: 6px;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: #ffffff;
+        .lookup-row:hover {
+            transform: translateX(3px);
         }
 
-        .bottom-banner-title {
-            font-size: 1.15rem;
+        .lookup-num {
             font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: #a16207;
+            margin-right: 8px;
         }
 
-        .bottom-banner-tag {
-            background: #ffffff;
-            color: var(--brand-red);
-            font-size: 0.75rem;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
+        .lookup-val {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.78rem;
         }
 
-        /* Language Toggle Classes */
+        /* Language visibility */
         .kh-text { display: none; }
         body.lang-kh .en-text { display: none; }
         body.lang-kh .kh-text { display: block; }
-        body.lang-kh h1, body.lang-kh h2, body.lang-kh h3, body.lang-kh h4 {
+        body.lang-kh .lesson-word-title {
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 700;
         }
 
-        @media (max-width: 900px) {
-            .top-row-grid { grid-template-columns: 1fr; }
-            .portal-main-grid { grid-template-columns: 1fr; }
-            .video-two-col-grid { grid-template-columns: 1fr; }
-            .bottom-modules-grid { grid-template-columns: 1fr 1fr; }
-            .step-pills-row { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 960px) {
+            .content-inner-layout { grid-template-columns: 1fr; }
+            .right-sticky-sidebar { display: none; }
+            .main-scroll-container { padding: 24px 20px; }
+            .left-nav-sidebar { width: 220px; min-width: 220px; }
         }
     </style>
 </head>
 <body>
 
-<div class="portal-wrapper">
-
-    <!-- Top Navigation Header -->
-    <header class="portal-header">
-        <div class="header-brand">
-            <div class="brand-text-block">
-                <h1 class="en-text">Metfone Express — Staff Operations & KPI Portal</h1>
-                <h1 class="kh-text">Metfone Express — គេហទំព័របណ្តុះបណ្តាលបុគ្គលិកសាខា & KPI</h1>
-                <p class="en-text">Standard Operational Guidelines & Video Learning Hub for 25 Provincial Branches</p>
-                <p class="kh-text">គោលការណ៍ណែនាំស្តង់ដារប្រតិបត្តិការ និងវីដេអូបង្រៀនសម្រាប់សាខាទាំង ២៥ ខេត្តក្រុង</p>
+    <!-- 1. LEFT NAVIGATION SIDEBAR -->
+    <aside class="left-nav-sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="brand-logo-title">
+                    Metfone <span>Express</span>
+                </div>
+                <div class="brand-tagline">Branch Standard Guide</div>
             </div>
+
+            <nav class="nav-links-menu">
+                <a href="#lesson-kpi" class="nav-item active" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">🎯</span>
+                    <span class="en-text">1. KPI & Updates</span>
+                    <span class="kh-text">១. KPI & ស្ថានភាព</span>
+                </a>
+                <a href="#lesson-10h" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">⏱️</span>
+                    <span class="en-text">2. 10-Hour Rule</span>
+                    <span class="kh-text">២. ច្បាប់ ១០ ម៉ោង</span>
+                </a>
+                <a href="#lesson-inventory" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">📦</span>
+                    <span class="en-text">3. Pending Inventory</span>
+                    <span class="kh-text">៣. ឥវ៉ាន់កកស្ទះ (Video)</span>
+                </a>
+                <a href="#lesson-manager-assign" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">👤</span>
+                    <span class="en-text">4. Manager Assign</span>
+                    <span class="kh-text">៤. Manager ចាត់តាំង (Video)</span>
+                </a>
+                <a href="#lesson-shipper-assign" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">⚡</span>
+                    <span class="en-text">5. Shipper Self-Assign</span>
+                    <span class="kh-text">៥. Shipper ចាត់ខ្លួនឯង (Video)</span>
+                </a>
+                <a href="#lesson-route" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">🗺️</span>
+                    <span class="en-text">6. Route Planning</span>
+                    <span class="kh-text">៦. ការរៀបផ្លូវដឹក</span>
+                </a>
+                <a href="#lesson-workflow" class="nav-item" onclick="setActiveNav(this)">
+                    <span class="nav-item-icon">📋</span>
+                    <span class="en-text">7. Daily Workflow</span>
+                    <span class="kh-text">៧. លំហូរការងារប្រចាំថ្ងៃ</span>
+                </a>
+            </nav>
         </div>
-        <div class="header-controls">
-            <div class="lang-btn-group">
+
+        <div class="sidebar-footer">
+            <div class="lang-toggle-box">
                 <button class="lang-btn active" id="btnEn" onclick="setLanguage('en')">English</button>
                 <button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">ភាសាខ្មែរ</button>
             </div>
-        </div>
-    </header>
-
-    <!-- SECTION 1: HERO ANNOUNCEMENT & 3 SLA SCHEDULES -->
-    <section class="top-row-grid">
-        <!-- Dark Notice Card -->
-        <div class="hero-banner-card">
-            <div>
-                <span class="hero-banner-tag en-text">Important Notice</span>
-                <span class="hero-banner-tag kh-text">សេចក្តីជូនដំណឹងសំខាន់</span>
-                <div class="hero-banner-title en-text">Daily KPI & Status Accuracy</div>
-                <div class="hero-banner-title kh-text">ភាពត្រឹមត្រូវនៃ KPI & ស្ថានភាពប្រចាំថ្ងៃ</div>
-                <div class="hero-banner-desc en-text">
-                    All branch staff must update the exact real-world status (Picked Up, Delivered, or Delay reason) immediately. Never delay or guess.
-                </div>
-                <div class="hero-banner-desc kh-text">
-                    បុគ្គលិកសាខាទាំងអស់ត្រូវតែ Update ស្ថានភាពជាក់ស្តែង (បានទទួល បានដឹក ឬមូលហេតុយឺត) ភ្លាមៗ។ ហាមស្មាន ឬពន្យារពេល។
-                </div>
+            <div style="font-size: 0.72rem; color: #475569; text-align: center;">
+                © 2026 Metfone Express Operations
             </div>
         </div>
+    </aside>
 
-        <!-- 3 SLA Schedule Cards -->
-        <div class="schedule-table-card">
-            <div class="schedule-header">
-                <span class="en-text">⏱️ 2026 Operational KPI SLA Targets</span>
-                <span class="kh-text">⏱️ គោលដៅ SLA ប្រតិបត្តិការឆ្នាំ ២០២៦</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">25 Provinces</span>
-            </div>
-            <div class="schedule-grid">
-                <div class="schedule-item">
-                    <span class="schedule-badge">1st Mile</span>
-                    <div class="schedule-item-title en-text">Pickup Window</div>
-                    <div class="schedule-item-title kh-text">ការទៅយកឥវ៉ាន់</div>
-                    <div class="schedule-meta en-text">PP: 3.0h | Kan: 4.0h<br/>Provinces: 4.5h</div>
-                    <div class="schedule-meta kh-text">ភ្នំពេញ ៣.០ម | កណ្តាល ៤.០ម<br/>ខេត្ត ៤.៥ ម៉ោង</div>
-                </div>
+    <!-- 2. MAIN SCROLLABLE CONTENT -->
+    <main class="main-scroll-container" id="mainScroll">
+        <div class="content-inner-layout">
+            
+            <!-- LESSONS COLUMN -->
+            <div class="lessons-column">
 
-                <div class="schedule-item">
-                    <span class="schedule-badge">Last Mile</span>
-                    <div class="schedule-item-title en-text">Delivery SLA</div>
-                    <div class="schedule-item-title kh-text">ការដឹកជូនភ្ញៀវ</div>
-                    <div class="schedule-meta en-text">Within 10.0h<br/>Arrival ➔ Delivery</div>
-                    <div class="schedule-meta kh-text">ក្នុងរង្វង់ ១០ ម៉ោង<br/>មកដល់ ➔ ដឹកជូន</div>
-                </div>
-
-                <div class="schedule-item">
-                    <span class="schedule-badge">Quality</span>
-                    <div class="schedule-item-title en-text">Target Rates</div>
-                    <div class="schedule-item-title kh-text">អត្រាជោគជ័យ</div>
-                    <div class="schedule-meta en-text">Pickup: 98%<br/>1st Update: 90%</div>
-                    <div class="schedule-meta kh-text">ទៅយក៖ ៩៨%<br/>ស្កេនដំបូង៖ ៩០%</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 2: TOPIK BLUE / YELLOW 4-COLUMN MAIN ROW -->
-    <section class="portal-main-grid">
-        <!-- Soft Blue Core Operations Box -->
-        <div class="actions-pastel-box">
-            <div class="section-mini-title en-text">📦 Branch Daily Operations</div>
-            <div class="section-mini-title kh-text">📦 ប្រតិបត្តិការប្រចាំថ្ងៃរបស់សាខា</div>
-            <div class="action-cards-row">
-                <div class="action-click-card">
-                    <div class="action-icon">📋</div>
-                    <div class="action-label en-text">1. Check Assigned</div>
-                    <div class="action-label kh-text">១. ពិនិត្យឥវ៉ាន់ចាត់តាំង</div>
-                    <div class="action-sub en-text">Open app & review jobs</div>
-                    <div class="action-sub kh-text">បើកមើលការងារលើ App</div>
-                </div>
-
-                <div class="action-click-card">
-                    <div class="action-icon">🔍</div>
-                    <div class="action-label en-text">2. Pending Stock</div>
-                    <div class="action-label kh-text">២. ឥវ៉ាន់កកស្ទះ</div>
-                    <div class="action-sub en-text">Check your route pending</div>
-                    <div class="action-sub kh-text">តាមដានផ្លូវដឹករបស់ខ្លួន</div>
-                </div>
-
-                <div class="action-click-card">
-                    <div class="action-icon">🗺️</div>
-                    <div class="action-label en-text">3. Route Planning</div>
-                    <div class="action-label kh-text">៣. រៀបចំផ្លូវដឹក</div>
-                    <div class="action-sub en-text">Group nearby orders</div>
-                    <div class="action-sub kh-text">ប្រមូលផ្តុំឥវ៉ាន់ជិតៗគ្នា</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Soft Yellow 10-Hour Rule Box -->
-        <div class="rule-pastel-box">
-            <div class="rule-mini-title en-text">⏱️ The 10-Hour Rule</div>
-            <div class="rule-mini-title kh-text">⏱️ ច្បាប់កំណត់ ១០ ម៉ោង</div>
-            <div class="rule-content-card">
-                <div class="rule-hero-num">10h Limit</div>
-                <div class="rule-desc en-text">
-                    Update status in app within 10 hours of bill assignment to keep KPI green.
-                </div>
-                <div class="rule-desc kh-text">
-                    ត្រូវតែ Update ស្ថានភាពលើ App ក្នុងរង្វង់ ១០ ម៉ោងបន្ទាប់ពីទទួលការចាត់តាំង។
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 3: DIRECT VIDEO LEARNING HUB -->
-    <section class="video-hub-section">
-        <div class="section-header-row">
-            <div class="section-title-bold">
-                <span>🎥</span>
-                <span class="en-text">Direct Video Learning Hub</span>
-                <span class="kh-text">វីដេអូបង្រៀនជាក់ស្តែងប្រចាំសាខា</span>
-            </div>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Step-by-Step Mobile App Guides</span>
-        </div>
-
-        <div class="video-two-col-grid">
-            <!-- VIDEO 1: PENDING INVENTORY -->
-            <div class="video-player-card">
-                <div class="video-screen-container">
-                    <video id="videoInventory" controls preload="metadata" poster="https://theanlegendary.github.io/run-py/training2/images/tms_inventory_audit.png">
-                        <source src="" type="video/mp4" id="videoInventorySrc">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                <div class="video-info-box">
-                    <span class="video-tag-pill tag-blue en-text">Inventory Guide</span>
-                    <span class="video-tag-pill tag-blue kh-text">មេរៀនគ្រប់គ្រងស្តុក</span>
-                    <div class="video-card-title en-text">1. How to Check & Manage Pending Inventory</div>
-                    <div class="video-card-title kh-text">១. របៀបពិនិត្យ និងដោះស្រាយឥវ៉ាន់កកស្ទះ</div>
-                    <div class="video-card-desc en-text">
-                        Learn how staff check open bills in their route, manage their own pending list, and get help from Branch Managers & CS.
+                <!-- LESSON 1: KPI & STATUS -->
+                <section class="lesson-section" id="lesson-kpi">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">KPI & Updates</h2>
+                        <h2 class="lesson-word-title kh-text">KPI & ស្ថានភាព</h2>
+                        <span class="lesson-pos-tag en-text">standard</span>
+                        <span class="lesson-pos-tag kh-text">ស្តង់ដារ</span>
+                        <span class="lesson-pronounce">/keɪ-piː-aɪ/</span>
                     </div>
-                    <div class="video-card-desc kh-text">
-                        របៀបដែលបុគ្គលិកពិនិត្យមើលឥវ៉ាន់សល់ក្នុងផ្លូវរបស់ខ្លួន ដោះស្រាយបញ្ហា និងទទួលការសម្របសម្រួលពីប្រធានសាខា។
+
+                    <div class="simple-def-banner">
+                        <span class="en-text">💡 Simple Definition: Timely service + Honest real-world status</span>
+                        <span class="kh-text">💡 ន័យសាមញ្ញ៖ ទៅយក & ដឹកទាន់ពេល + Update ស្ថានភាពពិត</span>
                     </div>
-                    <a href="#" class="video-link-btn" id="linkInventoryVideo" target="_blank" style="display:none;">Watch Direct Video ↗</a>
-                </div>
-            </div>
 
-            <!-- VIDEO 2: SHIPPER ASSIGNMENT & SELF-ASSIGN -->
-            <div class="video-player-card">
-                <div class="video-screen-container">
-                    <video id="videoAssign" controls preload="metadata">
-                        <source src="" type="video/mp4" id="videoAssignSrc">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                <div class="video-info-box">
-                    <span class="video-tag-pill tag-purple en-text">Assignment & Roles</span>
-                    <span class="video-tag-pill tag-purple kh-text">ការចាត់តាំង & តួនាទី</span>
-                    <div class="video-card-title en-text">2. Assign to Shipper & Shipper Self-Assignment</div>
-                    <div class="video-card-title kh-text">២. ការចាត់តាំងឱ្យ Shipper និង Shipper ចាត់តាំងដោយខ្លួនឯង</div>
-                    <div class="video-card-desc en-text">
-                        Learn how Managers assign bills to Shippers, and how authorized Shippers can assign bills to themselves directly to earn commission.
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Pickup Instructions:</strong>
+                                <strong class="kh-text">ការទទួលឥវ៉ាន់ពីភ្ញៀវ (Pickup)៖</strong>
+                                <span class="en-text">Contact the sender promptly, inspect package condition, collect it, and scan the app immediately.</span>
+                                <span class="kh-text">ទាក់ទងអ្នកផ្ញើឱ្យបានលឿន ពិនិត្យស្ថានភាពកញ្ចប់ឥវ៉ាន់ ទទួលឥវ៉ាន់ និងស្កេនចូល App ភ្លាមៗ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Delivery Instructions:</strong>
+                                <strong class="kh-text">ការដឹកជូនភ្ញៀវ (Delivery)៖</strong>
+                                <span class="en-text">Call the receiver before arriving, hand over safely, and collect the exact COD or delivery fee.</span>
+                                <span class="kh-text">ទូរស័ព្ទទៅអ្នកទទួលមុនពេលទៅដល់ ប្រគល់ឥវ៉ាន់ដោយសុវត្ថិភាព និងប្រមូលប្រាក់ COD ឬថ្លៃដឹកឱ្យបានត្រឹមត្រូវ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">c :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Update the Correct Status:</strong>
+                                <strong class="kh-text">ធ្វើបច្ចុប្បន្នភាពស្ថានភាពឱ្យបានត្រឹមត្រូវ៖</strong>
+                                <span class="en-text">Always choose the honest real-world status (Picked Up, Delivered, or Failed with actual reason). Never guess or delay.</span>
+                                <span class="kh-text">ត្រូវតែជ្រើសរើសស្ថានភាពពិត (បានទទួល បានដឹក ឬដឹកមិនបានសម្រេចដោយបញ្ជាក់មូលហេតុពិត)។ ហាមស្មាន ឬពន្យារពេល។</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="video-card-desc kh-text">
-                        របៀបដែល Manager ចាត់តាំងឥវ៉ាន់ឱ្យ Shipper និងរបៀបដែល Shipper ចាត់តាំងឥវ៉ាន់មកខ្លួនឯងផ្ទាល់ដើម្បីទទួលបាន Commission។
+
+                    <div class="example-quote-box">
+                        <div class="en-text">📌 <b>Rule of Thumb:</b> Updating immediately keeps your branch KPI green and lets customers track their parcels live.</div>
+                        <div class="kh-text">📌 <b>ចំណាំសំខាន់៖</b> ការ Update ភ្លាមៗជួយឱ្យពិន្ទុ KPI សាខាល្អ និងអតិថិជនអាចតាមដានឥវ៉ាន់បានភ្លាមៗ។</div>
                     </div>
-                    <a href="#" class="video-link-btn" id="linkAssignVideo" target="_blank" style="display:none;">Watch Direct Video ↗</a>
+                </section>
+
+                <!-- LESSON 2: 10-HOUR RULE -->
+                <section class="lesson-section" id="lesson-10h">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">10-Hour Rule</h2>
+                        <h2 class="lesson-word-title kh-text">ច្បាប់ ១០ ម៉ោង</h2>
+                        <span class="lesson-pos-tag en-text">time limit</span>
+                        <span class="lesson-pos-tag kh-text">កំហិតម៉ោង</span>
+                        <span class="lesson-pronounce">/tɛn-aʊər ruːl/</span>
+                    </div>
+
+                    <div class="simple-def-banner" style="background: #fef9c3; color: #854d0e;">
+                        <span class="en-text">⏱️ Core Rule: 10 Hours from Assignment to Status Update</span>
+                        <span class="kh-text">⏱️ ច្បាប់គោល៖ ១០ ម៉ោងគិតចាប់ពីពេលចាត់តាំងដល់ពេល Update ស្ថានភាព</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">The Countdown:</strong>
+                                <strong class="kh-text">ការចាប់ផ្តើមរាប់ម៉ោង៖</strong>
+                                <span class="en-text">After a bill is assigned to a responsible staff member or shipper, they must update the status within 10 hours.</span>
+                                <span class="kh-text">បន្ទាប់ពីឥវ៉ាន់ត្រូវបានចាត់ចូលគណនីបុគ្គលិក ឬ Shipper អ្នកទទួលខុសត្រូវត្រូវតែ Update ស្ថានភាពក្នុងរង្វង់ ១០ ម៉ោង។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Simple Daily Example:</strong>
+                                <strong class="kh-text">ឧទាហរណ៍សាមញ្ញ៖</strong>
+                                <span class="en-text">If a bill is assigned to you at <b>08:00 AM</b>, you must update its status in the app before <b>06:00 PM</b> on the same day.</span>
+                                <span class="kh-text">ប្រសិនបើឥវ៉ាន់ចាត់ឱ្យអ្នកនៅម៉ោង <b>០៨:០០ ព្រឹក</b> អ្នកត្រូវតែ Update ស្ថានភាពលើ App មុនម៉ោង <b>០៦:០០ ល្ងាច</b> ថ្ងៃដដែល។</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-quote-box" style="border-left-color: #eab308; background: #fefce8;">
+                        <div class="en-text">🟢 <b>Within 10 Hours:</b> On-Time | 🔴 <b>Over 10 Hours:</b> Overdue & KPI penalty.</div>
+                        <div class="kh-text">🟢 <b>ក្នុងរង្វង់ ១០ ម៉ោង៖</b> ទាន់ពេល | 🔴 <b>លើស ១០ ម៉ោង៖</b> យឺតយ៉ាវ (Overdue) និងប៉ះពាល់ KPI។</div>
+                    </div>
+                </section>
+
+                <!-- LESSON 3: PENDING INVENTORY + VIDEO (inventory) -->
+                <section class="lesson-section" id="lesson-inventory">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">Pending Inventory</h2>
+                        <h2 class="lesson-word-title kh-text">ឥវ៉ាន់កកស្ទះ</h2>
+                        <span class="lesson-pos-tag en-text">video guide</span>
+                        <span class="lesson-pos-tag kh-text">វីដេអូបង្រៀន</span>
+                        <span class="lesson-pronounce">/ˈpɛndɪŋ ˈɪnvənˌtɔri/</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">App Monitoring:</strong>
+                                <strong class="kh-text">ការតាមដានលើ App៖</strong>
+                                <span class="en-text">Staff must check open and pending bills in the app regularly throughout the day.</span>
+                                <span class="kh-text">បុគ្គលិកត្រូវតែបើកមើលឥវ៉ាន់ Pending លើ App ឱ្យបានញឹកញាប់ក្នុងអំឡុងពេលបំពេញការងារ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Route Ownership:</strong>
+                                <strong class="kh-text">ម្ចាស់ការលើផ្លូវដឹក៖</strong>
+                                <span class="en-text">Check pending bills in your own route and manage them proactively without waiting for reminders.</span>
+                                <span class="kh-text">ពិនិត្យមើលឥវ៉ាន់សល់ក្នុងខ្សែផ្លូវរបស់ខ្លួនឯង និងដោះស្រាយដោយម្ចាស់ការ ដោយមិនរង់ចាំការដាស់តឿន។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">c :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Manager & CS Collaboration:</strong>
+                                <strong class="kh-text">កិច្ចសហការពី Manager & CS៖</strong>
+                                <span class="en-text">Branch Managers and Customer Service staff can also manage and help re-assign bills when volume is heavy.</span>
+                                <span class="kh-text">ប្រធានសាខា និងផ្នែក CS អាចជួយសម្របសម្រួល និងចាត់ចែងឥវ៉ាន់បន្ថែមពេលមានចំនួនឥវ៉ាន់ច្រើន។</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIDEO 1: inventory -->
+                    <div class="video-guide-card">
+                        <div class="video-guide-header">
+                            <span style="font-size: 0.85rem; font-weight: 700;">🎥 Video Lesson 1</span>
+                            <span class="video-guide-name">video: inventory</span>
+                        </div>
+                        <div class="video-container-box">
+                            <video id="video-inventory" controls preload="metadata" poster="https://theanlegendary.github.io/run-py/training2/images/tms_inventory_audit.png">
+                                <source src="" type="video/mp4" id="src-inventory">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+                        <div class="video-guide-footer">
+                            <div class="video-guide-desc en-text">Tutorial: How to check and clear pending inventory in your route.</div>
+                            <div class="video-guide-desc kh-text">វីដេអូបង្រៀន៖ របៀបពិនិត្យ និងដោះស្រាយឥវ៉ាន់កកស្ទះតាមផ្លូវដឹក។</div>
+                            <a href="#" class="video-open-btn" id="link-inventory" target="_blank" style="display:none;">Open Video ↗</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LESSON 4: MANAGER ASSIGN + VIDEO (manager_assign) -->
+                <section class="lesson-section" id="lesson-manager-assign">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">Manager Assign</h2>
+                        <h2 class="lesson-word-title kh-text">Manager ចាត់តាំង</h2>
+                        <span class="lesson-pos-tag en-text">video guide</span>
+                        <span class="lesson-pos-tag kh-text">វីដេអូបង្រៀន</span>
+                        <span class="lesson-pronounce">/ˈmænɪdʒər əˈsaɪn/</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Branch Assignment Workflow:</strong>
+                                <strong class="kh-text">លំហូរការងារចាត់តាំងរបស់សាខា៖</strong>
+                                <span class="en-text">A Branch Manager or Customer Service can select open bills and assign them directly to designated Shippers.</span>
+                                <span class="kh-text">ប្រធានសាខា ឬផ្នែក CS អាចជ្រើសរើសឥវ៉ាន់ ហើយចាត់តាំងដោយផ្ទាល់ទៅកាន់ Shipper ដែលត្រូវទទួលខុសត្រូវ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Shipper Notification:</strong>
+                                <strong class="kh-text">ការជូនដំណឹងទៅ Shipper៖</strong>
+                                <span class="en-text">Once assigned, the bill appears instantly in the Shipper's assigned tab, starting the 10-hour update window.</span>
+                                <span class="kh-text">ពេលចាត់តាំងរួច ឥវ៉ាន់នឹងបង្ហាញក្នុងផ្ទាំងចាត់តាំងរបស់ Shipper ភ្លាមៗ និងចាប់ផ្តើមរាប់ម៉ោង ១០h។</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIDEO 2: manager_assign -->
+                    <div class="video-guide-card">
+                        <div class="video-guide-header">
+                            <span style="font-size: 0.85rem; font-weight: 700;">🎥 Video Lesson 2</span>
+                            <span class="video-guide-name">video: manager_assign</span>
+                        </div>
+                        <div class="video-container-box">
+                            <video id="video-manager-assign" controls preload="metadata">
+                                <source src="" type="video/mp4" id="src-manager-assign">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+                        <div class="video-guide-footer">
+                            <div class="video-guide-desc en-text">Tutorial: How Branch Managers and CS assign bills to shippers.</div>
+                            <div class="video-guide-desc kh-text">វីដេអូបង្រៀន៖ របៀបដែល Manager និង CS ចាត់តាំងឥវ៉ាន់ឱ្យ Shipper។</div>
+                            <a href="#" class="video-open-btn" id="link-manager-assign" target="_blank" style="display:none;">Open Video ↗</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LESSON 5: SHIPPER SELF-ASSIGN + VIDEO (shipper_assign) -->
+                <section class="lesson-section" id="lesson-shipper-assign">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">Shipper Self-Assign</h2>
+                        <h2 class="lesson-word-title kh-text">Shipper ចាត់ខ្លួនឯង</h2>
+                        <span class="lesson-pos-tag en-text">video guide</span>
+                        <span class="lesson-pos-tag kh-text">វីដេអូបង្រៀន</span>
+                        <span class="lesson-pronounce">/ˈʃɪpər sɛlf-əˈsaɪn/</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Shipper Role Independence:</strong>
+                                <strong class="kh-text">ភាពម្ចាស់ការនៃ Shipper៖</strong>
+                                <span class="en-text">Shippers with assigned permissions can manage relevant bills directly without waiting or asking Managers for every bill.</span>
+                                <span class="kh-text">Shipper ដែលមានសិទ្ធិ អាចចាត់ចែងឥវ៉ាន់បានដោយផ្ទាល់ ដោយមិនបាច់រង់ចាំ ឬសុំការអនុញ្ញាតគ្រប់ពេលនោះទេ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Self-Assignment:</strong>
+                                <strong class="kh-text">ការចាត់តាំងដោយខ្លួនឯង៖</strong>
+                                <span class="en-text">A Shipper can either wait for a Manager to assign or assign available bills to themselves directly in the app.</span>
+                                <span class="kh-text">Shipper អាចរង់ចាំ Manager ចាត់តាំងឱ្យ ឬអាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯងផ្ទាល់បានភ្លាមៗ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">c :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Commission Earnings:</strong>
+                                <strong class="kh-text">កម្រៃជើងសារ (Commission)៖</strong>
+                                <span class="en-text">Commission is calculated based on the applicable bill amount for work handled and completed by you.</span>
+                                <span class="kh-text">កម្រៃជើងសារត្រូវបានគណនាផ្អែកលើទំហំទឹកប្រាក់នៃឥវ៉ាន់ជាក់ស្តែងដែលអ្នកបានបំពេញការងារជោគជ័យ។</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIDEO 3: shipper_assign -->
+                    <div class="video-guide-card">
+                        <div class="video-guide-header">
+                            <span style="font-size: 0.85rem; font-weight: 700;">🎥 Video Lesson 3</span>
+                            <span class="video-guide-name">video: shipper_assign</span>
+                        </div>
+                        <div class="video-container-box">
+                            <video id="video-shipper-assign" controls preload="metadata">
+                                <source src="" type="video/mp4" id="src-shipper-assign">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+                        <div class="video-guide-footer">
+                            <div class="video-guide-desc en-text">Tutorial: How Shippers self-assign bills and earn commission.</div>
+                            <div class="video-guide-desc kh-text">វីដេអូបង្រៀន៖ របៀបដែល Shipper ចាត់តាំងឥវ៉ាន់ដោយខ្លួនឯង និងទទួល Commission។</div>
+                            <a href="#" class="video-open-btn" id="link-shipper-assign" target="_blank" style="display:none;">Open Video ↗</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LESSON 6: ROUTE PLANNING -->
+                <section class="lesson-section" id="lesson-route">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">Route Planning</h2>
+                        <h2 class="lesson-word-title kh-text">ការរៀបផ្លូវដឹក</h2>
+                        <span class="lesson-pos-tag en-text">efficiency</span>
+                        <span class="lesson-pos-tag kh-text">ប្រសិទ្ធភាព</span>
+                        <span class="lesson-pronounce">/ruːt ˈplænɪŋ/</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">a :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Group Nearby Jobs:</strong>
+                                <strong class="kh-text">ប្រមូលផ្តុំឥវ៉ាន់នៅក្បែរគ្នា៖</strong>
+                                <span class="en-text">Arrange pickups and deliveries into a convenient route by grouping nearby stops on the same street or neighborhood together.</span>
+                                <span class="kh-text">រៀបចំកញ្ចប់ឥវ៉ាន់ដែលត្រូវទៅយក និងដឹកជូនតាមផ្លូវងាយស្រួល ដោយប្រមូលផ្តុំទីតាំងជិតៗគ្នាក្នុងភូមិ/ឃុំតែមួយ។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">b :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Avoid Unnecessary Travel:</strong>
+                                <strong class="kh-text">ជៀសវាងការជិះកាត់ចុះកាត់ឡើង៖</strong>
+                                <span class="en-text">Plan a clean, continuous loop to avoid back-and-forth driving, saving fuel and time.</span>
+                                <span class="kh-text">រៀបចំខ្សែផ្លូវដើរជាលំដាប់ ដើម្បីកុំឱ្យខាតសាំង និងខាតពេលវេលាជិះត្រឡប់ចុះឡើង។</span>
+                            </div>
+                        </div>
+
+                        <div class="sense-row">
+                            <span class="sense-letter">c :</span>
+                            <div class="sense-text">
+                                <strong class="en-text">Practical & Fast:</strong>
+                                <strong class="kh-text">ការអនុវត្តរហ័សទាន់ចិត្ត៖</strong>
+                                <span class="en-text">An efficient route makes daily deliveries smooth and keeps every bill comfortably inside the 10-hour limit.</span>
+                                <span class="kh-text">ការរៀបផ្លូវបានល្អ ជួយឱ្យដឹកបានរលូន និងទាន់ពេលវេលាក្នុងរង្វង់ ១០ ម៉ោងដោយងាយស្រួល។</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LESSON 7: DAILY WORKFLOW -->
+                <section class="lesson-section" id="lesson-workflow" style="border-bottom: none;">
+                    <div class="lesson-header-group">
+                        <h2 class="lesson-word-title en-text">Daily Workflow</h2>
+                        <h2 class="lesson-word-title kh-text">លំហូរការងារប្រចាំថ្ងៃ</h2>
+                        <span class="lesson-pos-tag en-text">7-step routine</span>
+                        <span class="lesson-pos-tag kh-text">៧ ជំហាន</span>
+                        <span class="lesson-pronounce">/ˈdeɪli ˈwɜːrkˌfloʊ/</span>
+                    </div>
+
+                    <div class="def-sense-block">
+                        <div class="sense-row">
+                            <span class="sense-letter">1.</span>
+                            <div class="sense-text"><strong class="en-text">Check Assigned Bills:</strong><strong class="kh-text">ពិនិត្យមើលឥវ៉ាន់ចាត់តាំង៖</strong> <span class="en-text">Open app at start of shift.</span><span class="kh-text">បើកមើលលើ App នៅដើមវេន។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">2.</span>
+                            <div class="sense-text"><strong class="en-text">Check Pending Bills:</strong><strong class="kh-text">ពិនិត្យមើលឥវ៉ាន់សល់ (Pending)៖</strong> <span class="en-text">Review open route inventory.</span><span class="kh-text">តាមដានឥវ៉ាន់ដែលនៅសល់ក្នុងផ្លូវ។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">3.</span>
+                            <div class="sense-text"><strong class="en-text">Check 10-Hour Limit:</strong><strong class="kh-text">គិតគូរម៉ោងកំណត់ ១០h៖</strong> <span class="en-text">Prioritize bills close to deadline.</span><span class="kh-text">ផ្តល់អាទិភាពឥវ៉ាន់ដែលជិតផុតកំណត់។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">4.</span>
+                            <div class="sense-text"><strong class="en-text">Arrange the Route:</strong><strong class="kh-text">រៀបចំខ្សែផ្លូវដឹក៖</strong> <span class="en-text">Group nearby orders into logical stops.</span><span class="kh-text">ចងក្រងកន្លែងជិតគ្នាជាលំដាប់។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">5.</span>
+                            <div class="sense-text"><strong class="en-text">Pickup / Deliver:</strong><strong class="kh-text">ទៅយក និងដឹកជូន៖</strong> <span class="en-text">Execute visits & hand over parcels safely.</span><span class="kh-text">ចុះជួបភ្ញៀវ និងប្រគល់ឥវ៉ាន់ដោយសុវត្ថិភាព។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">6.</span>
+                            <div class="sense-text"><strong class="en-text">Update the Status:</strong><strong class="kh-text">Update ស្ថានភាព៖</strong> <span class="en-text">Scan and update app immediately.</span><span class="kh-text">ធ្វើបច្ចុប្បន្នភាពលើ App ភ្លាមៗ។</span></div>
+                        </div>
+                        <div class="sense-row">
+                            <span class="sense-letter">7.</span>
+                            <div class="sense-text"><strong class="en-text">Clear Remaining Pending Bills:</strong><strong class="kh-text">បញ្ចប់ឥវ៉ាន់សេសសល់៖</strong> <span class="en-text">Close shift with zero unresolved pending bills.</span><span class="kh-text">បិទវេនដោយគ្មានឥវ៉ាន់ Pending សល់។</span></div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 3. RIGHT STICKY SIDEBAR (Top Lookups / Quick KPI Cheat Sheet) -->
+            <aside class="right-sticky-sidebar">
+                <div class="sidebar-card-widget">
+                    <div class="widget-title-row">
+                        <span style="font-size: 1.2rem;">📊</span>
+                        <div class="widget-title-text en-text">Quick Reference</div>
+                        <div class="widget-title-text kh-text">គោលដៅសំខាន់</div>
+                    </div>
+                    <div class="quick-lookup-list">
+                        <a href="#lesson-10h" class="lookup-row">
+                            <span><span class="lookup-num">1</span> 10-Hour SLA</span>
+                            <span class="lookup-val">≤ 10h</span>
+                        </a>
+                        <a href="#lesson-kpi" class="lookup-row">
+                            <span><span class="lookup-num">2</span> 1st Mile (PP)</span>
+                            <span class="lookup-val">3.0h</span>
+                        </a>
+                        <a href="#lesson-kpi" class="lookup-row">
+                            <span><span class="lookup-num">3</span> 1st Mile (Prov)</span>
+                            <span class="lookup-val">4.5h</span>
+                        </a>
+                        <a href="#lesson-kpi" class="lookup-row">
+                            <span><span class="lookup-num">4</span> Pickup Rate</span>
+                            <span class="lookup-val">98%</span>
+                        </a>
+                        <a href="#lesson-kpi" class="lookup-row">
+                            <span><span class="lookup-num">5</span> 1st Update</span>
+                            <span class="lookup-val">90%</span>
+                        </a>
+                        <a href="#lesson-inventory" class="lookup-row">
+                            <span><span class="lookup-num">6</span> Video Inventory</span>
+                            <span class="lookup-val">inventory</span>
+                        </a>
+                        <a href="#lesson-manager-assign" class="lookup-row">
+                            <span><span class="lookup-num">7</span> Video Mgr Assign</span>
+                            <span class="lookup-val">mgr_assign</span>
+                        </a>
+                        <a href="#lesson-shipper-assign" class="lookup-row">
+                            <span><span class="lookup-num">8</span> Video Shipper</span>
+                            <span class="lookup-val">shp_assign</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            </aside>
 
-    <!-- SECTION 4: 4-COLUMN MODULE CARDS (TOPIK BOTTOM PASTEL ROW) -->
-    <section class="bottom-modules-grid">
-        <!-- Card 1: KPI Standards -->
-        <div class="module-tile tile-green">
-            <div class="module-header">
-                <span class="module-icon-box">📦</span>
-                <span class="module-arrow">→</span>
-            </div>
-            <div class="module-body">
-                <h3 class="en-text">KPI & Updates</h3>
-                <h3 class="kh-text">KPI & ស្ថានភាព</h3>
-                <p class="en-text">Prompt pickup, safe delivery, and immediate status entry.</p>
-                <p class="kh-text">ទៅយកទាន់ពេល ដឹកសុវត្ថិភាព និង Update ភ្លាមៗ។</p>
-            </div>
         </div>
-
-        <!-- Card 2: 10-Hour Rule -->
-        <div class="module-tile tile-yellow">
-            <div class="module-header">
-                <span class="module-icon-box">⏱️</span>
-                <span class="module-arrow">→</span>
-            </div>
-            <div class="module-body">
-                <h3 class="en-text">10-Hour Rule</h3>
-                <h3 class="kh-text">ច្បាប់ ១០ ម៉ោង</h3>
-                <p class="en-text">Assigned bill must be updated within 10h max.</p>
-                <p class="kh-text">ឥវ៉ាន់ចាត់តាំងត្រូវតែ Update ក្នុងរង្វង់ ១០ ម៉ោង។</p>
-            </div>
-        </div>
-
-        <!-- Card 3: Shipper Roles & Commission -->
-        <div class="module-tile tile-blue">
-            <div class="module-header">
-                <span class="module-icon-box">👤</span>
-                <span class="module-arrow">→</span>
-            </div>
-            <div class="module-body">
-                <h3 class="en-text">Roles & Commission</h3>
-                <h3 class="kh-text">តួនាទី & កម្រៃជើងសារ</h3>
-                <p class="en-text">Self-assign bills with permission & earn commission per bill handled.</p>
-                <p class="kh-text">ចាត់តាំងដោយខ្លួនឯង & ទទួល Commission តាមការងារជាក់ស្តែង។</p>
-            </div>
-        </div>
-
-        <!-- Card 4: Route Planning -->
-        <div class="module-tile tile-rose">
-            <div class="module-header">
-                <span class="module-icon-box">🗺️</span>
-                <span class="module-arrow">→</span>
-            </div>
-            <div class="module-body">
-                <h3 class="en-text">Route Planning</h3>
-                <h3 class="kh-text">ការរៀបផ្លូវដឹក</h3>
-                <p class="en-text">Cluster nearby jobs & avoid unnecessary back-and-forth travel.</p>
-                <p class="kh-text">ប្រមូលផ្តុំកន្លែងជិតគ្នា ជៀសវាងជិះកាត់ចុះកាត់ឡើង។</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 5: FINAL DAILY 7-STEP WORKFLOW -->
-    <section class="workflow-box">
-        <div class="section-title-bold">
-            <span>📋</span>
-            <span class="en-text">Final Daily Workflow Checklist</span>
-            <span class="kh-text">តារាងផ្ទៀងផ្ទាត់លំហូរការងារប្រចាំថ្ងៃ (៧ ជំហាន)</span>
-        </div>
-        <div class="step-pills-row">
-            <div class="step-pill">
-                <span class="step-pill-num">1</span>
-                <span class="step-pill-text en-text">Check Assigned</span>
-                <span class="step-pill-text kh-text">មើលឥវ៉ាន់ចាត់</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">2</span>
-                <span class="step-pill-text en-text">Check Pending</span>
-                <span class="step-pill-text kh-text">មើលឥវ៉ាន់សល់</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">3</span>
-                <span class="step-pill-text en-text">10h Limit</span>
-                <span class="step-pill-text kh-text">គិតម៉ោង ១០h</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">4</span>
-                <span class="step-pill-text en-text">Arrange Route</span>
-                <span class="step-pill-text kh-text">រៀបផ្លូវដឹក</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">5</span>
-                <span class="step-pill-text en-text">Pickup/Deliver</span>
-                <span class="step-pill-text kh-text">យក & ដឹកជូន</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">6</span>
-                <span class="step-pill-text en-text">Update Status</span>
-                <span class="step-pill-text kh-text">Update ភ្លាមៗ</span>
-            </div>
-            <div class="step-pill">
-                <span class="step-pill-num">7</span>
-                <span class="step-pill-text en-text">Clear Pending</span>
-                <span class="step-pill-text kh-text">បិទស្តុកស្អាត</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 6: BOTTOM PROMO BANNER -->
-    <footer class="bottom-banner-clean">
-        <div class="bottom-banner-title">
-            <span>🚚</span>
-            <span class="en-text">Metfone Express — Delivering Quality Across All 25 Provinces</span>
-            <span class="kh-text">Metfone Express — សេវាកម្មដឹកជញ្ជូនប្រកបដោយគុណភាពទូទាំង ២៥ ខេត្តក្រុង</span>
-        </div>
-        <span class="bottom-banner-tag">Express Standard 2026</span>
-    </footer>
-
-</div>
+    </main>
 
 <script>
+    // Active navigation highlighter on scroll
+    const scrollContainer = document.getElementById('mainScroll');
+    const sections = document.querySelectorAll('.lesson-section');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    scrollContainer.addEventListener('scroll', () => {
+        let currentSectionId = '';
+        const scrollPos = scrollContainer.scrollTop + 120;
+
+        sections.forEach(sec => {
+            const top = sec.offsetTop;
+            const height = sec.offsetHeight;
+            if (scrollPos >= top && scrollPos < top + height) {
+                currentSectionId = sec.getAttribute('id');
+            }
+        });
+
+        if (currentSectionId) {
+            navItems.forEach(item => {
+                const href = item.getAttribute('href').substring(1);
+                item.classList.toggle('active', href === currentSectionId);
+            });
+        }
+    });
+
+    function setActiveNav(element) {
+        navItems.forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // Language switcher
     function setLanguage(lang) {
         const body = document.body;
         const btnEn = document.getElementById('btnEn');
@@ -902,31 +967,44 @@
         }
     }
 
-    // Function to plug in hosted video URLs
-    function setHostedVideos(inventoryVideoUrl, assignVideoUrl) {
-        if (inventoryVideoUrl) {
-            const vid1 = document.getElementById('videoInventorySrc');
+    // Function to set the 3 video URLs directly
+    function setDirectVideos(inventoryUrl, managerAssignUrl, shipperAssignUrl) {
+        if (inventoryUrl) {
+            const vid1 = document.getElementById('src-inventory');
             if (vid1) {
-                vid1.src = inventoryVideoUrl;
+                vid1.src = inventoryUrl;
                 vid1.parentElement.load();
             }
-            const link1 = document.getElementById('linkInventoryVideo');
-            if (link1) {
-                link1.href = inventoryVideoUrl;
-                link1.style.display = 'inline-block';
+            const lk1 = document.getElementById('link-inventory');
+            if (lk1) {
+                lk1.href = inventoryUrl;
+                lk1.style.display = 'inline-block';
             }
         }
 
-        if (assignVideoUrl) {
-            const vid2 = document.getElementById('videoAssignSrc');
+        if (managerAssignUrl) {
+            const vid2 = document.getElementById('src-manager-assign');
             if (vid2) {
-                vid2.src = assignVideoUrl;
+                vid2.src = managerAssignUrl;
                 vid2.parentElement.load();
             }
-            const link2 = document.getElementById('linkAssignVideo');
-            if (link2) {
-                link2.href = assignVideoUrl;
-                link2.style.display = 'inline-block';
+            const lk2 = document.getElementById('link-manager-assign');
+            if (lk2) {
+                lk2.href = managerAssignUrl;
+                lk2.style.display = 'inline-block';
+            }
+        }
+
+        if (shipperAssignUrl) {
+            const vid3 = document.getElementById('src-shipper-assign');
+            if (vid3) {
+                vid3.src = shipperAssignUrl;
+                vid3.parentElement.load();
+            }
+            const lk3 = document.getElementById('link-shipper-assign');
+            if (lk3) {
+                lk3.href = shipperAssignUrl;
+                lk3.style.display = 'inline-block';
             }
         }
     }
