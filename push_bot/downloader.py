@@ -10,14 +10,9 @@ import requests
 
 
 def day14_to_today_range():
-    """Return (from_date, to_date) starting from the 14th of the current month to today."""
+    """Return (from_date, to_date) starting from 30 days ago to today to prevent cut-off on the 14th."""
     today = datetime.now()
-    if today.day >= 14:
-        start_date = datetime(today.year, today.month, 14)
-    else:
-        first_of_month = datetime(today.year, today.month, 1)
-        prev_month_end = first_of_month - timedelta(days=1)
-        start_date = datetime(prev_month_end.year, prev_month_end.month, 14)
+    start_date = today - timedelta(days=30)
     return start_date.strftime("%Y%m%d"), today.strftime("%Y%m%d")
 
 
