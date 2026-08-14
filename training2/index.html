@@ -158,7 +158,7 @@
             overflow-y: auto;
             display: flex;
             justify-content: center;
-            padding: 56px 80px 140px;
+            padding: 56px 80px 450px; /* Generous bottom padding so last lesson scrolls freely */
         }
 
         .article-container {
@@ -177,6 +177,11 @@
             padding-bottom: 72px;
             border-bottom: 1px solid var(--border-subtle);
             scroll-margin-top: 56px;
+        }
+
+        #chap-5 {
+            min-height: 75vh;
+            border-bottom: none;
         }
 
         .chapter-tag {
@@ -686,8 +691,17 @@
     const navItems = document.querySelectorAll('.nav-link');
 
     scrollContainer.addEventListener('scroll', () => {
+        const scrollBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
+        
+        // If scrolled near the bottom, always highlight the last chapter
+        if (scrollBottom < 160) {
+            navItems.forEach(item => item.classList.remove('active'));
+            navItems[navItems.length - 1].classList.add('active');
+            return;
+        }
+
         let currentSectionId = '';
-        const scrollPos = scrollContainer.scrollTop + 140;
+        const scrollPos = scrollContainer.scrollTop + 180;
 
         sections.forEach(sec => {
             const top = sec.offsetTop;
