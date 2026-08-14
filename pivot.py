@@ -357,11 +357,7 @@ def build_mega_pivot(rows, pivot_cfg, zone_cfg):
         if created_date and (today - created_date).days > 1:
             urgent_tree[hub_label][prov] += 1
 
-    # Filter date columns to start from Day 14 of current month (e.g. 14/07)
-    curr_m = today.month
-    day_keys = [dk for dk in sorted(day_keys_seen) if (dk[0] == curr_m and dk[1] >= 14) or dk[0] > curr_m]
-    if not day_keys:
-        day_keys = sorted(day_keys_seen)
+    day_keys = sorted(day_keys_seen)
     return tree, day_keys, (fee_tree, cod_tree, urgent_tree)
 
 
