@@ -41,8 +41,8 @@
 
         /* 1. CLEAN LEFT SIDEBAR */
         .sidebar {
-            width: 310px;
-            min-width: 310px;
+            width: 320px;
+            min-width: 320px;
             background-color: var(--bg-white);
             border-right: 1px solid var(--border-subtle);
             height: 100vh;
@@ -78,7 +78,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 12px 18px;
+            padding: 13px 18px;
             color: var(--c-muted);
             text-decoration: none;
             font-size: 0.95rem;
@@ -259,26 +259,32 @@
             font-weight: 600;
         }
 
+        /* DUAL VIDEO ROW FOR ROLES & ASSIGNMENT */
+        .dual-video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
         /* TIKTOK 9:16 PHONE VIDEO CONTAINER */
         .phone-mockup {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
-            border-radius: 24px;
-            padding: 14px;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.05);
-            margin: 20px auto 0;
-            max-width: 350px;
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .phone-screen {
             width: 100%;
             aspect-ratio: 9 / 16;
             background: #000000;
-            border-radius: 16px;
+            border-radius: 14px;
             overflow: hidden;
             position: relative;
         }
@@ -294,18 +300,18 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 8px 4px;
+            padding: 0 6px 2px;
         }
 
         .phone-tag {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
             color: var(--c-dark);
             font-family: monospace;
         }
 
         .phone-link {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--c-blue);
             text-decoration: none;
@@ -328,6 +334,7 @@
             .content-viewport { padding: 32px 24px 100px; }
             .chapter-heading { font-size: 2rem; }
             .sidebar { width: 250px; min-width: 250px; }
+            .dual-video-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -353,23 +360,18 @@
                 </a>
                 <a href="#chap-3" class="nav-link" onclick="setActiveChapter(this)">
                     <span class="nav-circle-num">3</span>
-                    <span class="en-text">Arrange Bills & Route</span>
-                    <span class="kh-text">ការរៀបចំវិក្កយបត្រ</span>
-                </a>
-                <a href="#chap-4" class="nav-link" onclick="setActiveChapter(this)">
-                    <span class="nav-circle-num">4</span>
                     <span class="en-text">Pending Inventory</span>
                     <span class="kh-text">ឥវ៉ាន់កកស្ទះ (Video)</span>
                 </a>
+                <a href="#chap-4" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">4</span>
+                    <span class="en-text">Roles & Assignment</span>
+                    <span class="kh-text">ការចាត់តាំង & សិទ្ធិ (Video)</span>
+                </a>
                 <a href="#chap-5" class="nav-link" onclick="setActiveChapter(this)">
                     <span class="nav-circle-num">5</span>
-                    <span class="en-text">Manager Assign</span>
-                    <span class="kh-text">Manager ចាត់តាំង (Video)</span>
-                </a>
-                <a href="#chap-6" class="nav-link" onclick="setActiveChapter(this)">
-                    <span class="nav-circle-num">6</span>
-                    <span class="en-text">Shipper Self-Assign</span>
-                    <span class="kh-text">Shipper ចាត់ខ្លួនឯង (Video)</span>
+                    <span class="en-text">Arrange in Convenient Route</span>
+                    <span class="kh-text">ការរៀបចំខ្សែផ្លូវដឹក & យក</span>
                 </a>
             </nav>
         </div>
@@ -389,7 +391,7 @@
     <main class="content-viewport" id="contentViewport">
         <div class="article-container">
 
-            <!-- CHAPTER 01: KPI & UPDATES -->
+            <!-- LESSON 01: KPI & UPDATES -->
             <section class="chapter-block" id="chap-1">
                 <div class="chapter-tag">
                     <span>Lesson 01</span>
@@ -438,7 +440,7 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 02: THE 10-HOUR RULE -->
+            <!-- LESSON 02: THE 10-HOUR RULE -->
             <section class="chapter-block" id="chap-2">
                 <div class="chapter-tag">
                     <span>Lesson 02</span>
@@ -469,7 +471,7 @@
                         <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Example:</strong>
-                            <strong class="kh-text">ឧទាហរណ៍៖</strong>
+                            <strong class="kh-text">ឧទាហរณ์៖</strong>
                             <span class="en-text">Assigned at <b>08:00 AM</b> ➔ Must update status before <b>06:00 PM</b> same day.</span>
                             <span class="kh-text">ចាត់តាំងម៉ោង <b>០៨:០០ ព្រឹក</b> ➔ ត្រូវតែ Update មុនម៉ោង <b>០៦:០០ ល្ងាច</b> ថ្ងៃដដែល។</span>
                         </div>
@@ -482,59 +484,10 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 03: ARRANGE BILLS & ROUTE -->
+            <!-- LESSON 03: PENDING INVENTORY -->
             <section class="chapter-block" id="chap-3">
                 <div class="chapter-tag">
                     <span>Lesson 03</span>
-                </div>
-
-                <h2 class="chapter-heading en-text">Arrange Bills & Route Planning</h2>
-                <h2 class="chapter-heading kh-text">ការរៀបចំវិក្កយបត្រ & ផ្លូវដឹក</h2>
-
-                <div class="chapter-lead en-text">
-                    Arrange your bills in sequence before going out to save time and hit the 10h SLA.
-                </div>
-                <div class="chapter-lead kh-text">
-                    រៀបចំវិក្កយបត្រជាលំដាប់លំដោយមុនពេលចេញដំណើរ ដើម្បីចំណេញពេល និងទាន់ម៉ោង ១០h។
-                </div>
-
-                <div class="points-list">
-                    <div class="point-row">
-                        <span class="point-circle"></span>
-                        <div class="point-text">
-                            <strong class="en-text">Group by Area:</strong>
-                            <strong class="kh-text">ប្រមូលផ្តុំតាមតំបន់៖</strong>
-                            <span class="en-text">Group bills on the same street or neighborhood together to avoid driving back and forth.</span>
-                            <span class="kh-text">ប្រមូលវិក្កយបត្រលើផ្លូវ ឬភូមិ/ឃុំក្បែរៗគ្នាជាមួយគ្នា ដើម្បីកុំឱ្យជិះកាត់ចុះកាត់ឡើង។</span>
-                        </div>
-                    </div>
-
-                    <div class="point-row">
-                        <span class="point-circle"></span>
-                        <div class="point-text">
-                            <strong class="en-text">Priority Stops:</strong>
-                            <strong class="kh-text">ផ្តល់អាទិភាព៖</strong>
-                            <span class="en-text">Put urgent orders and bills close to the 10-hour limit at the start of your route.</span>
-                            <span class="kh-text">ដាក់វិក្កយបត្របន្ទាន់ និងវិក្កយបត្រដែលជិតផុតកំណត់ ១០ ម៉ោងនៅដើមខ្សែផ្លូវ។</span>
-                        </div>
-                    </div>
-
-                    <div class="point-row">
-                        <span class="point-circle"></span>
-                        <div class="point-text">
-                            <strong class="en-text">Smooth Loop:</strong>
-                            <strong class="kh-text">ផ្លូវធ្វើដំណើរជារង្វង់៖</strong>
-                            <span class="en-text">Plan a continuous loop from branch to destination and back, saving fuel and time.</span>
-                            <span class="kh-text">រៀបចំខ្សែផ្លូវដើរជារង្វង់បន្តបន្ទាប់ពីសាខាទៅគោលដៅ និងត្រឡប់មកវិញ ចំណេញទាំងសាំងនិងពេលវេលា។</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- CHAPTER 04: PENDING INVENTORY -->
-            <section class="chapter-block" id="chap-4">
-                <div class="chapter-tag">
-                    <span>Lesson 04</span>
                 </div>
 
                 <h2 class="chapter-heading en-text">Pending Inventory</h2>
@@ -549,7 +502,7 @@
 
                 <div class="points-list">
                     <div class="point-row">
-                        <span class="point-circle blue"></span>
+                        <span class="point-circle"></span>
                         <div class="point-text">
                             <strong class="en-text">Check App:</strong>
                             <strong class="kh-text">មើលលើ App៖</strong>
@@ -559,7 +512,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle blue"></span>
+                        <span class="point-circle"></span>
                         <div class="point-text">
                             <strong class="en-text">Self-Management:</strong>
                             <strong class="kh-text">ម្ចាស់ការខ្លួនឯង៖</strong>
@@ -569,7 +522,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle blue"></span>
+                        <span class="point-circle"></span>
                         <div class="point-text">
                             <strong class="en-text">Manager & CS Help:</strong>
                             <strong class="kh-text">ការជួយពី Manager & CS៖</strong>
@@ -580,7 +533,7 @@
                 </div>
 
                 <!-- 9:16 Phone Video -->
-                <div class="phone-mockup">
+                <div class="phone-mockup" style="max-width: 350px; margin: 20px auto 0;">
                     <div class="phone-footer">
                         <span class="phone-tag">video: inventory</span>
                         <a href="./videos/inventory.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
@@ -594,108 +547,131 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 05: MANAGER ASSIGN -->
-            <section class="chapter-block" id="chap-5">
+            <!-- LESSON 04: USER ROLES & BILL ASSIGNMENT (MANAGER ASSIGN & SHIPPER SELF-ASSIGN TOGETHER) -->
+            <section class="chapter-block" id="chap-4">
                 <div class="chapter-tag">
-                    <span>Lesson 05</span>
+                    <span>Lesson 04</span>
                 </div>
 
-                <h2 class="chapter-heading en-text">Manager Bill Assignment</h2>
-                <h2 class="chapter-heading kh-text">ការចាត់តាំងឥវ៉ាន់ដោយ Manager</h2>
+                <h2 class="chapter-heading en-text">Roles & Bill Assignment</h2>
+                <h2 class="chapter-heading kh-text">តួនាទី & ការចាត់តាំងវិក្កយបត្រ</h2>
 
                 <div class="chapter-lead en-text">
-                    Managers and CS assign incoming orders directly to shippers.
+                    Bills can be assigned by Managers or self-assigned by Shippers to earn commission.
                 </div>
                 <div class="chapter-lead kh-text">
-                    Manager និង CS ចាត់តាំងឥវ៉ាន់ផ្ទាល់ទៅកាន់ Shipper។
-                </div>
-
-                <div class="points-list">
-                    <div class="point-row">
-                        <span class="point-circle"></span>
-                        <div class="point-text">
-                            <strong class="en-text">Direct Dispatch:</strong>
-                            <strong class="kh-text">ការចាត់តាំង៖</strong>
-                            <span class="en-text">Manager assigns bills directly to the appropriate Shipper by route.</span>
-                            <span class="kh-text">Manager ចាត់តាំងឥវ៉ាន់ផ្ទាល់ទៅកាន់ Shipper តាមតំបន់ផ្លូវដឹក។</span>
-                        </div>
-                    </div>
-
-                    <div class="point-row">
-                        <span class="point-circle"></span>
-                        <div class="point-text">
-                            <strong class="en-text">Instant Update:</strong>
-                            <strong class="kh-text">លោតលើ App ភ្លាមៗ៖</strong>
-                            <span class="en-text">Assigned orders appear immediately in the Shipper's active list.</span>
-                            <span class="kh-text">ឥវ៉ាន់ដែលបានចាត់ នឹងបង្ហាញក្នុងបញ្ជីការងាររបស់ Shipper ភ្លាមៗ។</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 9:16 Phone Video -->
-                <div class="phone-mockup">
-                    <div class="phone-footer">
-                        <span class="phone-tag">video: manager_assign</span>
-                        <a href="./videos/manager_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
-                    </div>
-                    <div class="phone-screen">
-                        <video id="vid-mgr" controls preload="metadata">
-                            <source src="./videos/manager_assign.mp4" type="video/mp4">
-                            Video not supported.
-                        </video>
-                    </div>
-                </div>
-            </section>
-
-            <!-- CHAPTER 06: SHIPPER SELF-ASSIGN -->
-            <section class="chapter-block" id="chap-6" style="border-bottom: none;">
-                <div class="chapter-tag">
-                    <span>Lesson 06</span>
-                </div>
-
-                <h2 class="chapter-heading en-text">Shipper Self-Assign & Commission</h2>
-                <h2 class="chapter-heading kh-text">Shipper ចាត់ខ្លួនឯង & Commission</h2>
-
-                <div class="chapter-lead en-text">
-                    Shippers can self-assign available bills and earn commission on handled work.
-                </div>
-                <div class="chapter-lead kh-text">
-                    Shipper អាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯង និងទទួលបាន Commission តាមការងារជាក់ស្តែង។
+                    វិក្កយបត្រអាចចាត់តាំងដោយ Manager ឬ Shipper ចាត់តាំងមកខ្លួនឯងផ្ទាល់ដើម្បីទទួល Commission។
                 </div>
 
                 <div class="points-list">
                     <div class="point-row">
                         <span class="point-circle blue"></span>
                         <div class="point-text">
-                            <strong class="en-text">Shipper Independence:</strong>
-                            <strong class="kh-text">ភាពម្ចាស់ការ៖</strong>
-                            <span class="en-text">Shippers with permission can self-assign available bills directly in the app.</span>
-                            <span class="kh-text">Shipper ដែលមានសិទ្ធិ អាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯងផ្ទាល់បានភ្លាមៗ។</span>
+                            <strong class="en-text">Manager / CS Assign:</strong>
+                            <strong class="kh-text">Manager/CS ចាត់តាំង៖</strong>
+                            <span class="en-text">Branch Manager or CS assigns open orders directly to shippers based on route capacity.</span>
+                            <span class="kh-text">Manager ឬ CS ចាត់តាំងឥវ៉ាន់ផ្ទាល់ទៅកាន់ Shipper តាមតំបន់ផ្លូវដឹក។</span>
                         </div>
                     </div>
 
                     <div class="point-row">
                         <span class="point-circle blue"></span>
                         <div class="point-text">
-                            <strong class="en-text">Commission:</strong>
-                            <strong class="kh-text">កម្រៃជើងសារ៖</strong>
-                            <span class="en-text">Commission is calculated based on the applicable bill amount for work handled by you.</span>
+                            <strong class="en-text">Shipper Self-Assign:</strong>
+                            <strong class="kh-text">Shipper ចាត់ខ្លួនឯង៖</strong>
+                            <span class="en-text">Shippers with assigned permissions can self-assign available bills directly in the app without asking.</span>
+                            <span class="kh-text">Shipper ដែលមានសិទ្ធិ អាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯងបានភ្លាមៗលើ App ដោយមិនបាច់សុំការអនុញ្ញាតគ្រប់ពេលឡើយ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle blue"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Commission Earnings:</strong>
+                            <strong class="kh-text">កម្រៃជើងសារ (Commission)៖</strong>
+                            <span class="en-text">Commission is calculated based on the applicable bill amount for work handled and completed by your account.</span>
                             <span class="kh-text">Commission ត្រូវបានគណនាផ្អែកលើទំហំទឹកប្រាក់នៃឥវ៉ាន់ជាក់ស្តែងដែលអ្នកបានបំពេញការងារជោគជ័យ។</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 9:16 Phone Video -->
-                <div class="phone-mockup">
-                    <div class="phone-footer">
-                        <span class="phone-tag">video: shipper_assign</span>
-                        <a href="./videos/shipper_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                <!-- DUAL 9:16 VIDEOS SIDE-BY-SIDE -->
+                <div class="dual-video-grid">
+                    <!-- Video: manager_assign -->
+                    <div class="phone-mockup">
+                        <div class="phone-footer">
+                            <span class="phone-tag">video: manager_assign</span>
+                            <a href="./videos/manager_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                        </div>
+                        <div class="phone-screen">
+                            <video id="vid-mgr" controls preload="metadata">
+                                <source src="./videos/manager_assign.mp4" type="video/mp4">
+                                Video not supported.
+                            </video>
+                        </div>
                     </div>
-                    <div class="phone-screen">
-                        <video id="vid-shp" controls preload="metadata">
-                            <source src="./videos/shipper_assign.mp4" type="video/mp4">
-                            Video not supported.
-                        </video>
+
+                    <!-- Video: shipper_assign -->
+                    <div class="phone-mockup">
+                        <div class="phone-footer">
+                            <span class="phone-tag">video: shipper_assign</span>
+                            <a href="./videos/shipper_assign.mp4" class="phone-link" target="_blank">Direct Link ↗</a>
+                        </div>
+                        <div class="phone-screen">
+                            <video id="vid-shp" controls preload="metadata">
+                                <source src="./videos/shipper_assign.mp4" type="video/mp4">
+                                Video not supported.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LESSON 05: ARRANGE BILLS IN CONVENIENT ROUTE (DELIVERY & PICKUP ROUTE) -->
+            <section class="chapter-block" id="chap-5" style="border-bottom: none;">
+                <div class="chapter-tag">
+                    <span>Lesson 05</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Arrange Bills in Convenient Route</h2>
+                <h2 class="chapter-heading kh-text">ការរៀបចំវិក្កយបត្រតាមខ្សែផ្លូវងាយស្រួល (ដឹក & យក)</h2>
+
+                <div class="chapter-lead en-text">
+                    Organize your delivery and pickup bills in sequence before going out to save fuel, time, and stay inside the 10h SLA.
+                </div>
+                <div class="chapter-lead kh-text">
+                    រៀបចំវិក្កយបត្រដឹក (Delivery) និងទទួល (Pickup) ជាលំដាប់លំដោយមុនចេញដំណើរ ដើម្បីចំណេញសាំង ពេលវេលា និងទាន់ម៉ោង ១០h។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Combine Pickup & Delivery:</strong>
+                            <strong class="kh-text">បញ្ចូលផ្លូវដឹក និងទទួលជាមួយគ្នា៖</strong>
+                            <span class="en-text">Group nearby pickup points and delivery destinations located on the same street or neighborhood together.</span>
+                            <span class="kh-text">ប្រមូលកន្លែងទៅយក (Pickup) និងកន្លែងទៅដឹក (Delivery) ដែលនៅលើផ្លូវ ឬភូមិ/ឃុំក្បែរៗគ្នាជាមួយគ្នា។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Prioritize by Deadline:</strong>
+                            <strong class="kh-text">ផ្តល់អាទិភាពតាមម៉ោងកំណត់៖</strong>
+                            <span class="en-text">Place urgent pickups and bills close to the 10-hour limit at the beginning of your trip.</span>
+                            <span class="kh-text">ដាក់វិក្កយបត្រទទួលបន្ទាន់ និងវិក្កយបត្រជិតផុតកំណត់ ១០ ម៉ោងនៅដើមខ្សែផ្លូវ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Continuous Efficient Loop:</strong>
+                            <strong class="kh-text">ខ្សែផ្លូវធ្វើដំណើរជារង្វង់៖</strong>
+                            <span class="en-text">Plan a clean circular loop starting from the branch, completing stops in order, and returning without driving back-and-forth.</span>
+                            <span class="kh-text">រៀបចំខ្សែផ្លូវដើរជារង្វង់បន្តបន្ទាប់ពីសាខា ដោយបំពេញការងារតាមលំដាប់ និងមិនជិះកាត់ចុះកាត់ឡើងឡើយ។</span>
+                        </div>
                     </div>
                 </div>
             </section>
