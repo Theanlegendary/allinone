@@ -1,1698 +1,908 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Metfone Express — August Operating KPI 5-Slide Master Deck</title>
-<!-- Import Telegram WebApp JS -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<!-- Google Fonts: Angkor (Titles Only) + Kantumruy Pro (Clean Body/Captions) + Inter -->
-<link href="https://fonts.googleapis.com/css2?family=Angkor&amp;family=Inter:wght@400;500;600;700&amp;family=Kantumruy+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<style>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Metfone Express — Branch Operations & KPI Training</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
         :root {
-            --bg-white: #ffffff;
+            --bg-canvas: #ffffff;
             --brand-red: #e11b22;
-            --text-black: #090d16;
-            --text-dark: #1e293b;
-            --text-muted: #475569;
-            --border-dark: #0f172a;
-            --border-light: #cbd5e1;
-            --paper-yellow: #fef08a;
-            --paper-yellow-light: #fef9c3;
-            --paper-text: #713f12;
-            --paper-border: #eab308;
-            --node-blue: #1d4ed8;
-            --node-green: #047857;
-            --bg-card: #f8fafc;
+            --brand-red-soft: #fef2f2;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --accent-blue: #2563eb;
+            --accent-green: #16a34a;
+            --accent-amber: #d97706;
+            --surface-soft: #f8fafc;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 400;
-        }
-
-        html, body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: var(--bg-white);
-            color: var(--text-black);
+            font-family: 'Kantumruy Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 16:9 Landscape Canvas */
-        .landscape-canvas {
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+        }
+
+        /* Presentation Container */
+        .deck-container {
             width: 100vw;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             position: relative;
-            background: #ffffff;
-            overflow: hidden;
-            perspective: 1200px;
+            background: var(--bg-canvas);
         }
 
-        /* Far Left Vertical Stamp Margin */
-        .side-stamp {
-            position: absolute;
-            left: 20px;
-            bottom: 120px;
-            transform: rotate(-90deg);
-            transform-origin: left bottom;
-            font-family: 'Angkor', serif;
-            font-size: 0.9rem;
-            letter-spacing: 0.2em;
-            color: var(--text-dark);
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        /* Top Bar Layout */
-        .top-nav {
-            position: absolute;
-            top: 18px;
-            left: 20px;
-            right: 35px;
+        /* Top Header Navigation - Borderless & Clean */
+        .top-bar {
+            height: 72px;
+            padding: 0 48px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            z-index: 100;
+            justify-content: space-between;
+            z-index: 50;
         }
 
-        .logo-box {
+        .brand-section {
             display: flex;
             align-items: center;
             gap: 16px;
         }
 
-        .brand-logo-img {
-            height: 48px;
+        .brand-logo {
+            height: 36px;
             object-fit: contain;
-            display: block;
         }
 
-        /* TITLES ONLY USE ANGKOR FONT */
-        .nav-header-text {
-            font-family: 'Angkor', serif;
-            font-size: 1.15rem;
-            color: var(--text-black);
-            letter-spacing: 0.04em;
+        .brand-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
         }
 
-        .nav-right-controls {
+        .top-controls {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
 
-        .lang-switcher-box {
-            background: #f1f5f9;
-            border: 2px solid var(--text-black);
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface-soft);
             padding: 4px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border-radius: 24px;
         }
 
         .lang-btn {
             background: transparent;
             border: none;
             padding: 6px 14px;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
             font-size: 0.85rem;
             font-weight: 600;
-            color: var(--text-dark);
+            color: var(--text-muted);
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .lang-btn.active {
-            background: var(--brand-red);
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(225, 27, 34, 0.3);
-        }
-
-        .nav-right-tag {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        /* Slide Views Switcher */
-        .slide-view {
-            display: none;
-            width: 100%;
-            height: 100%;
-            transform-origin: left center;
-        }
-
-        .slide-view.active {
-            display: grid;
-            grid-template-columns: 1.1fr 1.2fr;
-            padding: 80px 30px 80px 75px;
-            gap: 25px;
-            align-items: center;
-            animation: bookPageFlip 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        @keyframes bookPageFlip {
-            from {
-                opacity: 0;
-                transform: rotateY(-15deg) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: rotateY(0deg) scale(1);
-            }
-        }
-
-        /* LEFT CONTENT COLUMN */
-        .left-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-width: 720px;
-            max-height: 82vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .eyebrow-line {
-            font-family: 'Angkor', serif;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            letter-spacing: 0.12em;
-            color: var(--brand-red);
-            text-transform: uppercase;
-        }
-
-        .eyebrow-line::before {
-            content: '';
-            width: 40px;
-            height: 5px;
-            background: var(--brand-red);
-            border-radius: 4px;
-        }
-
-        .hero-title-bold {
-            font-family: 'Angkor', serif;
-            font-size: 3.4rem;
-            line-height: 1.2;
-            color: var(--text-black);
-            letter-spacing: -0.01em;
-        }
-
-        .hero-title-bold span {
-            color: var(--brand-red);
-        }
-
-        /* CLEAN BODY TEXT AND CAPTIONS (KANTUMRUY PRO - REGULAR WEIGHT) */
-        .sub-english {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.15rem;
-            color: var(--text-dark);
-            line-height: 1.5;
-            font-weight: 400;
-        }
-
-        .sub-khmer {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 1.1rem;
-            color: #991b1b;
-            line-height: 1.6;
-            background: #fff1f2;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border-left: 5px solid var(--brand-red);
-            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.08);
-            font-weight: 500;
-        }
-
-        /* STRICT DUAL LANGUAGE TOGGLE SCOPING */
-        body.mode-en .kh-el { display: none !important; }
-        body.mode-kh .en-el { display: none !important; }
-
-        .status-flow-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .status-step-card {
-            background: #f8fafc;
-            border: 2px solid var(--text-black);
-            border-left: 6px solid var(--brand-red);
-            padding: 12px 16px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .status-code-badge {
-            font-family: 'Angkor', serif;
-            background: var(--text-black);
-            color: #ffffff;
-            font-size: 1rem;
-            padding: 6px 14px;
-            border-radius: 8px;
-            flex-shrink: 0;
-        }
-
-        .status-desc-text {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 1.05rem;
-            color: #1e293b;
-            line-height: 1.5;
-            font-weight: 500;
-        }
-
-        body.mode-kh .status-desc-text {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 500;
-            line-height: 1.6;
-            color: #0f172a;
-        }
-
-        /* Right Visual Slide Paper Frame */
-        .right-exhibit {
-            width: 100%;
-            height: 100%;
-            max-height: 640px;
             background: #ffffff;
-            border: 3px solid var(--text-black);
-            border-radius: 14px;
-            box-shadow: 14px 14px 0px rgba(9, 13, 22, 0.1);
-            position: relative;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            color: var(--brand-red);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
-        .tab-switcher {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            border-bottom: 2px solid var(--border-light);
-            padding-bottom: 8px;
-        }
-
-        .exhibit-tab {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 600;
-            background: #f1f5f9;
-            border: 2px solid var(--border-light);
+        .slide-counter {
             font-size: 0.9rem;
-            color: var(--text-dark);
-            padding: 8px 6px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            white-space: nowrap;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
         }
 
-        .exhibit-tab.active {
-            background: var(--text-black);
-            color: #ffffff;
-            border-color: var(--text-black);
-        }
-
-        /* REAL PAPER STICKY NOTE COVER STYLE */
-        .sticky-note-under {
-            background: var(--paper-yellow);
-            color: var(--paper-text);
-            padding: 12px 18px;
-            border-radius: 4px 4px 16px 4px; /* Sticky paper folded corner */
-            font-size: 0.95rem;
-            border: 1.5px solid var(--paper-border);
-            box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.12), inset 0 -4px 8px rgba(0,0,0,0.03);
-            line-height: 1.5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            width: 100%;
-            position: relative;
-        }
-
-        .sticky-kh-text {
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 500;
-        }
-
-        .badge-tag-inline {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
-            background: #d97706;
-            color: #ffffff;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        /* REAL PAPER STICKY COVER CARDS FOR KPIS */
-        .kpi-demo-card {
+        /* Slide Stage */
+        .stage {
             flex: 1;
-            background: var(--paper-yellow-light);
-            border: 2px solid var(--paper-border);
-            border-radius: 4px 4px 16px 4px;
-            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 24px 64px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            gap: 12px;
-            box-shadow: 4px 6px 14px rgba(0,0,0,0.08);
-        }
-
-        .kpi-demo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px dashed var(--paper-border);
-            padding-bottom: 8px;
-        }
-
-        .kpi-demo-title {
-            font-family: 'Angkor', serif;
-            font-size: 1.15rem;
-            color: #713f12;
-        }
-
-        .kpi-demo-target {
-            background: #ffffff;
-            color: #047857;
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            border: 1.5px solid #059669;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .kpi-demo-body {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #451a03;
-            font-weight: 500;
-        }
-
-        .kpi-demo-formula {
-            background: #451a03;
-            color: #fef08a;
-            font-family: monospace;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        /* DISPLAY FRAME FOR SLIDES */
-        .exhibit-display-frame {
-            flex: 1;
-            width: 100%;
-            background: #ffffff;
-            border: 2px solid var(--border-light);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
             justify-content: center;
         }
 
-        .exhibit-img {
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Slide Typography & Layout */
+        .slide-eyebrow {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--brand-red);
+            margin-bottom: 8px;
+        }
+
+        .slide-heading {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--text-main);
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .slide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .slide-grid.single-col {
+            grid-template-columns: 1fr;
+            max-width: 960px;
+        }
+
+        .content-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .text-lead {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            font-weight: 400;
+        }
+
+        .bullet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .bullet-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .bullet-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .bullet-text strong {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .bullet-sub {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Highlight Timeline & Visuals (Clean & Borderless) */
+        .timeline-clean {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding: 16px 0;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .step-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--brand-red);
+            line-height: 1;
+            min-width: 32px;
+        }
+
+        .step-body h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-body p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Clean Video Container */
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .video-frame {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #090d16;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .video-frame video {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             display: block;
         }
 
-        /* MASTER SUMMARY CARDS ON SLIDE 5 */
-        .summary-grid-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .summary-card-item {
-            background: var(--paper-yellow-light);
-            border: 2px solid var(--paper-border);
-            border-radius: 4px 4px 12px 4px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 3px 5px 10px rgba(0,0,0,0.06);
-        }
-
-        .summary-card-header {
-            font-family: 'Angkor', serif;
-            font-size: 1.05rem;
-            color: #713f12;
-            border-bottom: 1.5px dashed var(--paper-border);
-            padding-bottom: 6px;
-        }
-
-        .summary-card-text {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #451a03;
-            font-weight: 500;
-        }
-
-        /* NAVIGATION BAR */
-        .bottom-nav {
-            position: fixed;
-            bottom: 20px;
-            left: 75px;
-            right: 35px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        .page-mark {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
+        .video-caption {
             font-size: 0.85rem;
-            color: var(--text-black);
-            background: rgba(255, 255, 255, 0.92);
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 2px solid var(--text-black);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            pointer-events: auto;
-        }
-
-        .nav-controls-box {
-            background: var(--text-black);
-            color: #ffffff;
-            padding: 8px 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 8px 24px rgba(9, 13, 22, 0.25);
-            border: 2px solid #ffffff;
-            pointer-events: auto;
-        }
-
-        .book-turn-btn {
-            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
-            font-weight: 700;
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 0.85rem;
-            cursor: pointer;
+            color: var(--text-muted);
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .video-direct-link {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .video-direct-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 10-Hour Highlight Banner */
+        .hero-banner-clean {
+            padding: 24px 0;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .hero-metric {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: var(--brand-red);
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-text {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        /* Bottom Floating Bar - Clean & Minimal */
+        .bottom-nav {
+            height: 64px;
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+
+        .nav-arrows {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: var(--surface-soft);
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-main);
             transition: all 0.2s ease;
         }
 
-        .book-turn-btn:hover:not(:disabled) {
-            color: var(--brand-red);
-            transform: scale(1.05);
+        .nav-btn:hover {
+            background: #e2e8f0;
         }
 
-        .book-turn-btn:disabled {
-            opacity: 0.35;
+        .nav-btn:disabled {
+            opacity: 0.3;
             cursor: not-allowed;
         }
 
-        .slide-dots {
+        .dots-container {
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 8px;
         }
 
         .dot {
-            width: 10px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.35);
-            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: #cbd5e1;
             cursor: pointer;
             transition: all 0.25s ease;
         }
 
         .dot.active {
-            background: var(--brand-red);
             width: 24px;
-            border-radius: 10px;
+            background: var(--brand-red);
         }
 
-        /* Lightbox Modal */
-        .lightbox-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(9, 13, 22, 0.95);
-            z-index: 999999;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
+        /* Language visibility toggle */
+        .kh-text { display: none; }
+        body.lang-kh .en-text { display: none; }
+        body.lang-kh .kh-text { display: block; }
 
-        .lightbox-modal.active { display: flex; }
-
-        .lightbox-box {
-            width: 95vw;
-            height: 90vh;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            position: relative;
-        }
-
-        .lightbox-close {
-            font-family: 'Angkor', serif;
-            position: absolute;
-            top: 16px; right: 16px;
-            background: var(--text-black);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        /* ── RESPONSIVE MOBILE STYLES (PHONES & TABLETS) ──────────── */
         @media (max-width: 900px) {
-            html, body {
-                height: auto !important;
-                min-height: 100vh;
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
-            }
-
-            .landscape-canvas {
-                height: auto !important;
-                min-height: 100vh;
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
-                padding-bottom: 90px;
-            }
-
-            .side-stamp {
-                display: none !important;
-            }
-
-            .top-nav {
-                position: relative !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                padding: 12px 16px !important;
-                flex-wrap: wrap !important;
-                gap: 10px !important;
-                background: #ffffff;
-                border-bottom: 2px solid var(--text-black);
-            }
-
-            .logo-box {
-                gap: 10px !important;
-            }
-
-            .brand-logo-img {
-                height: 36px !important;
-            }
-
-            .nav-header-text {
-                font-size: 0.95rem !important;
-            }
-
-            .nav-right-controls {
-                width: 100% !important;
-                justify-content: space-between !important;
-            }
-
-            .slide-view.active {
-                grid-template-columns: 1fr !important;
-                padding: 16px 16px 100px 16px !important;
-                gap: 20px !important;
-                height: auto !important;
-            }
-
-            .hero-title-bold {
-                font-size: 2.1rem !important;
-            }
-
-            .hero-title-bold.kh-el {
-                font-size: 1.9rem !important;
-            }
-
-            .sub-english, .sub-khmer {
-                font-size: 0.95rem !important;
-            }
-
-            .right-exhibit {
-                max-height: none !important;
-                height: auto !important;
-                box-shadow: 6px 6px 0px rgba(9, 13, 22, 0.1) !important;
-                padding: 14px !important;
-            }
-
-            .summary-grid-box {
-                grid-template-columns: 1fr !important;
-            }
-
-            .tab-switcher {
-                grid-template-columns: 1fr !important;
-                gap: 4px !important;
-            }
-
-            .exhibit-tab {
-                font-size: 0.82rem !important;
-                padding: 8px 4px !important;
-            }
-
-            .sticky-note-under {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 8px !important;
-                padding: 10px 14px !important;
-            }
-
-            .bottom-nav {
-                left: 10px !important;
-                right: 10px !important;
-                bottom: 12px !important;
-                flex-direction: row !important;
-                gap: 8px !important;
-            }
-
-            .page-mark {
-                font-size: 0.72rem !important;
-                padding: 4px 8px !important;
-            }
-
-            .nav-controls-box {
-                padding: 6px 14px !important;
-                gap: 10px !important;
-            }
-
-            .book-turn-btn {
-                font-size: 0.75rem !important;
-            }
+            .slide { padding: 16px 24px 70px; }
+            .slide-grid { grid-template-columns: 1fr; gap: 24px; }
+            .slide-heading { font-size: 1.8rem; }
+            .hero-metric { font-size: 3rem; }
         }
-    
-.btn-detail {
-    background: #e2e8f0;
-    border: none;
-    color: #475569;
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 10px;
-    text-transform: uppercase;
-    display: inline-block;
-    transition: background 0.2s;
-    font-family: 'Inter', sans-serif;
-}
-.btn-detail:hover { background: #cbd5e1; }
-.kpi-detail {
-    display: none;
-    margin-top: 10px;
-    font-size: 14px;
-    line-height: 1.55;
-    color: #334155;
-    background: #f8fafc;
-    padding: 12px;
-    border-radius: 8px;
-    border-left: 3px solid #0284c7;
-    text-align: left;
-    font-family: 'Kantumruy Pro', sans-serif;
-    font-weight: 500;
-}
-.kpi-detail.show {
-    display: block;
-}
-</style>
+    </style>
 </head>
-<body class="mode-both">
-<div class="landscape-canvas">
-<div class="side-stamp">METFONE EXPRESS · AUGUST OPERATING KPI MASTER DECK</div>
-<!-- Top Navigation -->
-<div class="top-nav">
-<div class="logo-box">
-<img alt="Metfone Express Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/training2/images/metfone_express_logo.png';" src="/training2/images/metfone_express_logo.png"/>
-<div class="nav-header-text en-el">METFONE EXPRESS KPI</div>
-<div class="nav-header-text kh-el">METFONE EXPRESS KPI</div>
-</div>
-<div class="nav-right-controls">
-<div class="lang-switcher-box">
-<button class="lang-btn active" id="btnBoth" onclick="setLanguage('both')">🌐 EN+KH</button>
-<button class="lang-btn" id="btnEn" onclick="setLanguage('en')">🇬🇧 EN</button>
-<button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">🇰🇭 KH</button>
-</div>
-<div class="nav-right-tag" id="slideTag">
-<span class="en-el">Slide 1 of 5 · Branch Quality Guidelines</span>
-<span class="kh-el">ស្លាយ ១ នៃ ៥ · គោលការណ៍ណែនាំគុណភាពសាខា</span>
-</div>
-</div>
-</div>
-<!-- SLIDE 1 VIEW: AUGUST 2026 BRANCH QUALITY TARGETS -->
-<div class="slide-view active" id="slide1">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 01 · 25 Provinces Branch Operating SLA Guidelines</span>
-<span class="kh-el">ស្លាយ ០១ · KPI និង SLA សម្រាប់សាខាទាំង ២៥ រាជធានី-ខេត្ត</span>
-</div>
-<h1 class="hero-title-bold en-el">
-                    Branch KPI.<br/><span>Master Guidelines.</span>
-</h1>
-<h1 class="hero-title-bold kh-el">
-                    KPI និង SLA សាខា<br/><span>គោលដៅសំខាន់ដែលសាខាត្រូវចាំ</span>
-</h1>
-<p class="sub-english en-el" style="; display:none;">
-<b>Standard Operating Guidelines:</b> Master quality targets &amp; SLA standards assigned to all 25 provincial branches.
-                </p>
-<p class="sub-khmer kh-el" style="; display:none;">
-<b>គោលការណ៍ណែនាំ៖</b> សាខាទាំង ២៥ ត្រូវអនុវត្តតាមស្តង់ដារដូចគ្នា ដើម្បីឱ្យការទទួលឥវ៉ាន់ ការចាត់អ្នកដឹក និងការដឹកជូន អាចធ្វើបានទាន់ពេល និងមានគុណភាព។
-                </p>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">FIRST MILE</span>
-<span class="kh-el">ទទួលឥវ៉ាន់</span>
-</div>
-<div class="status-desc-text en-el" style="; display:none;">Phnom Penh: <b>3.00h</b> | Kandal: <b>4.00h</b> | Provinces: <b>4.50h</b> (TCT Avg: <b>4.42h</b>).</div>
-<div class="status-desc-text kh-el" style="; display:none;"><b>១. First Mile — ការទទួលឥវ៉ាន់៖</b> ភ្នំពេញ <b>3.00 ម៉ោង</b> | កណ្តាល <b>4.00 ម៉ោង</b> | ខេត្ត <b>4.50 ម៉ោង</b><br/></div>
-</div>
-<div class="status-step-card" style="border-left-color: #059669;">
-<div class="status-code-badge" style="background: #059669;">
-<span class="en-el">LAST MILE</span>
-<span class="kh-el">ដឹកជូន</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #7c3aed;">
-<div class="status-code-badge" style="background: #7c3aed;">
-<span class="en-el">ONTIME PICKUP</span>
-<span class="kh-el">ទទួលឥវ៉ាន់ភ្ញៀវ</span>
-</div><br/></div>
-</div>
-<!-- SLA EXPLANATION YELLOW STICKY PAPER NOTE ON SCREEN -->
-<div class="sticky-note-under" style="margin-top: 10px; background: #fef08a; border: 2px solid #eab308; border-radius: 4px 4px 16px 4px; box-shadow: 4px 6px 12px rgba(0,0,0,0.1); transform: rotate(-0.5deg);; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">
-                            📌 <b>WHAT IS SLA? (Service Level Agreement)</b><br/>
-                            • <b>Simple Meaning:</b> SLA is the <b>MAXIMUM TIME LIMIT</b> to finish a task!<br/>
-                            • <b>Last Mile SLA (10h):</b> Must assign driver within <b>10 hours</b> after branch arrival (306).<br/>
-                            • <b>Before SLA Limit</b> ➔ 🟢 <b>On-Time</b> | <b>After SLA Limit</b> ➔ 🔴 <b>Overdue!</b>
-</div>
-<div class="kh-el sticky-kh-text">
-                            📌 <b>SLA មានន័យថាម៉េច? និយាយឱ្យងាយ គឺ៖</b><br/>
-                            • <b>SLA គឺជាម៉ោងកំណត់ ដែលយើងត្រូវធ្វើការងារឱ្យរួច។</b><br/>
-                            • <b>ឧទាហរណ៍ Last Mile SLA 10 ម៉ោង៖</b> ពេលឥវ៉ាន់មកដល់សាខា <b>Status 306</b> ➔ ត្រូវចាត់អ្នកដឹក និង Update ឱ្យបានក្នុង <b>10 ម៉ោង</b>។<br/>
-                            • 🟢 <b>មុន 10 ម៉ោង = ទាន់ពេល (On-Time)</b> | 🔴 <b>លើស 10 ម៉ោង = យឺត / Overdue / Fail</b>
-</div>
-</div>
-<div class="badge-tag-inline" style="align-self: flex-start;">
-<span class="en-el">📌 WHAT IS SLA?</span>
-<span class="kh-el">📌 ន័យ SLA ងាយៗ</span>
-</div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">📌 Master Guidelines: Branch Quality Targets (25 Provinces)</span>
-<span class="kh-el">📌 គោលការណ៍ណែនាំគោលដៅគុណភាពសាខា ទាំង២៥ខេត្តក្រុង</span>
-</div>
-<div class="exhibit-display-frame" onclick="openLightbox()" style="overflow: auto; display: block; padding: 0;">
-<table style="width: 100%; border-collapse: collapse; font-size: 0.72rem; text-align: center; background: #ffffff;">
-<thead>
-<tr style="background: #fef08a; color: #713f12; font-family: 'Kantumruy Pro', 'Inter', sans-serif; font-weight: 700; border-bottom: 2px solid #eab308;">
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">No.</span><span class="kh-el">លេខ</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Code</span><span class="kh-el">កូដ</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Branch Name</span><span class="kh-el">ឈ្មោះសាខា</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Zone</span><span class="kh-el">តំបន់</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">First Mile</span><span class="kh-el">ទទួលឥវ៉ាន់</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Last Mile</span><span class="kh-el">ដឹកជូន</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Ontime Pickup</span><span class="kh-el">ទទួលឥវ៉ាន់ភ្ញៀវ</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">1st Update</span><span class="kh-el">អត្រាស្កេនដំបូង</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Total Success</span><span class="kh-el">សរុបជោគជ័យ</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending Mega</span><span class="kh-el">កកស្ទះ Mega</span></th>
-<th style="padding: 4px; border: 1px solid #cbd5e1;"><span class="en-el">Pending 3 Day</span><span class="kh-el">កកស្ទះ &gt;៣ថ្ងៃ</span></th>
-</tr>
-<tr style="background: #fef3c7; color: #0f172a; font-weight: 700; border-bottom: 1.5px solid #eab308;">
-<td style="padding: 3px; border: 1px solid #cbd5e1;">-</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;">TCT</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1; text-align: left;"><span class="en-el">Total Corporation</span><span class="kh-el">សរុបក្រុមហ៊ុន</span></td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;"><span class="en-el">Overall</span><span class="kh-el">រួម</span></td>
-<td style="padding: 3px; border: 1px solid #cbd5e1; color: #2563eb;">4.42h</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">10.00h</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;">98.00%</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;">90.00%</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1; color: #059669;">95.04%</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;">1.00%</td>
-<td style="padding: 3px; border: 1px solid #cbd5e1;">4.00%</td>
-</tr>
-</thead>
-<tbody>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">1</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kandal</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 1</span><span class="kh-el">តំបន់ ១</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">2</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PNP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Phnom Penh</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 1</span><span class="kh-el">តំបន់ ១</span></td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #2563eb; font-weight: 700;">3.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0; color: #059669; font-weight: 700;">96.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">3</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Prey Veng</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 1</span><span class="kh-el">តំបន់ ១</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 1px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">4</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SVA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Svay Rieng</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 1</span><span class="kh-el">តំបន់ ១</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">90.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">5</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SPE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Speu</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">6</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KAM</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampot</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">7</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KEP</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kep</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">8</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KOH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Koh Kong</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">9</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Sihanouk</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">10</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TAK</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Takéo</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 2</span><span class="kh-el">តំបន់ ២</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">11</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAN</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Banteay Meanchey</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 3</span><span class="kh-el">តំបន់ ៣</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">12</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">BAT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Battambang</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 3</span><span class="kh-el">តំបន់ ៣</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">13</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Chhnang</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 3</span><span class="kh-el">តំបន់ ៣</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">14</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PAI</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pailin</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 3</span><span class="kh-el">តំបន់ ៣</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">15</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PUR</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Pursat</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 3</span><span class="kh-el">តំបន់ ៣</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">16</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">THO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Thom</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 4</span><span class="kh-el">តំបន់ ៤</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">17</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ODD</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Oddar Meancheay</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 4</span><span class="kh-el">តំបន់ ៤</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">18</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">PRH</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Preah Vihear</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 4</span><span class="kh-el">តំបន់ ៤</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">19</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">SIE</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Siem Reap</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 4</span><span class="kh-el">តំបន់ ៤</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">20</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">KRA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kratié</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">80.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">21</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">MON</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Mondulkiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">22</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">ROT</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Ratanakiri</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">23</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">CHA</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Kampong Cham</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr style="background: #f8fafc;"><td style="padding: 3px; border: 1px solid #e2e8f0;">24</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">STU</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Stung Treng</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">70.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-<tr><td style="padding: 3px; border: 1px solid #e2e8f0;">25</td><td style="padding: 3px; border: 1px solid #e2e8f0; font-weight: 700;">TBO</td><td style="padding: 3px; border: 1px solid #e2e8f0; text-align: left;">Tbong Khmum</td><td style="padding: 3px; border: 1px solid #e2e8f0;"><span class="en-el">Zone 5</span><span class="kh-el">តំបន់ ៥</span></td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.50</td><td style="padding: 3px; border: 1px solid #e2e8f0;">10.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">98.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">85.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">95.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">1.00</td><td style="padding: 3px; border: 1px solid #e2e8f0;">4.00</td></tr>
-</tbody>
-</table>
-</div>
-<div class="sticky-note-under" style="; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">📌 <b>August SLA Targets:</b> First Mile (4.42h), Last Mile (10h), Pickup (98%), 1st Update (90%)</div>
-<div class="kh-el sticky-kh-text">📌 <b>គោលដៅខែសីហា៖</b> ទទួលឥវ៉ាន់ ៤.៤២ ម៉ោង | ដឹកជូន ១០ ម៉ោង | ទទួលឥវ៉ាន់ភ្ញៀវ ៩៨% | ធ្វើបច្ចុប្បន្នភាពដំបូង ៩០%</div>
-</div>
-<div class="badge-tag-inline">
-<span class="en-el">📌 STICKY PAPER COVER</span>
-<span class="kh-el">📌 គោលដៅ SLA ខែសីហា</span>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 2 VIEW: INTERPRETATION OF 3 MAIN KPIS -->
-<div class="slide-view" id="slide2">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 02 · Simple Guide for 3 Core KPIs</span>
-<span class="kh-el">ស្លាយ ០២ · KPI គុណភាពសំខាន់ៗ ៣ ដែលសាខាត្រូវចាំ</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    3 Core KPIs.<br/><span>Exact Breakdown.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    KPI គុណភាពសំខាន់ៗ ៣<br/><span>ដែលសាខាត្រូវចាំ</span>
-</h1>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">1st PICKUP</span>
-<span class="kh-el">១. ទទួលឥវ៉ាន់</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #d97706;">
-<div class="status-code-badge" style="background: #d97706;">
-<span class="en-el">1st DELIVERY (306)</span>
-<span class="kh-el">២. ស្កេនដំបូង (៣០៦)</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #059669;">
-<div class="status-code-badge" style="background: #059669;">
-<span class="en-el">TOTAL KPI COUNT</span>
-<span class="kh-el">៣. ដឹកជោគជ័យ</span>
-</div><br/></div>
-</div>
-<!-- SLA EXPLANATION YELLOW STICKY PAPER NOTE ON SCREEN -->
-<div class="sticky-note-under" style="margin-top: 10px; background: #fef08a; border: 2px solid #eab308; border-radius: 4px 4px 16px 4px; box-shadow: 4px 6px 12px rgba(0,0,0,0.1); transform: rotate(-0.5deg);; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">
-                            📌 <b>3 CORE RULES:</b> Pickup 98% → 1st Update 90% → Delivery Success 95%+
-                        </div>
-<div class="kh-el sticky-kh-text">
-                            📌 <b>ច្បាប់សំខាន់៖</b> 1st Pickup ≥ 98% | 1st Update ≥ 90% (ភ្នំពេញ/Zone 1) | 1st Update ≥ 85% (ខេត្ត) | Delivery Success ≥ 95%<br/>👉 <b>រាល់ថ្ងៃត្រូវស្កេន និងពិនិត្យស្តុក</b> ដើម្បីឱ្យចំនួនក្នុងប្រព័ន្ធ ត្រូវគ្នាជាមួយឥវ៉ាន់ដែលមានពិតក្នុងសាខា។
-                        </div>
-</div>
-<div class="badge-tag-inline" style="align-self: flex-start;">
-<span class="en-el">📌 3 CORE RULES</span>
-<span class="kh-el">📌 ច្បាប់សំខាន់</span>
-</div>
-</div>
-</div>
-<div class="right-exhibit">
-<div class="tab-switcher">
-<button class="exhibit-tab active" onclick="switchExhibitSlide2('kpi1', this)">
-<span class="en-el">1st Pickup KPI</span>
-<span class="kh-el">១. ទទួលឥវ៉ាន់</span>
-</button>
-<button class="exhibit-tab" onclick="switchExhibitSlide2('kpi2', this)">
-<span class="en-el">1st Delivery after 306</span>
-<span class="kh-el">២. ស្កេនដំបូង (៣០៦)</span>
-</button>
-<button class="exhibit-tab" onclick="switchExhibitSlide2('kpi3', this)">
-<span class="en-el">Total Success vs Failed</span>
-<span class="kh-el">៣. ដឹកជោគជ័យ (៤១០)</span>
-</button>
-</div>
-<!-- Tab 1 Demo Card: 1st Pickup KPI -->
-<div class="kpi-demo-card" id="demoKpi1">
-<div class="kpi-demo-header">
-<div class="kpi-demo-title">
-<span class="en-el">1. 100 → 210 (Pickup Courier)</span>
-<span class="kh-el">១. ទទួលឥវ៉ាន់ដំបូង — អតិថិជនបង្កើតហើយ ត្រូវទៅយកឱ្យទាន់</span>
-</div>
-<div class="kpi-demo-target">
-<span class="en-el">Goal: 98%</span>
-<span class="kh-el">គោលដៅ៖ ៩៨%</span>
-</div>
-</div>
-<div class="kpi-demo-body">
-<div class="en-el">
-<b>Create Order → Pickup Courier Immediately</b><br/>
-                            • Scan pickup attempt before SLA limit (3h PNP, 4h KAN, 4.5h Prov).<br/>
-<b>Simple Rule:</b> Order created → Courier picks up on time!
-                        </div>
-<div class="kh-el">
-<b>ចាប់ពីពេលអតិថិជនបង្កើតការកុម្ម៉ង់ ➔ រហូតដល់អ្នកដឹកទៅយកឥវ៉ាន់</b><br/>
-                            • ភ្នំពេញ៖ <b>៣ ម៉ោង</b> | កណ្តាល៖ <b>៤ ម៉ោង</b> | ខេត្ត៖ <b>៤.៥ ម៉ោង</b><br/>
-                            👉 <b>ចាំតែប៉ុណ្ណេះ៖</b> អតិថិជនបង្កើតការកុម្ម៉ង់ ➔ អ្នកដឹកត្រូវទៅយក <b>ឱ្យទាន់ម៉ោង</b>!
-                        </div>
-</div>
-<div class="kpi-demo-formula">
-<span class="en-el">Pickup Rate = (On-Time Pickups / Total Orders) * 100%</span>
-<span class="kh-el">អត្រាយកឥវ៉ាន់ = (យកទាន់ពេល / សរុបឥវ៉ាន់) * ១០០%</span>
-</div>
-</div>
-<!-- Tab 2 Demo Card: 1st Update Delivery KPI after 306 -->
-<div class="kpi-demo-card" id="demoKpi2" style="display: none;">
-<div class="kpi-demo-header">
-<div class="kpi-demo-title">
-<span class="en-el">2. 306 → 400 / 401 (Driver Assign)</span>
-<span class="kh-el">២. ធ្វើបច្ចុប្បន្នភាពដំបូង — ឥវ៉ាន់មកដល់សាខា កុំទុកឱ្យស្ទះ</span>
-</div>
-<div class="kpi-demo-target">
-<span class="en-el">Goal: 90% / 85%</span>
-<span class="kh-el">គោលដៅ៖ ៩០% / ៨៥%</span>
-</div>
-</div>
-<div class="kpi-demo-body">
-<div class="en-el">
-<b>306 → 400/401 Immediately</b><br/>
-                            • Scan 1st update attempt before <b>10:00 Hours SLA</b>!<br/>
-<b>Simple Rule:</b> Package arrives at branch (306) → Assign driver (400/401) immediately!
-                        </div>
-<div class="kh-el">
-<b>ពេលឥវ៉ាន់មកដល់សាខា ៣០៦ ហើយ ➔ ត្រូវចាត់អ្នកដឹក ➔ ធ្វើបច្ចុប្បន្នភាពទៅ ៤០០/៤០១ ក្នុងរយៈពេល ១០ ម៉ោង</b><br/>
-                            👉 <b>ចាំងាយៗ៖</b> ៣០៦ មកដល់ ➔ ចាត់អ្នកដឹក ➔ ធ្វើបច្ចុប្បន្នភាពកុំឱ្យយូរ!
-                        </div>
-</div>
-<div class="kpi-demo-formula">
-<span class="en-el">1st Update Rate = (Orders Updated in 10h / Total Branch Orders) * 100%</span>
-<span class="kh-el">អត្រាស្កេនដំបូង = (ស្កេនក្នុង ១០ម៉ោង / សរុបឥវ៉ាន់សាខា) * ១០០%</span>
-</div>
-</div>
-<!-- Tab 3 Demo Card: Total Success vs Failed KPI Count -->
-<div class="kpi-demo-card" id="demoKpi3" style="display: none;">
-<div class="kpi-demo-header">
-<div class="kpi-demo-title">
-<span class="en-el">3. 400 → 410 (Delivered Success)</span>
-<span class="kh-el">៣. Delivery Success — ដឹកជូនឱ្យបានជោគជ័យ</span>
-</div>
-<div class="kpi-demo-target">
-<span class="en-el">Goal: 96% / 95%</span>
-<span class="kh-el">គោលដៅ៖ ៩៥%+</span>
-</div>
-</div>
-<div class="kpi-demo-body">
-<div class="en-el">
-<b>400 → 410 Delivered Success</b><br/>
-                            • 🟢 Delivered on-time | Goal: <b>96% PNP / 95% Provinces</b>.<br/>
-                            • 🔴 Reduce Red Overdue (&gt;10h / &gt;48h / Return 520)!
-                        </div>
-<div class="kh-el">
-<b>យើងចង់ឱ្យឥវ៉ាន់ដឹកជូនជោគជ័យច្រើន និងកុំឱ្យមានឥវ៉ាន់ស្ទះ</b><br/>
-                            • Status <b>410 = ដឹកជូនជោគជ័យ</b> (គោលដៅ 95%+)<br/>
-                            • ត្រូវកាត់បន្ថយករណីហួស <b>10h / 48h</b> &amp; ករណីត្រឡប់ <b>520</b>!
-                        </div>
-</div>
-<div class="kpi-demo-formula">
-<span class="en-el">Total Success Rate = (Delivered 410 / Total Month Orders) * 100%</span>
-<span class="kh-el">អត្រាដឹកជោគជ័យ = (សរុបដឹក410 / សរុបអីវ៉ាន់ក្នុងខែ) * ១០០%</span>
-</div>
-</div>
-<div class="sticky-note-under" style="; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">📌 <b>3 Core Rules:</b> 1st Pickup (98%) | 1st Delivery (90%) | Total Success (95%+)</div>
-<div class="kh-el sticky-kh-text">📌 <b>ច្បាប់ ៣ យ៉ាង៖</b> Pickup 98% ➔ 1st Update 90% ➔ Delivery Success 95%+</div>
-</div>
-<div class="badge-tag-inline">
-<span class="en-el">📌 3 CORE KPIS</span>
-<span class="kh-el">📌 KPI ទាំង៣សំខាន់</span>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 3 VIEW: HOW TO EXPORT 6 CORE KPI REPORTS -->
-<div class="slide-view" id="slide3">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 03 · Web Portal 6 KPI Reports Export Guide</span>
-<span class="kh-el">ស្លាយ ០៣ · របាយការណ៍ប្រព័ន្ធ ៦ ប្រភេទដែលសាខាត្រូវចេះ</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    Web Portal.<br/><span>Export 6 Reports.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    របាយការណ៍ប្រព័ន្ធ ៦ ប្រភេទ<br/><span>ដែលសាខាត្រូវចេះ</span>
-</h1>
-<p class="sub-english en-el" style="; display:none;">
-<b>What data do you get when exporting?</b> Detailed operational columns &amp; performance audit rules for all 6 Excel exports from <code>opsexpress.metfone.com.kh</code>.
-                </p>
-<p class="sub-khmer kh-el" style="; display:none;">
-<b>🌐 ចូលប្រព័ន្ធ opsexpress.metfone.com.kh ៖</b> របាយការណ៍ប្រព័ន្ធ ៦ ប្រភេទដែលសាខាត្រូវចេះប្រើប្រាស់។
-                </p>
-<!-- EXCEL COLUMNS & PERFORMANCE AUDIT BREAKDOWN LIST (SHORT KEYPOINTS) -->
-<div class="status-flow-container" style="max-height: 48vh; overflow-y: auto;">
-<div class="status-step-card" style="border-left-color: #2563eb; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #2563eb; font-size: 0.8rem;">
-<span class="en-el">1. REVENUE (/doanh-thu-san-luong)</span>
-<span class="kh-el">១. របាយការណ៍ចំណូល</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📊 <b>Excel Data:</b> Order ID, Freight Fee, COD ($), Status (410).<br/>
-                            🎯 <b>Branch Check:</b> Monthly revenue, COD cash, Success Rate (95%+).
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📊 <b>១. របាយការណ៍ចំណូល៖</b> មើល លេខឥវ៉ាន់, ថ្លៃដឹក, ប្រាក់ COD, ស្ថានភាព ៤១០។<br/>
-                            👉 ប្រើសម្រាប់ពិនិត្យ <b>ចំណូល, COD និងអត្រាដឹកជោគជ័យ</b>។
-                        </div>
-<br/></div>
-<div class="status-step-card" style="border-left-color: #d97706; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #d97706; font-size: 0.8rem;">
-<span class="en-el">2. INVENTORY DELIVERY (/bao-cao-ton-giao)</span>
-<span class="kh-el">២. ឥវ៉ាន់កកស្ទះពេលដឹក</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📦 <b>Excel Data:</b> Driver Name, Status (306/400/420), Age Hours.<br/>
-                            🎯 <b>Branch Check:</b> Overdue stock (&gt;10h SLA / &gt;48h), assign drivers.
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📦 <b>២. របាយការណ៍ឥវ៉ាន់កកស្ទះពេលដឹក៖</b> មើល ឈ្មោះអ្នកដឹក, ស្ថានភាព ៣០៦/៤០០/៤២០, ម៉ោងដែលឥវ៉ាន់នៅសល់។<br/>
-                            👉 រកឥវ៉ាន់ដែលហួស <b>១០ ម៉ោង / ៤៨ ម៉ោង</b> ហើយចាត់ចែងអ្នកដឹកឱ្យបានលឿន។
-                        </div>
-<br/></div>
-<div class="status-step-card" style="border-left-color: #7c3aed; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #7c3aed; font-size: 0.8rem;">
-<span class="en-el">3. INVENTORY RECEIVING (/bao-cao-ton-kho)</span>
-<span class="kh-el">៣. ឥវ៉ាន់នៅសល់ក្នុងឃ្លាំង</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            🏢 <b>Excel Data:</b> Hub Code, Pickup Time, Holding Status (110/120).<br/>
-                            🎯 <b>Branch Check:</b> Stock stuck in hub before loading trucks.
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            🏢 <b>៣. របាយការណ៍ឥវ៉ាន់នៅសល់ក្នុងឃ្លាំង៖</b> មើល លេខឃ្លាំង, ម៉ោងស្កេន, ស្ថានភាព ១១០/១២០។<br/>
-                            👉 មុនលើកឥវ៉ាន់ឡើងឡាន ត្រូវមើលថា <b>មានឥវ៉ាន់ណានៅសល់ទេ</b>។
-                        </div>
-<br/></div>
-<div class="status-step-card" style="border-left-color: #059669; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #059669; font-size: 0.8rem;">
-<span class="en-el">4. ORDER STATUS DETAIL (/bao-cao-trang-thai-don)</span>
-<span class="kh-el">៤. ស្ថានភាពឥវ៉ាន់</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📝 <b>Excel Data:</b> Full history (100 → 306 → 400 → 410), Delay notes.<br/>
-                            🎯 <b>Branch Check:</b> Master file for Telegram Bot &amp; customer claims.
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            📝 <b>៤. របាយការណ៍ស្ថានភាពឥវ៉ាន់៖</b> មើលលំហូរ <b>១០០ ➔ ៣០៦ ➔ ៤០០ ➔ ៤១០</b>។<br/>
-                            👉 ប្រើពេលតាមដានឥវ៉ាន់ ឬពេលអតិថិជនសួរ / តវ៉ា។
-                        </div>
-<br/></div>
-<div class="status-step-card" style="border-left-color: #0284c7; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #0284c7; font-size: 0.8rem;">
-<span class="en-el">5. RECEIVING KPI (/bao-cao-kpi-thu)</span>
-<span class="kh-el">៥. KPI ទទួលឥវ៉ាន់</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            ⏱️ <b>Excel Data:</b> Courier Name, Pickup Time, Target (3h/4h/4.5h).<br/>
-                            🎯 <b>Branch Check:</b> Courier pickup speed &amp; Branch Pickup Target (98%).
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            ⏱️ <b>៥. របាយការណ៍ KPI ទទួលឥវ៉ាន់៖</b> មើល អ្នកដឹក, ម៉ោងទៅយក, គោលដៅ ៣ម៉ោង / ៤ម៉ោង / ៤.៥ម៉ោង។<br/>
-                            👉 ដឹងថា <b>សាខាយើងទៅយកទាន់ម៉ោងឬអត់</b>។
-                        </div>
-<br/></div>
-<div class="status-step-card" style="border-left-color: #e11b22; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px;">
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-<div class="status-code-badge" style="background: #e11b22; font-size: 0.8rem;">
-<span class="en-el">6. DELIVERY KPI (/bao-cao-kpi-phat)</span>
-<span class="kh-el">៦. KPI ដឹកជូន</span>
-</div></div>
-<div class="status-desc-text en-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            🚚 <b>Excel Data:</b> Driver Name, Arrival (306), 1st Update (401).<br/>
-                            🎯 <b>Branch Check:</b> 10h SLA compliance &amp; 1st Update Target (90%/85%).
-                        </div>
-<div class="status-desc-text kh-el" style="font-size: 0.85rem; line-height: 1.35;; display:none;">
-                            🚚 <b>៦. របាយការណ៍ KPI ដឹកជូន៖</b> មើល អ្នកដឹក, ម៉ោងមកដល់ ៣០៦, ម៉ោងស្កេនដំបូង ៤០១។<br/>
-                            👉 ប្រើសម្រាប់តាមដាន <b>កំហិត ១០ ម៉ោង (SLA)</b> និងធ្វើបច្ចុប្បន្នភាពដំបូង <b>៩០% / ៨៥%</b>។
-                        </div>
-<br/></div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">🌐 6 Core Metfone Express KPI Web Portal Endpoints</span>
-<span class="kh-el">🌐 តំណទាញយករាយការណ៍ KPI ទាំង៦ លើប្រព័ន្ធវេបសាយ</span>
-</div>
-<div class="report-links-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">1. Revenue Report</span>
-<span class="kh-el">១. របាយការណ៍ចំណូល</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/doanh-thu-san-luong</div>
-<a href="https://opsexpress.metfone.com.kh/doanh-thu-san-luong" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">2. Inventory Delivery</span>
-<span class="kh-el">២. ឥវ៉ាន់កកស្ទះពេលដឹក</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-ton-giao</div>
-<a href="https://opsexpress.metfone.com.kh/bao-cao-ton-giao" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">3. Inventory Receiving</span>
-<span class="kh-el">៣. ឥវ៉ាន់សល់ក្នុងឃ្លាំង</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-ton-kho</div>
-<a href="https://opsexpress.metfone.com.kh/bao-cao-ton-kho" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">4. Order Status Detail</span>
-<span class="kh-el">៤. ស្ថានភាពឥវ៉ាន់</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-trang-thai-don</div>
-<a href="https://opsexpress.metfone.com.kh/bao-cao-trang-thai-don" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">5. Receiving KPI (Pickup)</span>
-<span class="kh-el">៥. KPI ទទួលឥវ៉ាន់</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-kpi-thu</div>
-<a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-thu" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-<div class="kpi-demo-card" style="padding: 10px;">
-<div style="font-family: 'Angkor', serif; font-size: 0.95rem;">
-<span class="en-el">6. Delivery KPI (LM)</span>
-<span class="kh-el">៦. KPI ដឹកជូន</span>
-</div>
-<div style="font-size: 0.75rem; color: #2563eb; font-family: monospace;">/bao-cao-kpi-phat</div>
-<a href="https://opsexpress.metfone.com.kh/bao-cao-kpi-phat" style="background: #451a03; color: #fef08a; text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; text-align: center; margin-top: 4px;" target="_blank">
-<span class="en-el">OPEN LINK ↗</span>
-<span class="kh-el">បើកតំណ ↗</span>
-</a>
-</div>
-</div>
-<div class="sticky-note-under" style="; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">📌 <b>Export Tip:</b> Filter from the 14th of month to today for full bot sync!</div>
-<div class="kh-el sticky-kh-text">📌 <b>ចំណាំពេល Export៖</b> បើទាញទិន្នន័យសម្រាប់ <b>Telegram Bot Sync</b> ➔ ជ្រើសទិន្នន័យចាប់ពី <b>ថ្ងៃទី 14 រហូតដល់ថ្ងៃបច្ចុប្បន្ន</b> ដើម្បីឱ្យទិន្នន័យផ្គូផ្គងបានពេញលេញ។</div>
-</div>
-<div class="badge-tag-inline">
-<span class="en-el">📌 EXPORT DIRECTORY</span>
-<span class="kh-el">📌 ចំណាំការទាញយក</span>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 4 VIEW: END OF DAY INVENTORY AUDIT LESSON -->
-<div class="slide-view" id="slide4">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 04 · Scan Inventory Audit Before Shift Closing</span>
-<span class="kh-el">ស្លាយ ០៤ · ពិនិត្យ Excel និងការងារប្រចាំថ្ងៃ</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3.2rem;">
-                    Scan inventory.<br/><span>Close shift clean.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.8rem;">
-                    ពិនិត្យ Excel<br/><span>និងការងារប្រចាំថ្ងៃ</span>
-</h1>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">STEP 1</span>
-<span class="kh-el">ជំហានទី ១</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #059669;">
-<div class="status-code-badge" style="background: #059669;">
-<span class="en-el">STEP 2</span>
-<span class="kh-el">ជំហានទី ២</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #7c3aed;">
-<div class="status-code-badge" style="background: #7c3aed;">
-<span class="en-el">STEP 3</span>
-<span class="kh-el">ជំហានទី ៣</span>
-</div><br/></div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">📦 TMS App End-of-Day Inventory Audit Protocol</span>
-<span class="kh-el">📦 របៀបស្កេនពិនិត្យស្តុកបិទវេន លើ TMS App</span>
-</div>
-<div class="exhibit-display-frame" onclick="openLightbox()">
-<img alt="TMS Inventory Audit Summary" class="exhibit-img" id="exhibitImgSlide4" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/training2/images/tms_inventory_audit.png';" src="/training2/images/tms_inventory_audit.png"/>
-</div>
-<div class="sticky-note-under" style="; display:none;">
-<div class="sticky-text-wrapper">
-<div class="en-el">📌 <b>EOD Rule:</b> Zero un-scanned packages left before closing shift!</div>
-<div class="kh-el sticky-kh-text">📌 <b>ច្បាប់បិទវេន៖</b> ស្កេនអីវ៉ាន់ក្នុងស្តុកឱ្យអស់ មុនពេលបិទវេន!</div>
-</div>
-<div class="badge-tag-inline">
-<span class="en-el">📌 EOD AUDIT PASSED</span>
-<span class="kh-el">📌 ស្កេនបិទវេនរួចរាល់</span>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 5: NTN HOME PICKUP DEADLINE RULES -->
-<div class="slide-view" id="slide5">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 05 · NTN Home Pickup — Deadline Rules</span>
-<span class="kh-el">ស្លាយ ០៥ · ម៉ោងទទួលឥវ៉ាន់នៅផ្ទះ (NTN)</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3rem;">
-                    Pickup Deadline.<br/><span>Know your window.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
-                    ម៉ោងទទួលឥវ៉ាន់នៅផ្ទះ<br/><span>ចាំម៉ោង ៣ ចំណុចនេះ</span>
-</h1>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">⏰ BEFORE 10:00</span>
-<span class="kh-el">⏰ មុន ១០:០០</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #d97706;">
-<div class="status-code-badge" style="background: #d97706;">
-<span class="en-el">⏰ 10:00 – 16:00</span>
-<span class="kh-el">⏰ ១០:០០–១៦:០០</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #dc2626;">
-<div class="status-code-badge" style="background: #dc2626;">
-<span class="en-el">⏰ AFTER 16:00</span>
-<span class="kh-el">⏰ ក្រោយ ១៦:០០</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #6366f1;">
-<div class="status-code-badge" style="background: #6366f1;">
-<span class="en-el">DAILY TASKS</span>
-<span class="kh-el">ការងារប្រចាំថ្ងៃ</span>
-</div>
-<br/>
+<body>
 
+<div class="deck-container">
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="brand-section">
+            <span class="brand-title en-text">Metfone Express — Branch Operations & KPI</span>
+            <span class="brand-title kh-text">Metfone Express — ការបណ្តុះបណ្តាលប្រតិបត្តិការ & KPI</span>
+        </div>
+        <div class="top-controls">
+            <div class="lang-switch">
+                <button class="lang-btn active" id="btnEn" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">ខ្មែរ</button>
+            </div>
+            <div class="slide-counter" id="slideCounter">01 / 06</div>
+        </div>
+    </header>
 
+    <!-- Presentation Stage -->
+    <main class="stage">
+
+        <!-- SLIDE 1: KPI & STATUS UPDATES -->
+        <section class="slide active" id="slide1">
+            <div class="slide-eyebrow en-text">Topic 01 · Service Standards</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០១ · ស្តង់ដារសេវាកម្ម</div>
+
+            <h1 class="slide-heading en-text">KPI & Accurate Status Updates</h1>
+            <h1 class="slide-heading kh-text">KPI និងការ Update ស្ថានភាពឱ្យបានត្រឹមត្រូវ</h1>
+
+            <div class="slide-grid">
+                <div class="content-col">
+                    <p class="text-lead en-text">Our standard is simple: pick up promptly, deliver safely, and update the app immediately.</p>
+                    <p class="text-lead kh-text">គោលដៅរបស់យើងគឺសាមញ្ញ៖ ទៅយកទាន់ពេល ដឹកជញ្ជូនដោយសុវត្ថិភាព និង Update លើ App ភ្លាមៗ។</p>
+
+                    <div class="bullet-list">
+                        <div class="bullet-item">
+                            <span class="bullet-icon">📦</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Pickup Instructions</strong>
+                                <strong class="kh-text">ការទទួលឥវ៉ាន់ពីភ្ញៀវ (Pickup)</strong>
+                                <span class="bullet-sub en-text">Contact the sender promptly, check parcel condition, and scan in the app right away.</span>
+                                <span class="bullet-sub kh-text">ទាក់ទងអ្នកផ្ញើឱ្យបានលឿន ពិនិត្យកញ្ចប់ឥវ៉ាន់ និងស្កេនចូលក្នុង App ភ្លាមៗ។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🚚</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Delivery Instructions</strong>
+                                <strong class="kh-text">ការដឹកជូនភ្ញៀវ (Delivery)</strong>
+                                <span class="bullet-sub en-text">Call the receiver before arriving, hand over safely, and collect the correct COD or fee.</span>
+                                <span class="bullet-sub kh-text">ទូរស័ព្ទទៅអ្នកទទួលមុនពេលទៅដល់ ប្រគល់ឥវ៉ាន់ និងប្រមូលប្រាក់ COD ឬថ្លៃដឹកឱ្យបានត្រឹមត្រូវ។</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-col">
+                    <div class="bullet-list">
+                        <div class="bullet-item">
+                            <span class="bullet-icon">📲</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Update the Exact Real-World Status</strong>
+                                <strong class="kh-text">Update ស្ថានភាពពិតប្រាកដ</strong>
+                                <span class="bullet-sub en-text">Always choose the honest status (Picked Up, Delivered, or Failed with actual reason). Never guess or delay.</span>
+                                <span class="bullet-sub kh-text">ជ្រើសរើសស្ថានភាពពិត (បានទទួល បានដឹកជូន ឬដឹកមិនបានសម្រេចដោយបញ្ជាក់មូលហេតុច្បាស់លាស់)។ កុំស្មាន ឬពន្យារពេល។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🎯</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Real-Time Visibility</strong>
+                                <strong class="kh-text">តម្លាភាពតាមដានផ្ទាល់</strong>
+                                <span class="bullet-sub en-text">Updating immediately protects your KPI score and lets customers track their parcels live.</span>
+                                <span class="bullet-sub kh-text">ការ Update ភ្លាមៗជួយរក្សាពិន្ទុ KPI របស់អ្នកឱ្យខ្ពស់ និងអនុញ្ញាតឱ្យអតិថិជនតាមដានឥវ៉ាន់បានភ្លាមៗ។</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: 10-HOUR RULE -->
+        <section class="slide" id="slide2">
+            <div class="slide-eyebrow en-text">Topic 02 · Time Limit Rule</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០២ · កំហិតម៉ោងបំពេញការងារ</div>
+
+            <h1 class="slide-heading en-text">The 10-Hour Rule</h1>
+            <h1 class="slide-heading kh-text">ច្បាប់កំណត់ពេល ១០ ម៉ោង</h1>
+
+            <div class="slide-grid">
+                <div class="content-col">
+                    <div class="hero-banner-clean">
+                        <div class="hero-metric">10h</div>
+                        <div class="hero-text">
+                            <span class="en-text"><strong>Maximum time allowed</strong> to update the bill status after it has been assigned to you.</span>
+                            <span class="kh-text"><strong>កំហិតម៉ោងអតិបរមា</strong> ដើម្បី Update ស្ថានភាពឥវ៉ាន់ បន្ទាប់ពីឥវ៉ាន់ត្រូវបានចាត់តាំងឱ្យអ្នក។</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-clean">
+                        <div class="timeline-step">
+                            <div class="step-number">1</div>
+                            <div class="step-body">
+                                <h4 class="en-text">Bill Assigned (e.g., 08:00 AM)</h4>
+                                <h4 class="kh-text">ឥវ៉ាន់ត្រូវបានចាត់តាំង (ឧទាហរណ៍ ម៉ោង ០៨:០០ ព្រឹក)</h4>
+                                <p class="en-text">The 10-hour countdown begins the moment the bill is assigned to your account.</p>
+                                <p class="kh-text">ការរាប់ថយក្រោយ ១០ ម៉ោង ចាប់ផ្តើមភ្លាមៗនៅពេលដែលឥវ៉ាន់ត្រូវបានចាត់ចូលគណនីរបស់អ្នក។</p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="step-number">2</div>
+                            <div class="step-body">
+                                <h4 class="en-text">Must Update Status Before 06:00 PM</h4>
+                                <h4 class="kh-text">ត្រូវតែ Update ស្ថានភាពមុនម៉ោង ០៦:០០ ល្ងាច</h4>
+                                <p class="en-text">Update status (Delivered, Picked Up, or Delay reason) within 10 hours to stay on-time.</p>
+                                <p class="kh-text">ត្រូវ Update ស្ថានភាព (ដឹកជោគជ័យ យកបាន ឬមូលហេតុពន្យារពេល) ក្នុងរង្វង់ ១០ ម៉ោង ដើម្បីកុំឱ្យជាប់ Overdue។</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-col">
+                    <div class="bullet-list">
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🟢</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Within 10 Hours = On-Time</strong>
+                                <strong class="kh-text">ក្នុងរង្វង់ ១០ ម៉ោង = ទាន់ពេល (On-Time)</strong>
+                                <span class="bullet-sub en-text">Keeps your individual and branch KPI in the green zone.</span>
+                                <span class="bullet-sub kh-text">ជួយឱ្យពិន្ទុ KPI ផ្ទាល់ខ្លួន និងសាខារបស់អ្នកស្ថិតក្នុងកម្រិតល្អឥតខ្ចោះ។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🔴</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Over 10 Hours = Overdue</strong>
+                                <strong class="kh-text">លើសពី ១០ ម៉ោង = យឺតយ៉ាវ (Overdue)</strong>
+                                <span class="bullet-sub en-text">Lowers performance ranking and triggers pending alerts.</span>
+                                <span class="bullet-sub kh-text">ធ្វើឱ្យប៉ះពាល់ដល់ចំណាត់ថ្នាក់ការងារ និងលោតសារដាស់តឿនលើប្រព័ន្ធ។</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: PENDING INVENTORY + VIDEO -->
+        <section class="slide" id="slide3">
+            <div class="slide-eyebrow en-text">Topic 03 · Inventory Control</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០៣ · ការគ្រប់គ្រងឥវ៉ាន់កកស្ទះ</div>
+
+            <h1 class="slide-heading en-text">Managing Pending Inventory</h1>
+            <h1 class="slide-heading kh-text">ការគ្រប់គ្រង និងដោះស្រាយឥវ៉ាន់កកស្ទះ</h1>
+
+            <div class="slide-grid">
+                <div class="content-col">
+                    <div class="bullet-list">
+                        <div class="bullet-item">
+                            <span class="bullet-icon">📱</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Check Pending Bills in App</strong>
+                                <strong class="kh-text">ពិនិត្យមើលឥវ៉ាន់សល់លើ App</strong>
+                                <span class="bullet-sub en-text">Open your pending tab regularly to monitor bills waiting in your route.</span>
+                                <span class="bullet-sub kh-text">បើកមើលផ្ទាំង Pending ឱ្យបានញឹកញាប់ ដើម្បីតាមដានឥវ៉ាន់ដែលនៅសល់ក្នុងផ្លូវរបស់អ្នក។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">⚡</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Manage Your Own Pending Route</strong>
+                                <strong class="kh-text">ម្ចាស់ការលើផ្លូវដឹករបស់ខ្លួនឯង</strong>
+                                <span class="bullet-sub en-text">Proactively clear open bills without waiting for managers to remind you.</span>
+                                <span class="bullet-sub kh-text">ចាត់ចែងដោះស្រាយឥវ៉ាន់ដែលនៅសល់ដោយខ្លួនឯង ដោយមិនចាំបាច់រង់ចាំការដាស់តឿន។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🤝</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Manager & Customer Service Support</strong>
+                                <strong class="kh-text">ការជួយជ្រោមជ្រែងពី Manager & CS</strong>
+                                <span class="bullet-sub en-text">Branch Managers and CS staff assist in re-assigning and balancing high volumes.</span>
+                                <span class="bullet-sub kh-text">ប្រធានសាខា និងផ្នែកបម្រើអតិថិជន (CS) ជួយសម្របសម្រួល និងបែងចែកឥវ៉ាន់បន្ថែមពេលមានការងារច្រើន។</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIDEO SECTION 1: INVENTORY -->
+                <div class="content-col">
+                    <div class="video-container">
+                        <div class="video-frame">
+                            <!-- Direct Hosted Video for Pending Inventory -->
+                            <video id="videoInventory" controls preload="metadata">
+                                <source src="" type="video/mp4" id="videoInventorySrc">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+                        <div class="video-caption">
+                            <span>🎥 <strong class="en-text">Video:</strong><strong class="kh-text">វីដេអូ៖</strong></span>
+                            <span class="en-text">Checking & managing pending inventory</span>
+                            <span class="kh-text">របៀបពិនិត្យ និងដោះស្រាយឥវ៉ាន់កកស្ទះ</span>
+                            <a href="#" class="video-direct-link" id="linkInventoryVideo" target="_blank" style="display:none;">Direct Link ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: ROLES, ASSIGNMENTS, COMMISSION + VIDEO -->
+        <section class="slide" id="slide4">
+            <div class="slide-eyebrow en-text">Topic 04 · Roles & Permissions</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០៤ · តួនាទី សិទ្ធិ និងកម្រៃជើងសារ</div>
+
+            <h1 class="slide-heading en-text">User Roles & Bill Assignment</h1>
+            <h1 class="slide-heading kh-text">តួនាទី និងការចាត់តាំងឥវ៉ាន់</h1>
+
+            <div class="slide-grid">
+                <div class="content-col">
+                    <div class="bullet-list">
+                        <div class="bullet-item">
+                            <span class="bullet-icon">👤</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Shipper Role Independence</strong>
+                                <strong class="kh-text">ភាពម្ចាស់ការនៃតួនាទី Shipper</strong>
+                                <span class="bullet-sub en-text">Shippers can manage bills directly without asking the Manager or CS every time.</span>
+                                <span class="bullet-sub kh-text">Shipper អាចចាត់ចែងឥវ៉ាន់បានដោយផ្ទាល់ ដោយមិនបាច់សុំការអនុញ្ញាតរាល់លើកនោះទេ។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">🔄</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Two Ways to Assign Bills</strong>
+                                <strong class="kh-text">ជម្រើស ២ ក្នុងការចាត់តាំងឥវ៉ាន់</strong>
+                                <span class="bullet-sub en-text">1) Manager / CS assigns bills to Shipper.<br/>2) Shipper with permission assigns bills to themselves.</span>
+                                <span class="bullet-sub kh-text">១) Manager / CS ចាត់តាំងឥវ៉ាន់ឱ្យ Shipper។<br/>២) Shipper ដែលមានសិទ្ធិ អាចចាត់តាំងឥវ៉ាន់មកខ្លួនឯងផ្ទាល់។</span>
+                            </div>
+                        </div>
+                        <div class="bullet-item">
+                            <span class="bullet-icon">💵</span>
+                            <div class="bullet-text">
+                                <strong class="en-text">Commission Earnings</strong>
+                                <strong class="kh-text">ការគណនាកម្រៃជើងសារ (Commission)</strong>
+                                <span class="bullet-sub en-text">Commission is calculated based on the applicable bill amount for work handled by you.</span>
+                                <span class="bullet-sub kh-text">កម្រៃជើងសារត្រូវបានគណនាផ្អែកលើទំហំទឹកប្រាក់នៃឥវ៉ាន់ជាក់ស្តែងដែលអ្នកបានបំពេញការងាររួចរាល់។</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIDEO SECTION 2: ASSIGNMENT & SELF-ASSIGN -->
+                <div class="content-col">
+                    <div class="video-container">
+                        <div class="video-frame">
+                            <!-- Direct Hosted Video for Assign to Shipper & Shipper Self-Assign -->
+                            <video id="videoAssign" controls preload="metadata">
+                                <source src="" type="video/mp4" id="videoAssignSrc">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+                        <div class="video-caption">
+                            <span>🎥 <strong class="en-text">Video:</strong><strong class="kh-text">វីដេអូ៖</strong></span>
+                            <span class="en-text">Assigning to shipper & shipper self-assignment</span>
+                            <span class="kh-text">ការចាត់តាំងឱ្យ Shipper និង Shipper ចាត់តាំងដោយខ្លួនឯង</span>
+                            <a href="#" class="video-direct-link" id="linkAssignVideo" target="_blank" style="display:none;">Direct Link ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: ROUTE PLANNING -->
+        <section class="slide" id="slide5">
+            <div class="slide-eyebrow en-text">Topic 05 · Route Efficiency</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០៥ · ការរៀបចំផែនការផ្លូវដឹក</div>
+
+            <h1 class="slide-heading en-text">Smart Route Planning</h1>
+            <h1 class="slide-heading kh-text">ការរៀបចំផ្លូវដឹកឱ្យមានប្រសិទ្ធភាព</h1>
+
+            <div class="slide-grid single-col">
+                <div class="timeline-clean">
+                    <div class="timeline-step">
+                        <div class="step-number">📍</div>
+                        <div class="step-body">
+                            <h4 class="en-text">Group Nearby Jobs Together</h4>
+                            <h4 class="kh-text">ប្រមូលផ្តុំឥវ៉ាន់នៅតំបន់ជិតគ្នា</h4>
+                            <p class="en-text">Cluster pickups and deliveries located on the same street, neighborhood, or village before starting your trip.</p>
+                            <p class="kh-text">រៀបចំកញ្ចប់ឥវ៉ាន់ដែលត្រូវយក និងត្រូវដឹកនៅក្នុងភូមិ ឃុំ ឬផ្លូវក្បែរគ្នាឱ្យនៅជាមួយគ្នា មុនពេលចេញដំណើរ។</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="step-number">🔄</div>
+                        <div class="step-body">
+                            <h4 class="en-text">Avoid Unnecessary & Back-and-Forth Travel</h4>
+                            <h4 class="kh-text">ជៀសវាងការជិះកាត់ចុះកាត់ឡើងឥតប្រយោជន៍</h4>
+                            <p class="en-text">Plan a continuous loop so you do not waste fuel, time, and energy backtracking over the same roads.</p>
+                            <p class="kh-text">រៀបចំខ្សែផ្លូវឱ្យដើរជាលំដាប់លំដោយ ដើម្បីកុំឱ្យខាតសាំង ខាតពេល និងអស់កម្លាំងជិះត្រឡប់ទៅត្រឡប់មក។</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-step">
+                        <div class="step-number">⏱️</div>
+                        <div class="step-body">
+                            <h4 class="en-text">Practical & Fast Execution</h4>
+                            <h4 class="kh-text">ការអនុវត្តជាក់ស្តែងរហ័សទាន់ចិត្ត</h4>
+                            <p class="en-text">An organized route helps you finish all jobs smoothly and finish well within the 10-hour limit.</p>
+                            <p class="kh-text">ការរៀបចំផ្លូវដឹកបានល្អ ជួយឱ្យអ្នកបញ្ចប់ការងារបានលឿន និងទាន់ពេលវេលាក្នុងរង្វង់ ១០ ម៉ោងដោយងាយស្រួល។</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: DAILY WORKFLOW -->
+        <section class="slide" id="slide6">
+            <div class="slide-eyebrow en-text">Topic 06 · Daily Routine</div>
+            <div class="slide-eyebrow kh-text">មេរៀនទី ០៦ · លំហូរការងារប្រចាំថ្ងៃ</div>
+
+            <h1 class="slide-heading en-text">Final Daily Workflow Checklist</h1>
+            <h1 class="slide-heading kh-text">តារាងផ្ទៀងផ្ទាត់លំហូរការងារប្រចាំថ្ងៃ</h1>
+
+            <div class="slide-grid single-col">
+                <div class="bullet-list">
+                    <div class="bullet-item">
+                        <span class="bullet-icon">1️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Check Assigned Bills:</strong>
+                            <strong class="kh-text">ពិនិត្យមើលឥវ៉ាន់ដែលបានចាត់តាំង៖</strong>
+                            <span class="bullet-sub en-text">Open the app at the start of shift to see jobs assigned to your account.</span>
+                            <span class="bullet-sub kh-text">បើក App នៅដើមវេន ដើម្បីមើលឥវ៉ាន់ដែលបានចាត់ចូលគណនីរបស់អ្នក។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">2️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Check Pending Bills:</strong>
+                            <strong class="kh-text">ពិនិត្យមើលឥវ៉ាន់កកស្ទះ (Pending)៖</strong>
+                            <span class="bullet-sub en-text">Review open bills in your route area.</span>
+                            <span class="bullet-sub kh-text">ពិនិត្យមើលឥវ៉ាន់ដែលនៅសល់ក្នុងតំបន់ផ្លូវរបស់អ្នក។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">3️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Check 10-Hour Limit:</strong>
+                            <strong class="kh-text">ពិនិត្យកំហិតពេល ១០ ម៉ោង៖</strong>
+                            <span class="bullet-sub en-text">Prioritize bills approaching the 10-hour limit.</span>
+                            <span class="bullet-sub kh-text">ផ្តល់អាទិភាពដល់ឥវ៉ាន់ណាដែលជិតដល់កំហិត ១០ ម៉ោង។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">4️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Arrange the Route:</strong>
+                            <strong class="kh-text">រៀបចំខ្សែផ្លូវដឹក៖</strong>
+                            <span class="bullet-sub en-text">Group nearby stops in logical sequence before heading out.</span>
+                            <span class="bullet-sub kh-text">ចងក្រងកញ្ចប់ឥវ៉ាន់នៅតំបន់ជិតគ្នាឱ្យមានលំដាប់លំដោយ មុនពេលចេញដំណើរ។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">5️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Pickup & Deliver:</strong>
+                            <strong class="kh-text">ចុះទៅយក និងដឹកជូន៖</strong>
+                            <span class="bullet-sub en-text">Execute visits, collect parcels, and deliver safely.</span>
+                            <span class="bullet-sub kh-text">ជួបអតិថិជន ទទួលឥវ៉ាន់ និងប្រគល់ឥវ៉ាន់ដោយសុវត្ថិភាព។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">6️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Update the Status:</strong>
+                            <strong class="kh-text">Update ស្ថានភាពលើ App៖</strong>
+                            <span class="bullet-sub en-text">Update the app immediately after each handover.</span>
+                            <span class="bullet-sub kh-text">ធ្វើបច្ចុប្បន្នភាពលើ App ភ្លាមៗរាល់ពេលប្រគល់ឥវ៉ាន់រួច។</span>
+                        </div>
+                    </div>
+                    <div class="bullet-item">
+                        <span class="bullet-icon">7️⃣</span>
+                        <div class="bullet-text">
+                            <strong class="en-text">Clear Remaining Pending Bills:</strong>
+                            <strong class="kh-text">បញ្ចប់ឥវ៉ាន់កកស្ទះទាំងអស់៖</strong>
+                            <span class="bullet-sub en-text">Ensure zero unresolved pending bills remain before closing your shift.</span>
+                            <span class="bullet-sub kh-text">ពិនិត្យឱ្យច្បាស់ថាគ្មានឥវ៉ាន់ Pending សេសសល់មុនពេលបិទវេនការងារ។</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar - Minimal & Clean -->
+    <footer class="bottom-nav">
+        <div class="nav-arrows">
+            <button class="nav-btn" id="prevBtn" onclick="prevSlide()" title="Previous Slide (Left Arrow)">←</button>
+            <button class="nav-btn" id="nextBtn" onclick="nextSlide()" title="Next Slide (Right Arrow)">→</button>
+        </div>
+
+        <div class="dots-container" id="dotsContainer">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+            <div class="dot" onclick="goToSlide(3)"></div>
+            <div class="dot" onclick="goToSlide(4)"></div>
+            <div class="dot" onclick="goToSlide(5)"></div>
+        </div>
+    </footer>
 </div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">📦 NTN Urban Area Pickup Window (Day N Rule)</span>
-<span class="kh-el">📦 ចំណាំសំខាន់ម៉ោងទទួលឥវ៉ាន់ (NTN)</span>
-</div>
-<div style="background: #ffffff; border: 2px solid var(--border-light); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-<div style="font-family: 'Angkor', serif; font-size: 1rem; color: var(--text-black); border-bottom: 1.5px dashed var(--border-light); padding-bottom: 10px;">
-<span class="en-el">📋 Rule: Later of (Create Time, Scheduled Time)</span>
-<span class="kh-el">📋 យកម៉ោងដែលយឺតជាងរវាង ម៉ោងបង្កើត និង ម៉ោងកំណត់</span>
-</div>
-<div style="display: flex; flex-direction: column; gap: 12px;">
-<div style="display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #16a34a; border-radius: 8px; padding: 12px;">
-<div style="font-size: 1.5rem;">🟢</div>
-<div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 600;">
-<div class="en-el"><b>≤ 10:00</b> → Must finish pickup by <b>13:00 same day</b></div>
-<div class="kh-el"><b>មុន ១០:០០</b> ➔ ទៅយកមិនឱ្យលើស <b>១៣:០០ ថ្ងៃនោះ</b></div>
-</div>
-</div>
-<div style="display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #d97706; border-radius: 8px; padding: 12px;">
-<div style="font-size: 1.5rem;">🟡</div>
-<div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 600;">
-<div class="en-el"><b>10:00–16:00</b> → Must finish pickup by <b>18:00 same day</b></div>
-<div class="kh-el"><b>១០:០០–១៦:០០</b> ➔ ទៅយកមិនឱ្យលើស <b>១៨:០០ ថ្ងៃនោះ</b></div>
-</div>
-</div>
-<div style="display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #dc2626; border-radius: 8px; padding: 12px;">
-<div style="font-size: 1.5rem;">🔴</div>
-<div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 600;">
-<div class="en-el"><b>&gt; 16:00</b> → Must finish pickup by <b>13:00 NEXT day</b></div>
-<div class="kh-el"><b>ក្រោយ ១៦:០០</b> ➔ ទៅយកមិនឱ្យលើស <b>១៣:០០ ថ្ងៃបន្ទាប់</b></div>
-</div>
-</div>
-</div>
-<div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: 6px; padding: 10px; font-size: 0.85rem; color: var(--text-muted); margin-top: auto;">
-<div class="en-el">📌 <b>Urban Area Only.</b> These SLAs apply within the province. Rural/remote areas may have different windows.</div>
-<div class="kh-el sticky-kh-text">📌 <b>ចំណាំ៖</b> ច្បាប់នេះសម្រាប់តំបន់ក្នុងក្រុង។ តំបន់ជនបទ ឬតំបន់ពិបាកធ្វើដំណើរ អាចមានកំហិតម៉ោងខុសគ្នា។</div>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 6: FIRST-ATTEMPT SUCCESS RATE -->
-<div class="slide-view" id="slide6">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 06 · First-Attempt Success Rate (Status 402)</span>
-<span class="kh-el">ស្លាយ ០៦ · ស្ថានភាព ៤០២ — កុំទុកស្ទះ</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3rem;">
-                    First attempt.<br/><span>Update within 10h.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
-                    ស្ថានភាព ៤០២<br/><span>ស្កេន ៤០២ ហើយ ត្រូវធ្វើអ្វីបន្ត?</span>
-</h1>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">WHAT IS IT?</span>
-<span class="kh-el">អត្ថន័យ</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #16a34a;">
-<div class="status-code-badge" style="background: #16a34a;">
-<span class="en-el">HOW TO COMPLY</span>
-<span class="kh-el">របៀបអនុវត្ត</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #7c3aed;">
-<div class="status-code-badge" style="background: #7c3aed;">
-<span class="en-el">EXCEL CHECK</span>
-<span class="kh-el">ពិនិត្យ EXCEL</span>
-</div><br/></div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">📊 10H KPI Clock — First Attempt Rule</span>
-<span class="kh-el">📊 លំហូរ ស្ថានភាព ៤០២ — គោលដៅ ១០ ម៉ោង</span>
-</div>
-<div style="background: #ffffff; border: 2px solid var(--border-light); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-<div style="font-family: 'Angkor', serif; font-size: 1rem; color: var(--text-black); border-bottom: 1.5px dashed var(--border-light); padding-bottom: 10px;">
-<span class="en-el">Flow: 402 → ✅ Next Status (within 10h)</span>
-<span class="kh-el">លំហូរ: ៤០២ ➔ ✅ ស្ថានភាពបន្ទាប់ (ក្នុង ១០ ម៉ោង)</span>
-</div>
-<div style="display: flex; flex-direction: column; gap: 12px;">
-<div style="background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #2563eb; border-radius: 8px; padding: 12px;">
-<div style="font-size: 0.88rem; color: var(--text-black); font-weight: 600;">
-<span class="en-el">Scan Receiver (402) → Update Next Status → <b style="color:#16a34a">✅ KPI PASS</b></span>
-<span class="kh-el">🟢 <b>៤០២ ➔ ធ្វើបច្ចុប្បន្នភាព ➔ ជាប់</b></span>
-</div>
-</div>
-<div style="background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #dc2626; border-radius: 8px; padding: 12px;">
-<div style="font-size: 0.88rem; color: var(--text-black); font-weight: 600;">
-<span class="en-el">Scan (402) → No update for 10+ hours → <b style="color:#dc2626">❌ KPI FAIL</b></span>
-<span class="kh-el">🔴 <b>៤០២ ➔ ហួស ១០ ម៉ោង គ្មានបច្ចុប្បន្នភាព ➔ ធ្លាក់</b></span>
-</div>
-</div>
-<div style="background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #16a34a; border-radius: 8px; padding: 12px; display:flex; gap:10px; align-items:center;">
-<div style="font-size: 1.8rem;">⏱️</div>
-<div style="font-size: 0.85rem; color: var(--text-black); font-weight: 600;">
-<div class="en-el">Target: Update EVERY parcel at 402 within <b>10 hours</b> — no exceptions!</div>
-<div class="kh-el"><b>គោលដៅ:</b> ធ្វើបច្ចុប្បន្នភាព <b>គ្រប់</b>ឥវ៉ាន់ ៤០២ ក្នុងរយៈពេល <b>១០ ម៉ោង</b>!</div>
-</div>
-</div>
-</div>
-<div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: 6px; padding: 10px; font-size: 0.85rem; color: var(--text-muted); margin-top: auto;">
-<div class="en-el">📌 Check your Delivery Excel daily! Filter by Status 402 and sort by timestamp to find overdue parcels.</div>
-<div class="kh-el sticky-kh-text">📌 <b>ចាំលំហូរនេះ៖</b> ស្កេន ៤០២ រួច ត្រូវធ្វើបច្ចុប្បន្នភាពក្នុង ១០ ម៉ោង (កុំទុកស្ទះ)!</div>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 7: DELIVERY SUCCESS UPDATE RATE -->
-<div class="slide-view" id="slide7">
-<div class="left-content">
-<div class="eyebrow-line" style="; display:none;">
-<span class="en-el">Slide 07 · Delivery Success Update Rate</span>
-<span class="kh-el">ស្លាយ ០៧ · ដឹករួច ត្រូវធ្វើបច្ចុប្បន្នភាពឱ្យទាន់</span>
-</div>
-<h1 class="hero-title-bold en-el" style="font-size: 3rem;">
-                    Deliver. Update.<br/><span>On time, every time.</span>
-</h1>
-<h1 class="hero-title-bold kh-el" style="font-size: 2.6rem;">
-                    ដឹករួច ត្រូវធ្វើបច្ចុប្បន្នភាព<br/><span>ក្រុង និងស្រុក មានកំហិតម៉ោងខុសគ្នា</span>
-</h1>
-<div class="status-flow-container">
-<div class="status-step-card" style="border-left-color: #2563eb;">
-<div class="status-code-badge" style="background: #2563eb;">
-<span class="en-el">IN CITY</span>
-<span class="kh-el">ក្នុងក្រុង</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #d97706;">
-<div class="status-code-badge" style="background: #d97706;">
-<span class="en-el">IN DISTRICT</span>
-<span class="kh-el">ក្នុងស្រុក</span>
-</div><br/></div>
-<div class="status-step-card" style="border-left-color: #16a34a;">
-<div class="status-code-badge" style="background: #16a34a;">
-<span class="en-el">EXCEL CHECK</span>
-<span class="kh-el">ពិនិត្យ EXCEL</span>
-</div><br/></div>
-</div>
-</div>
-<div class="right-exhibit">
-<div style="font-size: 1.1rem; font-family: 'Angkor', serif; color: var(--text-black);">
-<span class="en-el">📊 Success Update Rate — City vs District</span>
-<span class="kh-el">📊 អត្រាធ្វើបច្ចុប្បន្នភាព — ក្រុង vs ស្រុក</span>
-</div>
-<div style="background: #ffffff; border: 2px solid var(--border-light); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px; height: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-<div style="font-family: 'Angkor', serif; font-size: 1rem; color: var(--text-black); border-bottom: 1.5px dashed var(--border-light); padding-bottom: 8px;">
-<span class="en-el">📋 Average Update Window After Delivery Event</span>
-<span class="kh-el">📋 ដឹកជោគជ័យហើយ ➔ ធ្វើបច្ចុប្បន្នភាពឱ្យទាន់ ១០០%</span>
-</div>
-<div style="display: flex; gap: 12px;">
-<div style="flex: 1; background: #ffffff; border: 1.5px solid var(--border-light); border-radius: 8px; padding: 10px; display:flex; flex-direction:column; align-items:center; gap:6px;">
-<img alt="City Phnom Penh" src="/training2/images/city.jpg" style="width: 100%; height: 95px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-light);"/>
-<div style="font-family:'Angkor',serif; font-size:0.95rem; color:var(--text-black); text-align:center; margin-top: 2px;">
-<span class="en-el">CITY (Phnom Penh)</span><span class="kh-el">ក្រុង (ភ្នំពេញ)</span>
-</div>
-<div style="font-size: 1.8rem; font-weight: 800; color: #2563eb; line-height: 1;">6h</div>
-<div style="font-size: 0.75rem; color: var(--text-muted); text-align:center;">
-<span class="en-el">Average update after delivery</span>
-<span class="kh-el">ធ្វើបច្ចុប្បន្នភាព ៤១០ ក្នុង ៦ ម៉ោង</span>
-</div>
-</div>
-<div style="flex: 1; background: #ffffff; border: 1.5px solid var(--border-light); border-radius: 8px; padding: 10px; display:flex; flex-direction:column; align-items:center; gap:6px;">
-<img alt="District Battambang" src="/training2/images/district.jpg" style="width: 100%; height: 95px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-light);"/>
-<div style="font-family:'Angkor',serif; font-size:0.95rem; color:var(--text-black); text-align:center; margin-top: 2px;">
-<span class="en-el">DISTRICT (Battambang)</span><span class="kh-el">ស្រុក (បាត់ដំបង)</span>
-</div>
-<div style="font-size: 1.8rem; font-weight: 800; color: #d97706; line-height: 1;">9h</div>
-<div style="font-size: 0.75rem; color: var(--text-muted); text-align:center;">
-<span class="en-el">Average update after delivery</span>
-<span class="kh-el">ធ្វើបច្ចុប្បន្នភាព ៤១០ ក្នុង ៩ ម៉ោង</span>
-</div>
-</div>
-</div>
-<div style="background: #ffffff; border: 1.5px solid var(--border-light); border-left: 5px solid #16a34a; border-radius: 6px; padding: 10px;">
-<div style="font-size:0.82rem; color:var(--text-dark); font-weight:600;">
-<span class="en-el">✅ Daily Action: Open Excel → Delivery tab → Sort by Age → Clear bills older than your zone window (6h city / 9h district) day by day!</span>
-<span class="kh-el">✅ <b>ដឹករួច កុំទុក។ ធ្វើបច្ចុប្បន្នភាពឱ្យទាន់ម៉ោង។</b></span>
-</div>
-</div>
-<div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: 6px; padding: 8px; font-size: 0.82rem; color: var(--text-muted); margin-top: auto;">
-<div class="en-el">📌 <b>KPI Goal:</b> 100% of successful deliveries updated within the defined window — no stale unupdated bills allowed!</div>
-<div class="kh-el sticky-kh-text">📌 <b>🎯 គោលដៅ៖</b> ដឹកជោគជ័យហើយ ➔ ធ្វើបច្ចុប្បន្នភាពឱ្យទាន់ ១០០%!</div>
-</div>
-</div>
-</div>
-</div>
-<!-- SLIDE 8 VIEW: MASTER EXECUTIVE SUMMARY OF ALL 7 SLIDES -->
-<!-- Navigation Bar -->
-<div class="bottom-nav">
-<div class="page-mark" id="pageMark">
-<span class="en-el">PAGE 01 / 05  ·  METFONE EXPRESS</span>
-<span class="kh-el">ទំព័រ ០១ / ០៥  ·  METFONE EXPRESS</span>
-</div>
-<div class="nav-controls-box">
-<button class="book-turn-btn" disabled="" id="prevBtn" onclick="prevSlide()">
-                    📖 <span class="en-el">PREV PAGE</span><span class="kh-el">ទំព័រមុន</span>
-</button>
-<div class="slide-dots">
-<div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
-<div class="dot" id="dot2" onclick="goToSlide(2)"></div>
-<div class="dot" id="dot3" onclick="goToSlide(3)"></div>
-<div class="dot" id="dot4" onclick="goToSlide(4)"></div>
-<div class="dot" id="dot5" onclick="goToSlide(5)"></div>
-<div class="dot" id="dot6" onclick="goToSlide(6)"></div>
-<div class="dot" id="dot7" onclick="goToSlide(7)"></div>
-<div class="dot" id="dot8" onclick="goToSlide(8)"></div>
-</div>
-<button class="book-turn-btn" id="nextBtn" onclick="nextSlide()">
-<span class="en-el">NEXT PAGE</span><span class="kh-el">ទំព័របន្ទាប់</span> 📖
-                </button>
-</div>
-</div>
-</div>
-<!-- Lightbox Modal -->
-<div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
-<div class="lightbox-box" onclick="event.stopPropagation()">
-<button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
-<div id="lightboxTitle" style="font-weight: 900; font-size: 1.2rem; color: #0f172a; font-family: 'Angkor', serif;">Report Table Preview</div>
-<div style="flex: 1; overflow: hidden; background: #ffffff; border: 2px solid var(--border-light); border-radius: 8px; padding: 8px;">
-<img class="lightbox-img-full" id="lightboxFullImg" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/training2/images/thop001_branch_sharp.png';" src="/training2/images/branch_kpi_appendix_august2026.png"/>
-</div>
-</div>
-</div>
+
 <script>
-        let currentSlide = 1;
+    let currentSlide = 0;
+    const totalSlides = 6;
 
-        const slideTitlesEn = {
-            1: "Slide 1 of 8 · August Quality Targets",
-            2: "Slide 2 of 8 · Simple Guide for 3 Core KPIs",
-            3: "Slide 3 of 8 · Web Portal 6 KPI Reports Export Guide",
-            4: "Slide 4 of 8 · End of Day Inventory Lesson",
-            5: "Slide 5 of 8 · NTN Home Pickup Deadline Rules",
-            6: "Slide 6 of 8 · First-Attempt Success Rate (402)",
-            7: "Slide 7 of 8 · Delivery Success Update Rate",
-            8: "Slide 8 of 8 · Master Executive Summary (Slides 1 to 7)"
-        };
+    function updateSlide() {
+        document.querySelectorAll('.slide').forEach((s, idx) => {
+            s.classList.toggle('active', idx === currentSlide);
+        });
 
-        const slideTitlesKh = {
-            1: "ស្លាយ ១ នៃ ៨ · គោលដៅគុណភាពខែសីហា",
-            2: "ស្លាយ ២ នៃ ៨ · ការណែនាំ KPI ទាំង ៣",
-            3: "ស្លាយ ៣ នៃ ៨ · ការទាញយករាយការណ៍ ៦ប្រភេទ",
-            4: "ស្លាយ ៤ នៃ ៨ · ការស្កេនពិនិត្យស្តុកចុងវេន",
-            5: "ស្លាយ ៥ នៃ ៨ · NTN ម៉ោងទទួលអីវ៉ាន់នៅផ្ទះ",
-            6: "ស្លាយ ៦ នៃ ៨ · អត្រាជោគជ័យដំបូង (402)",
-            7: "ស្លាយ ៧ នៃ ៨ · អត្រា Update ការដឹកជោគជ័យ",
-            8: "ស្លាយ ៨ នៃ ៨ · សេចក្តីសង្ខេបប្រតិបត្តិការ Master"
-        };
+        document.querySelectorAll('.dot').forEach((d, idx) => {
+            d.classList.toggle('active', idx === currentSlide);
+        });
 
-        function setLanguage(lang) {
-            document.body.className = 'mode-' + lang;
-            document.getElementById('btnBoth').classList.remove('active');
-            document.getElementById('btnEn').classList.remove('active');
-            document.getElementById('btnKh').classList.remove('active');
+        document.getElementById('slideCounter').innerText = 
+            `0${currentSlide + 1} / 0${totalSlides}`;
 
-            if (lang === 'both') document.getElementById('btnBoth').classList.add('active');
-            if (lang === 'en') document.getElementById('btnEn').classList.add('active');
-            if (lang === 'kh') document.getElementById('btnKh').classList.add('active');
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+    }
 
-            updatePageMark();
+    function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+            updateSlide();
         }
+    }
 
-        function updatePageMark() {
-            let isKhmer = document.body.classList.contains('mode-kh');
-            let numStr = (currentSlide < 10 ? '0' : '') + currentSlide;
-            let khNum = numStr.replace(/0/g, '០').replace(/1/g, '១').replace(/2/g, '២').replace(/3/g, '៣').replace(/4/g, '៤').replace(/5/g, '៥');
+    function prevSlide() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            updateSlide();
+        }
+    }
 
-            if (isKhmer) {
-                document.getElementById('slideTag').innerHTML = `<span class="kh-el">${slideTitlesKh[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="kh-el">ទំព័រ ${khNum} / ០៨ &nbsp;·&nbsp; METFONE EXPRESS</span>`;
-            } else {
-                document.getElementById('slideTag').innerHTML = `<span class="en-el">${slideTitlesEn[currentSlide]}</span>`;
-                document.getElementById('pageMark').innerHTML = `<span class="en-el">PAGE ${numStr} / 08 &nbsp;·&nbsp; METFONE EXPRESS</span>`;
+    function goToSlide(idx) {
+        currentSlide = idx;
+        updateSlide();
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            prevSlide();
+        }
+    });
+
+    // Language switch
+    function setLanguage(lang) {
+        const body = document.body;
+        const btnEn = document.getElementById('btnEn');
+        const btnKh = document.getElementById('btnKh');
+
+        if (lang === 'kh') {
+            body.classList.add('lang-kh');
+            btnKh.classList.add('active');
+            btnEn.classList.remove('active');
+        } else {
+            body.classList.remove('lang-kh');
+            btnEn.classList.add('active');
+            btnKh.classList.remove('active');
+        }
+    }
+
+    // Function to set direct hosted video URLs
+    function setHostedVideos(inventoryVideoUrl, assignVideoUrl) {
+        if (inventoryVideoUrl) {
+            const vid1 = document.getElementById('videoInventorySrc');
+            if (vid1) {
+                vid1.src = inventoryVideoUrl;
+                vid1.parentElement.load();
+            }
+            const link1 = document.getElementById('linkInventoryVideo');
+            if (link1) {
+                link1.href = inventoryVideoUrl;
+                link1.style.display = 'inline-block';
             }
         }
 
-        function goToSlide(slideNum) {
-            currentSlide = slideNum;
-            document.querySelectorAll('.slide-view').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-            
-            document.getElementById('slide' + slideNum).classList.add('active');
-            document.getElementById('dot' + slideNum).classList.add('active');
-
-            updatePageMark();
-
-            document.getElementById('prevBtn').disabled = (slideNum === 1);
-            document.getElementById('nextBtn').disabled = (slideNum === 8);
-        }
-
-        function nextSlide() {
-            if (currentSlide < 8) goToSlide(currentSlide + 1);
-        }
-
-        function prevSlide() {
-            if (currentSlide > 1) goToSlide(currentSlide - 1);
-        }
-
-        function switchExhibitSlide2(tabKey, btnElement) {
-            document.querySelectorAll('#slide2 .exhibit-tab').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            document.getElementById('demoKpi1').style.display = 'none';
-            document.getElementById('demoKpi2').style.display = 'none';
-            document.getElementById('demoKpi3').style.display = 'none';
-
-            if (tabKey === 'kpi1') document.getElementById('demoKpi1').style.display = 'flex';
-            if (tabKey === 'kpi2') document.getElementById('demoKpi2').style.display = 'flex';
-            if (tabKey === 'kpi3') document.getElementById('demoKpi3').style.display = 'flex';
-        }
-
-        function openLightbox() {
-            let activeSlideImg = document.querySelector('#slide' + currentSlide + ' .exhibit-img');
-            if (activeSlideImg) {
-                document.getElementById('lightboxFullImg').src = activeSlideImg.src;
-                document.getElementById('lightboxTitle').innerText = slideTitlesEn[currentSlide];
-                document.getElementById('lightboxModal').classList.add('active');
+        if (assignVideoUrl) {
+            const vid2 = document.getElementById('videoAssignSrc');
+            if (vid2) {
+                vid2.src = assignVideoUrl;
+                vid2.parentElement.load();
+            }
+            const link2 = document.getElementById('linkAssignVideo');
+            if (link2) {
+                link2.href = assignVideoUrl;
+                link2.style.display = 'inline-block';
             }
         }
+    }
 
-        function closeLightbox() {
-            document.getElementById('lightboxModal').classList.remove('active');
-        }
-    </script>
+    // Initialize
+    updateSlide();
+</script>
+
 </body>
 </html>
