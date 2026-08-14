@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <title>Operationtrainningmfe</title>
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter, Kantumruy Pro, Merriweather -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
     <style>
         :root {
@@ -39,7 +39,7 @@
             line-height: 1.65;
         }
 
-        /* 1. CLEAN LEFT SIDEBAR */
+        /* 1. DESKTOP LEFT SIDEBAR */
         .sidebar {
             width: 320px;
             min-width: 320px;
@@ -124,11 +124,13 @@
             gap: 12px;
         }
 
+        /* LANGUAGE SWITCH PILLS (EN / KH) */
         .lang-switch-pills {
             display: flex;
             background: #f1f5f9;
             border-radius: 24px;
             padding: 4px;
+            width: 140px;
         }
 
         .lang-btn {
@@ -136,9 +138,9 @@
             border: none;
             background: transparent;
             color: var(--c-muted);
-            padding: 8px 0;
+            padding: 6px 0;
             font-size: 0.85rem;
-            font-weight: 700;
+            font-weight: 800;
             border-radius: 20px;
             cursor: pointer;
             text-align: center;
@@ -148,10 +150,66 @@
         .lang-btn.active {
             background: #ffffff;
             color: var(--c-red);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* 2. MAIN SCROLLABLE CONTENT VIEWPORT (CENTERED & BIGGER) */
+        /* 2. MOBILE TOP APP BAR & HORIZONTAL PILLS (FOR CEO ON PHONE) */
+        .mobile-header-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-subtle);
+            z-index: 200;
+            padding: 12px 16px 8px;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+
+        .mobile-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .mobile-logo {
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .mobile-horizontal-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .mobile-horizontal-pills::-webkit-scrollbar { display: none; }
+
+        .mob-pill {
+            flex-shrink: 0;
+            background: #f1f5f9;
+            color: var(--c-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .mob-pill.active {
+            background: var(--c-red);
+            color: #ffffff;
+        }
+
+        /* 3. MAIN SCROLLABLE CONTENT VIEWPORT (CENTERED & BIGGER) */
         .content-viewport {
             flex: 1;
             height: 100vh;
@@ -354,27 +412,85 @@
             text-decoration: underline;
         }
 
-        /* Language visibility */
-        .kh-text { display: none; }
-        body.lang-kh .en-text { display: none; }
-        body.lang-kh .kh-text { display: block; }
+        /* Language visibility: DEFAULT KHMER */
+        .en-text { display: none; }
+        .kh-text { display: block; }
+        
+        body:not(.lang-kh) .en-text { display: block; }
+        body:not(.lang-kh) .kh-text { display: none; }
+
         body.lang-kh .chapter-heading {
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 700;
         }
 
+        /* 4. MOBILE RESPONSIVENESS (< 860px) */
         @media (max-width: 860px) {
-            .content-viewport { padding: 32px 24px 100px; }
-            .chapter-heading { font-size: 2rem; }
-            .sidebar { width: 250px; min-width: 250px; }
-            .intro-gallery-grid { grid-template-columns: 1fr; }
-            .dual-video-grid { grid-template-columns: 1fr; }
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                display: none;
+            }
+            .mobile-header-bar {
+                display: flex;
+            }
+            .content-viewport {
+                padding: 120px 20px 240px;
+                height: 100vh;
+            }
+            .chapter-block {
+                scroll-margin-top: 120px;
+                gap: 18px;
+                padding-bottom: 50px;
+            }
+            .chapter-heading {
+                font-size: 1.85rem;
+            }
+            .chapter-lead {
+                font-size: 1.08rem;
+            }
+            .point-row {
+                font-size: 0.95rem;
+                gap: 12px;
+            }
+            .intro-gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .dual-video-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .phone-mockup {
+                max-width: 100%;
+                margin: 10px auto 0;
+            }
         }
     </style>
 </head>
-<body>
+<body class="lang-kh">
 
-    <!-- 1. LEFT SIDEBAR -->
+    <!-- MOBILE TOP HEADER & NAVIGATION PILLS -->
+    <header class="mobile-header-bar">
+        <div class="mobile-top-row">
+            <img alt="Metfone Express" class="mobile-logo" src="./images/metfone_express_logo.png" onerror="this.src='https://opsexpress.metfone.com.kh/assets/images/logo.png'"/>
+            <div class="lang-switch-pills">
+                <button class="lang-btn" id="btnEnMob" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnKhMob" onclick="setLanguage('kh')">KH</button>
+            </div>
+        </div>
+        <nav class="mobile-horizontal-pills">
+            <a href="#chap-0" class="mob-pill active" onclick="setActiveMobPill(this)">0. Introduce</a>
+            <a href="#chap-1" class="mob-pill" onclick="setActiveMobPill(this)">1. KPI</a>
+            <a href="#chap-2" class="mob-pill" onclick="setActiveMobPill(this)">2. 10h Rule</a>
+            <a href="#chap-3" class="mob-pill" onclick="setActiveMobPill(this)">3. Inventory</a>
+            <a href="#chap-4" class="mob-pill" onclick="setActiveMobPill(this)">4. Roles</a>
+            <a href="#chap-5" class="mob-pill" onclick="setActiveMobPill(this)">5. Route</a>
+        </nav>
+    </header>
+
+    <!-- 1. DESKTOP LEFT SIDEBAR -->
     <aside class="sidebar">
         <div>
             <div class="sidebar-header">
@@ -417,8 +533,8 @@
 
         <div class="sidebar-footer">
             <div class="lang-switch-pills">
-                <button class="lang-btn active" id="btnEn" onclick="setLanguage('en')">English</button>
-                <button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">ភាសាខ្មែរ</button>
+                <button class="lang-btn" id="btnEn" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnKh" onclick="setLanguage('kh')">KH</button>
             </div>
             <div style="font-size: 0.75rem; color: var(--c-muted); text-align: center;">
                 © 2026 Metfone Express
@@ -738,10 +854,11 @@
     </main>
 
 <script>
-    // Smooth Scroll spy for sidebar links
+    // Smooth Scroll spy for sidebar links and mobile pills
     const scrollContainer = document.getElementById('contentViewport');
     const sections = document.querySelectorAll('.chapter-block');
     const navItems = document.querySelectorAll('.nav-link');
+    const mobPills = document.querySelectorAll('.mob-pill');
 
     scrollContainer.addEventListener('scroll', () => {
         const scrollBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
@@ -750,11 +867,13 @@
         if (scrollBottom < 160) {
             navItems.forEach(item => item.classList.remove('active'));
             navItems[navItems.length - 1].classList.add('active');
+            mobPills.forEach(p => p.classList.remove('active'));
+            mobPills[mobPills.length - 1].classList.add('active');
             return;
         }
 
         let currentSectionId = '';
-        const scrollPos = scrollContainer.scrollTop + 180;
+        const scrollPos = scrollContainer.scrollTop + (window.innerWidth <= 860 ? 140 : 180);
 
         sections.forEach(sec => {
             const top = sec.offsetTop;
@@ -769,6 +888,14 @@
                 const href = item.getAttribute('href').substring(1);
                 item.classList.toggle('active', href === currentSectionId);
             });
+            mobPills.forEach(p => {
+                const href = p.getAttribute('href').substring(1);
+                const isActive = href === currentSectionId;
+                p.classList.toggle('active', isActive);
+                if (isActive) {
+                    p.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            });
         }
     });
 
@@ -777,20 +904,31 @@
         element.classList.add('active');
     }
 
-    // Language switcher
+    function setActiveMobPill(element) {
+        mobPills.forEach(p => p.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // Language switcher (EN / KH)
     function setLanguage(lang) {
         const body = document.body;
         const btnEn = document.getElementById('btnEn');
         const btnKh = document.getElementById('btnKh');
+        const btnEnMob = document.getElementById('btnEnMob');
+        const btnKhMob = document.getElementById('btnKhMob');
 
         if (lang === 'kh') {
             body.classList.add('lang-kh');
-            btnKh.classList.add('active');
-            btnEn.classList.remove('active');
+            if (btnKh) btnKh.classList.add('active');
+            if (btnEn) btnEn.classList.remove('active');
+            if (btnKhMob) btnKhMob.classList.add('active');
+            if (btnEnMob) btnEnMob.classList.remove('active');
         } else {
             body.classList.remove('lang-kh');
-            btnEn.classList.add('active');
-            btnKh.classList.remove('active');
+            if (btnEn) btnEn.classList.add('active');
+            if (btnKh) btnKh.classList.remove('active');
+            if (btnEnMob) btnEnMob.classList.add('active');
+            if (btnKhMob) btnKhMob.classList.remove('active');
         }
     }
 </script>

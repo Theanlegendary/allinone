@@ -1,0 +1,750 @@
+{
+  "3103790120": {
+    "status": "302 - Hoàn thành tải",
+    "po": "MEGA1",
+    "time": "09:39:45",
+    "source": "search_database.db"
+  },
+  "3103794097": {
+    "status": "302 - Hoàn thành tải",
+    "po": "SIHA006",
+    "time": "09:39:45",
+    "source": "search_database.db"
+  },
+  "3103813542": {
+    "status": "311 - Manual receiving",
+    "po": "MEGA1",
+    "time": "09:39:45",
+    "source": "search_database.db"
+  },
+  "3103930131": {
+    "status": "306 - Accept handover",
+    "po": "DVCMEGA1",
+    "time": "09:39:45",
+    "source": "search_database.db"
+  },
+  "3103806997": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103807853": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103808864": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103816597": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103817019": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103827186": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103828008": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103834464": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103837019": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103837120": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103880786": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103911320": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103931697": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103931720": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103931753": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103931797": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103931820": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103932408": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103961575": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103961619": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103966975": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3103968120": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103972964": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103985519": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103985886": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103987019": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3103992320": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103992397": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3103993519": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3104007231": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3104009075": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204013809": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204025554": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204040621": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204043832": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204044109": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204045943": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204050121": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204051632": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204053765": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204055132": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204062476": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204064010": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204066876": {
+    "status": "311 - Nhận tay",
+    "source": "latest_export.xlsx"
+  },
+  "3204075321": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204076232": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204090043": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204092887": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204102098": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204102210": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204102232": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204106498": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204106954": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204108710": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204111854": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204112632": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204112809": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204113221": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204115798": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204116998": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204117987": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204124498": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204126321": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204130987": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204131354": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204132110": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204134454": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204134798": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204140898": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204142098": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204142698": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204142943": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204143621": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204144987": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204145709": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204147298": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204147632": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204149965": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204154409": {
+    "status": "309 - Nhận bưu gửi",
+    "source": "latest_export.xlsx"
+  },
+  "3204154465": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204155010": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204155643": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204156154": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204157487": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204159010": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204160043": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204161110": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204161421": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204161587": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204161987": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204162365": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204162598": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204162965": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163065": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163432": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163821": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163898": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163954": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204163976": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204164032": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204164676": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204165087": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204165209": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204165309": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204166609": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204166787": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204168698": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204168854": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204169398": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204169643": {
+    "status": "311 - Nhận tay",
+    "source": "latest_export.xlsx"
+  },
+  "3204169910": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204170832": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171132": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171387": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171443": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171509": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171565": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204171665": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204173098": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204173321": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204173332": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204173632": {
+    "status": "311 - Nhận tay",
+    "source": "latest_export.xlsx"
+  },
+  "3204173843": {
+    "status": "311 - Nhận tay",
+    "source": "latest_export.xlsx"
+  },
+  "3204173976": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174121": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174310": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174321": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174421": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174510": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204174676": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204174754": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204175132": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204175232": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204175709": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204176487": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204176498": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204176509": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204177076": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204177476": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204179365": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204180221": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204181143": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204181443": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204181643": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204183243": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204183409": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204184510": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204185409": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204185732": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204185943": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204186443": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204187154": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204187787": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204188154": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204188276": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204188432": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204189465": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204189654": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204191343": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204192065": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204192121": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204192621": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204192687": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204192698": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204193210": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204193710": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204194098": {
+    "status": "311 - Nhận tay",
+    "source": "latest_export.xlsx"
+  },
+  "3204194109": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204194410": {
+    "status": "302 - Hoàn thành tải",
+    "source": "latest_export.xlsx"
+  },
+  "3204194632": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204194654": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204194732": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204195343": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204195676": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204195954": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204197032": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204197465": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204197509": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204198110": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204198521": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  },
+  "3204198932": {
+    "status": "306 - Nhận bàn giao",
+    "source": "latest_export.xlsx"
+  }
+}
