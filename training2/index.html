@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Metfone Express — Branch Staff Operations Playbook</title>
+    <title>Metfone Express</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet"/>
     <style>
@@ -41,8 +41,8 @@
 
         /* 1. CLEAN LEFT SIDEBAR */
         .sidebar {
-            width: 300px;
-            min-width: 300px;
+            width: 310px;
+            min-width: 310px;
             background-color: var(--bg-white);
             border-right: 1px solid var(--border-subtle);
             height: 100vh;
@@ -54,7 +54,7 @@
         }
 
         .sidebar-header {
-            padding: 36px 30px 24px;
+            padding: 36px 30px 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -64,14 +64,6 @@
             height: 52px;
             object-fit: contain;
             align-self: flex-start;
-        }
-
-        .sidebar-badge {
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--c-red);
         }
 
         .nav-menu {
@@ -86,7 +78,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 14px 18px;
+            padding: 12px 18px;
             color: var(--c-muted);
             text-decoration: none;
             font-size: 0.95rem;
@@ -125,11 +117,11 @@
         }
 
         .sidebar-footer {
-            padding: 24px 30px;
+            padding: 20px 30px;
             border-top: 1px solid var(--border-subtle);
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .lang-switch-pills {
@@ -335,7 +327,7 @@
         @media (max-width: 860px) {
             .content-viewport { padding: 32px 24px 100px; }
             .chapter-heading { font-size: 2rem; }
-            .sidebar { width: 240px; min-width: 240px; }
+            .sidebar { width: 250px; min-width: 250px; }
         }
     </style>
 </head>
@@ -361,16 +353,21 @@
                 </a>
                 <a href="#chap-3" class="nav-link" onclick="setActiveChapter(this)">
                     <span class="nav-circle-num">3</span>
-                    <span class="en-text">Pending Inventory</span>
-                    <span class="kh-text">ឥវ៉ាន់កកស្ទះ (Video)</span>
+                    <span class="en-text">Arrange Bills & Route</span>
+                    <span class="kh-text">ការរៀបចំវិក្កយបត្រ</span>
                 </a>
                 <a href="#chap-4" class="nav-link" onclick="setActiveChapter(this)">
                     <span class="nav-circle-num">4</span>
-                    <span class="en-text">Manager Assign</span>
-                    <span class="kh-text">Manager ចាត់តាំង (Video)</span>
+                    <span class="en-text">Pending Inventory</span>
+                    <span class="kh-text">ឥវ៉ាន់កកស្ទះ (Video)</span>
                 </a>
                 <a href="#chap-5" class="nav-link" onclick="setActiveChapter(this)">
                     <span class="nav-circle-num">5</span>
+                    <span class="en-text">Manager Assign</span>
+                    <span class="kh-text">Manager ចាត់តាំង (Video)</span>
+                </a>
+                <a href="#chap-6" class="nav-link" onclick="setActiveChapter(this)">
+                    <span class="nav-circle-num">6</span>
                     <span class="en-text">Shipper Self-Assign</span>
                     <span class="kh-text">Shipper ចាត់ខ្លួនឯង (Video)</span>
                 </a>
@@ -485,10 +482,59 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 03: PENDING INVENTORY -->
+            <!-- CHAPTER 03: ARRANGE BILLS & ROUTE -->
             <section class="chapter-block" id="chap-3">
                 <div class="chapter-tag">
                     <span>Lesson 03</span>
+                </div>
+
+                <h2 class="chapter-heading en-text">Arrange Bills & Route Planning</h2>
+                <h2 class="chapter-heading kh-text">ការរៀបចំវិក្កយបត្រ & ផ្លូវដឹក</h2>
+
+                <div class="chapter-lead en-text">
+                    Arrange your bills in sequence before going out to save time and hit the 10h SLA.
+                </div>
+                <div class="chapter-lead kh-text">
+                    រៀបចំវិក្កយបត្រជាលំដាប់លំដោយមុនពេលចេញដំណើរ ដើម្បីចំណេញពេល និងទាន់ម៉ោង ១០h។
+                </div>
+
+                <div class="points-list">
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Group by Area:</strong>
+                            <strong class="kh-text">ប្រមូលផ្តុំតាមតំបន់៖</strong>
+                            <span class="en-text">Group bills on the same street or neighborhood together to avoid driving back and forth.</span>
+                            <span class="kh-text">ប្រមូលវិក្កយបត្រលើផ្លូវ ឬភូមិ/ឃុំក្បែរៗគ្នាជាមួយគ្នា ដើម្បីកុំឱ្យជិះកាត់ចុះកាត់ឡើង។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Priority Stops:</strong>
+                            <strong class="kh-text">ផ្តល់អាទិភាព៖</strong>
+                            <span class="en-text">Put urgent orders and bills close to the 10-hour limit at the start of your route.</span>
+                            <span class="kh-text">ដាក់វិក្កយបត្របន្ទាន់ និងវិក្កយបត្រដែលជិតផុតកំណត់ ១០ ម៉ោងនៅដើមខ្សែផ្លូវ។</span>
+                        </div>
+                    </div>
+
+                    <div class="point-row">
+                        <span class="point-circle"></span>
+                        <div class="point-text">
+                            <strong class="en-text">Smooth Loop:</strong>
+                            <strong class="kh-text">ផ្លូវធ្វើដំណើរជារង្វង់៖</strong>
+                            <span class="en-text">Plan a continuous loop from branch to destination and back, saving fuel and time.</span>
+                            <span class="kh-text">រៀបចំខ្សែផ្លូវដើរជារង្វង់បន្តបន្ទាប់ពីសាខាទៅគោលដៅ និងត្រឡប់មកវិញ ចំណេញទាំងសាំងនិងពេលវេលា។</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CHAPTER 04: PENDING INVENTORY -->
+            <section class="chapter-block" id="chap-4">
+                <div class="chapter-tag">
+                    <span>Lesson 04</span>
                 </div>
 
                 <h2 class="chapter-heading en-text">Pending Inventory</h2>
@@ -503,7 +549,7 @@
 
                 <div class="points-list">
                     <div class="point-row">
-                        <span class="point-circle"></span>
+                        <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Check App:</strong>
                             <strong class="kh-text">មើលលើ App៖</strong>
@@ -513,7 +559,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle"></span>
+                        <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Self-Management:</strong>
                             <strong class="kh-text">ម្ចាស់ការខ្លួនឯង៖</strong>
@@ -523,7 +569,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle"></span>
+                        <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Manager & CS Help:</strong>
                             <strong class="kh-text">ការជួយពី Manager & CS៖</strong>
@@ -548,10 +594,10 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 04: MANAGER ASSIGN -->
-            <section class="chapter-block" id="chap-4">
+            <!-- CHAPTER 05: MANAGER ASSIGN -->
+            <section class="chapter-block" id="chap-5">
                 <div class="chapter-tag">
-                    <span>Lesson 04</span>
+                    <span>Lesson 05</span>
                 </div>
 
                 <h2 class="chapter-heading en-text">Manager Bill Assignment</h2>
@@ -566,7 +612,7 @@
 
                 <div class="points-list">
                     <div class="point-row">
-                        <span class="point-circle blue"></span>
+                        <span class="point-circle"></span>
                         <div class="point-text">
                             <strong class="en-text">Direct Dispatch:</strong>
                             <strong class="kh-text">ការចាត់តាំង៖</strong>
@@ -576,7 +622,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle blue"></span>
+                        <span class="point-circle"></span>
                         <div class="point-text">
                             <strong class="en-text">Instant Update:</strong>
                             <strong class="kh-text">លោតលើ App ភ្លាមៗ៖</strong>
@@ -601,10 +647,10 @@
                 </div>
             </section>
 
-            <!-- CHAPTER 05: SHIPPER SELF-ASSIGN -->
-            <section class="chapter-block" id="chap-5" style="border-bottom: none;">
+            <!-- CHAPTER 06: SHIPPER SELF-ASSIGN -->
+            <section class="chapter-block" id="chap-6" style="border-bottom: none;">
                 <div class="chapter-tag">
-                    <span>Lesson 05</span>
+                    <span>Lesson 06</span>
                 </div>
 
                 <h2 class="chapter-heading en-text">Shipper Self-Assign & Commission</h2>
@@ -619,7 +665,7 @@
 
                 <div class="points-list">
                     <div class="point-row">
-                        <span class="point-circle"></span>
+                        <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Shipper Independence:</strong>
                             <strong class="kh-text">ភាពម្ចាស់ការ៖</strong>
@@ -629,7 +675,7 @@
                     </div>
 
                     <div class="point-row">
-                        <span class="point-circle"></span>
+                        <span class="point-circle blue"></span>
                         <div class="point-text">
                             <strong class="en-text">Commission:</strong>
                             <strong class="kh-text">កម្រៃជើងសារ៖</strong>
