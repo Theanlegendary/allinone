@@ -1929,7 +1929,7 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
                 df = result.get("type_data", {}).get(rn)
                 if df is not None and not df.empty:
-                    filter_col = "POST OFFICE HANDLE"
+                    filter_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
                     if filter_col in df.columns:
                         result["type_data"][rn] = df[df[filter_col].isin(zone_filter)].copy()
 
@@ -1939,13 +1939,14 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # ── Exclude showroom (A) and agent (S) from type_data for image + Excel ──
         # Their counts are already included in the main post office figures.
         import pandas as pd
+        valid_handles = set(hr["handle"] for hr in result.get("handle_results", []))
         for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
             df_t = result.get("type_data", {}).get(rn)
             if df_t is not None and not df_t.empty:
-                po_col = "POST OFFICE HANDLE"
+                po_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
                 if po_col in df_t.columns:
                     mask = df_t[po_col].apply(
-                        lambda h: not (len(str(h).strip()) >= 4 and str(h).strip()[3] in ('A', 'S'))
+                        lambda h: str(h).strip().upper() in valid_handles if valid_handles else not (len(str(h).strip()) >= 4 and str(h).strip()[3] in ('A', 'S'))
                     )
                     result["type_data"][rn] = df_t[mask].copy()
 
@@ -1970,13 +1971,13 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 df_z = df_z.copy()
                 df_z["_zdate"] = parsed_z.dt.date
 
-            handle_col = "POST OFFICE HANDLE"
+            handle_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
             if handle_col not in df_z.columns:
                 continue
 
             for _, row_z in df_z.iterrows():
                 h = str(row_z.get(handle_col, "")).strip().upper()
-                if not h:
+                if not h or (valid_handles and h not in valid_handles):
                     continue
                 d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
                 if d_val and not pd.isna(d_val):
@@ -2001,6 +2002,10 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         total_urgent_counts[h]["3days"] = total_urgent_counts[h].get("3days", 0) + 1
 
         overall = result["overall_counts"]
+        # Ensure urgent count cannot exceed category total
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            urgent_by_type[rn] = min(urgent_by_type[rn], overall.get(rn, 0))
+
         grand_total = sum(overall.values())
         total_urgent_sum = sum(urgent_by_type.values())
 
@@ -2141,7 +2146,7 @@ async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
                 df = result.get("type_data", {}).get(rn)
                 if df is not None and not df.empty:
-                    filter_col = "POST OFFICE HANDLE"
+                    filter_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
                     if filter_col in df.columns:
                         result["type_data"][rn] = df[df[filter_col].isin(zone_filter)].copy()
 
@@ -2151,6 +2156,7 @@ async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
         urgent_by_type = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
         today_date = datetime.now().date()
         import pandas as pd
+        valid_handles = set(hr["handle"] for hr in result.get("handle_results", []))
 
         for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
             df_z = result.get("type_data", {}).get(rn)
@@ -2166,13 +2172,13 @@ async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 df_z = df_z.copy()
                 df_z["_zdate"] = parsed_z.dt.date
 
-            handle_col = "POST OFFICE HANDLE"
+            handle_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
             if handle_col not in df_z.columns:
                 continue
 
             for _, row_z in df_z.iterrows():
                 h = str(row_z.get(handle_col, "")).strip().upper()
-                if not h:
+                if not h or (valid_handles and h not in valid_handles):
                     continue
                 d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
                 if d_val and not pd.isna(d_val):
@@ -2191,6 +2197,10 @@ async def cmd_morning(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     urgent_by_type[rn] += 1
 
         overall = result["overall_counts"]
+        # Ensure urgent count cannot exceed category total
+        for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
+            urgent_by_type[rn] = min(urgent_by_type[rn], overall.get(rn, 0))
+
         grand_total = sum(overall.values())
         total_urgent_sum = sum(urgent_by_type.values())
 
