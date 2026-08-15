@@ -1434,10 +1434,22 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     handle_results = []
     all_handle_sections = []
     overall = {rn: 0 for rn in ALL_TABS}
+    day_date_counts = {}
+    urgent_counts = {}
+    vip_counts = {}
+    fee_counts = {}
+    cod_counts = {}
 
     for handle in unique_handles:
         sections = []
         counts = {}
+        handle_day_dates = {}
+        handle_urgent_1day = 0
+        handle_urgent_3days = 0
+        handle_vip = 0
+        handle_fee = 0.0
+        handle_cod = 0.0
+
         for rn in ALL_TABS:
             df_t = type_data[rn]
             filter_col = REPORT_FILTER_COLS[rn]
@@ -1450,12 +1462,50 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
             if df_h.empty:
                 counts[rn] = 0
                 continue
+
+            # VIP count
+            if 'VIP' in df_h.columns:
+                handle_vip += int((df_h['VIP'].astype(str).str.strip().str.upper() == 'VIP').sum())
+
+            # Fee & COD
+            if rn in ('Delivery', 'Branch'):
+                fee_c = next((c for c in df_h.columns if 'TOTAL FEE' in c.upper()), None)
+                cod_c = next((c for c in df_h.columns if c.upper().startswith('COD')), None)
+                if fee_c:
+                    handle_fee += pd.to_numeric(df_h[fee_c], errors='coerce').fillna(0).sum()
+                if cod_c:
+                    handle_cod += pd.to_numeric(df_h[cod_c], errors='coerce').fillna(0).sum()
+
+            # Date calculation: match build_section_rows exactly
+            if '_scan_date' in df_h.columns and df_h['_scan_date'].notna().any():
+                s_dates = df_h['_scan_date']
+            elif date_col and date_col in df_h.columns:
+                parsed_sc = pd.to_datetime(df_h[date_col], dayfirst=True, format='mixed', errors='coerce')
+                s_dates = parsed_sc.dt.date
+            else:
+                s_dates = pd.Series([None] * len(df_h))
+
+            for sd in s_dates.dropna():
+                handle_day_dates[sd] = handle_day_dates.get(sd, 0) + 1
+
+            # Urgent based on CREATED DATE
+            for _, r_u in df_h.iterrows():
+                c_val = r_u.get('CREATED DATE') or r_u.get('CURRENT TIME')
+                if pd.notna(c_val) and str(c_val).strip() and str(c_val).strip().lower() != 'nan':
+                    parsed_cd = pd.to_datetime(c_val, dayfirst=True, format='mixed', errors='coerce')
+                    if pd.notna(parsed_cd):
+                        c_date = parsed_cd.date()
+                        d_old = (today.date() - c_date).days
+                        if d_old > 1:
+                            handle_urgent_1day += 1
+                        if d_old >= 3:
+                            handle_urgent_3days += 1
                 
             # Calculate overdue flags for row highlighting based on CREATED DATE (calendar days, not age hours)
             # Red row = Bill created 3+ days ago (Aug 3 or earlier when today is Aug 5)
             # Age column is for KPI only (10h threshold), not for row highlighting
             def calc_overdue(row):
-                today = datetime.now().date()
+                today_d = datetime.now().date()
                 
                 # Try to get CREATED DATE
                 for col in ['CREATED DATE', 'CURRENT TIME']:
@@ -1464,7 +1514,7 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                         parsed_dt = pd.to_datetime(val, dayfirst=True, format='mixed', errors='coerce')
                         if pd.notna(parsed_dt):
                             created_date = parsed_dt.date()
-                            days_old = (today - created_date).days
+                            days_old = (today_d - created_date).days
                             
                             # Red if 2+ days old (48h+ overdue, created 2+ days ago)
                             is_overdue = days_old >= 2
@@ -1517,6 +1567,15 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
         total_handle = sum(counts.values())
         if total_handle == 0 and not (target_handles and handle in target_handles):
             continue
+
+        day_date_counts[handle] = handle_day_dates
+        urgent_counts[handle] = {
+            "1day": min(handle_urgent_1day, total_handle),
+            "3days": min(handle_urgent_3days, handle_urgent_1day, total_handle)
+        }
+        vip_counts[handle] = handle_vip
+        fee_counts[handle] = round(handle_fee, 2)
+        cod_counts[handle] = round(handle_cod, 2)
 
         if total_handle > 0:
             all_handle_sections.append((handle, sections))
@@ -1571,16 +1630,21 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
     ])
 
     result = {
-        'handle_results':  handle_results,
-        'final_xlsx':      final_xlsx,
-        'summary_caption': summary,
-        'overall_counts':  overall,
-        'type_data':       type_data,
-        'dm_all':          dm_all,
-        'day_cols':        day_cols,
-        'cur_time_col':    date_col,
+        'handle_results':   handle_results,
+        'final_xlsx':       final_xlsx,
+        'summary_caption':  summary,
+        'overall_counts':   overall,
+        'type_data':        type_data,
+        'dm_all':           dm_all,
+        'day_cols':         day_cols,
+        'cur_time_col':     date_col,
         'new_ignored_count': new_ignored_count,
         'order_status_map': order_status_map,
+        'day_date_counts':  day_date_counts,
+        'urgent_counts':    urgent_counts,
+        'vip_counts':       vip_counts,
+        'fee_counts':       fee_counts,
+        'cod_counts':       cod_counts,
     }
     return result if return_metadata else [final_xlsx]
 

@@ -1950,56 +1950,42 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                     result["type_data"][rn] = df_t[mask].copy()
 
-        # Calculate day_date_counts and urgent_counts for /total image
-        total_day_date_counts = {}
-        total_urgent_counts   = {}
-        urgent_by_type        = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
+        # Use pre-calculated exact per-handle metrics from generate_report
+        total_day_date_counts = result.get("day_date_counts", {})
+        total_urgent_counts   = result.get("urgent_counts", {})
+        total_vip_counts      = result.get("vip_counts", {})
+        total_fee_counts      = result.get("fee_counts", {})
+        total_cod_counts      = result.get("cod_counts", {})
+
+        if zone_filter:
+            zf_set = set(zone_filter)
+            total_day_date_counts = {h: total_day_date_counts.get(h, {}) for h in zf_set if h in total_day_date_counts}
+            total_urgent_counts   = {h: total_urgent_counts.get(h, {}) for h in zf_set if h in total_urgent_counts}
+            total_vip_counts      = {h: total_vip_counts.get(h, 0) for h in zf_set if h in total_vip_counts}
+            total_fee_counts      = {h: total_fee_counts.get(h, 0.0) for h in zf_set if h in total_fee_counts}
+            total_cod_counts      = {h: total_cod_counts.get(h, 0.0) for h in zf_set if h in total_cod_counts}
+
+        urgent_by_type = {"Pickup": 0, "Delivery": 0, "Transit": 0, "Branch": 0}
         today_date = datetime.now().date()
-        import pandas as pd
+        valid_handles = set(hr["handle"] for hr in result.get("handle_results", []))
 
         for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
             df_z = result.get("type_data", {}).get(rn)
             if df_z is None or df_z.empty:
                 continue
-            date_col_z = result.get("date_col") or (
-                "CREATED DATE" if "CREATED DATE" in df_z.columns else
-                "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else None
-            )
-            if date_col_z and date_col_z in df_z.columns:
-                parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
-                                          format="mixed", errors="coerce")
-                df_z = df_z.copy()
-                df_z["_zdate"] = parsed_z.dt.date
-
             handle_col = "CURRENT POST OFFICE" if rn == "Transit" else "POST OFFICE HANDLE"
             if handle_col not in df_z.columns:
                 continue
-
             for _, row_z in df_z.iterrows():
                 h = str(row_z.get(handle_col, "")).strip().upper()
                 if not h or (valid_handles and h not in valid_handles):
                     continue
-                d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
-                if d_val and not pd.isna(d_val):
-                    total_day_date_counts.setdefault(h, {})
-                    total_day_date_counts[h][d_val] = total_day_date_counts[h].get(d_val, 0) + 1
-                created_d = None
-                if "CREATED DATE" in df_z.columns:
-                    cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
-                                        format="mixed", errors="coerce")
+                c_val = row_z.get("CREATED DATE") or row_z.get("CURRENT TIME")
+                if pd.notna(c_val) and str(c_val).strip() and str(c_val).strip().lower() != 'nan':
+                    cd = pd.to_datetime(c_val, dayfirst=True, format="mixed", errors="coerce")
                     if not pd.isna(cd):
-                        created_d = cd.date()
-                if created_d:
-                    days_old = (today_date - created_d).days
-                    if days_old > 1:
-                        if h not in total_urgent_counts:
-                            total_urgent_counts[h] = {"1day": 0, "3days": 0}
-                        total_urgent_counts[h]["1day"] = total_urgent_counts[h].get("1day", 0) + 1
-                        urgent_by_type[rn] += 1
-                    if days_old >= 3:
-                        if h not in total_urgent_counts:
-                            total_urgent_counts[h] = {"1day": 0, "3days": 0}
-                        total_urgent_counts[h]["3days"] = total_urgent_counts[h].get("3days", 0) + 1
+                        if (today_date - cd.date()).days > 1:
+                            urgent_by_type[rn] += 1
 
         overall = result["overall_counts"]
         # Ensure urgent count cannot exceed category total
@@ -2026,6 +2012,9 @@ async def cmd_total(update: Update, context: ContextTypes.DEFAULT_TYPE):
             zone_label=zone_label,
             day_date_counts=total_day_date_counts if total_day_date_counts else None,
             urgent_counts=total_urgent_counts if total_urgent_counts else None,
+            fee_counts=total_fee_counts if any(total_fee_counts.values()) else None,
+            cod_counts=total_cod_counts if any(total_cod_counts.values()) else None,
+            vip_counts=total_vip_counts if any(total_vip_counts.values()) else None,
         )
         img_buf.name = "summary.png"
         await send_requester_photo(update, context, img_buf)
@@ -6069,78 +6058,13 @@ async def run_push(
                         zone_result["type_data"][rn] = pd.DataFrame()
 
                 try:
-                    # ── Build day_date_counts and urgent_counts for zone image ──
-                    zone_day_date_counts = {}
-                    zone_urgent_counts   = {}
-                    today_date = datetime.now().date()
-
-                    for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
-                        df_z = zone_result["type_data"].get(rn)
-                        if df_z is None or df_z.empty:
-                            continue
-                        date_col_z = result.get("date_col") or (
-                            "CURRENT TIME"  if "CURRENT TIME"  in df_z.columns else
-                            "CREATED DATE" if "CREATED DATE" in df_z.columns else None
-                        )
-                        if date_col_z and date_col_z in df_z.columns:
-                            parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True,
-                                                      format="mixed", errors="coerce")
-                            df_z = df_z.copy()
-                            df_z["_zdate"] = parsed_z.dt.date
-
-                        handle_col = "POST OFFICE HANDLE"
-                        if handle_col not in df_z.columns:
-                            continue
-
-                        for _, row_z in df_z.iterrows():
-                            h = str(row_z.get(handle_col, "")).strip().upper()
-                            if not h:
-                                continue
-                            # date counts
-                            d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
-                            if d_val and not pd.isna(d_val):
-                                zone_day_date_counts.setdefault(h, {})
-                                zone_day_date_counts[h][d_val] = zone_day_date_counts[h].get(d_val, 0) + 1
-                            # urgent = overdue (created > 1 day ago); also track > 3 days
-                            created_d = None
-                            if "CREATED DATE" in df_z.columns:
-                                cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True,
-                                                    format="mixed", errors="coerce")
-                                if not pd.isna(cd):
-                                    created_d = cd.date()
-                            if created_d:
-                                days_old = (today_date - created_d).days
-                                if days_old > 1:
-                                    if h not in zone_urgent_counts:
-                                        zone_urgent_counts[h] = {"1day": 0, "3days": 0}
-                                    zone_urgent_counts[h]["1day"] = zone_urgent_counts[h].get("1day", 0) + 1
-                                if days_old >= 3:
-                                    if h not in zone_urgent_counts:
-                                        zone_urgent_counts[h] = {"1day": 0, "3days": 0}
-                                    zone_urgent_counts[h]["3days"] = zone_urgent_counts[h].get("3days", 0) + 1
-
-                    # Build per-handle fee/cod dicts for image columns
-                    zone_fee_counts = {}
-                    zone_cod_counts = {}
-                    for hr in zone_results:
-                        h = hr["handle"]
-                        h_fee = 0.0
-                        h_cod = 0.0
-                        for rn in ["Delivery", "Branch"]:
-                            df_fc = result.get("type_data", {}).get(rn)
-                            if df_fc is None or df_fc.empty:
-                                continue
-                            if "POST OFFICE HANDLE" not in df_fc.columns:
-                                continue
-                            df_h = df_fc[df_fc["POST OFFICE HANDLE"] == h]
-                            fee_col = next((c for c in df_fc.columns if "TOTAL FEE" in c.upper()), None)
-                            cod_col = next((c for c in df_fc.columns if c.upper().startswith("COD")), None)
-                            if fee_col:
-                                h_fee += pd.to_numeric(df_h[fee_col], errors="coerce").fillna(0).sum()
-                            if cod_col:
-                                h_cod += pd.to_numeric(df_h[cod_col], errors="coerce").fillna(0).sum()
-                        zone_fee_counts[h] = round(h_fee, 2)
-                        zone_cod_counts[h] = round(h_cod, 2)
+                    # ── Build exact day_date_counts, urgent_counts, fee, cod, vip for zone image ──
+                    zh_set = set(zone_handles)
+                    zone_day_date_counts = {h: result.get("day_date_counts", {}).get(h, {}) for h in zh_set if h in result.get("day_date_counts", {})}
+                    zone_urgent_counts   = {h: result.get("urgent_counts", {}).get(h, {}) for h in zh_set if h in result.get("urgent_counts", {})}
+                    zone_vip_counts      = {h: result.get("vip_counts", {}).get(h, 0) for h in zh_set if h in result.get("vip_counts", {})}
+                    zone_fee_counts      = {h: result.get("fee_counts", {}).get(h, 0.0) for h in zh_set if h in result.get("fee_counts", {})}
+                    zone_cod_counts      = {h: result.get("cod_counts", {}).get(h, 0.0) for h in zh_set if h in result.get("cod_counts", {})}
 
                     # 1. Summary image
                     img_buf = generate_summary.build_summary_image(
@@ -6813,54 +6737,21 @@ async def cmd_forward(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     zone_result["type_data"][rn] = pd.DataFrame()
 
             try:
-                zone_day_date_counts = {}
-                zone_urgent_counts = {}
-                today_date = datetime.now().date()
-
-                for rn in ["Pickup", "Delivery", "Transit", "Branch"]:
-                    df_z = zone_result["type_data"].get(rn)
-                    if df_z is None or df_z.empty:
-                        continue
-                    date_col_z = (
-                        "CREATED DATE" if "CREATED DATE" in df_z.columns else
-                        "CURRENT TIME" if "CURRENT TIME" in df_z.columns else None
-                    )
-                    if date_col_z and date_col_z in df_z.columns:
-                        parsed_z = pd.to_datetime(df_z[date_col_z], dayfirst=True, format="mixed", errors="coerce")
-                        df_z = df_z.copy()
-                        df_z["_zdate"] = parsed_z.dt.date
-                    handle_col = "POST OFFICE HANDLE"
-                    if handle_col not in df_z.columns:
-                        continue
-                    for _, row_z in df_z.iterrows():
-                        h = str(row_z.get(handle_col, "")).strip().upper()
-                        if not h:
-                            continue
-                        d_val = row_z.get("_zdate") if "_zdate" in df_z.columns else None
-                        if d_val and not pd.isna(d_val):
-                            zone_day_date_counts.setdefault(h, {})
-                            zone_day_date_counts[h][d_val] = zone_day_date_counts[h].get(d_val, 0) + 1
-                        created_d = None
-                        if "CREATED DATE" in df_z.columns:
-                            cd = pd.to_datetime(row_z.get("CREATED DATE"), dayfirst=True, format="mixed", errors="coerce")
-                            if not pd.isna(cd):
-                                created_d = cd.date()
-                        if created_d:
-                            days_old = (today_date - created_d).days
-                            if days_old > 1:
-                                if h not in zone_urgent_counts:
-                                    zone_urgent_counts[h] = {"1day": 0, "3days": 0}
-                                zone_urgent_counts[h]["1day"] = zone_urgent_counts[h].get("1day", 0) + 1
-                            if days_old >= 3:
-                                if h not in zone_urgent_counts:
-                                    zone_urgent_counts[h] = {"1day": 0, "3days": 0}
-                                zone_urgent_counts[h]["3days"] = zone_urgent_counts[h].get("3days", 0) + 1
+                zh_set = set(zone_handles)
+                zone_day_date_counts = {h: result.get("day_date_counts", {}).get(h, {}) for h in zh_set if h in result.get("day_date_counts", {})}
+                zone_urgent_counts   = {h: result.get("urgent_counts", {}).get(h, {}) for h in zh_set if h in result.get("urgent_counts", {})}
+                zone_vip_counts      = {h: result.get("vip_counts", {}).get(h, 0) for h in zh_set if h in result.get("vip_counts", {})}
+                zone_fee_counts      = {h: result.get("fee_counts", {}).get(h, 0.0) for h in zh_set if h in result.get("fee_counts", {})}
+                zone_cod_counts      = {h: result.get("cod_counts", {}).get(h, 0.0) for h in zh_set if h in result.get("cod_counts", {})}
 
                 img_buf = generate_summary.build_summary_image(
                     zone_results, zone_overall,
                     zone_label=zone_label,
                     day_date_counts=zone_day_date_counts if zone_day_date_counts else None,
                     urgent_counts=zone_urgent_counts if zone_urgent_counts else None,
+                    fee_counts=zone_fee_counts if any(zone_fee_counts.values()) else None,
+                    cod_counts=zone_cod_counts if any(zone_cod_counts.values()) else None,
+                    vip_counts=zone_vip_counts if any(zone_vip_counts.values()) else None,
                 )
                 img_buf.name = f"{zone_key}_summary.png"
                 await safe_api_call(context.bot.send_photo, chat_id=FORWARD_GROUP_ID, photo=img_buf)
