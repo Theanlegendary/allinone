@@ -1489,13 +1489,14 @@ def generate_reports_from_data(export_path, ref_path, output_dir,
                 handle_day_dates[sd] = handle_day_dates.get(sd, 0) + 1
 
             # Urgent based on CREATED DATE
+            today_d = datetime.now().date()
             for _, r_u in df_h.iterrows():
                 c_val = r_u.get('CREATED DATE') or r_u.get('CURRENT TIME')
                 if pd.notna(c_val) and str(c_val).strip() and str(c_val).strip().lower() != 'nan':
                     parsed_cd = pd.to_datetime(c_val, dayfirst=True, format='mixed', errors='coerce')
                     if pd.notna(parsed_cd):
                         c_date = parsed_cd.date()
-                        d_old = (today.date() - c_date).days
+                        d_old = (today_d - c_date).days
                         if d_old > 1:
                             handle_urgent_1day += 1
                         if d_old >= 3:
