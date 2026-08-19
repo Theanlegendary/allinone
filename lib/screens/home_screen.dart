@@ -513,41 +513,104 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
 
-                      // ── 2. Mood Selector Bar ("How do you feel today?") ───
-                      Text(
-                        'HOW DO YOU FEEL TODAY?',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: textSecondary,
-                          letterSpacing: 1.8,
+                      // ── 2. Atmospheric Mood Pod with Blurred Raindrop Backdrop ───
+                      Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
+                        child: Stack(
                           children: [
-                            ('😌 Calm', 'Calm', tealPrimary),
-                            ('😰 Stressed', 'Stressed', coralAccent),
-                            ('😴 Sleepy', 'Sleepy', const Color(0xFFA855F7)), // Cosmic Twilight Purple Aura
-                            ('🧠 Need Focus', 'Focus', const Color(0xFF38BDF8)), // Electric Focus Cyan
-                            ('❤️ Emotional', 'Anxiety', const Color(0xFFEC4899)), // Ethereal Rose
-                            ('🌧️ Want Nature', 'Nature', mintAccent),
-                          ].map((item) {
-                            final isSelected = state.selectedMoodFilter == item.$2;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: GlassChip(
-                                label: item.$1,
-                                isSelected: isSelected,
-                                selectedColor: item.$3,
-                                onTap: () => state.setMoodFilter(item.$2),
+                            // 🌧️ Atmospheric Rain Droplets on Glass Wallpaper
+                            Positioned.fill(
+                              child: Image.network(
+                                'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=800&q=80',
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                            // Frosted Dark Glass Vignette Tint
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      const Color(0xFF0C1924).withOpacity(0.82),
+                                      const Color(0xFF060E16).withOpacity(0.92),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: tealPrimary.withOpacity(0.25),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(CupertinoIcons.sparkles, color: tealPrimary, size: 13),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'HOW DO YOU FEEL TODAY?',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white.withOpacity(0.85),
+                                          letterSpacing: 1.8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Row(
+                                      children: [
+                                        ('😌', 'Calm', 'Calm', tealPrimary),
+                                        ('😰', 'Stressed', 'Stressed', coralAccent),
+                                        ('😴', 'Sleepy', 'Sleepy', const Color(0xFFA855F7)),
+                                        ('🧠', 'Need Focus', 'Focus', const Color(0xFF38BDF8)),
+                                        ('❤️', 'Emotional', 'Anxiety', const Color(0xFFEC4899)),
+                                        ('🌧️', 'Want Nature', 'Nature', mintAccent),
+                                      ].map((item) {
+                                        final isSelected = state.selectedMoodFilter == item.$3;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: _AtmosphericMoodChip(
+                                            emoji: item.$1,
+                                            title: item.$2,
+                                            moodKey: item.$3,
+                                            auraColor: item.$4,
+                                            isSelected: isSelected,
+                                            onTap: () => state.setMoodFilter(item.$3),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -2096,6 +2159,142 @@ class _StressReductionMeter extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── 🌧️ Atmospheric Frosted Mood Chip (Tactile + Halo Glow) ───────────────────
+class _AtmosphericMoodChip extends StatefulWidget {
+  final String emoji;
+  final String title;
+  final String moodKey;
+  final Color auraColor;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _AtmosphericMoodChip({
+    required this.emoji,
+    required this.title,
+    required this.moodKey,
+    required this.auraColor,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  State<_AtmosphericMoodChip> createState() => _AtmosphericMoodChipState();
+}
+
+class _AtmosphericMoodChipState extends State<_AtmosphericMoodChip>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 140));
+    _scale = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        HapticFeedback.lightImpact();
+        widget.onTap();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: widget.isSelected
+                  ? [
+                      widget.auraColor.withOpacity(0.95),
+                      widget.auraColor.withOpacity(0.75),
+                    ]
+                  : [
+                      Colors.white.withOpacity(0.12),
+                      Colors.white.withOpacity(0.04),
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: widget.isSelected
+                  ? Colors.white.withOpacity(0.65)
+                  : Colors.white.withOpacity(0.18),
+              width: widget.isSelected ? 1.5 : 1.0,
+            ),
+            boxShadow: widget.isSelected
+                ? [
+                    BoxShadow(
+                      color: widget.auraColor.withOpacity(0.55),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: widget.isSelected
+                      ? Colors.black.withOpacity(0.2)
+                      : widget.auraColor.withOpacity(0.24),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  widget.emoji,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              const SizedBox(width: 7),
+              Text(
+                widget.title,
+                style: TextStyle(
+                  color: widget.isSelected
+                      ? (widget.auraColor.computeLuminance() > 0.45
+                          ? Colors.black
+                          : Colors.white)
+                      : Colors.white.withOpacity(0.95),
+                  fontSize: 13,
+                  fontWeight:
+                      widget.isSelected ? FontWeight.w800 : FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
