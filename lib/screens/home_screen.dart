@@ -78,23 +78,13 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: state.themeMode.bgDark,
           child: Stack(
             children: [
-              // 🌿 Soft Nature Aurora Backdrop for Home Header
-              if (!isClay)
-                Positioned(
-                  top: 0, left: 0, right: 0,
-                  height: 260,
-                  child: ShaderMask(
-                    shaderCallback: (rect) => const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.black, Colors.transparent],
-                    ).createShader(rect),
-                    blendMode: BlendMode.dstIn,
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => const SizedBox.shrink(),
-                    ),
+              // 🖼️ Dynamic Atmospheric Living Wallpaper Backdrop
+              if (state.wallpaper.imageUrl.isNotEmpty)
+                Positioned.fill(
+                  child: Image.network(
+                    state.wallpaper.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
                   ),
                 ),
               Container(
@@ -102,13 +92,11 @@ class HomeScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: isClay
-                        ? [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark]
-                        : [
-                            const Color(0xFF071810).withOpacity(0.72),
-                            state.themeMode.bgDark,
-                            state.themeMode.bgMid,
-                          ],
+                    colors: [
+                      state.wallpaper.baseColor.withOpacity(0.78),
+                      state.wallpaper.baseColor.withOpacity(0.94),
+                      state.wallpaper.baseColor,
+                    ],
                   ),
                 ),
                 child: SafeArea(
@@ -128,6 +116,57 @@ class HomeScreen extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // 🖼️ Atmospheric Living Background Switcher
+                            Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                minSize: 32,
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  showCupertinoModalPopup(
+                                    context: context,
+                                    builder: (ctx) => CupertinoActionSheet(
+                                      title: const Text('Atmospheric Background 🖼️'),
+                                      message: const Text('Change the ambient living backdrop across all pages:'),
+                                      actions: AppWallpaper.values.map((w) {
+                                        final isCurrent = state.wallpaper == w;
+                                        return CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            state.setWallpaper(w);
+                                            Navigator.pop(ctx);
+                                          },
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(w.displayName),
+                                              if (isCurrent) ...[
+                                                const SizedBox(width: 8),
+                                                const Icon(CupertinoIcons.checkmark_alt, color: tealPrimary, size: 16),
+                                              ],
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                      cancelButton: CupertinoActionSheetAction(
+                                        isDefaultAction: true,
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Cancel'),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Icon(
+                                  CupertinoIcons.photo_on_rectangle,
+                                  color: textPrimary,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
                             Container(
                               decoration: BoxDecoration(
                                 color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),

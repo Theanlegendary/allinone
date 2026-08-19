@@ -28,6 +28,52 @@ enum BreathingPattern {
 
 enum BreathPhase { inhale, hold, exhale, holdOut }
 
+enum AppWallpaper {
+  rainyWindow(
+    '🌧️ Rain on Glass',
+    'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1200&q=80',
+    Color(0xFF0C1924),
+    Color(0xFF2DD4BF),
+  ),
+  cosmicAurora(
+    '🌌 Cosmic Aurora',
+    'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+    Color(0xFF0F172A),
+    Color(0xFFA855F7),
+  ),
+  mistyForest(
+    '🌲 Misty Pine Forest',
+    'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1200&q=80',
+    Color(0xFF081C15),
+    Color(0xFF74C69D),
+  ),
+  sunsetHearth(
+    '🌅 Amber Sunset',
+    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    Color(0xFF1E0E08),
+    Color(0xFFE29578),
+  ),
+  deepOcean(
+    '🌊 Deep Ocean',
+    'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80',
+    Color(0xFF05131E),
+    Color(0xFF38BDF8),
+  ),
+  pureObsidian(
+    '🌑 Pure Minimal Obsidian',
+    '',
+    Color(0xFF030712),
+    Color(0xFF64748B),
+  );
+
+  final String displayName;
+  final String imageUrl;
+  final Color baseColor;
+  final Color accentColor;
+
+  const AppWallpaper(this.displayName, this.imageUrl, this.baseColor, this.accentColor);
+}
+
 enum SanctuaryThemeMode {
   claymorphism('Claymorphism Soft UI', Color(0xFFF9F4EF), Color(0xFFEADBC8), isLight: true),
   neumorphism('Neumorphism Soft UI 2020', Color(0xFFE0E5EC), Color(0xFFE0E5EC), isLight: true, isNeumorphic: true),
@@ -326,6 +372,14 @@ class AppState extends ChangeNotifier {
   void setThemeMode(SanctuaryThemeMode mode) {
     _themeMode = mode;
     _prefs?.setString('theme_mode', mode.name);
+    notifyListeners();
+  }
+
+  AppWallpaper _wallpaper = AppWallpaper.rainyWindow;
+  AppWallpaper get wallpaper => _wallpaper;
+  void setWallpaper(AppWallpaper w) {
+    _wallpaper = w;
+    _prefs?.setInt('app_wallpaper', w.index);
     notifyListeners();
   }
 
