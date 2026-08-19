@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -45,7 +46,7 @@ class HomeScreen extends StatelessWidget {
     {
       'title': '432Hz Sound Bath',
       'desc': '20 Min • Solfeggio Tones',
-      'icon': Icons.graphic_eq_rounded,
+      'icon': CupertinoIcons.waveform,
       'type': 'Sounds',
       'mins': 20,
       'color': purpleAccent
@@ -53,7 +54,7 @@ class HomeScreen extends StatelessWidget {
     {
       'title': 'Evening Gratitude',
       'desc': '15 Min • Mindful Presence',
-      'icon': Icons.spa_rounded,
+      'icon': CupertinoIcons.leaf_arrow_circlepath,
       'type': 'Meditation',
       'mins': 15,
       'color': mintAccent
@@ -72,141 +73,286 @@ class HomeScreen extends StatelessWidget {
         final activeTextColor = isClay ? clayText : textPrimary;
         final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
-        return Stack(
-          children: [
-            // 🌿 Soft Nature Aurora Backdrop for Home Header
-            if (!isClay)
-              Positioned(
-                top: 0, left: 0, right: 0,
-                height: 260,
-                child: ShaderMask(
-                  shaderCallback: (rect) => const LinearGradient(
+        return CupertinoPageScaffold(
+          backgroundColor: state.themeMode.bgDark,
+          child: Stack(
+            children: [
+              // 🌿 Soft Nature Aurora Backdrop for Home Header
+              if (!isClay)
+                Positioned(
+                  top: 0, left: 0, right: 0,
+                  height: 260,
+                  child: ShaderMask(
+                    shaderCallback: (rect) => const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.black, Colors.transparent],
+                    ).createShader(rect),
+                    blendMode: BlendMode.dstIn,
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black, Colors.transparent],
-                  ).createShader(rect),
-                  blendMode: BlendMode.dstIn,
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                    colors: isClay
+                        ? [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark]
+                        : [
+                            const Color(0xFF071810).withOpacity(0.72),
+                            state.themeMode.bgDark,
+                            state.themeMode.bgMid,
+                          ],
                   ),
                 ),
-              ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isClay
-                      ? [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark]
-                      : [
-                          const Color(0xFF071810).withOpacity(0.72),
-                          state.themeMode.bgDark,
-                          state.themeMode.bgMid,
-                        ],
-                ),
-              ),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  // ── Soothing Header ────────────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _greeting(),
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w600,
-                              color: activeTextColor,
-                              letterSpacing: -0.4,
-                            ),
+                child: SafeArea(
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      CupertinoSliverNavigationBar(
+                        backgroundColor: Colors.transparent,
+                        border: null,
+                        largeTitle: Text(
+                          _greeting(),
+                          style: TextStyle(
+                            color: activeTextColor,
+                            letterSpacing: -0.4,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Take a deep breath. You are safe and at peace here.',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              color: activeSubtextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
-                              shape: BoxShape.circle,
-                              boxShadow: isClay
-                                  ? const [
-                                      BoxShadow(color: Color(0x33B89679), blurRadius: 8, offset: Offset(4, 4)),
-                                      BoxShadow(color: Colors.white, blurRadius: 6, offset: Offset(-3, -3)),
-                                    ]
-                                  : null,
-                            ),
-                            child: PopupMenuButton<SanctuaryThemeMode>(
-                              icon: Icon(
-                                Icons.palette_rounded,
-                                color: isClay ? clayText : textPrimary,
-                                size: 22,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
+                                shape: BoxShape.circle,
+                                boxShadow: isClay
+                                    ? const [
+                                        BoxShadow(color: Color(0x33B89679), blurRadius: 8, offset: Offset(4, 4)),
+                                        BoxShadow(color: Colors.white, blurRadius: 6, offset: Offset(-3, -3)),
+                                      ]
+                                    : null,
                               ),
-                              onSelected: (mode) => state.setThemeMode(mode),
-                              itemBuilder: (ctx) => SanctuaryThemeMode.values.map((mode) {
-                                return PopupMenuItem(
-                                  value: mode,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        mode == state.themeMode ? Icons.check_circle_rounded : Icons.circle_outlined,
-                                        color: mode.isLight ? clayAccent : tealPrimary,
-                                        size: 18,
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                minSize: 32,
+                                onPressed: () {
+                                  showCupertinoModalPopup(
+                                    context: context,
+                                    builder: (ctx) => CupertinoActionSheet(
+                                      title: const Text('Select Theme'),
+                                      actions: SanctuaryThemeMode.values.map((mode) {
+                                        return CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            state.setThemeMode(mode);
+                                            Navigator.pop(ctx);
+                                          },
+                                          child: Text(mode.displayName),
+                                        );
+                                      }).toList(),
+                                      cancelButton: CupertinoActionSheetAction(
+                                        isDefaultAction: true,
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Cancel'),
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        mode.displayName,
-                                        style: TextStyle(
-                                          fontWeight: mode == state.themeMode ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  CupertinoIcons.paintbrush_fill,
+                                  color: isClay ? clayText : textPrimary,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                minSize: 32,
+                                onPressed: () {
+                                  showCupertinoModalPopup(
+                                    context: context,
+                                    builder: (ctx) => CupertinoActionSheet(
+                                      title: const Text('Data Backup & Restore 💾'),
+                                      message: const Text('Prevent data loss across browsers and devices.'),
+                                      actions: [
+                                        CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            final json = state.exportUserDataToJson();
+                                            Clipboard.setData(ClipboardData(text: json));
+                                            showCupertinoDialog(
+                                              context: context,
+                                              barrierDismissible: true,
+                                              builder: (dCtx) {
+                                                Future.delayed(const Duration(seconds: 2), () {
+                                                  if (dCtx.mounted) Navigator.pop(dCtx);
+                                                });
+                                                return const CupertinoAlertDialog(
+                                                  title: Text('Backup Copied ✓'),
+                                                  content: Text('Your streak, presets, and favorites JSON data has been copied to your clipboard.'),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: const Text('Export / Backup to Clipboard'),
                                         ),
+                                        CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            final controller = TextEditingController();
+                                            showCupertinoDialog(
+                                              context: context,
+                                              builder: (dCtx) => CupertinoAlertDialog(
+                                                title: const Text('Restore Data'),
+                                                content: Padding(
+                                                  padding: const EdgeInsets.only(top: 8.0),
+                                                  child: CupertinoTextField(
+                                                    controller: controller,
+                                                    placeholder: 'Paste your backup JSON here...',
+                                                    maxLines: 4,
+                                                    style: const TextStyle(fontSize: 12),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  CupertinoDialogAction(
+                                                    child: const Text('Cancel'),
+                                                    onPressed: () => Navigator.pop(dCtx),
+                                                  ),
+                                                  CupertinoDialogAction(
+                                                    isDefaultAction: true,
+                                                    child: const Text('Restore'),
+                                                    onPressed: () {
+                                                      final success = state.importUserDataFromJson(controller.text.trim());
+                                                      Navigator.pop(dCtx);
+                                                      showCupertinoDialog(
+                                                        context: context,
+                                                        barrierDismissible: true,
+                                                        builder: (resCtx) {
+                                                          Future.delayed(const Duration(seconds: 2), () {
+                                                            if (resCtx.mounted) Navigator.pop(resCtx);
+                                                          });
+                                                          return CupertinoAlertDialog(
+                                                            title: Text(success ? 'Restored Successfully ✓' : 'Restore Failed'),
+                                                            content: Text(success ? 'All your presets and streak history have been restored.' : 'Invalid JSON format. Please verify and try again.'),
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                          child: const Text('Import / Restore from JSON'),
+                                        ),
+                                        CupertinoActionSheetAction(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            final feedbackCtrl = TextEditingController();
+                                            showCupertinoDialog(
+                                              context: context,
+                                              builder: (fCtx) => CupertinoAlertDialog(
+                                                title: const Text('Feedback & Sound Requests 💌'),
+                                                content: Padding(
+                                                  padding: const EdgeInsets.only(top: 8.0),
+                                                  child: CupertinoTextField(
+                                                    controller: feedbackCtrl,
+                                                    placeholder: 'Describe a feature or sound you would love...',
+                                                    maxLines: 3,
+                                                    style: const TextStyle(fontSize: 13),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  CupertinoDialogAction(
+                                                    child: const Text('Cancel'),
+                                                    onPressed: () => Navigator.pop(fCtx),
+                                                  ),
+                                                  CupertinoDialogAction(
+                                                    isDefaultAction: true,
+                                                    child: const Text('Submit'),
+                                                    onPressed: () {
+                                                      Navigator.pop(fCtx);
+                                                      showCupertinoDialog(
+                                                        context: context,
+                                                        barrierDismissible: true,
+                                                        builder: (sCtx) {
+                                                          Future.delayed(const Duration(seconds: 2), () {
+                                                            if (sCtx.mounted) Navigator.pop(sCtx);
+                                                          });
+                                                          return const CupertinoAlertDialog(
+                                                            title: Text('Thank You! 🌿'),
+                                                            content: Text('Your feedback has been received and helps us improve Sanctuary.'),
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                          child: const Text('Send Feedback / Sound Request 💌'),
+                                        ),
+                                      ],
+                                      cancelButton: CupertinoActionSheetAction(
+                                        isDefaultAction: true,
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Cancel'),
                                       ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  CupertinoIcons.arrow_down_doc_fill,
+                                  color: isClay ? clayText : textPrimary,
+                                  size: 18,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Neumorphism Soft UI Showcase Button
-                          Container(
-                            decoration: BoxDecoration(
-                              color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
-                              shape: BoxShape.circle,
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                minSize: 32,
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    CupertinoPageRoute(builder: (_) => const NeumorphismDemoScreen()),
+                                  );
+                                },
+                                child: const Text('✨', style: TextStyle(fontSize: 16)),
+                              ),
                             ),
-                            child: IconButton(
-                              icon: const Text('✨', style: TextStyle(fontSize: 16)),
-                              tooltip: 'Neumorphism Theme Showcase',
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const NeumorphismDemoScreen()),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (state.streak > 0) StreakBadge(streakCount: state.streak),
-                        ],
+                            const SizedBox(width: 8),
+                            if (state.streak > 0) StreakBadge(streakCount: state.streak),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                      const SizedBox(height: 16),
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            Text(
+                              'Take a deep breath. You are safe and at peace here.',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: activeSubtextColor,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
 
                       // ── 0. Daily Affirmation & Mindfulness Inspiration ──
                       const RepaintBoundary(child: _DailyAffirmationBanner()),
@@ -270,7 +416,7 @@ class HomeScreen extends StatelessWidget {
                                           child: const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.spa_rounded, color: Colors.white, size: 12),
+                                              Icon(CupertinoIcons.leaf_arrow_circlepath, color: Colors.white, size: 12),
                                               SizedBox(width: 5),
                                               Text(
                                                 'DAILY PRACTICE',
@@ -341,7 +487,7 @@ class HomeScreen extends StatelessWidget {
                                       width: double.infinity,
                                       child: GlassPillButton(
                                         text: 'Begin Peaceful Journey →',
-                                        icon: Icons.play_arrow_rounded,
+                                        icon: CupertinoIcons.play_fill,
                                         containerColor: tealPrimary,
                                         contentColor: Colors.black,
                                         onTap: () {
@@ -416,7 +562,7 @@ class HomeScreen extends StatelessWidget {
                       // ── 3. FEATURED AMBIENT CAROUSEL (Large 240px Cards) ──
                       Row(
                         children: [
-                          const Icon(Icons.star_rounded, color: tealPrimary, size: 16),
+                          const Icon(CupertinoIcons.star_fill, color: tealPrimary, size: 16),
                           const SizedBox(width: 6),
                           Text(
                             'FEATURED AMBIENT SOUNDSCAPES',
@@ -478,7 +624,7 @@ class HomeScreen extends StatelessWidget {
                       // ── 4. RICHER "YOUR SANCTUARY JOURNEY" CARD (Circular Progress Ring) ──
                       Row(
                         children: [
-                          const Icon(Icons.favorite_rounded, color: coralAccent, size: 16),
+                          const Icon(CupertinoIcons.heart_fill, color: coralAccent, size: 16),
                           const SizedBox(width: 6),
                           Text(
                             'YOUR SANCTUARY JOURNEY',
@@ -562,7 +708,7 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.local_fire_department_rounded, color: coralAccent, size: 18),
+                                      const Icon(CupertinoIcons.flame_fill, color: coralAccent, size: 18),
                                       const SizedBox(width: 4),
                                       Text(
                                         '${state.streak} Day Peace Streak 🌸',
@@ -629,7 +775,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 10),
                           _QuickAction(
-                            icon: Icons.auto_awesome_rounded,
+                            icon: CupertinoIcons.sparkles,
                             label: 'AI Music',
                             color: purpleAccent,
                             onTap: () => state.setTab(AppTab.aiStudio),
@@ -650,7 +796,7 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.local_fire_department_rounded, color: coralAccent, size: 20),
+                                      const Icon(CupertinoIcons.flame_fill, color: coralAccent, size: 20),
                                       const SizedBox(width: 6),
                                       Text(
                                         '${state.streak} Day Streak',
@@ -687,7 +833,7 @@ class HomeScreen extends StatelessWidget {
                                           shape: BoxShape.circle,
                                         ),
                                         child: practiced
-                                            ? const Icon(Icons.check_rounded, color: Colors.black, size: 11)
+                                            ? const Icon(CupertinoIcons.checkmark, color: Colors.black, size: 11)
                                             : null,
                                       );
                                     }),
@@ -716,15 +862,15 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),   // ← Container ends (Stack child)
-          ],     // ← Stack children end
-        );       // ← Stack end (returned by Consumer builder)
-      },         // ← Consumer builder lambda end
+                      ]), // ← SliverChildListDelegate end
+                    ),    // ← SliverPadding end
+                  ],      // ← CustomScrollView slivers end
+                ),        // ← CustomScrollView end
+              ),          // ← SafeArea end
+            ),            // ← Container end
+          ],              // ← Stack children end
+        ));               // ← Stack and CupertinoPageScaffold end
+      },                  // ← Consumer builder lambda end
     );           // ← Consumer widget end
   }
 }
@@ -986,7 +1132,7 @@ class _SpotifyAmbientCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white.withOpacity(0.2)),
                       ),
-                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 16),
+                      child: const Icon(CupertinoIcons.play_fill, color: Colors.white, size: 16),
                     ),
                   ),
                 ],
@@ -1076,7 +1222,7 @@ class _DailyAffirmationBannerState extends State<_DailyAffirmationBanner> {
               color: tealPrimary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.format_quote_rounded, color: tealPrimary, size: 20),
+            child: const Icon(CupertinoIcons.quote_bubble_fill, color: tealPrimary, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -1117,7 +1263,7 @@ class _DailyAffirmationBannerState extends State<_DailyAffirmationBanner> {
                 color: Colors.white.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+              child: const Icon(CupertinoIcons.refresh, color: Colors.white70, size: 16),
             ),
           ),
         ],
@@ -1138,9 +1284,9 @@ class _DynamicMoodRecommendations extends StatelessWidget {
 
         final Map<String, List<Map<String, dynamic>>> moodData = {
           'Calm': [
-            {'title': 'Peaceful Haven Journey', 'desc': '15 min • Soft River Stream', 'type': 'Guided', 'icon': Icons.spa_rounded, 'color': tealPrimary, 'action': () => state.playGuidedSession('Peaceful Haven Journey', 15)},
+            {'title': 'Peaceful Haven Journey', 'desc': '15 min • Soft River Stream', 'type': 'Guided', 'icon': CupertinoIcons.leaf_arrow_circlepath, 'color': tealPrimary, 'action': () => state.playGuidedSession('Peaceful Haven Journey', 15)},
             {'title': 'Resonance 5-5 Coherence', 'desc': '5 min • Heart Coherence', 'type': 'Breathe', 'icon': Icons.air_rounded, 'color': mintAccent, 'action': () => state.setTab(AppTab.breathe)},
-            {'title': '432Hz Healing Chimes', 'desc': '20 min • Solfeggio Tones', 'type': 'Sounds', 'icon': Icons.graphic_eq_rounded, 'color': purpleAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
+            {'title': '432Hz Healing Chimes', 'desc': '20 min • Solfeggio Tones', 'type': 'Sounds', 'icon': CupertinoIcons.waveform, 'color': purpleAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
           ],
           'Stressed': [
             {'title': 'Deep Stress Release', 'desc': '12 min • Body Tension Melt', 'type': 'Guided', 'icon': Icons.self_improvement_rounded, 'color': coralAccent, 'action': () => state.playGuidedSession('Gentle Relief & Comfort', 12)},
@@ -1158,9 +1304,9 @@ class _DynamicMoodRecommendations extends StatelessWidget {
             {'title': 'Alpine Forest Stream', 'desc': 'Focus Soundscape', 'type': 'Sounds', 'icon': Icons.forest_rounded, 'color': purpleAccent, 'action': () => state.applyCuratedPreset('🌲 Forest Walk')},
           ],
           'Anxiety': [
-            {'title': 'Warm Heart Comfort', 'desc': '15 min • Gentle Relief', 'type': 'Guided', 'icon': Icons.favorite_rounded, 'color': coralAccent, 'action': () => state.playGuidedSession('Warm Heart Comfort', 15)},
-            {'title': 'Quiet Mind Sanctuary', 'desc': '12 min • Silent Center', 'type': 'Guided', 'icon': Icons.spa_rounded, 'color': tealPrimary, 'action': () => state.playGuidedSession('Quiet Mind Sanctuary', 12)},
-            {'title': 'Singing Bowls 432Hz', 'desc': 'Harmonic Healing', 'type': 'Sounds', 'icon': Icons.graphic_eq_rounded, 'color': mintAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
+            {'title': 'Warm Heart Comfort', 'desc': '15 min • Gentle Relief', 'type': 'Guided', 'icon': CupertinoIcons.heart_fill, 'color': coralAccent, 'action': () => state.playGuidedSession('Warm Heart Comfort', 15)},
+            {'title': 'Quiet Mind Sanctuary', 'desc': '12 min • Silent Center', 'type': 'Guided', 'icon': CupertinoIcons.leaf_arrow_circlepath, 'color': tealPrimary, 'action': () => state.playGuidedSession('Quiet Mind Sanctuary', 12)},
+            {'title': 'Singing Bowls 432Hz', 'desc': 'Harmonic Healing', 'type': 'Sounds', 'icon': CupertinoIcons.waveform, 'color': mintAccent, 'action': () => state.playGuidedSession('Healing Crystal Chimes', 20)},
           ],
           'Nature': [
             {'title': 'Forest Bathing Journey', 'desc': '20 min • Woodland Sanctuary', 'type': 'Guided', 'icon': Icons.park_rounded, 'color': mintAccent, 'action': () => state.playGuidedSession('Peaceful Haven Journey', 20)},
@@ -1176,7 +1322,7 @@ class _DynamicMoodRecommendations extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.auto_awesome_rounded, color: tealPrimary, size: 15),
+                const Icon(CupertinoIcons.sparkles, color: tealPrimary, size: 15),
                 const SizedBox(width: 6),
                 Text(
                   'CURATED FOR YOUR "$mood" MOOD',
@@ -1250,7 +1396,7 @@ class _DynamicMoodRecommendations extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.play_arrow_rounded, color: color, size: 14),
+                                Icon(CupertinoIcons.play_fill, color: color, size: 14),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Begin',
@@ -1411,7 +1557,7 @@ class _HomeQuickBreathWidgetState extends State<_HomeQuickBreathWidget>
                   ),
                   child: Center(
                     child: Icon(
-                      _isActive ? Icons.air_rounded : Icons.spa_rounded,
+                      _isActive ? Icons.air_rounded : CupertinoIcons.leaf_arrow_circlepath,
                       color: Colors.black,
                       size: 26,
                     ),
@@ -1529,12 +1675,17 @@ class _InstantStressSOSWidgetState extends State<_InstantStressSOSWidget> {
         t.cancel();
         setState(() => _isSOSActive = false);
         state.recordSession('60s Emergency Stress SOS', 'Breathing', 1);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        showCupertinoDialog(
+          context: context,
+          builder: (ctx) => CupertinoAlertDialog(
+            title: const Text('Session Complete'),
             content: const Text('✨ Stress SOS Complete. Take a deep breath. You are safe. 🌿'),
-            backgroundColor: tealPrimary.withOpacity(0.95),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('Close'),
+                onPressed: () => Navigator.of(ctx).pop(),
+              )
+            ],
           ),
         );
       } else {
@@ -1634,7 +1785,7 @@ class _InstantStressSOSWidgetState extends State<_InstantStressSOSWidget> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      _isSOSActive ? Icons.pause_circle_filled_rounded : Icons.favorite_rounded,
+                      _isSOSActive ? Icons.pause_circle_filled_rounded : CupertinoIcons.heart_fill,
                       color: Colors.black,
                       size: 20,
                     ),

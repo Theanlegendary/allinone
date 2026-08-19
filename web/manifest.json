@@ -1,7 +1,7 @@
 {
-    "name": "Sanctuary: Relax & Meditate",
+    "name": "Sanctuary: Relax, Meditate & Sleep – Free Mindfulness App",
     "short_name": "Sanctuary",
-    "description": "Guided meditation, sleep stories, breathing exercises and ambient nature sounds. Beat stress instantly, sleep deeply. Free forever.",
+    "description": "Free meditation app with 90+ ambient sounds, guided breathing exercises, calming sleep stories, AI meditation scripts, mood tracking & daily streak habit-building. Beat stress in 60 seconds.",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
@@ -10,10 +10,14 @@
     "theme_color": "#2DD4BF",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
-    "categories": ["health", "lifestyle", "music", "productivity"],
+    "categories": ["health", "lifestyle", "music", "productivity", "medical", "fitness"],
     "lang": "en",
     "dir": "ltr",
     "id": "sanctuary-relax-mindfulness",
+    "iarc_rating_id": "",
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
     "icons": [
         {
             "src": "icons/Icon-192.png",
@@ -46,30 +50,56 @@
             "sizes": "512x512",
             "type": "image/png",
             "form_factor": "narrow",
-            "label": "Sanctuary Home Screen"
+            "label": "Sanctuary Home – Daily greeting, streak tracker & stress SOS"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Sanctuary Sounds – 90+ ambient sounds with multi-track mixer"
         }
     ],
     "shortcuts": [
         {
             "name": "Start Meditation",
             "short_name": "Meditate",
-            "description": "Launch a guided meditation session",
+            "description": "Launch a guided meditation session with healing audio",
             "url": "./#meditate",
-            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
-        },
-        {
-            "name": "Sleep Stories",
-            "short_name": "Sleep",
-            "description": "Play soothing sleep stories",
-            "url": "./#sleep",
             "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
         },
         {
             "name": "Breathing Exercise",
             "short_name": "Breathe",
-            "description": "Start a breathing exercise",
+            "description": "Start box breathing, 4-7-8, or Wim Hof technique",
             "url": "./#breathe",
             "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Ambient Sounds",
+            "short_name": "Sounds",
+            "description": "Mix 90+ nature sounds, rain, and binaural beats",
+            "url": "./#sounds",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Sleep Stories",
+            "short_name": "Sleep",
+            "description": "Play soothing sleep stories with auto-fade timer",
+            "url": "./#sleep",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "AI Meditation",
+            "short_name": "AI Studio",
+            "description": "Generate AI-powered meditation scripts with Google Gemini",
+            "url": "./#ai-studio",
+            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
         }
-    ]
+    ],
+    "related_applications": [],
+    "handle_links": "preferred",
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    }
 }

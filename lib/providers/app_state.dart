@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audio_session/audio_session.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:relax_mindfulness/main.dart' show localNotifications;
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 enum AppTab { home, meditate, breathe, sounds, sleep, aiStudio }
@@ -72,25 +78,34 @@ class SoundPreset {
 class AppState extends ChangeNotifier {
   SharedPreferences? _prefs;
 
-  // Audio players for ambient tracks
   final Map<String, AudioPlayer> _audioPlayers = {};
   final Set<String> _loadingTracks = {};
   final Map<String, double> _targetVolumes = {};
 
-  // Guided Meditation Audio Player (Ultra-soft 432Hz / 528Hz Solfeggio Healing Stream)
   final AudioPlayer _guidedPlayer = AudioPlayer();
   bool _isGuidedPlaying = false;
   String? _currentGuidedTitle;
   int _guidedRemainingSec = 0;
   Timer? _guidedTimer;
 
+  // Master Gain Limiter & Sleep Fade Control
+  double _masterGain = 1.0;
+  double _fadeMaster = 1.0;
+
+  // Global Sleep Auto-Fade Timer
+  Timer? _sleepTimer;
+  int? _sleepTimerRemainingSec;
+  int? _sleepTimerTotalSec;
+
+  int? get sleepTimerRemainingSec => _sleepTimerRemainingSec;
+  int? get sleepTimerTotalSec => _sleepTimerTotalSec;
+  bool get isSleepTimerRunning => _sleepTimerRemainingSec != null && _sleepTimerRemainingSec! > 0;
+
   bool get isGuidedPlaying => _isGuidedPlaying;
   String? get currentGuidedTitle => _currentGuidedTitle;
   int get guidedRemainingSec => _guidedRemainingSec;
   
-  // 78 VERIFIED UNIQUE CC0 SOUND STREAM URLS (Sourced from ambient-preview.html / Moodist & Google)
   static const Map<String, String> soundStreamUrls = {
-    // Rain (8)
     'Soft Rain': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/light-rain.mp3',
     'Thunderstorm': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/thunder.mp3',
     'Heavy Rain': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/heavy-rain.mp3',
@@ -99,8 +114,6 @@ class AppState extends ChangeNotifier {
     'Rain on Umbrella': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/rain-on-umbrella.mp3',
     'Rain on Tent': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/rain-on-tent.mp3',
     'Rain on Leaves': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/rain-on-leaves.mp3',
-
-    // Nature (15)
     'Ocean Waves': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
     'Mountain Stream': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
     'Forest Birds': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/birds.mp3',
@@ -116,8 +129,6 @@ class AppState extends ChangeNotifier {
     'Walking on Gravel': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/walk-on-gravel.mp3',
     'Walking on Leaves': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/walk-on-leaves.mp3',
     'Owl Hooting': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/owl.mp3',
-
-    // Places (10)
     'Coffee Shop': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/cafe.mp3',
     'Library': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/library.mp3',
     'Office Ambience': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/office.mp3',
@@ -128,8 +139,6 @@ class AppState extends ChangeNotifier {
     'Night Village': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/night-village.mp3',
     'Supermarket': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/supermarket.mp3',
     'Airport': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/places/airport.mp3',
-
-    // Transport (8)
     'Train Ride': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/transport/train.mp3',
     'Inside a Train': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/transport/inside-a-train.mp3',
     'Airplane Cabin': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/transport/airplane.mp3',
@@ -138,8 +147,6 @@ class AppState extends ChangeNotifier {
     'Sailing Ship': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/transport/sailboat.mp3',
     'Highway Traffic': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/urban/highway.mp3',
     'Busy Street': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/urban/busy-street.mp3',
-
-    // Things (10)
     'Clock Ticking': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/clock.mp3',
     'Ceiling Fan': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/ceiling-fan.mp3',
     'Keyboard Typing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/keyboard.mp3',
@@ -150,15 +157,11 @@ class AppState extends ChangeNotifier {
     'Boiling Water': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/boiling-water.mp3',
     'Wind Chimes': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
     'Windshield Wipers': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/windshield-wipers.mp3',
-
-    // Noise (5)
     'White Noise': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/noise/white-noise.wav',
     'Pink Noise': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/noise/pink-noise.wav',
     'Brown Noise': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/noise/brown-noise.wav',
     'Steady Wind': 'https://actions.google.com/sounds/v1/weather/wind.ogg',
     'Desert Howling Wind': 'https://actions.google.com/sounds/v1/weather/desert_howling_wind.ogg',
-
-    // Solfeggio & Binaural (10)
     'Singing Bowl': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
     'Delta Deep Sleep': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-delta.wav',
     'Theta Meditation': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-theta.wav',
@@ -169,8 +172,6 @@ class AppState extends ChangeNotifier {
     'Morse Code': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/morse-code.mp3',
     'Paper Rustling': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/paper.mp3',
     'Bubbles': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/bubbles.mp3',
-
-    // Animals (12)
     'Cat Purring': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/cat-purring.mp3',
     'Seagulls': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/seagulls.mp3',
     'Whale Song': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/whale.mp3',
@@ -183,17 +184,22 @@ class AppState extends ChangeNotifier {
     'Cows Mooing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/cows.mp3',
     'Dog Barking': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/dog-barking.mp3',
     'Beehive Hum': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/animals/beehive.mp3',
-
-    // Curated Preset Aliases (6 ADDED — mapping brand names to real Moodist tracks)
+    'Cosmic Drone': 'https://actions.google.com/sounds/v1/science_fiction/alien_breath.ogg',
+    'Submarine Ping': 'https://actions.google.com/sounds/v1/water/submarine_ping.ogg',
+    'Urban Rain': 'https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg',
+    'Heartbeat': 'https://actions.google.com/sounds/v1/human_voices/heartbeat.ogg',
     'Cozy Hearth': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/campfire.mp3',
     'Singing Bowls': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
     'Ambient Piano': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
     'Bamboo Chimes': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/wind-chimes.mp3',
     'Soothing Breeze': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
     'Deep Space Drone': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/binaural/binaural-gamma.wav',
+    'Tibetan Bowls': 'https://actions.google.com/sounds/v1/musical_instruments/singing_bowl.ogg',
+    'Night Forest': 'https://actions.google.com/sounds/v1/nature/night_crickets.ogg',
+    'Summer Meadow': 'https://actions.google.com/sounds/v1/nature/field_insects.ogg',
+    'Space Drift': 'https://actions.google.com/sounds/v1/science_fiction/space_atmosphere.ogg',
   };
 
-  // Ultra-Soft & Soothing Guided Healing Audio Streams (Comforting Natural Streams)
   static const Map<String, String> guidedAudioUrls = {
     'Calm Mountain Horizon': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
     'Peaceful Haven Journey': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
@@ -222,7 +228,99 @@ class AppState extends ChangeNotifier {
     'Ancient Temple Bells': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
   };
 
-  // Theme Mode
+  static String _resolveCdnUrl(String rawUrl) {
+    if (rawUrl.contains('raw.githubusercontent.com/remvze/moodist/main/')) {
+      return rawUrl.replaceAll(
+        'https://raw.githubusercontent.com/remvze/moodist/main/',
+        'https://cdn.jsdelivr.net/gh/remvze/moodist@main/',
+      );
+    }
+    return rawUrl;
+  }
+
+  bool _isBackgroundMode = false;
+  bool get isBackgroundMode => _isBackgroundMode;
+  void setBackgroundMode(bool value) {
+    if (_isBackgroundMode != value) {
+      _isBackgroundMode = value;
+      notifyListeners();
+    }
+  }
+
+  // ─── Data Backup & Restore (Prevents Safari 7-day eviction) ────────────────
+  String exportUserDataToJson() {
+    final data = {
+      'version': '2.0.0',
+      'exported_at': DateTime.now().toIso8601String(),
+      'streak': _streak,
+      'longest_streak': _longestStreak,
+      'theme_mode': _themeMode.name,
+      'favorites': _favorites,
+      'favorite_sounds': _favoriteSounds.toList(),
+      'presets': _presets.map((p) => p.toJson()).toList(),
+      'renamed_presets': _renamedPresets,
+      'sessions': _sessions.take(500).map((s) => s.toJson()).toList(),
+      'reminder_enabled': _reminderEnabled,
+      'reminder_hour': _reminderHour,
+      'reminder_minute': _reminderMinute,
+    };
+    return const JsonEncoder.withIndent('  ').convert(data);
+  }
+
+  bool importUserDataFromJson(String jsonString) {
+    try {
+      final map = jsonDecode(jsonString) as Map<String, dynamic>;
+      if (map.containsKey('streak')) _streak = (map['streak'] as num).toInt();
+      if (map.containsKey('longest_streak')) _longestStreak = (map['longest_streak'] as num).toInt();
+      if (map.containsKey('theme_mode')) {
+        final modeName = map['theme_mode'] as String;
+        _themeMode = SanctuaryThemeMode.values.firstWhere(
+          (e) => e.name == modeName,
+          orElse: () => _themeMode,
+        );
+      }
+      if (map.containsKey('favorites')) {
+        _favorites
+          ..clear()
+          ..addAll(List<String>.from(map['favorites'] as List));
+      }
+      if (map.containsKey('favorite_sounds')) {
+        _favoriteSounds = Set<String>.from(map['favorite_sounds'] as List);
+      }
+      if (map.containsKey('presets')) {
+        _presets = (map['presets'] as List)
+            .map((p) => SoundPreset.fromJson(p as Map<String, dynamic>))
+            .toList();
+      }
+      if (map.containsKey('renamed_presets')) {
+        _renamedPresets = Map<String, String>.from(map['renamed_presets'] as Map);
+      }
+      if (map.containsKey('sessions')) {
+        _sessions = (map['sessions'] as List)
+            .map((s) => SessionRecord.fromJson(s as Map<String, dynamic>))
+            .toList();
+      }
+      if (map.containsKey('reminder_enabled')) {
+        _reminderEnabled = map['reminder_enabled'] as bool;
+        _reminderHour = (map['reminder_hour'] as int?) ?? 22;
+        _reminderMinute = (map['reminder_minute'] as int?) ?? 0;
+      }
+      _saveFavorites();
+      _savePresets();
+      _saveSessions();
+      _prefs?.setStringList('favorite_sounds', _favoriteSounds.toList());
+      _prefs?.setString('renamed_presets', jsonEncode(_renamedPresets));
+      _prefs?.setInt('streak', _streak);
+      _prefs?.setInt('longest_streak', _longestStreak);
+      _prefs?.setString('theme_mode', _themeMode.name);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error importing user data: $e');
+      return false;
+    }
+  }
+
   SanctuaryThemeMode _themeMode = SanctuaryThemeMode.midnightNavy;
   SanctuaryThemeMode get themeMode => _themeMode;
   void setThemeMode(SanctuaryThemeMode mode) {
@@ -231,7 +329,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Active Audio Status for Floating Mini-Player
   bool get isAnyAudioPlaying => _isGuidedPlaying || _targetVolumes.values.any((v) => v > 0);
   String get activePlayingLabel {
     if (_isGuidedPlaying && _currentGuidedTitle != null) {
@@ -243,19 +340,17 @@ class AppState extends ChangeNotifier {
     return '${activeTracks.first} + ${activeTracks.length - 1} more';
   }
 
-  // ─── Premium / Subscription State ─────────────────────────────────────────
   bool _isPremium = false;
   bool _trialActive = false;
   int _trialDaysLeft = 7;
   DateTime? _trialStartDate;
+  int _totalSessions = 0;
 
   bool get isPremium => _isPremium;
   bool get trialActive => _trialActive;
   int get trialDaysLeft => _trialDaysLeft;
-  // Free users can access the first 5 sessions; premium unlocks all
   bool get hasFullAccess => _isPremium || _trialActive;
 
-  /// Simulate a successful purchase (replace with real IAP receipt verification)
   Future<void> purchasePremium() async {
     _isPremium = true;
     _trialActive = false;
@@ -264,7 +359,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Start a 7-day free trial
   Future<void> startFreeTrial() async {
     if (_isPremium || _trialActive) return;
     _trialActive = true;
@@ -275,13 +369,17 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Restore purchase (e.g., user reinstalled app)
   Future<void> restorePurchase() async {
-    // In production, verify with Apple/Google receipt. Here we just read prefs.
-    final saved = _prefs?.getBool('is_premium') ?? false;
-    if (saved) {
-      _isPremium = true;
-      notifyListeners();
+    try {
+      final customerInfo = await Purchases.restorePurchases();
+      final isPro = customerInfo.entitlements.all["premium"]?.isActive ?? false;
+      if (isPro) {
+        _isPremium = true;
+        _prefs?.setBool('is_premium', true);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Restore error: $e");
     }
   }
 
@@ -302,7 +400,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // Onboarding
   bool _onboardingDone = false;
   bool get onboardingDone => _onboardingDone;
   void completeOnboarding() {
@@ -311,7 +408,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Streak & Practice Tracking
   int _streak = 0;
   int _longestStreak = 0;
   bool _practicedToday = false;
@@ -319,7 +415,6 @@ class AppState extends ChangeNotifier {
   int get longestStreak => _longestStreak;
   bool get practicedToday => _practicedToday;
 
-  // Session Records
   List<SessionRecord> _sessions = [];
   List<SessionRecord> get sessions => List.unmodifiable(_sessions);
 
@@ -354,12 +449,10 @@ class AppState extends ChangeNotifier {
     return map;
   }
 
-  // Tab
   AppTab _tab = AppTab.home;
   AppTab get tab => _tab;
   void setTab(AppTab t) { _tab = t; notifyListeners(); }
 
-  // Mood Selector Filter State
   String _selectedMoodFilter = 'Calm';
   String get selectedMoodFilter => _selectedMoodFilter;
 
@@ -368,11 +461,9 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Renamed Custom Presets State (Moodist-Inspired Customization)
   Map<String, String> _renamedPresets = {};
   Map<String, String> get renamedPresets => Map.unmodifiable(_renamedPresets);
 
-  // Favorites State (Retention Engine)
   Set<String> _favoriteSounds = {'Soft Rain', 'Ocean Waves', 'Campfire'};
   Set<String> get favoriteSounds => Set.unmodifiable(_favoriteSounds);
 
@@ -398,7 +489,6 @@ class AppState extends ChangeNotifier {
     return _renamedPresets[originalName] ?? originalName;
   }
 
-  // Curated One-Tap Multi-Track Ambient Sound Mix Presets
   static const Map<String, Map<String, double>> curatedPresets = {
     '🌧️ Rainy Cabin': {
       'Soft Rain': 0.70,
@@ -441,7 +531,6 @@ class AppState extends ChangeNotifier {
   };
 
   Future<void> applyCuratedPreset(String presetName) async {
-    // ✋ Auto-pause any running guided session when applying an ambient sound preset
     if (_isGuidedPlaying) {
       await pauseGuidedSession();
     }
@@ -455,7 +544,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // Helper: Pause all ambient sound tracks
   Future<void> pauseAllAmbientSoundTracks() async {
     for (final name in _targetVolumes.keys.toList()) {
       _targetVolumes[name] = 0.0;
@@ -470,9 +558,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  // ── Guided Healing Session Audio Player ─────────────────────────────────
   Future<void> playGuidedSession(String title, int durationMins) async {
-    // ✋ Auto-pause any active ambient soundscape tracks so audio streams never clash
     await pauseAllAmbientSoundTracks();
 
     _guidedTimer?.cancel();
@@ -491,15 +577,24 @@ class AppState extends ChangeNotifier {
       }
     });
 
-    final url = guidedAudioUrls[title] ?? guidedAudioUrls['Calm Mountain Horizon']!;
+    final rawUrl = guidedAudioUrls[title] ?? guidedAudioUrls['Calm Mountain Horizon']!;
+    final cdnUrl = _resolveCdnUrl(rawUrl);
 
     try {
-      await _guidedPlayer.setUrl(url);
+      await _guidedPlayer.setUrl(cdnUrl);
       await _guidedPlayer.setLoopMode(LoopMode.one);
       await _guidedPlayer.setVolume(0.35);
       _guidedPlayer.play();
     } catch (e) {
-      debugPrint('Error starting guided audio: $e');
+      debugPrint('Error starting guided audio on CDN, trying fallback: $e');
+      try {
+        await _guidedPlayer.setUrl(rawUrl);
+        await _guidedPlayer.setLoopMode(LoopMode.one);
+        await _guidedPlayer.setVolume(0.35);
+        _guidedPlayer.play();
+      } catch (e2) {
+        debugPrint('Guided audio fallback error: $e2');
+      }
     }
   }
 
@@ -549,15 +644,49 @@ class AppState extends ChangeNotifier {
 
   double getTrackVolume(String name) => _targetVolumes[name] ?? 0.0;
 
-  // ── Audio Control (Clean, Full Volume Audio Streams) ──────────────────────
+  void _recalculateGainAndApply() {
+    final activeVolumes = _targetVolumes.values.where((v) => v > 0).toList();
+    final sum = activeVolumes.fold<double>(0.0, (a, b) => a + b);
+    // Soft master limiter: clamp combined multi-track headroom to 1.0 to eliminate clipping
+    _masterGain = sum > 1.0 ? (1.0 / sum) : 1.0;
+
+    for (final entry in _audioPlayers.entries) {
+      final name = entry.key;
+      final player = entry.value;
+      final target = _targetVolumes[name] ?? 0.0;
+      if (target > 0) {
+        // Soft per-track cap (0.85 max) + master limiter + sleep fade master
+        final effective = (target * _masterGain * _fadeMaster).clamp(0.0, 0.85);
+        player.setVolume(effective);
+      } else {
+        player.setVolume(0.0);
+      }
+    }
+  }
+
+  Future<void> _evictColdPlayers() async {
+    if (_audioPlayers.length <= 12) return;
+    final coldKeys = _audioPlayers.keys
+        .where((key) => (_targetVolumes[key] ?? 0.0) <= 0.0)
+        .take(_audioPlayers.length - 12)
+        .toList();
+    for (final key in coldKeys) {
+      final player = _audioPlayers.remove(key);
+      if (player != null) {
+        try {
+          await player.stop();
+          await player.dispose();
+        } catch (_) {}
+      }
+    }
+  }
+
   Future<void> updateSoundTrackVolume(String name, double volume) async {
-    // ✋ Auto-pause any active guided session when starting ambient sounds
     if (volume > 0 && _isGuidedPlaying) {
       await pauseGuidedSession();
     }
 
     final url = soundStreamUrls[name] ?? 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg';
-
     final effectiveVolume = volume.clamp(0.0, 1.0);
     _targetVolumes[name] = effectiveVolume;
 
@@ -567,6 +696,9 @@ class AppState extends ChangeNotifier {
         await existingPlayer.setVolume(0);
         await existingPlayer.pause();
       }
+      _recalculateGainAndApply();
+      _evictColdPlayers();
+      notifyListeners();
       return;
     }
 
@@ -575,28 +707,34 @@ class AppState extends ChangeNotifier {
       _audioPlayers[name] = newPlayer;
       _loadingTracks.add(name);
 
+      final primaryUrl = _resolveCdnUrl(url);
       try {
-        await newPlayer.setUrl(url);
+        await newPlayer.setUrl(primaryUrl);
         await newPlayer.setLoopMode(LoopMode.one);
       } catch (e) {
-        debugPrint('Error loading audio track $name: $e');
+        debugPrint('Primary CDN failed for $name, trying fallback: $e');
+        try {
+          await newPlayer.setUrl(url);
+          await newPlayer.setLoopMode(LoopMode.one);
+        } catch (e2) {
+          debugPrint('Secondary source failed for $name: $e2');
+        }
       } finally {
         _loadingTracks.remove(name);
       }
     }
 
     final player = _audioPlayers[name]!;
-    final currentTarget = _targetVolumes[name] ?? 0.0;
+    _recalculateGainAndApply();
 
-    if (currentTarget > 0) {
-      await player.setVolume(currentTarget);
-      if (!player.playing) {
+    if (!player.playing) {
+      try {
         await player.play();
+      } catch (e) {
+        debugPrint('Error playing track $name: $e');
       }
-    } else {
-      await player.setVolume(0);
-      await player.pause();
     }
+    notifyListeners();
   }
 
   Future<void> stopAllAudio() async {
@@ -610,9 +748,86 @@ class AppState extends ChangeNotifier {
         debugPrint('Error stopping track ${entry.key}: $e');
       }
     }
+    _recalculateGainAndApply();
+    notifyListeners();
   }
 
-  // Mood dialog
+  // ─── Global Sleep Auto-Fade Timer ───────────────────────────────────────────
+  void startSleepTimer(int minutes) {
+    _sleepTimer?.cancel();
+    final total = minutes * 60;
+    _sleepTimerTotalSec = total;
+    _sleepTimerRemainingSec = total;
+    _fadeMaster = 1.0;
+    _recalculateGainAndApply();
+    notifyListeners();
+
+    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (t) async {
+      if (_sleepTimerRemainingSec == null || _sleepTimerRemainingSec! <= 0) {
+        t.cancel();
+        _sleepTimer = null;
+        _sleepTimerRemainingSec = null;
+        _sleepTimerTotalSec = null;
+        _fadeMaster = 1.0;
+        await stopAllAudio();
+        recordSession('Sleep Sanctuary Auto-Fade', 'Sleep', minutes);
+        notifyListeners();
+      } else {
+        _sleepTimerRemainingSec = _sleepTimerRemainingSec! - 1;
+        // Last 30 seconds: smooth linear volume fade out
+        if (_sleepTimerRemainingSec! <= 30) {
+          _fadeMaster = (_sleepTimerRemainingSec! / 30.0).clamp(0.0, 1.0);
+          _recalculateGainAndApply();
+        }
+        notifyListeners();
+      }
+    });
+  }
+
+  void cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepTimerRemainingSec = null;
+    _sleepTimerTotalSec = null;
+    _fadeMaster = 1.0;
+    _recalculateGainAndApply();
+    notifyListeners();
+  }
+
+  // ─── Mix Share & Deep Linking ───────────────────────────────────────────────
+  String generateShareUrl() {
+    final active = _targetVolumes.entries.where((e) => e.value > 0).toList();
+    if (active.isEmpty) return 'https://sanctuary.app/allinone/';
+    final pairs = active.map((e) => '${Uri.encodeComponent(e.key)}:${(e.value * 100).round()}').join(',');
+    return 'https://sanctuary.app/allinone/?mix=$pairs';
+  }
+
+  void parseAndApplyMixFromUri(Uri uri) {
+    try {
+      final mixParam = uri.queryParameters['mix'];
+      if (mixParam != null && mixParam.isNotEmpty) {
+        final parts = mixParam.split(',');
+        for (final part in parts) {
+          final kv = part.split(':');
+          if (kv.length == 2) {
+            final name = Uri.decodeComponent(kv[0]);
+            final vol = (double.tryParse(kv[1]) ?? 50) / 100.0;
+            if (soundStreamUrls.containsKey(name)) {
+              updateSoundTrackVolume(name, vol);
+            }
+          }
+        }
+        return;
+      }
+      final presetParam = uri.queryParameters['preset'];
+      if (presetParam != null && curatedPresets.containsKey(presetParam)) {
+        applyCuratedPreset(presetParam);
+      }
+    } catch (e) {
+      debugPrint('Error parsing mix from URL: $e');
+    }
+  }
+
   bool _showMoodDialog = false;
   bool get showMoodDialog => _showMoodDialog;
   SessionRecord? _pendingSession;
@@ -655,11 +870,16 @@ class AppState extends ChangeNotifier {
 
   void _addSession(SessionRecord s) {
     _sessions.insert(0, s);
+    _totalSessions++;
     _updateStreak();
     _saveSessions();
   }
 
-  // Sound Presets
+  void _saveSessions() {
+    _prefs?.setStringList('sessions', _sessions.map((s) => jsonEncode(s.toJson())).toList());
+    _prefs?.setInt('total_sessions', _totalSessions);
+  }
+
   List<SoundPreset> _presets = [];
   List<SoundPreset> get presets => List.unmodifiable(_presets);
   void savePreset(String name, Map<String, double> volumes) {
@@ -667,13 +887,12 @@ class AppState extends ChangeNotifier {
     _savePresets(); notifyListeners();
   }
   void deletePreset(int index) { _presets.removeAt(index); _savePresets(); notifyListeners(); }
+  void _savePresets() => _prefs?.setStringList('presets', _presets.map((p) => jsonEncode(p.toJson())).toList());
 
-  // Breathing
   BreathingPattern _pattern = BreathingPattern.box4444;
   BreathingPattern get pattern => _pattern;
   void setPattern(BreathingPattern p) { _pattern = p; notifyListeners(); }
 
-  // Sleep story
   String? _selectedStory;
   String? get selectedStory => _selectedStory;
   void setStory(String? s) {
@@ -741,6 +960,23 @@ class AppState extends ChangeNotifier {
     _loadRecents();
     _loadReminder();
     _loadPremiumState();
+
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+
+      // Auto-pause when headphones/Bluetooth disconnect (prevents blasting speakers at night)
+      session.becomingNoisyEventStream.listen((_) {
+        debugPrint('Headphones disconnected, auto-pausing audio to protect sleeper');
+        pauseAllAmbientSoundTracks();
+        if (_isGuidedPlaying) {
+          pauseGuidedSession();
+        }
+      });
+    } catch (e) {
+      debugPrint('AudioSession configuration error: $e');
+    }
+
     notifyListeners();
   }
 
@@ -909,8 +1145,58 @@ class AppState extends ChangeNotifier {
   void _saveSessions() => _prefs?.setStringList('sessions', _sessions.take(200).map((s) => jsonEncode(s.toJson())).toList());
   void _savePresets() => _prefs?.setStringList('presets', _presets.map((p) => jsonEncode(p.toJson())).toList());
 
+  // ─── Local Notifications Logic ──────────────────────────────────────────────
+
+  Future<void> scheduleDailyReminder(TimeOfDay time) async {
+    try {
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        time.hour,
+        time.minute,
+      );
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+      
+      await localNotifications.zonedSchedule(
+        0,
+        'Time for Mindfulness 🌿',
+        'Take a quiet moment to breathe and center yourself.',
+        scheduledDate,
+        const NotificationDetails(
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+          android: AndroidNotificationDetails(
+            'mindfulness_channel',
+            'Daily Mindfulness Reminders',
+            channelDescription: 'Gentle reminders for daily meditation and restful sleep',
+            importance: Importance.defaultImportance,
+            priority: Priority.defaultPriority,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    } catch (e) {
+      debugPrint("Notification Error: $e");
+    }
+  }
+
+  Future<void> cancelReminder() async {
+    await localNotifications.cancel(0);
+  }
+
   @override
   void dispose() {
+    _sleepTimer?.cancel();
     _guidedTimer?.cancel();
     _guidedPlayer.dispose();
     for (final player in _audioPlayers.values) {

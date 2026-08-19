@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -406,7 +407,8 @@ class StreakBadge extends StatelessWidget {
   }
 }
 
-// ─── MoodCheckInDialog ────────────────────────────────────────────────────────
+// ─── MoodCheckInDialog — iOS Bottom Sheet style ───────────────────────────────
+// Shows as a Cupertino-native bottom pull-up sheet with haptic feedback.
 class MoodCheckInDialog extends StatefulWidget {
   final void Function(int) onMoodSelected;
   final VoidCallback onSkip;
@@ -466,6 +468,7 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // iOS-style drag handle
                         Container(
                           width: 36,
                           height: 4,
@@ -501,7 +504,10 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
                             final isSelected = _selected == rating;
                             return Expanded(
                               child: GestureDetector(
-                                onTap: () => setState(() => _selected = rating),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _selected = rating);
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -542,28 +548,22 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
                         ),
                         const SizedBox(height: 20),
 
+                        // iOS-style action row
                         Row(
                           children: [
                             Expanded(
                               flex: 1,
-                              child: GestureDetector(
-                                onTap: widget.onSkip,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.white.withOpacity(0.15)),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'Skip',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13,
-                                      ),
-                                    ),
+                              child: CupertinoButton(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                color: Colors.white.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(16),
+                                onPressed: widget.onSkip,
+                                child: const Text(
+                                  'Skip',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ),
@@ -571,24 +571,17 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
                             const SizedBox(width: 10),
                             Expanded(
                               flex: 2,
-                              child: GestureDetector(
-                                onTap: _selected != null ? () => widget.onMoodSelected(_selected!) : null,
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: _selected != null ? tealPrimary : tealPrimary.withOpacity(0.25),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _selected != null ? 'Save Rating ✓' : 'Select Mood',
-                                      style: TextStyle(
-                                        color: _selected != null ? Colors.black : Colors.white38,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
+                              child: CupertinoButton(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                color: _selected != null ? tealPrimary : tealPrimary.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(16),
+                                onPressed: _selected != null ? () => widget.onMoodSelected(_selected!) : null,
+                                child: Text(
+                                  _selected != null ? 'Save Rating ✓' : 'Select Mood',
+                                  style: TextStyle(
+                                    color: _selected != null ? Colors.black : Colors.white38,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ),
@@ -725,9 +718,11 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                               ],
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 32),
+                          // iOS-style chevron down dismiss button
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
                             onPressed: () => state.stopGuidedSession(completed: false),
+                            child: const Icon(CupertinoIcons.chevron_down, color: Colors.white, size: 28),
                           ),
                         ],
                       ),

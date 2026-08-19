@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
@@ -245,8 +246,18 @@ class _SoundsScreenState extends State<SoundsScreen> {
       _isPlaying = true;
     });
     state.saveCachedVolumes(_volumes);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Preset Applied ✓ Playing ambient soundscape'), duration: Duration(seconds: 1)),
+    showCupertinoDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (ctx.mounted) Navigator.pop(ctx);
+        });
+        return CupertinoAlertDialog(
+          title: const Text('Preset Applied ✓'),
+          content: const Text('Playing ambient soundscape'),
+        );
+      },
     );
   }
 
@@ -273,43 +284,68 @@ class _SoundsScreenState extends State<SoundsScreen> {
       newVols[key] = active ? (0.2 + (DateTime.now().millisecondsSinceEpoch % 5) * 0.1) : 0.0;
     });
     _applyVolumes(newVols, state);
+  void _shareCurrentMix(AppState state) {
+    final url = state.generateShareUrl();
+    Clipboard.setData(ClipboardData(text: url));
+    showCupertinoDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (ctx.mounted) Navigator.pop(ctx);
+        });
+        return const CupertinoAlertDialog(
+          title: Text('Mix Link Copied! 🔗'),
+          content: Text('Share this link with friends so they can listen to your exact sound mix.'),
+        );
+      },
+    );
   }
 
   void _showSavePresetDialog(BuildContext context, AppState state) {
     final controller = TextEditingController();
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: bgMid,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Save Sound Preset', style: TextStyle(color: textPrimary)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: textPrimary),
-          decoration: InputDecoration(
-            hintText: 'e.g. Rainy Study Night',
-            hintStyle: TextStyle(color: textSecondary),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary.withOpacity(0.5))),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary)),
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Save Sound Preset'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: CupertinoTextField(
+            controller: controller,
+            placeholder: 'e.g. Rainy Study Night',
+            style: const TextStyle(color: textPrimary),
+            decoration: BoxDecoration(
+              color: CupertinoColors.darkBackgroundGray.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: textSecondary)),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: tealPrimary),
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
                 state.savePreset(controller.text.trim(), Map.from(_volumes));
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Preset Saved ✓')),
+                showCupertinoDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (ctx2) {
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (ctx2.mounted) Navigator.pop(ctx2);
+                    });
+                    return CupertinoAlertDialog(
+                      title: const Text('Preset Saved ✓'),
+                    );
+                  },
                 );
               }
             },
-            child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -319,39 +355,48 @@ class _SoundsScreenState extends State<SoundsScreen> {
   void _showRenamePresetDialog(BuildContext context, String currentName, AppState state) {
     final displayName = state.getPresetDisplayName(currentName);
     final controller = TextEditingController(text: displayName);
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: bgMid,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Rename Recommended Mix', style: TextStyle(color: textPrimary)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Enter custom name',
-            hintStyle: TextStyle(color: textSecondary),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary.withOpacity(0.5))),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: tealPrimary)),
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Rename Recommended Mix'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: CupertinoTextField(
+            controller: controller,
+            placeholder: 'Enter custom name',
+            style: const TextStyle(color: textPrimary),
+            decoration: BoxDecoration(
+              color: CupertinoColors.darkBackgroundGray.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: textSecondary)),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: tealPrimary),
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
                 state.renameCuratedPreset(currentName, controller.text.trim());
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Renamed to "${controller.text.trim()}" ✓')),
+                showCupertinoDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (ctx2) {
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (ctx2.mounted) Navigator.pop(ctx2);
+                    });
+                    return CupertinoAlertDialog(
+                      title: Text('Renamed to "${controller.text.trim()}" ✓'),
+                    );
+                  },
                 );
               }
             },
-            child: const Text('Save Name', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            child: const Text('Save Name'),
           ),
         ],
       ),
@@ -474,18 +519,18 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                         fontWeight: FontWeight.bold,
                                         color: isActive ? color : textPrimary,
                                         letterSpacing: -0.2,
+                                        decoration: TextDecoration.none,
                                       ),
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () => state.toggleFavoriteSound(name),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 6),
-                                      child: Icon(
-                                        state.isFavorite(name) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                        color: state.isFavorite(name) ? coralAccent : textSecondary.withOpacity(0.4),
-                                        size: 18,
-                                      ),
+                                  CupertinoButton(
+                                    padding: const EdgeInsets.only(left: 6),
+                                    minSize: 0,
+                                    onPressed: () => state.toggleFavoriteSound(name),
+                                    child: Icon(
+                                      state.isFavorite(name) ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                                      color: state.isFavorite(name) ? coralAccent : textSecondary.withOpacity(0.4),
+                                      size: 18,
                                     ),
                                   ),
                                   if (isActive) ...[
@@ -499,7 +544,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                 desc,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: textSecondary),
+                                style: TextStyle(fontSize: 12.5, color: textSecondary, decoration: TextDecoration.none),
                               ),
                             ],
                           ),
@@ -521,15 +566,15 @@ class _SoundsScreenState extends State<SoundsScreen> {
                               fontSize: 12.5,
                               fontWeight: FontWeight.bold,
                               color: vol > 0 ? color : textSecondary.withOpacity(0.6),
+                              decoration: TextDecoration.none,
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
 
-                        Switch(
+                        CupertinoSwitch(
                           value: vol > 0,
                           activeColor: color,
-                          activeTrackColor: color.withOpacity(0.4),
                           onChanged: (val) {
                             final newVol = val ? 0.6 : 0.0;
                             setState(() {
@@ -549,25 +594,16 @@ class _SoundsScreenState extends State<SoundsScreen> {
                       firstChild: const SizedBox.shrink(),
                       secondChild: Padding(
                         padding: const EdgeInsets.only(top: 10),
-                        child: SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: color,
-                            thumbColor: Colors.white,
-                            inactiveTrackColor: Colors.white.withOpacity(0.12),
-                            overlayColor: color.withOpacity(0.2),
-                            trackHeight: 5,
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                          ),
-                          child: Slider(
-                            value: vol,
-                            onChanged: (v) {
-                              setState(() {
-                                _volumes[name] = v;
-                                _isPlaying = true;
-                              });
-                              state.updateSoundTrackVolume(name, v);
-                            },
-                          ),
+                        child: CupertinoSlider(
+                          value: vol,
+                          activeColor: color,
+                          onChanged: (v) {
+                            setState(() {
+                              _volumes[name] = v;
+                              _isPlaying = true;
+                            });
+                            state.updateSoundTrackVolume(name, v);
+                          },
                         ),
                       ),
                     ),
@@ -588,18 +624,31 @@ class _SoundsScreenState extends State<SoundsScreen> {
     final activeTextColor = isClay ? clayText : textPrimary;
     final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
+    return CupertinoPageScaffold(
+      backgroundColor: state.themeMode.bgDark,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
+          ),
         ),
-      ),
-      child: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
+            CupertinoSliverNavigationBar(
+              largeTitle: const Text(
+                'Sounds',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xE6050D15),
+              trailing: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {},
+                child: const Icon(CupertinoIcons.slider_horizontal_3, color: tealPrimary),
+              ),
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -619,6 +668,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: isClay ? clayAccent : tealPrimary,
                                   letterSpacing: 1.8,
+                                  decoration: TextDecoration.none,
                                 ),
                               ),
                               Text(
@@ -627,6 +677,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   color: activeTextColor,
+                                  decoration: TextDecoration.none,
                                 ),
                               ),
                             ],
@@ -639,14 +690,14 @@ class _SoundsScreenState extends State<SoundsScreen> {
                             color: tealPrimary.withOpacity(0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.tune_rounded, color: tealPrimary, size: 24),
+                          child: const Icon(CupertinoIcons.slider_horizontal_3, color: tealPrimary, size: 24),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Layer natural sounds & healing frequencies for work, study, or sleep',
-                      style: TextStyle(fontSize: 13, color: textSecondary),
+                      style: TextStyle(fontSize: 13, color: textSecondary, decoration: TextDecoration.none),
                     ),
                     const SizedBox(height: 20),
 
@@ -665,7 +716,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                 color: _isPlaying ? tealPrimary : Colors.white.withOpacity(0.08),
                               ),
                               child: Icon(
-                                _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                _isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
                                 color: _isPlaying ? Colors.black : Colors.white,
                                 size: 30,
                               ),
@@ -678,25 +729,32 @@ class _SoundsScreenState extends State<SoundsScreen> {
                               children: [
                                 Text(
                                   _isPlaying ? 'Soundscape Active 🔊' : 'Mixer Paused',
-                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary),
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary, decoration: TextDecoration.none),
                                 ),
                                 Text(
                                   _isPlaying
                                       ? '${_volumes.values.where((v) => v > 0).length} tracks playing'
                                       : 'Tap play to listen',
-                                  style: TextStyle(fontSize: 12, color: textSecondary),
+                                  style: TextStyle(fontSize: 12, color: textSecondary, decoration: TextDecoration.none),
                                 ),
                               ],
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.shuffle_rounded, color: textSecondary, size: 20),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
                             onPressed: () => _randomizeMix(state),
-                            tooltip: 'Randomize Mix',
+                            child: const Icon(CupertinoIcons.shuffle, color: textSecondary, size: 20),
                           ),
+                          const SizedBox(width: 4),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => _shareCurrentMix(state),
+                            child: const Icon(CupertinoIcons.share, color: tealPrimary, size: 20),
+                          ),
+                          const SizedBox(width: 6),
                           GlassPillButton(
                             text: 'Save',
-                            icon: Icons.bookmark_add_rounded,
+                            icon: CupertinoIcons.cloud_download,
                             containerColor: Colors.white.withOpacity(0.12),
                             contentColor: textPrimary,
                             onTap: () => _showSavePresetDialog(context, state),
@@ -714,6 +772,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                         fontWeight: FontWeight.bold,
                         color: tealPrimary,
                         letterSpacing: 1.6,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -740,7 +799,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                     // MESSENGER-STYLE HORIZONTAL CATEGORY FILTER TRAY
                     Row(
                       children: [
-                        const Icon(Icons.category_rounded, color: tealPrimary, size: 16),
+                        const Icon(CupertinoIcons.square_grid_2x2_fill, color: tealPrimary, size: 16),
                         const SizedBox(width: 6),
                         Text(
                           'SOUND CATEGORY TRAY',
@@ -749,36 +808,55 @@ class _SoundsScreenState extends State<SoundsScreen> {
                             fontWeight: FontWeight.bold,
                             color: textSecondary,
                             letterSpacing: 1.6,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: ['❤️ Favorites', ...soundCategories.keys].map((catKey) {
-                          final isSelected = _selectedCategory == catKey;
-                          int soundCount = 0;
-                          if (catKey == '❤️ Favorites') {
-                            soundCount = state.favoriteSounds.length;
-                          } else {
-                            soundCount = soundCategories[catKey]?.length ?? 0;
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GlassChip(
-                              label: catKey == '❤️ Favorites' ? '❤️ Favorites ($soundCount)' : '$catKey ($soundCount)',
-                              isSelected: isSelected,
-                              selectedColor: isSelected && catKey == '❤️ Favorites' ? coralAccent : tealPrimary,
-                              onTap: () {
-                                setState(() {
-                                  _selectedCategory = catKey;
-                                });
-                              },
+                    SizedBox(
+                      width: double.infinity,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: CupertinoSlidingSegmentedControl<String>(
+                          backgroundColor: Colors.white.withOpacity(0.08),
+                          thumbColor: tealPrimary,
+                          groupValue: _selectedCategory,
+                          onValueChanged: (String? value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedCategory = value;
+                              });
+                            }
+                          },
+                          children: {
+                            '❤️ Favorites': Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text(
+                                '❤️ Favorites (${state.favoriteSounds.length})',
+                                style: TextStyle(
+                                  color: _selectedCategory == '❤️ Favorites' ? Colors.black : textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          );
-                        }).toList(),
+                            ...Map.fromEntries(
+                              soundCategories.keys.map((catKey) => MapEntry(
+                                    catKey,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      child: Text(
+                                        '$catKey (${soundCategories[catKey]?.length ?? 0})',
+                                        style: TextStyle(
+                                          color: _selectedCategory == catKey ? Colors.black : textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  )),
+                            ),
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -809,17 +887,17 @@ class _SoundsScreenState extends State<SoundsScreen> {
                             padding: const EdgeInsets.all(28),
                             child: Column(
                               children: [
-                                const Icon(Icons.favorite_border_rounded, color: coralAccent, size: 40),
+                                const Icon(CupertinoIcons.heart, color: coralAccent, size: 40),
                                 const SizedBox(height: 12),
                                 const Text(
                                   'No Favorite Sounds Saved Yet',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary, decoration: TextDecoration.none),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Tap the ❤️ heart icon on any sound card to build your top favorites list!',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12.5, color: textSecondary),
+                                  style: TextStyle(fontSize: 12.5, color: textSecondary, decoration: TextDecoration.none),
                                 ),
                               ],
                             ),

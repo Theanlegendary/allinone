@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -34,7 +35,7 @@ const Color neuSubtext       = Color(0xFF888888); // Slate Subtext (#888888)
 const Color neuLightShadow   = Color(0xFFFFFFFF); // Top-left soft highlight shadow
 const Color neuDarkShadow    = Color(0xFFA3B1C6); // Bottom-right soft depth shadow
 
-// ─── Theme ────────────────────────────────────────────────────────────────────
+// ─── Material Theme ────────────────────────────────────────────────────────────
 ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
@@ -77,6 +78,67 @@ ThemeData buildAppTheme() {
           states.contains(WidgetState.selected) ? Colors.black : Colors.white60),
       trackColor: WidgetStateProperty.resolveWith((states) =>
           states.contains(WidgetState.selected) ? tealPrimary : Colors.white10),
+    ),
+  );
+}
+
+// ─── Cupertino / iOS Theme ─────────────────────────────────────────────────────
+// Maps the existing dark palette to iOS Cupertino system tokens.
+// Used by CupertinoApp as the top-level theme.
+CupertinoThemeData buildCupertinoTheme() {
+  return const CupertinoThemeData(
+    brightness: Brightness.dark,
+    primaryColor: tealPrimary,
+    primaryContrastingColor: Colors.black,
+    scaffoldBackgroundColor: bgDark,
+    barBackgroundColor: Color(0xE6050D15), // bgDark at ~90% opacity — frosted effect
+    textTheme: CupertinoTextThemeData(
+      primaryColor: tealPrimary,
+      textStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.normal,
+        decoration: TextDecoration.none,
+      ),
+      navTitleTextStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        decoration: TextDecoration.none,
+      ),
+      navLargeTitleTextStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 34,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
+        decoration: TextDecoration.none,
+      ),
+      navActionTextStyle: TextStyle(
+        color: tealPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.normal,
+        decoration: TextDecoration.none,
+      ),
+      tabLabelTextStyle: TextStyle(
+        color: textSecondary,
+        fontSize: 10,
+        decoration: TextDecoration.none,
+      ),
+      actionTextStyle: TextStyle(
+        color: tealPrimary,
+        fontSize: 17,
+        decoration: TextDecoration.none,
+      ),
+      pickerTextStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 21,
+        decoration: TextDecoration.none,
+      ),
+      dateTimePickerTextStyle: TextStyle(
+        color: textPrimary,
+        fontSize: 21,
+        decoration: TextDecoration.none,
+      ),
     ),
   );
 }

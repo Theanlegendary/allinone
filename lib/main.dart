@@ -1,8 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
+import 'dart:io' show Platform;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
 import 'package:relax_mindfulness/screens/home_screen.dart';
@@ -13,21 +19,65 @@ import 'package:relax_mindfulness/screens/sounds_screen.dart';
 import 'package:relax_mindfulness/screens/sleep_screen.dart';
 import 'package:relax_mindfulness/screens/mindfulness_screen.dart';
 import 'package:relax_mindfulness/screens/ai_studio_screen.dart';
-import 'package:relax_mindfulness/screens/admin_dashboard_screen.dart';
 import 'package:relax_mindfulness/screens/premium_screen.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
-import 'package:relax_mindfulness/theme/responsive.dart';
+
+import 'dart:ui' show PlatformDispatcher;
+
+final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Lock to portrait mode for a clean app experience
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Global Error Boundaries to eliminate unhandled crash states
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('Global FlutterError caught: ${details.exceptionAsString()}');
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Global Async Error caught: $error');
+    return true; // Handled safely without freezing the app
+  };
 
-  // Make status bar transparent for edge-to-edge design
+  // Initialize timezone for local notifications
+  tz.initializeTimeZones();
+
+  // Initialize Local Notifications (iOS specific for Cupertino feel)
+  if (!kIsWeb) {
+    try {
+      const DarwinInitializationSettings initSettingsDarwin = DarwinInitializationSettings(
+        requestSoundPermission: true,
+        requestBadgePermission: true,
+        requestAlertPermission: true,
+      );
+      const InitializationSettings initSettings = InitializationSettings(
+        iOS: initSettingsDarwin,
+      );
+      await localNotifications.initialize(initSettings);
+    } catch (e) {
+      debugPrint("Notifications init error: $e");
+    }
+  }
+
+  // Initialize RevenueCat on supported native platforms if a real key is provided
+  const revenueCatKey = String.fromEnvironment('REVENUECAT_API_KEY', defaultValue: '');
+  if (!kIsWeb && (Platform.isIOS || Platform.isMacOS) && revenueCatKey.isNotEmpty && !revenueCatKey.contains('your_revenuecat_key')) {
+    try {
+      await Purchases.setLogLevel(LogLevel.debug);
+      await Purchases.configure(PurchasesConfiguration(revenueCatKey));
+    } catch (e) {
+      debugPrint("RevenueCat init error: $e");
+    }
+  }
+
+  // Lock to portrait mode for a clean app experience
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  // Make status bar transparent for edge-to-edge iOS design
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -37,33 +87,49 @@ void main() async {
   final appState = AppState();
   await appState.init();
 
+  if (kIsWeb) {
+    try {
+      appState.parseAndApplyMixFromUri(Uri.base);
+    } catch (e) {
+      debugPrint("Deep link parsing error: $e");
+    }
+  }
+
   // ── GPU & Image Cache tuning for maximum FPS ──
-  // Doubles the default image cache so images don't re-decode on every scroll
   PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20; // 200 MB
-  PaintingBinding.instance.imageCache.maximumSize = 200; // max 200 images
-  // Use Skia rendering pipeline (CanvasKit) — already default in release
-  // Enable all platform optimizations
-  debugPaintSizeEnabled = false;
+  PaintingBinding.instance.imageCache.maximumSize = 200;
 
   runApp(
     ChangeNotifierProvider.value(
       value: appState,
-      child: const RelaxApp(),
+      child: const SanctuaryApp(),
     ),
   );
 }
 
-class RelaxApp extends StatelessWidget {
-  const RelaxApp({super.key});
+// ─── Root App — CupertinoApp for full native iOS feel ─────────────────────────
+class SanctuaryApp extends StatelessWidget {
+  const SanctuaryApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return CupertinoApp(
       title: 'Sanctuary – Relax & Meditate',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
-      // ── iOS-native scroll physics globally ──
-      // This gives the elastic bounce and momentum feel of native iOS
+      theme: buildCupertinoTheme(),
+      builder: (context, child) {
+        // Protect layout against RenderFlex yellow/black overflows on large accessibility fonts
+        final mediaQuery = MediaQuery.of(context);
+        final clampedScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.28,
+        );
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedScaler),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+      // ── iOS Bouncing Scroll Physics globally ──
       scrollBehavior: const _IOSScrollBehavior(),
       home: const AppShell(),
     );
@@ -71,8 +137,6 @@ class RelaxApp extends StatelessWidget {
 }
 
 // ── Global iOS Bouncing Scroll Behavior ──────────────────────────────────────
-// Makes EVERY ScrollView in the whole app behave like native iOS:
-// elastic overscroll bounce + momentum fling with proper deceleration
 class _IOSScrollBehavior extends ScrollBehavior {
   const _IOSScrollBehavior();
 
@@ -84,7 +148,7 @@ class _IOSScrollBehavior extends ScrollBehavior {
 
   @override
   Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) =>
-      child; // No scrollbars — pure app feel
+      child; // No scrollbars — pure native iOS feel
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
@@ -95,49 +159,155 @@ class _IOSScrollBehavior extends ScrollBehavior {
   };
 }
 
-class AppShell extends StatelessWidget {
+// ─── AppShell — CupertinoTabScaffold with synced AppState ─────────────────────
+class AppShell extends StatefulWidget {
   const AppShell({super.key});
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
+  late final CupertinoTabController _tabController;
+
+  // Tab order matches AppTab enum values we expose in the tab bar
+  static const _tabOrder = [
+    AppTab.home,
+    AppTab.meditate,
+    AppTab.breathe,
+    AppTab.sounds,
+    AppTab.sleep,
+    AppTab.aiStudio,
+  ];
+
+  int _appTabToIndex(AppTab tab) => _tabOrder.indexOf(tab).clamp(0, _tabOrder.length - 1);
+  AppTab _indexToAppTab(int index) => _tabOrder[index.clamp(0, _tabOrder.length - 1)];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _tabController = CupertinoTabController(initialIndex: 0);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    // Thermal & battery optimization: pause high-power UI animations on screen sleep
+    if (lifecycleState == AppLifecycleState.paused || lifecycleState == AppLifecycleState.hidden) {
+      context.read<AppState>().setBackgroundMode(true);
+    } else if (lifecycleState == AppLifecycleState.resumed) {
+      context.read<AppState>().setBackgroundMode(false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, state, _) {
+        // ── Onboarding gate ──
         if (!state.onboardingDone) {
-          return const OnboardingScreen();
+          // Wrap in Material for onboarding screen compatibility
+          return Material(
+            color: bgDark,
+            child: const OnboardingScreen(),
+          );
+        }
+
+        // ── Sync CupertinoTabController → AppState ──
+        final expectedIndex = _appTabToIndex(state.tab);
+        if (_tabController.index != expectedIndex) {
+          // Avoid setState loop — just set index directly
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _tabController.index != expectedIndex) {
+              _tabController.index = expectedIndex;
+            }
+          });
         }
 
         return Stack(
           children: [
-            Scaffold(
-              extendBody: true,
-              body: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-                child: KeyedSubtree(
-                  key: ValueKey(state.tab),
-                  child: _buildScreen(state.tab),
-                ),
+            // ── 🍎 iOS Native Tab Scaffold ──────────────────────────────────
+            CupertinoTabScaffold(
+              controller: _tabController,
+              tabBar: CupertinoTabBar(
+                onTap: (index) {
+                  HapticFeedback.lightImpact();
+                  state.setTab(_indexToAppTab(index));
+                },
+                backgroundColor: const Color(0xF0080F17), // Deep navy, ~94% opacity
+                activeColor: tealPrimary,
+                inactiveColor: const Color(0xFF4A6070), // Muted slate
+
+                // ── Premium crown item with gradient badge ──
+                currentIndex: _appTabToIndex(state.tab),
+
+                items: [
+                  const BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.house),
+                    activeIcon: Icon(CupertinoIcons.house_fill),
+                    label: 'Home',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.person_crop_circle),
+                    activeIcon: Icon(CupertinoIcons.person_crop_circle_fill),
+                    label: 'Meditate',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.wind),
+                    activeIcon: Icon(CupertinoIcons.wind),
+                    label: 'Breathe',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.music_note_2),
+                    activeIcon: Icon(CupertinoIcons.music_note_2),
+                    label: 'Sounds',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.moon),
+                    activeIcon: Icon(CupertinoIcons.moon_fill),
+                    label: 'Sleep',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _PremiumTabIcon(isPremium: state.isPremium, isActive: false),
+                    activeIcon: _PremiumTabIcon(isPremium: state.isPremium, isActive: true),
+                    label: state.isPremium ? 'Premium' : 'AI',
+                  ),
+                ],
               ),
-              bottomNavigationBar: const _BottomNavBar(),
+              tabBuilder: (context, index) {
+                final tab = _indexToAppTab(index);
+                return CupertinoTabView(
+                  builder: (ctx) => RepaintBoundary(
+                    child: _buildScreen(tab, ctx),
+                  ),
+                );
+              },
             ),
 
+            // ── 🎵 Floating Mini Player ───────────────────────────────────
             if (state.isAnyAudioPlaying)
               const Positioned(
                 left: 0,
                 right: 0,
-                bottom: 68,
+                bottom: 83, // Above CupertinoTabBar (49px) + safe area
                 child: SanctuaryMiniPlayer(),
               ),
 
+            // ── 😊 Mood Check-In Dialog ───────────────────────────────────
             if (state.showMoodDialog)
               MoodCheckInDialog(
                 onMoodSelected: (rating) => state.submitMood(rating),
                 onSkip: () => state.dismissMood(),
               ),
 
+            // ── 🎧 Full-Screen Guided Player ──────────────────────────────
             if (state.isGuidedPlaying)
               const GuidedPlayerOverlay(),
           ],
@@ -146,201 +316,53 @@ class AppShell extends StatelessWidget {
     );
   }
 
-  Widget _buildScreen(AppTab tab) {
-    // ── RepaintBoundary isolates each screen in its own GPU layer ──
-    // This prevents tab switches and animations from causing full-tree repaints
-    // = dramatically fewer dropped frames = native 60fps feel
+  Widget _buildScreen(AppTab tab, BuildContext context) {
     switch (tab) {
       case AppTab.home:
-        return const RepaintBoundary(key: ValueKey('home'), child: HomeScreen());
+        return const HomeScreen();
       case AppTab.meditate:
-        return const RepaintBoundary(key: ValueKey('meditate'), child: MeditationScreen());
+        return const MeditationScreen();
       case AppTab.breathe:
-        return const RepaintBoundary(key: ValueKey('breathe'), child: BreatheScreen());
+        return const BreatheScreen();
       case AppTab.sounds:
-        return const RepaintBoundary(key: ValueKey('sounds'), child: SoundsScreen());
+        return const SoundsScreen();
       case AppTab.sleep:
-        return const RepaintBoundary(key: ValueKey('sleep'), child: SleepScreen());
+        return const SleepScreen();
       case AppTab.aiStudio:
-        return const RepaintBoundary(key: ValueKey('ai'), child: AiStudioScreen());
+        return const AiStudioScreen();
       default:
-        return const RepaintBoundary(key: ValueKey('home'), child: HomeScreen());
+        return const HomeScreen();
     }
   }
 }
 
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar();
+// ─── Premium Crown Tab Icon ────────────────────────────────────────────────────
+class _PremiumTabIcon extends StatelessWidget {
+  final bool isPremium;
+  final bool isActive;
+  const _PremiumTabIcon({required this.isPremium, required this.isActive});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, state, _) {
-        return Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          padding: EdgeInsets.only(
-            top: 6,
-            bottom: MediaQuery.of(context).padding.bottom > 0
-                ? MediaQuery.of(context).padding.bottom
-                : 6,
+    if (isPremium) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
           ),
-          decoration: BoxDecoration(
-            color: const Color(0xF00A151E),
-            borderRadius: BorderRadius.circular(36),
-            border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.45),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(tab: AppTab.home, icon: Icons.home_rounded, label: 'Home', state: state),
-              _NavItem(tab: AppTab.meditate, icon: Icons.self_improvement_rounded, label: 'Meditate', state: state),
-              _NavItem(tab: AppTab.breathe, icon: Icons.air_rounded, label: 'Breathe', state: state),
-              _NavItem(tab: AppTab.sounds, icon: Icons.equalizer_rounded, label: 'Sounds', state: state),
-              _NavItem(tab: AppTab.sleep, icon: Icons.nightlight_round, label: 'Sleep', state: state),
-              // Premium crown button
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      fullscreenDialog: true,
-                      builder: (_) => const PremiumScreen(),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          gradient: state.isPremium
-                              ? const LinearGradient(
-                                  colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
-                                )
-                              : null,
-                          color: state.isPremium ? null : Colors.white.withOpacity(0.06),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: state.isPremium
-                              ? [BoxShadow(color: Colors.amber.withOpacity(0.5), blurRadius: 10)]
-                              : [],
-                        ),
-                        child: Icon(
-                          Icons.workspace_premium_rounded,
-                          color: state.isPremium
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.5),
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        state.isPremium ? 'Premium' : 'Upgrade',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.normal,
-                          color: state.isPremium
-                              ? const Color(0xFFFFD700)
-                              : Colors.white.withOpacity(0.5),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final AppTab tab;
-  final IconData icon;
-  final String label;
-  final AppState state;
-
-  const _NavItem({
-    required this.tab,
-    required this.icon,
-    required this.label,
-    required this.state,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = state.tab == tab;
-    final activeColor = tab == AppTab.sleep ? purpleAccent : tealPrimary;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          state.setTab(tab);
-        },
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ── 🍎 iPhone Liquid Nav Rule: Active = Filled Circle with Pure White Icon, Inactive = Dark/Gray No Fill ──
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? activeColor : Colors.transparent,
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: activeColor.withOpacity(0.45),
-                            blurRadius: 12,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Center(
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.white : Colors.white38,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 3),
-              // ── Crisp Readable Label ──
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? activeColor : Colors.white60,
-                  letterSpacing: -0.2,
-                ),
-                child: Text(label),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isActive
+              ? [const BoxShadow(color: Color(0x80FFB300), blurRadius: 8)]
+              : [],
         ),
-      ),
+        child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 16),
+      );
+    }
+    return Icon(
+      CupertinoIcons.sparkles,
+      size: 22,
+      color: isActive ? tealPrimary : const Color(0xFF4A6070),
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -14,296 +15,320 @@ class MindfulnessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, state, _) {
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [bgDark, Color(0xFF132932), bgDark],
-            ),
+        return CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            middle: const Text('Mindfulness', style: TextStyle(color: Colors.white)),
+            backgroundColor: const Color(0xE6050D15),
+            border: Border.all(color: Colors.transparent),
           ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  const Text('MINDFULNESS & STATS',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: mintAccent,
-                          letterSpacing: 2)),
-                  const Text('Your Mindful Journey',
-                      style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                  const SizedBox(height: 4),
-                  Text('Track session history, mood trends & practice consistency',
-                      style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6))),
-                  const SizedBox(height: 20),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [bgDark, Color(0xFF132932), bgDark],
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    const Text('MINDFULNESS & STATS',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: mintAccent,
+                            letterSpacing: 2)),
+                    const Text('Your Mindful Journey',
+                        style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text('Track session history, mood trends & practice consistency',
+                        style: TextStyle(fontSize: 14, color: Colors.white54)),
+                    const SizedBox(height: 20),
 
-                  // Daily Banner
-                  GlassCard(
-                    cornerRadius: 24,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Daily Banner
+                    GlassCard(
+                      cornerRadius: 24,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('DAILY MINDFUL MINUTE',
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: tealPrimary,
+                                  letterSpacing: 1.5)),
+                          const SizedBox(height: 6),
+                          const Text('Cultivate Calm Presence',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const SizedBox(height: 4),
+                          Text('Take 5 minutes to pause, observe your breath, and reset your nervous system.',
+                              style: TextStyle(fontSize: 13, color: Colors.white70)),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CupertinoButton.filled(
+                                  padding: EdgeInsets.zero,
+                                  onPressed: () => state.setTab(AppTab.breathe),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.wind, size: 18, color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('Quick Start', style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.zero,
+                                  color: Colors.white.withOpacity(0.15),
+                                  onPressed: () => state.setTab(AppTab.meditate),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(CupertinoIcons.person_crop_circle, size: 18, color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('Guided Session', style: TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Stats grid 1
+                    Row(
                       children: [
-                        Text('DAILY MINDFUL MINUTE',
-                            style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: tealPrimary,
-                                letterSpacing: 1.5)),
-                        const SizedBox(height: 6),
-                        const Text('Cultivate Calm Presence',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                        const SizedBox(height: 4),
-                        Text('Take 5 minutes to pause, observe your breath, and reset your nervous system.',
-                            style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.7))),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            GlassPillButton(
-                              text: 'Quick Start',
-                              icon: Icons.air,
-                              onTap: () => state.setTab(AppTab.breathe),
+                        Expanded(
+                          child: GlassCard(
+                            cornerRadius: 18,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('⏱️', style: TextStyle(fontSize: 24)),
+                                const SizedBox(height: 6),
+                                Text('${state.totalMinutes}',
+                                    style: const TextStyle(
+                                        fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text('Total Relaxed Min',
+                                    style: TextStyle(fontSize: 12, color: Colors.white54)),
+                              ],
                             ),
-                            const SizedBox(width: 10),
-                            GlassPillButton(
-                              text: 'Guided Session',
-                              icon: Icons.self_improvement,
-                              containerColor: Colors.white.withOpacity(0.15),
-                              contentColor: Colors.white,
-                              onTap: () => state.setTab(AppTab.meditate),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GlassCard(
+                            cornerRadius: 18,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('🏆', style: TextStyle(fontSize: 24)),
+                                const SizedBox(height: 6),
+                                Text('${state.sessions.length}',
+                                    style: const TextStyle(
+                                        fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text('Sessions Done',
+                                    style: TextStyle(fontSize: 12, color: Colors.white54)),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
-                  // Stats grid 1
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassCard(
-                          cornerRadius: 18,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('⏱️', style: TextStyle(fontSize: 24)),
-                              const SizedBox(height: 6),
-                              Text('${state.totalMinutes}',
-                                  style: const TextStyle(
-                                      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                              Text('Total Relaxed Min',
-                                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassCard(
-                          cornerRadius: 18,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('🏆', style: TextStyle(fontSize: 24)),
-                              const SizedBox(height: 6),
-                              Text('${state.sessions.length}',
-                                  style: const TextStyle(
-                                      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                              Text('Sessions Done',
-                                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Stats grid 2
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlassCard(
-                          cornerRadius: 18,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('🔥', style: TextStyle(fontSize: 24)),
-                              const SizedBox(height: 6),
-                              Text('${state.streak}',
-                                  style: const TextStyle(
-                                      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                              Text('Current Streak (Days)',
-                                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GlassCard(
-                          cornerRadius: 18,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('⭐', style: TextStyle(fontSize: 24)),
-                              const SizedBox(height: 6),
-                              Text(state.avgMood > 0 ? state.avgMood.toStringAsFixed(1) : '--',
-                                  style: const TextStyle(
-                                      fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                              Text('Average Mood Rating',
-                                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Weekly Chart Card
-                  GlassCard(
-                    cornerRadius: 20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Stats grid 2
+                    Row(
                       children: [
-                        const Text('PRACTICE TIME THIS WEEK',
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: tealPrimary,
-                                letterSpacing: 1.2)),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 140,
-                          child: _BarChartWidget(weeklyData: state.weeklyMinutes),
+                        Expanded(
+                          child: GlassCard(
+                            cornerRadius: 18,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('🔥', style: TextStyle(fontSize: 24)),
+                                const SizedBox(height: 6),
+                                Text('${state.streak}',
+                                    style: const TextStyle(
+                                        fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text('Current Streak (Days)',
+                                    style: TextStyle(fontSize: 12, color: Colors.white54)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GlassCard(
+                            cornerRadius: 18,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('⭐', style: TextStyle(fontSize: 24)),
+                                const SizedBox(height: 6),
+                                Text(state.avgMood > 0 ? state.avgMood.toStringAsFixed(1) : '--',
+                                    style: const TextStyle(
+                                        fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text('Average Mood Rating',
+                                    style: TextStyle(fontSize: 12, color: Colors.white54)),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // Category Breakdown
-                  if (state.categoryBreakdown.isNotEmpty) ...[
-                    const Text('CATEGORY BREAKDOWN',
+                    // Weekly Chart Card
+                    GlassCard(
+                      cornerRadius: 20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('PRACTICE TIME THIS WEEK',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: tealPrimary,
+                                  letterSpacing: 1.2)),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 140,
+                            child: _BarChartWidget(weeklyData: state.weeklyMinutes),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Category Breakdown
+                    if (state.categoryBreakdown.isNotEmpty) ...[
+                      const Text('CATEGORY BREAKDOWN',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: tealPrimary,
+                              letterSpacing: 1.2)),
+                      const SizedBox(height: 10),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: state.categoryBreakdown.entries.map((e) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GlassChip(
+                                label: '${e.key}: ${e.value}m',
+                                isSelected: true,
+                                selectedColor: tealPrimary,
+                                onTap: () {},
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Session History
+                    const Text('RECENT SESSIONS',
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: tealPrimary,
                             letterSpacing: 1.2)),
-                    const SizedBox(height: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: state.categoryBreakdown.entries.map((e) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GlassChip(
-                              label: '${e.key}: ${e.value}m',
-                              isSelected: true,
-                              selectedColor: tealPrimary,
-                              onTap: () {},
+                    const SizedBox(height: 12),
+
+                    if (state.sessions.isEmpty)
+                      GlassCard(
+                        cornerRadius: 18,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                const Text('🍃', style: TextStyle(fontSize: 40)),
+                                const SizedBox(height: 8),
+                                const Text('No sessions recorded yet',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Text('Complete your first session to see history here',
+                                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                          ),
+                        ),
+                      )
+                    else
+                      ...state.sessions.take(10).map((s) {
+                        final moodEmojis = ['', '😔', '😕', '😐', '🙂', '😊'];
+                        final moodEmoji = (s.moodRating >= 1 && s.moodRating <= 5) ? moodEmojis[s.moodRating] : null;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: GlassCard(
+                            cornerRadius: 16,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: tealPrimary.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    s.type == 'Meditation'
+                                        ? '🧘'
+                                        : s.type == 'Breathing'
+                                            ? '💨'
+                                            : s.type == 'Sleep'
+                                                ? '🌙'
+                                                : '🎵',
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(s.title,
+                                          style: const TextStyle(
+                                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                      const SizedBox(height: 2),
+                                      Text('${s.type} • ${s.durationMinutes} minutes',
+                                          style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                                if (moodEmoji != null) Text(moodEmoji, style: const TextStyle(fontSize: 22)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
+                    const SizedBox(height: 24),
+                    const _DailyRemindersCard(),
+                    const SizedBox(height: 16),
+                    const _RateAppCard(),
                   ],
-
-                  // Session History
-                  const Text('RECENT SESSIONS',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: tealPrimary,
-                          letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
-
-                  if (state.sessions.isEmpty)
-                    GlassCard(
-                      cornerRadius: 18,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              const Text('🍃', style: TextStyle(fontSize: 40)),
-                              const SizedBox(height: 8),
-                              const Text('No sessions recorded yet',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              Text('Complete your first session to see history here',
-                                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ...state.sessions.take(10).map((s) {
-                      final moodEmojis = ['', '😔', '😕', '😐', '🙂', '😊'];
-                      final moodEmoji = (s.moodRating >= 1 && s.moodRating <= 5) ? moodEmojis[s.moodRating] : null;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: GlassCard(
-                          cornerRadius: 16,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: tealPrimary.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  s.type == 'Meditation'
-                                      ? '🧘'
-                                      : s.type == 'Breathing'
-                                          ? '💨'
-                                          : s.type == 'Sleep'
-                                              ? '🌙'
-                                              : '🎵',
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(s.title,
-                                        style: const TextStyle(
-                                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                                    const SizedBox(height: 2),
-                                    Text('${s.type} • ${s.durationMinutes} minutes',
-                                        style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
-                                  ],
-                                ),
-                              ),
-                              if (moodEmoji != null) Text(moodEmoji, style: const TextStyle(fontSize: 22)),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-
-                  const SizedBox(height: 24),
-                  const _DailyRemindersCard(),
-                  const SizedBox(height: 16),
-                  const _RateAppCard(),
-                ],
+                ),
               ),
             ),
           ),
@@ -336,66 +361,106 @@ class _DailyRemindersCardState extends State<_DailyRemindersCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Text('🔔', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 10),
+              Text('🔔', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('DAILY HABIT REMINDERS',
+                  Text('DAILY HABIT REMINDERS',
                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: mintAccent, letterSpacing: 1.5)),
-                  const Text('Stay Consistent',
+                  Text('Stay Consistent',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 16),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Morning Meditation (8:00 AM)',
-                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-            subtitle: Text('Start your day with gentle clarity & breath',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-            value: _service.morningReminderEnabled,
-            activeColor: tealPrimary,
-            onChanged: (val) async {
-              await _service.setMorningReminder(val);
-              setState(() {});
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Morning Meditation (8:00 AM)',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      SizedBox(height: 4),
+                      Text('Start your day with gentle clarity & breath',
+                          style: TextStyle(color: Colors.white54, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                CupertinoSwitch(
+                  value: _service.morningReminderEnabled,
+                  activeColor: tealPrimary,
+                  onChanged: (val) async {
+                    await _service.setMorningReminder(val);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
           ),
           const Divider(color: Colors.white10),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Bedtime Wind-down (9:30 PM)',
-                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-            subtitle: Text('Sleep story & ocean waves for deep slumber',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-            value: _service.eveningReminderEnabled,
-            activeColor: purpleAccent,
-            onChanged: (val) async {
-              await _service.setEveningReminder(val);
-              setState(() {});
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Bedtime Wind-down (9:30 PM)',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      SizedBox(height: 4),
+                      Text('Sleep story & ocean waves for deep slumber',
+                          style: TextStyle(color: Colors.white54, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                CupertinoSwitch(
+                  value: _service.eveningReminderEnabled,
+                  activeColor: purpleAccent,
+                  onChanged: (val) async {
+                    await _service.setEveningReminder(val);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Center(
-            child: TextButton.icon(
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
               onPressed: () async {
                 await _service.sendInstantTestNotification();
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('🔔 Test notification sent! Check your notification tray.'),
-                    backgroundColor: tealPrimary.withOpacity(0.9),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: const Text('Test Notification Sent'),
+                    content: const Text('🔔 Check your notification tray.'),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: const Text('OK'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
                 );
               },
-              icon: const Icon(Icons.notifications_active_rounded, color: tealPrimary, size: 18),
-              label: const Text('Test Notification Now', style: TextStyle(color: tealPrimary, fontSize: 13)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(CupertinoIcons.bell, color: tealPrimary, size: 18),
+                  SizedBox(width: 6),
+                  Text('Test Notification Now', style: TextStyle(color: tealPrimary, fontSize: 13)),
+                ],
+              ),
             ),
           ),
         ],
@@ -422,13 +487,13 @@ class _RateAppCard extends StatelessWidget {
                 const Text('Enjoying Sanctuary?',
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 Text('Support us with a 5-star rating on the App Store',
-                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12)),
+                    style: TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
           GestureDetector(
             onTap: () {
-              showDialog(
+              showCupertinoDialog(
                 context: context,
                 builder: (_) => const ReviewPromptDialog(),
               );

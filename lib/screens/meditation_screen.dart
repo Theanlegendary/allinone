@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
@@ -50,295 +51,347 @@ class _MeditationScreenState extends State<MeditationScreen> {
         ? _sessions
         : _sessions.where((s) => s.$4 == _selectedCategory).toList();
 
-    return Stack(
-      children: [
-        // 🌌 Aurora / Northern Lights Header Backdrop (matches reference screenshot)
-        Positioned(
-          top: 0, left: 0, right: 0,
-          height: 280,
-          child: ShaderMask(
-            shaderCallback: (rect) => const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black, Colors.transparent],
-            ).createShader(rect),
-            blendMode: BlendMode.dstIn,
-            child: Image.network(
-              'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1200&q=80',
-              fit: BoxFit.cover,
+    return CupertinoPageScaffold(
+      backgroundColor: bgDark,
+      child: Stack(
+        children: [
+          // 🌌 Aurora / Northern Lights Header Backdrop (matches reference screenshot)
+          Positioned(
+            top: 0, left: 0, right: 0,
+            height: 280,
+            child: ShaderMask(
+              shaderCallback: (rect) => const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black, Colors.transparent],
+              ).createShader(rect),
+              blendMode: BlendMode.dstIn,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1200&q=80',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
 
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF0A1A12).withOpacity(0.7),
-                bgDark,
-                bgMid,
-              ],
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF0A1A12).withOpacity(0.7),
+                  bgDark,
+                  bgMid,
+                ],
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-            // ── Header ─────────────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'GUIDED MEDITATION',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: tealPrimary,
-                                  letterSpacing: 1.8,
-                                ),
-                              ),
-                              Text(
-                                'Find Your Calm',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: tealPrimary.withOpacity(0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.self_improvement_rounded, color: tealPrimary, size: 24),
-                        ),
-                      ],
+            child: SafeArea(
+              bottom: false,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // ── Header ─────────────────────────────────────────────────────
+                  CupertinoSliverNavigationBar(
+                    largeTitle: const Text(
+                      'Meditate',
+                      style: TextStyle(color: Colors.white),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Search by how you feel — curated practices for your emotional state',
-                      style: TextStyle(fontSize: 13, color: textSecondary),
+                    backgroundColor: const Color(0xE60A1A12),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.white.withOpacity(0.08),
+                        width: 0.5,
+                      ),
                     ),
-                    const SizedBox(height: 20),
+                    trailing: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: tealPrimary.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.person_crop_circle_fill,
+                        color: tealPrimary,
+                        size: 20,
+                      ),
+                    ),
+                  ),
 
-                    // Daily Featured Card (Pixel-Perfect Match to Screenshot)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(26),
-                      child: Stack(
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Positioned.fill(
-                            child: Image.network(
-                              'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-                              fit: BoxFit.cover,
-                            ),
+                          const Text(
+                            'Search by how you feel — curated practices for your emotional state',
+                            style: TextStyle(fontSize: 13, color: textSecondary),
                           ),
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.35),
-                                    Colors.black.withOpacity(0.85),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    // 64x64 Rounded Artwork Badge
-                                    Container(
-                                      width: 64,
-                                      height: 64,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(18),
-                                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.4),
-                                            blurRadius: 10,
-                                          ),
-                                        ],
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Image.network(
-                                          'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'DAILY GUIDED JOURNEY',
-                                            style: TextStyle(
-                                              fontSize: 9.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: tealPrimary,
-                                              letterSpacing: 1.4,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          const Text(
-                                            'Calm Mountain Horizon',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: -0.3,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.schedule_rounded, size: 13, color: Colors.white70),
-                                              const SizedBox(width: 4),
-                                              const Text(
-                                                '10 Min • Deep Relaxation',
-                                                style: TextStyle(fontSize: 12, color: Colors.white70),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Consumer<AppState>(
-                                      builder: (ctx, state, _) => GestureDetector(
-                                        onTap: () => state.playGuidedSession('Calm Mountain Horizon', 10),
-                                        child: Container(
-                                          width: 48,
-                                          height: 48,
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.4),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: Colors.white.withOpacity(0.3)),
-                                          ),
-                                          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 18),
+                          const SizedBox(height: 20),
 
-                                Row(
-                                  children: [
-                                    Consumer<AppState>(
-                                      builder: (ctx, state, _) => GlassPillButton(
-                                        text: 'Begin Session',
-                                        icon: Icons.play_arrow_rounded,
-                                        containerColor: tealPrimary,
-                                        contentColor: Colors.black,
-                                        onTap: () {
-                                          state.playGuidedSession('Calm Mountain Horizon', 10);
-                                        },
+                          // Daily Featured Card (Pixel-Perfect Match to Screenshot)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(26),
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Image.network(
+                                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black.withOpacity(0.35),
+                                          Colors.black.withOpacity(0.85),
+                                        ],
                                       ),
                                     ),
-                                    const Spacer(),
-                                    const AnimatedSoundWave(accentColor: tealPrimary),
-                                  ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          // 64x64 Rounded Artwork Badge
+                                          Container(
+                                            width: 64,
+                                            height: 64,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(18),
+                                              border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black.withOpacity(0.4),
+                                                  blurRadius: 10,
+                                                ),
+                                              ],
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(16),
+                                              child: Image.network(
+                                                'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=400&q=80',
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'DAILY GUIDED JOURNEY',
+                                                  style: TextStyle(
+                                                    fontSize: 9.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: tealPrimary,
+                                                    letterSpacing: 1.4,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 3),
+                                                const Text(
+                                                  'Calm Mountain Horizon',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    letterSpacing: -0.3,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Row(
+                                                  children: [
+                                                    const Icon(CupertinoIcons.time, size: 13, color: Colors.white70),
+                                                    const SizedBox(width: 4),
+                                                    const Text(
+                                                      '10 Min • Deep Relaxation',
+                                                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Consumer<AppState>(
+                                            builder: (ctx, state, _) {
+                                              final isThisPlaying = state.isGuidedPlaying && state.currentGuidedTitle == 'Calm Mountain Horizon';
+                                              return CupertinoButton(
+                                                padding: EdgeInsets.zero,
+                                                onPressed: () {
+                                                  HapticFeedback.lightImpact();
+                                                  if (isThisPlaying) {
+                                                    state.pauseGuidedSession();
+                                                  } else {
+                                                    state.playGuidedSession('Calm Mountain Horizon', 10);
+                                                  }
+                                                },
+                                                child: Container(
+                                                  width: 48,
+                                                  height: 48,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black.withOpacity(0.4),
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                                                  ),
+                                                  child: Icon(
+                                                    isThisPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+                                                    color: Colors.white,
+                                                    size: 24,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 18),
+
+                                      Row(
+                                        children: [
+                                          Consumer<AppState>(
+                                            builder: (ctx, state, _) {
+                                              final isThisPlaying = state.isGuidedPlaying && state.currentGuidedTitle == 'Calm Mountain Horizon';
+                                              return GlassPillButton(
+                                                text: isThisPlaying ? 'Pause Session' : 'Begin Session',
+                                                icon: isThisPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+                                                containerColor: isThisPlaying ? coralAccent : tealPrimary,
+                                                contentColor: Colors.black,
+                                                onTap: () {
+                                                  HapticFeedback.mediumImpact();
+                                                  if (isThisPlaying) {
+                                                    state.pauseGuidedSession();
+                                                  } else {
+                                                    state.playGuidedSession('Calm Mountain Horizon', 10);
+                                                  }
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          const Spacer(),
+                                          const AnimatedSoundWave(accentColor: tealPrimary),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
+                          const SizedBox(height: 22),
+
+                          // EMOTIONAL INTENT FILTER CHIPS
+                          const Text(
+                            'BROWSE BY EMOTIONAL INTENT',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: tealPrimary,
+                              letterSpacing: 1.6,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: CupertinoSlidingSegmentedControl<String>(
+                                backgroundColor: Colors.white.withOpacity(0.05),
+                                thumbColor: tealPrimary.withOpacity(0.3),
+                                groupValue: _selectedCategory,
+                                onValueChanged: (value) {
+                                  if (value != null) {
+                                    setState(() => _selectedCategory = value);
+                                  }
+                                },
+                                children: {
+                                  'All': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('All ✨', style: TextStyle(color: Colors.white))),
+                                  'Comfort': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Comfort', style: TextStyle(color: Colors.white))),
+                                  'Morning': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Morning', style: TextStyle(color: Colors.white))),
+                                  'Sleep': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Sleep', style: TextStyle(color: Colors.white))),
+                                  'Focus': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Focus', style: TextStyle(color: Colors.white))),
+                                  'Healing': const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Healing', style: TextStyle(color: Colors.white))),
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 22),
+                  ),
 
-                    // EMOTIONAL INTENT FILTER CHIPS
-                    const Text(
-                      'BROWSE BY EMOTIONAL INTENT',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: tealPrimary,
-                        letterSpacing: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: ['All', 'Comfort', 'Morning', 'Sleep', 'Focus', 'Healing'].map((cat) {
-                          final isSelected = _selectedCategory == cat;
+                  // ── Session List Filtered by Mood Intent ───────────────────────
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) {
+                          final s = filtered[i];
+                          final colors = _colorPairs[i % _colorPairs.length];
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GlassChip(
-                              label: cat == 'All' ? 'All Moods ✨' : cat,
-                              isSelected: isSelected,
-                              selectedColor: tealPrimary,
-                              onTap: () => setState(() => _selectedCategory = cat),
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: CupertinoContextMenu(
+                              actions: [
+                                CupertinoContextMenuAction(
+                                  child: const Text('Play'),
+                                  trailingIcon: CupertinoIcons.play_fill,
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Provider.of<AppState>(context, listen: false).playGuidedSession(s.$2, int.parse(s.$3));
+                                  },
+                                ),
+                                CupertinoContextMenuAction(
+                                  child: const Text('Favorite'),
+                                  trailingIcon: CupertinoIcons.heart_fill,
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                CupertinoContextMenuAction(
+                                  child: const Text('Share'),
+                                  trailingIcon: CupertinoIcons.share,
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                              child: Material( // Wrap in Material so cards can still have shadows/gestures properly inside context menu if needed
+                                color: Colors.transparent,
+                                child: _SessionCard(
+                                  emoji: s.$1,
+                                  title: s.$2,
+                                  duration: s.$3,
+                                  category: s.$4,
+                                  description: s.$5,
+                                  accentColor: colors[1],
+                                  bgColor: colors[0],
+                                ),
+                              ),
                             ),
                           );
-                        }).toList(),
+                        },
+                        childCount: filtered.length,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Session List Filtered by Mood Intent ───────────────────────
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final s = filtered[i];
-                    final colors = _colorPairs[i % _colorPairs.length];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _SessionCard(
-                        emoji: s.$1,
-                        title: s.$2,
-                        duration: s.$3,
-                        category: s.$4,
-                        description: s.$5,
-                        accentColor: colors[1],
-                        bgColor: colors[0],
-                      ),
-                    );
-                  },
-                  childCount: filtered.length,
-                ),
-              ),
-            ),
+                  ),
                 ],
               ),
             ),
           ),
         ],
-      );
+      ),
+    );
   }
 }
 
@@ -514,7 +567,7 @@ class _SessionCard extends StatelessWidget {
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
-                                    Icon(Icons.schedule_rounded, size: 14, color: textSecondary),
+                                    Icon(CupertinoIcons.time, size: 14, color: textSecondary),
                                     const SizedBox(width: 4),
                                     Text(
                                       '$duration min • Guided Session',
@@ -534,7 +587,7 @@ class _SessionCard extends StatelessWidget {
                                       child: Row(
                                         children: [
                                           Icon(
-                                            isPlayingThis ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                            isPlayingThis ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
                                             size: 15,
                                             color: isPlayingThis ? Colors.black : accentColor,
                                           ),
@@ -568,3 +621,4 @@ class _SessionCard extends StatelessWidget {
     );
   }
 }
+

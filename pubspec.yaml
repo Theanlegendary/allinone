@@ -26,6 +26,9 @@ dependencies:
   intl: ^0.19.0
   flutter_local_notifications: ^17.0.0
   in_app_review: ^2.0.9
+  purchases_flutter: ^8.7.0
+  google_generative_ai: ^0.4.3
+  timezone: ^0.9.2
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -88,16 +89,19 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
 
         for (final p in phases) {
           if (_cycleTick < elapsed + p.$2) {
+            final oldPhase = _phase;
             _phase = p.$1;
             final posInPhase = _cycleTick - elapsed;
             _phaseSecLeft = p.$2 - posInPhase;
+            if (oldPhase != _phase || posInPhase == 0) {
+              HapticFeedback.selectionClick();
+              _updateOrb(p.$2);
+            }
             break;
           }
           elapsed += p.$2;
         }
       });
-
-      _updateOrb();
 
       if (_remainingSec <= 0) {
         t.cancel();
@@ -109,12 +113,23 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
     });
   }
 
-  void _updateOrb() {
+  void _updateOrb(int durationSec) {
+    if (durationSec > 0) {
+      _orbCtrl.duration = Duration(seconds: durationSec);
+    }
     switch (_phase) {
-      case BreathPhase.inhale: _orbCtrl.forward(); break;
-      case BreathPhase.hold: _orbCtrl.value = 1.0; break;
-      case BreathPhase.exhale: _orbCtrl.reverse(); break;
-      case BreathPhase.holdOut: _orbCtrl.value = 0.0; break;
+      case BreathPhase.inhale:
+        _orbCtrl.forward(from: 0.0);
+        break;
+      case BreathPhase.hold:
+        _orbCtrl.value = 1.0;
+        break;
+      case BreathPhase.exhale:
+        _orbCtrl.reverse(from: 1.0);
+        break;
+      case BreathPhase.holdOut:
+        _orbCtrl.value = 0.0;
+        break;
     }
   }
 
@@ -145,22 +160,65 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
     }
   }
 
+  void _showPatternPicker(BuildContext context, AppState state) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Breathing Technique'),
+        message: const Text('Select your breathing pattern'),
+        actions: BreathingPattern.values.map((p) => CupertinoActionSheetAction(
+          child: Column(
+            children: [
+              Text(p.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(p.description, style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+            ],
+          ),
+          onPressed: () { 
+            state.setPattern(p); 
+            _reset(); 
+            Navigator.of(ctx).pop(); 
+          },
+        )).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          isDestructiveAction: false, 
+          child: const Text('Cancel'), 
+          onPressed: () => Navigator.of(ctx).pop()
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final mins = _remainingSec ~/ 60;
     final secs = _remainingSec % 60;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF061118), Color(0xFF0C212E), Color(0xFF050E15)],
+    return CupertinoPageScaffold(
+      backgroundColor: const Color(0xFF061118),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Breathe', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xE6061118),
+        border: Border.all(color: Colors.transparent),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Icon(CupertinoIcons.list_bullet, color: tealPrimary),
+          onPressed: () => _showPatternPicker(context, state),
         ),
       ),
       child: Stack(
         children: [
+          // Background Gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF061118), Color(0xFF0C212E), Color(0xFF050E15)],
+              ),
+            ),
+          ),
+          
           // Background Soft Radial Ambient Glow
           Positioned.fill(
             child: Align(
@@ -239,24 +297,32 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                   const SizedBox(height: 16),
 
                   // Technique Selector Pills (Floating Unboxed)
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: BreathingPattern.values.map((p) {
-                        final isSelected = state.pattern == p;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GlassChip(
-                            label: p.displayName,
-                            isSelected: isSelected,
-                            selectedColor: tealPrimary,
-                            onTap: () {
-                              state.setPattern(p);
-                              _reset();
-                            },
+                  SizedBox(
+                    width: double.infinity,
+                    child: CupertinoSlidingSegmentedControl<BreathingPattern>(
+                      backgroundColor: Colors.white.withOpacity(0.08),
+                      thumbColor: tealPrimary,
+                      groupValue: state.pattern,
+                      children: {
+                        for (final p in BreathingPattern.values)
+                          p: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              p.displayName,
+                              style: TextStyle(
+                                color: state.pattern == p ? Colors.black : Colors.white,
+                                fontSize: 13,
+                                fontWeight: state.pattern == p ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                            ),
                           ),
-                        );
-                      }).toList(),
+                      },
+                      onValueChanged: (pattern) {
+                        if (pattern != null) {
+                          state.setPattern(pattern);
+                          _reset();
+                        }
+                      },
                     ),
                   ),
 
@@ -362,8 +428,9 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      GestureDetector(
-                        onTap: _reset,
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _reset,
                         child: Container(
                           width: 52,
                           height: 52,
@@ -372,7 +439,7 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                             color: Colors.white.withOpacity(0.08),
                             border: Border.all(color: Colors.white.withOpacity(0.2)),
                           ),
-                          child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 22),
+                          child: const Icon(CupertinoIcons.refresh, color: Colors.white70, size: 22),
                         ),
                       ),
                       const SizedBox(width: 24),
@@ -400,7 +467,7 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                             ],
                           ),
                           child: Icon(
-                            _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            _isRunning ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
                             color: Colors.black,
                             size: 36,
                           ),
@@ -408,12 +475,20 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                       ),
                       const SizedBox(width: 24),
 
-                      GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Focus mode active — breathe gently'),
-                              duration: Duration(seconds: 2),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (ctx) => CupertinoAlertDialog(
+                              title: const Text('Focus Mode'),
+                              content: const Text('Focus mode active — breathe gently'),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: const Text('OK'),
+                                  onPressed: () => Navigator.of(ctx).pop(),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -425,7 +500,7 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
                             color: Colors.white.withOpacity(0.08),
                             border: Border.all(color: Colors.white.withOpacity(0.2)),
                           ),
-                          child: const Icon(Icons.spa_rounded, color: Colors.white70, size: 22),
+                          child: const Icon(CupertinoIcons.leaf_arrow_circlepath, color: Colors.white70, size: 22),
                         ),
                       ),
                     ],

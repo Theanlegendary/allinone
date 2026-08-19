@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:relax_mindfulness/main.dart' show localNotifications;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -99,29 +101,22 @@ class NotificationService {
   Future<void> scheduleMorningReminder() async {
     if (!_isInitialized) return;
 
-    const androidDetails = AndroidNotificationDetails(
-      'daily_meditation_channel',
-      'Daily Meditation Reminders',
-      channelDescription: 'Gentle morning notifications to start your day with calm',
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
-
     try {
-      await _notifications.show(
+      final now = DateTime.now();
+      var scheduledDate = DateTime(now.year, now.month, now.day, _morningTime.hour, _morningTime.minute);
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      await localNotifications.zonedSchedule(
         101,
         '🌸 Good Morning Sanctuary',
         'Take 5 minutes for gentle morning breath & clarity before starting your day. 🌿',
-        details,
-        payload: 'morning_meditation',
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        const NotificationDetails(iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true)),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {
       debugPrint('Error showing morning notification: $e');
@@ -131,29 +126,22 @@ class NotificationService {
   Future<void> scheduleEveningReminder() async {
     if (!_isInitialized) return;
 
-    const androidDetails = AndroidNotificationDetails(
-      'sleep_story_channel',
-      'Bedtime Sleep Reminders',
-      channelDescription: 'Soothing bedtime notifications for peaceful slumber',
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
-
     try {
-      await _notifications.show(
+      final now = DateTime.now();
+      var scheduledDate = DateTime(now.year, now.month, now.day, _eveningTime.hour, _eveningTime.minute);
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      await localNotifications.zonedSchedule(
         102,
         '🌙 Time to Wind Down',
         'Your sleep story & ocean waves are ready. Drift off into deep rest. ✨',
-        details,
-        payload: 'evening_sleep',
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        const NotificationDetails(iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true)),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {
       debugPrint('Error showing evening notification: $e');
