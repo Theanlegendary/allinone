@@ -1052,13 +1052,13 @@ class SanctuaryMiniPlayer extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          state.isGuidedPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.pause_fill,
+                          CupertinoIcons.pause_fill,
                           color: Colors.black,
                           size: 14,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 5),
                         const Text(
-                          'Pause',
+                          'Pause All',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
