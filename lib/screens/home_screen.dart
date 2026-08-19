@@ -317,23 +317,6 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
-                                shape: BoxShape.circle,
-                              ),
-                              child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                minSize: 32,
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    CupertinoPageRoute(builder: (_) => const NeumorphismDemoScreen()),
-                                  );
-                                },
-                                child: const Text('✨', style: TextStyle(fontSize: 16)),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
                             if (state.streak > 0) StreakBadge(streakCount: state.streak),
                           ],
                         ),
