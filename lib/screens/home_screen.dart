@@ -132,49 +132,6 @@ class HomeScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
                                 shape: BoxShape.circle,
-                                boxShadow: isClay
-                                    ? const [
-                                        BoxShadow(color: Color(0x33B89679), blurRadius: 8, offset: Offset(4, 4)),
-                                        BoxShadow(color: Colors.white, blurRadius: 6, offset: Offset(-3, -3)),
-                                      ]
-                                    : null,
-                              ),
-                              child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                minSize: 32,
-                                onPressed: () {
-                                  showCupertinoModalPopup(
-                                    context: context,
-                                    builder: (ctx) => CupertinoActionSheet(
-                                      title: const Text('Select Theme'),
-                                      actions: SanctuaryThemeMode.values.map((mode) {
-                                        return CupertinoActionSheetAction(
-                                          onPressed: () {
-                                            state.setThemeMode(mode);
-                                            Navigator.pop(ctx);
-                                          },
-                                          child: Text(mode.displayName),
-                                        );
-                                      }).toList(),
-                                      cancelButton: CupertinoActionSheetAction(
-                                        isDefaultAction: true,
-                                        onPressed: () => Navigator.pop(ctx),
-                                        child: const Text('Cancel'),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Icon(
-                                  CupertinoIcons.paintbrush_fill,
-                                  color: isClay ? clayText : textPrimary,
-                                  size: 22,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: isClay ? clayCardBg : Colors.white.withOpacity(0.08),
-                                shape: BoxShape.circle,
                               ),
                               child: CupertinoButton(
                                 padding: EdgeInsets.zero,
