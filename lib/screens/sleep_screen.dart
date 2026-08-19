@@ -58,7 +58,7 @@ class _SleepScreenState extends State<SleepScreen> {
     ('Rain', CupertinoIcons.cloud_rain_fill, 'Soft Rain', mintAccent),
     ('Wind', CupertinoIcons.wind, 'Soothing Breeze', tealPrimary),
     ('Thunder', CupertinoIcons.bolt_fill, 'Thunderstorm', coralAccent),
-    ('Nature', CupertinoIcons.leaf_fill, 'Mountain Stream', Colors.greenAccent),
+    ('Nature', CupertinoIcons.leaf_arrow_circlepath, 'Mountain Stream', Colors.greenAccent),
   ];
 
   void _startTimer(int minutes) {

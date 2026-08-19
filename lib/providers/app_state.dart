@@ -1145,8 +1145,7 @@ class AppState extends ChangeNotifier {
     _prefs?.setInt('last_practice_ms', DateTime.now().millisecondsSinceEpoch);
   }
 
-  void _saveSessions() => _prefs?.setStringList('sessions', _sessions.take(200).map((s) => jsonEncode(s.toJson())).toList());
-  void _savePresets() => _prefs?.setStringList('presets', _presets.map((p) => jsonEncode(p.toJson())).toList());
+  Future<void> setTrackVolume(String name, double volume) => updateSoundTrackVolume(name, volume);
 
   // ─── Local Notifications Logic ──────────────────────────────────────────────
 

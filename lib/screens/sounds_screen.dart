@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
@@ -284,6 +285,8 @@ class _SoundsScreenState extends State<SoundsScreen> {
       newVols[key] = active ? (0.2 + (DateTime.now().millisecondsSinceEpoch % 5) * 0.1) : 0.0;
     });
     _applyVolumes(newVols, state);
+  }
+
   void _shareCurrentMix(AppState state) {
     final url = state.generateShareUrl();
     Clipboard.setData(ClipboardData(text: url));
