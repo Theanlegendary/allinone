@@ -1,0 +1,23 @@
+=== VALUE COUNTS OF CURRENT STATUS IN RAW EXPORT (41,863 rows) ===
+410 - Giao thành công: 36843
+306 - Nhận bàn giao: 1796
+520 - Đã trả hàng: 639
+309 - Nhận bưu gửi: 507
+210 - Đã lấy hàng: 461
+110 - Chưa tiếp nhận: 449
+402 - Xác nhận phân công: 256
+310 - Đóng kiện: 236
+420 - Hẹn giao lại: 198
+311 - Nhận tay: 151
+302 - Hoàn thành tải: 121
+430 - Không giao được hàng: 71
+200 - Đang lấy hàng: 34
+480 - Chuyển giao địa chỉ mới: 34
+401 - Phân công giao - Đã hoàn thành: 22
+472 - Lưu kho: 16
+120 - Đã tiếp nhận: 7
+460 - Thông báo chuyển hoàn: 6
+500 - Chuyển hoàn: 5
+300 - Gán đơn vào tải: 4
+512 - Xác nhận phân công hoàn: 4
+400 - Phân công giao - Chưa hoàn thành: 3

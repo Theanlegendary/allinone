@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metfone Express — 5-Slide Landscape Training Deck</title>
+    <!-- Import Telegram WebApp JS -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Google Fonts: Angkor (Khmer Display Serif) + Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Angkor&family=Inter:wght@600;700;800;900&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-white: #ffffff;
+            --brand-red: #e11b22;
+            --text-black: #090d16;
+            --text-dark: #1e293b;
+            --text-muted: #334155;
+            --border-dark: #0f172a;
+            --border-light: #94a3b8;
+            --sticky-yellow: #fef08a;
+            --sticky-text: #713f12;
+            --node-blue: #1d4ed8;
+            --node-green: #047857;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-white);
+            color: var(--text-black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 16:9 Landscape Canvas */
+        .landscape-canvas {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
+        /* Far Left Vertical Stamp Margin */
+        .side-stamp {
+            position: absolute;
+            left: 20px;
+            bottom: 120px;
+            transform: rotate(-90deg);
+            transform-origin: left bottom;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.25em;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Top Bar Layout with Official Metfone Express Brand Logo */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-logo-img {
+            height: 52px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .nav-header-text {
+            font-family: 'Angkor', serif;
+            font-size: 1.15rem;
+            color: var(--text-black);
+            letter-spacing: 0.05em;
+        }
+
+        /* SLEEK LANGUAGE SWITCHER TOGGLE */
+        .nav-right-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .lang-switcher-box {
+            background: #f1f5f9;
+            border: 2px solid var(--text-black);
+            padding: 4px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.88rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lang-btn.active {
+            background: var(--brand-red);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(225, 27, 34, 0.3);
+        }
+
+        .nav-right-tag {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--text-dark);
+        }
+
+        /* Slide Views Switcher with 3D Book Page Flip Animation */
+        .slide-view {
+            display: none;
+            width: 100%;
+            height: 100%;
+            transform-origin: left center;
+        }
+
+        .slide-view.active {
+            display: grid;
+            grid-template-columns: 1.05fr 1.25fr;
+            padding: 85px 30px 85px 75px;
+            gap: 30px;
+            align-items: center;
+            animation: bookPageFlip 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes bookPageFlip {
+            from {
+                opacity: 0;
+                transform: rotateY(-20deg) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg) scale(1);
+            }
+        }
+
+        /* LEFT CONTENT COLUMN */
+        .left-content {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-width: 720px;
+        }
+
+        .eyebrow-line {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            color: var(--brand-red);
+            text-transform: uppercase;
+        }
+
+        .eyebrow-line::before {
+            content: '';
+            width: 48px;
+            height: 6px;
+            background: var(--brand-red);
+            border-radius: 4px;
+        }
+
+        /* HERO TITLE WITH ANGKOR FONT */
+        .hero-title-bold {
+            font-family: 'Angkor', serif;
+            font-size: 5.2rem;
+            line-height: 1.1;
+            color: var(--text-black);
+            letter-spacing: -0.01em;
+        }
+
+        .hero-title-bold span {
+            color: var(--brand-red);
+        }
+
+        /* ENLARGED BILINGUAL DESCRIPTION & KHMER TEXT */
+        .sub-english {
+            font-size: 1.75rem;
+            color: var(--text-black);
+            line-height: 1.45;
+            font-weight: 800;
+        }
+
+        .sub-khmer {
+            font-family: 'Angkor', serif;
+            font-size: 1.6rem;
+            color: var(--brand-red);
+            line-height: 1.65;
+            background: #fff1f2;
+            padding: 16px 20px;
+            border-radius: 10px;
+            border-left: 6px solid var(--brand-red);
+            box-shadow: 0 4px 12px rgba(225, 27, 34, 0.08);
+        }
+
+        /* LANGUAGE TOGGLE VISIBILITY CONTROL */
+        body.mode-en .kh-el { display: none !important; }
+        body.mode-kh .en-el { display: none !important; }
+
+        body.mode-kh .hero-title-bold {
+            font-size: 4.2rem;
+            line-height: 1.25;
+        }
+
+        /* Status & Rule Cards */
+        .status-flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-step-card {
+            background: #f8fafc;
+            border: 2px solid var(--text-black);
+            border-left: 6px solid var(--brand-red);
+            padding: 14px 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-code-badge {
+            background: var(--text-black);
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.25rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .status-desc-text {
+            font-size: 1.35rem;
+            color: var(--text-black);
+            line-height: 1.4;
+            font-weight: 800;
+        }
+
+        body.mode-kh .status-desc-text {
+            font-family: 'Angkor', serif;
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        /* KPI Explanation Grid */
+        .kpi-explain-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .kpi-card {
+            background: #f8fafc;
+            border: 2px solid var(--text-black);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .kpi-badge-tag {
+            font-size: 1.1rem;
+            font-weight: 900;
+            padding: 6px 14px;
+            border-radius: 6px;
+            display: inline-block;
+            width: max-content;
+        }
+
+        .kpi-badge-tag.green { background: #d1fae5; color: #047857; }
+        .kpi-badge-tag.red { background: #ffe4e6; color: #b91c1c; }
+
+        .kpi-card-text {
+            font-size: 1.3rem;
+            color: var(--text-black);
+            line-height: 1.4;
+            font-weight: 800;
+        }
+
+        body.mode-kh .kpi-card-text {
+            font-family: 'Angkor', serif;
+            font-size: 1.15rem;
+            line-height: 1.5;
+        }
+
+        /* Right Visual Slide Paper Frame */
+        .right-exhibit {
+            width: 100%;
+            height: 100%;
+            max-height: 640px;
+            background: #ffffff;
+            border: 3px solid var(--text-black);
+            border-radius: 14px;
+            box-shadow: 16px 16px 0px rgba(9, 13, 22, 0.1);
+            position: relative;
+            padding: 16px 20px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* REDESIGNED BILINGUAL STICKER FOOTER NOTE UNDER TABLE */
+        .sticky-note-under {
+            background: var(--sticky-yellow);
+            color: var(--sticky-text);
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 900;
+            border: 2px solid #eab308;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .sticky-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sticky-kh-text {
+            font-family: 'Angkor', serif;
+            font-size: 0.85rem;
+            line-height: 1.35;
+        }
+
+        /* STYLISH SMALL BADGE TAG INSIDE FOOTER NOTE */
+        .badge-tag-inline {
+            background: var(--brand-red);
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .badge-tag-inline.blue { background: #2563eb; }
+        .badge-tag-inline.amber { background: #d97706; }
+        .badge-tag-inline.green { background: #059669; }
+        .badge-tag-inline.purple { background: #7c3aed; }
+
+        /* GRID TAB SWITCHERS (CLEAN TITLES, NO PARENTHESES!) */
+        .tab-switcher {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            border-bottom: 3px solid var(--border-light);
+            padding-bottom: 8px;
+            width: 100%;
+            position: relative;
+            z-index: 50;
+        }
+
+        .tab-switcher.two-cols {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tab-switcher.three-cols {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .exhibit-tab {
+            background: #f1f5f9;
+            border: 2px solid var(--border-light);
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            padding: 12px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .exhibit-tab.active {
+            background: var(--text-black);
+            color: #ffffff;
+            border-color: var(--text-black);
+        }
+
+        /* Display Image Container */
+        .exhibit-display-frame {
+            flex: 1;
+            width: 100%;
+            background: #ffffff;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .exhibit-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+        }
+
+        /* FIXED PERMANENTLY VISIBLE BOOK FLIP NAVIGATION BAR */
+        .bottom-nav {
+            position: fixed;
+            bottom: 24px;
+            left: 75px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .page-mark {
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            color: var(--text-black);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid var(--text-black);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            pointer-events: auto;
+        }
+
+        /* ELEGANT BOOK PAGE TURN CONTROLLER */
+        .nav-controls-box {
+            background: var(--text-black);
+            color: #ffffff;
+            padding: 10px 24px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 24px rgba(9, 13, 22, 0.25);
+            border: 2px solid #ffffff;
+            pointer-events: auto;
+        }
+
+        .book-turn-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .book-turn-btn:hover:not(:disabled) {
+            color: var(--brand-red);
+            transform: scale(1.05);
+        }
+
+        .book-turn-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .dot.active {
+            background: var(--brand-red);
+            width: 26px;
+            border-radius: 10px;
+        }
+
+        /* Fullscreen Sharp Lightbox Modal */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(9, 13, 22, 0.95);
+            z-index: 999999;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .lightbox-modal.active {
+            display: flex;
+        }
+
+        .lightbox-box {
+            width: 95vw;
+            height: 90vh;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: var(--text-black);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 900;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .lightbox-img-full {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+        }
+    </style>
+</head>
+<body class="mode-both">
+
+    <!-- 16:9 Landscape Presentation Canvas -->
+    <div class="landscape-canvas">
+        
+        <!-- Left Margin Vertical Stamp -->
+        <div class="side-stamp">METFONE EXPRESS · INTERNAL TRAINING</div>
+
+        <!-- Top Navigation with Official Metfone Express Brand Logo & Language Switcher -->
+        <div class="top-nav">
+            <div class="logo-box">
+                <img src="images/metfone_express_logo.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/metfone_express_logo.png';" alt="Metfone Express Logo" class="brand-logo-img">
+                <div class="nav-header-text">DAILY DISPATCH BOT TRAINING</div>
+            </div>
+
+            <div class="nav-right-controls">
+                <!-- SLEEK LANGUAGE SWITCHER TOGGLE BUTTONS -->
+                <div class="lang-switcher-box">
+                    <button class="lang-btn active" id="btnBoth" onclick="setLanguage('both')">🌐 EN+KH</button>
+                    <button class="lang-btn" id="btnEn" onclick="setLanguage('en')">🇬🇧 EN</button>
+                    <button class="lang-btn" id="btnKh" onclick="setLanguage('kh')">🇰🇭 KH</button>
+                </div>
+                <div class="nav-right-tag" id="slideTag">Slide 1 of 5 · Ops tms guide</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 1 VIEW: CORE BOT OPERATIONS -->
+        <div id="slide1" class="slide-view active">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 01 · Bot Core Operations</div>
+                
+                <h1 class="hero-title-bold en-el">
+                    Right report.<br><span>Every shift.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el">
+                    របាយការណ៍ត្រឹមត្រូវ<br><span>កំពុងពេលធ្វើការ</span>
+                </h1>
+
+                <p class="sub-english en-el">
+                    A practical guide for automated daily pushes, 4-stage order tracking, 3-shift clearance comparison, and status logs.
+                </p>
+
+                <p class="sub-khmer kh-el">
+                    ការណែនាំណែនាំអំពីប្រតិបត្តិការ របាយការណ័ប្រចាំថ្ងៃនិងតាមដានទិន្នន័យរបស់អីវ៉ាន់។
+                </p>
+            </div>
+
+            <div class="right-exhibit">
+                <!-- TAB 4 CORRECTED TO '4. Not Assign' -->
+                <div class="tab-switcher">
+                    <button class="exhibit-tab active" onclick="switchExhibit('table1', this)">1. Pickup</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table2', this)">2. Delivery</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table3', this)">3. Transit</button>
+                    <button class="exhibit-tab" onclick="switchExhibit('table4', this)">4. Not Assign</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImg" src="images/thop001_branch_sharp.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/thop001_branch_sharp.png';" alt="Pickup Table" class="exhibit-img">
+                </div>
+
+                <!-- BILINGUAL STICKY FOOTER NOTE UNDER TABLE -->
+                <div class="sticky-note-under">
+                    <div class="sticky-text-wrapper">
+                        <div class="en-el">📌 <b>Crisp Table View:</b> Click table to inspect full size</div>
+                        <div class="kh-el sticky-kh-text">📌 <b>ពិនិត្យតារាងច្បាស់៖</b> ចុចលើតារាងដើម្បីមើលទំហំពេញ 100%</div>
+                    </div>
+                    <div class="badge-tag-inline">🏷️ VERIFIED DATA</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2 VIEW: DELIVERY & NOT ASSIGN CLEARANCE -->
+        <div id="slide2" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 02 · Delivery & Not Assign Logic</div>
+                
+                <h1 class="hero-title-bold en-el" style="font-size: 4.6rem;">
+                    Clear pending.<br><span>Hit KPI 10h.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 4rem;">
+                    ដោះស្រាយទំនិញកកស្ទះ<br><span>សម្រេច KPI 10ម៉ោង</span>
+                </h1>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #f59e0b;">
+                        <div class="status-code-badge" style="background: #f59e0b;">306</div>
+                        <div class="status-desc-text en-el"><b>At Store / Pending:</b> Order pending at branch awaiting courier assignment.</div>
+                        <div class="status-desc-text kh-el"><b>ទំនិញនៅហាង / រង់ចាំ៖</b> ទំនិញកកស្ទះនៅសាខារង់ចាំការចាត់ចែងអ្នកដឹក។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">402</div>
+                        <div class="status-desc-text en-el"><b>Assign Courier (10h KPI):</b> Courier assigned — 10h SLA timer starts!</div>
+                        <div class="status-desc-text kh-el"><b>ចាត់ចែងអ្នកដឹក (KPI 10h)៖</b> ចាត់ចែងអ្នកដឹក — ចាប់ផ្តើមរាប់ម៉ោង 10h KPI!</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #10b981;">
+                        <div class="status-code-badge" style="background: #10b981;">OUTCOMES</div>
+                        <div class="status-desc-text en-el">
+                            <b>410</b> (Shipped) | <b>420</b> (Ship again) | <b>430</b> (Failed) | <b>460</b> (Return)
+                        </div>
+                        <div class="status-desc-text kh-el">
+                            <b>410</b> (ផ្ញើរួច) | <b>420</b> (ផ្ញើម្តងទៀត) | <b>430</b> (បរាជ័យ) | <b>460</b> (ត្រឡប់)
+                        </div>
+                    </div>
+                </div>
+
+                <p class="sub-english en-el">
+                    Operational Rule: Transition stuck 306 packages to 402 (Set 10h KPI) to start SLA timer and achieve 410, 420, 430, or 460 outcomes.
+                </p>
+                <p class="sub-khmer kh-el" style="font-size: 1.2rem; line-height: 1.5; padding: 12px 16px;">
+                    អំពីប្រភេទទំនិញជាប់មិនទានធ្វេីប្រតិបត្តិការនាមួួ៖ប្ដូរស្ថានភាពទំនិញ ពី306 ទៅ 402 ( KPI 10h នឹងត្រូវបានកំណត់ ) >>> ចំពោះស្ថានភាពទំនិញបន្ទាប់នឹងត្រូវប្ដូរទៅស្ថានភាពទាំងនេះ :   410, 420, 430 ឬ 460។
+                </p>
+            </div>
+
+            <div class="right-exhibit">
+                <div class="tab-switcher two-cols">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide2('table2', this)">1. Delivery</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide2('table4', this)">2. Not Assign</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide2" src="images/svap001_delivery_sharp.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/svap001_delivery_sharp.png';" alt="Delivery Sharp Table" class="exhibit-img">
+                </div>
+
+                <div class="sticky-note-under" style="background: #dbeafe; color: #1e40af; border-color: #3b82f6;">
+                    <div class="sticky-text-wrapper">
+                        <div class="en-el">⚡ <b>Rule 306 → 402:</b> Assign courier to start 10h SLA timer!</div>
+                        <div class="kh-el sticky-kh-text">⚡ <b>ច្បាប់ 306 → 402៖</b> ចាត់ចែងអ្នកដឹកដើម្បីចាប់ផ្តើមរាប់ KPI 10ម៉ោង!</div>
+                    </div>
+                    <div class="badge-tag-inline blue">⚡ 10H SLA ACTIVE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3 VIEW: PICKUP & MEGA TRANSIT -->
+        <div id="slide3" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 03 · Pickup & Mega Transit Action</div>
+                
+                <h1 class="hero-title-bold en-el" style="font-size: 4.6rem;">
+                    Verify pickup.<br><span>Transit fast.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 4rem;">
+                    ពិនិត្យការយកទំនិញ<br><span>ដឹកជញ្ជូនបន្តលឿន</span>
+                </h1>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #e11b22;">
+                        <div class="status-code-badge" style="background: #e11b22;">PICKUP APP</div>
+                        <div class="status-desc-text en-el">For pending pickup bills, staff <b>must check Pickup Page in TMS App</b> for customer assignments!</div>
+                        <div class="status-desc-text kh-el">សម្រាប់អីវ៉ាន់ Pickup <b>ត្រូវពិនិត្យទំព័រ Pickup ក្នុង App</b> ដើម្បីមើលការ assign ពីអតិថិជន!</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">MEGA TRANSIT</div>
+                        <div class="status-desc-text en-el">Verify <b>Send Mega Table (302/306/311)</b> to ensure packages are loaded on transit trucks.</div>
+                        <div class="status-desc-text kh-el">ពិនិត្យ <b>តារាងអីវាន់ ដាក់ នឹងកំពុងដាក់ទៅ MEGA (302/306/311)</b> ដើម្បីប្រាកដថាទំនិញកំពុងមានប្រតិបត្តិការជាមួយឡាន។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #a855f7;">
+                        <div class="status-code-badge" style="background: #7c3aed;">NTN SERVICE</div>
+                        <div class="status-desc-text en-el"><b>NTN Express Priority:</b> Fast-track direct branch dispatch to MEGA for urgent customer shipments!</div>
+                        <div class="status-desc-text kh-el"><b>សេវាកម្ម NTN ដឹកជញ្ជូនលឿន៖</b> រៀបចំផ្ញើផ្ទាល់ទៅ MEGA យ៉ាងរហ័សសម្រាប់អីវ៉ាន់ប្រញាប់!</div>
+                    </div>
+                </div>
+
+                <p class="sub-english en-el">
+                    Operational Rule: For pending pickup items, check TMS App Pickup Page to inspect customer assignments and send via MEGA transit.
+                </p>
+                <p class="sub-khmer kh-el">
+                    អំពីលំហូរការងាររ៖ សម្រាប់អីវ៉ាន់បានបង្កេីតដោយភ្ញៀវ (Pickup) នឹងលោតទៅ  Pickup ស្វ័យប្រវត្តិក្នុង App ទៅតាមទិសដៅតំបន់នៅជិតទំនិញបានបង្កេីត បុគ្គលិកត្រូវឆែកមេីលជាប្រចាំដេីម្បីប្រាកដថាបានឃេីញ នឹងទទួលទំនិញ
+                </p>
+            </div>
+
+            <div class="right-exhibit">
+                <div class="tab-switcher two-cols">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide3('table1', this)">1. Pickup</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide3('table3', this)">2. Send Mega</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide3" src="images/thop001_branch_sharp.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/thop001_branch_sharp.png';" alt="Pickup & Send Mega Table" class="exhibit-img">
+                </div>
+
+                <div class="sticky-note-under" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">
+                    <div class="sticky-text-wrapper">
+                        <div class="en-el">📲 <b>Check App First:</b> Open TMS App Pickup Page to confirm customer requests!</div>
+                        <div class="kh-el sticky-kh-text">📲 <b>ពិនិត្យ App៖</b> បើកទំព័រ Pickup ក្នុង App ដើម្បីផ្ទៀងផ្ទាត់ការចាត់ចែង!</div>
+                    </div>
+                    <div class="badge-tag-inline amber">📲 APP CHECK REQUIRED</div> <div class="badge-tag-inline purple">🚀 NTN PRIORITY</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4 VIEW: HOW OPERATIONAL KPI & AGE SLA WORK -->
+        <div id="slide4" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 04 · Operational KPI & Age SLA</div>
+                
+                <h1 class="hero-title-bold en-el" style="font-size: 4.6rem;">
+                    Target 10h.<br><span>Zero overdue.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 4rem;">
+                    គោលដៅ 10ម៉ោង<br><span>គ្មានទំនិញយឺតយ៉ាវ</span>
+                </h1>
+
+                <div class="kpi-explain-box">
+                    <div class="kpi-card" style="border-left: 6px solid #10b981;">
+                        <div class="kpi-badge-tag green">🟢 GREEN (0h — 9h 59m)</div>
+                        <div class="kpi-card-text en-el">
+                            <b>Safe SLA Zone:</b> Order age is within 10-hour target. Delivery on schedule.
+                        </div>
+                        <div class="kpi-card-text kh-el">
+                            <b>តំបន់សុវត្ថិភាព SLA៖</b> អាយុទំនិញស្ថិតក្នុងគោលដៅ 10ម៉ោង។
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 6px solid #e11b22;">
+                        <div class="kpi-badge-tag red">🔴 RED (≥ 10h 00m)</div>
+                        <div class="kpi-card-text en-el">
+                            <b>Overdue Alert:</b> Order age exceeded 10 hours! Requires immediate courier follow-up.
+                        </div>
+                        <div class="kpi-card-text kh-el">
+                            <b>អាសន្នយឺតយ៉ាវ៖</b> អាយុទំនិញលើស 10ម៉ោង! ត្រូវប្រញាប់តាមដាន។
+                        </div>
+                    </div>
+                </div>
+
+                <p class="sub-english en-el">
+                    KPI SLA Logic: Green 🟢 order age is safe (<10h) | Red 🔴 order age is overdue (≥10h) and requires urgent resolution across all 3 shifts.
+                </p>
+                <p class="sub-khmer kh-el">
+                    <b>ការរាប់ KPI៖</b> រយៈពេលអាយុ (Age) ពណ៌បៃតង 🟢 គឺទាន់ពេល (<10h) | ពណ៌ក្រហម 🔴 គឺហួសកាលកំណត់ (≥10h) ត្រូវតែប្រញាប់ដោះស្រាយ!
+                </p>
+            </div>
+
+            <div class="right-exhibit">
+                <div class="tab-switcher two-cols">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide4('table2', this)">1. Delivery KPI</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide4('table1', this)">2. Not Assign Age</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide4" src="images/svap001_delivery_sharp.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/svap001_delivery_sharp.png';" alt="Delivery KPI Table" class="exhibit-img">
+                </div>
+
+                <div class="sticky-note-under" style="background: #dcfce7; color: #166534; border-color: #22c55e;">
+                    <div class="sticky-text-wrapper">
+                        <div class="en-el">🎯 <b>Target SLA 10H:</b> Keep order ages green (<10h) across all shifts!</div>
+                        <div class="kh-el sticky-kh-text">🎯 <b>គោលដៅ 10H៖</b> រក្សាអាយុទំនិញជាពណ៌បៃតង (<10h) គ្រប់វេន!</div>
+                    </div>
+                    <div class="badge-tag-inline green">🟢 0 OVERDUE TARGET</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5 VIEW: END OF DAY CHECK & SCAN IN INVENTORY FEATURE -->
+        <div id="slide5" class="slide-view">
+            <div class="left-content">
+                <div class="eyebrow-line">Chapter 05 · End of Day Inventory Audit</div>
+                
+                <h1 class="hero-title-bold en-el" style="font-size: 4.6rem;">
+                    Scan inventory.<br><span>Close shift clean.</span>
+                </h1>
+                <h1 class="hero-title-bold kh-el" style="font-size: 4rem;">
+                    ស្កេនពិនិត្យស្តុក<br><span>បិទទំនិញពេលបញ្ចប់ម៉ោងការងារ</span>
+                </h1>
+
+                <p class="sub-english en-el">
+                    At the end of every operational shift, staff must perform a physical audit using the <b>Scan in Inventory feature</b> in the TMS app.
+                </p>
+
+                <div class="status-flow-container">
+                    <div class="status-step-card" style="border-left-color: #2563eb;">
+                        <div class="status-code-badge" style="background: #2563eb;">1. PHYSICAL AUDIT</div>
+                        <div class="status-desc-text en-el">Scan all remaining store packages using <b>Scan in Inventory feature</b> to reconcile store stock.</div>
+                        <div class="status-desc-text kh-el">ស្កេនទំនិញដែលនៅសល់ក្នុងហាងដោយប្រើ <b>មុខងារ Scan ចូលស្តុក</b> ដើម្បីផ្ទៀងផ្ទាត់ស្តុកហាង។</div>
+                    </div>
+
+                    <div class="status-step-card" style="border-left-color: #10b981;">
+                        <div class="status-code-badge" style="background: #10b981;">2. MATCH BOT LOGS</div>
+                        <div class="status-desc-text en-el">Ensure total scanned store count matches the <b>Not Assign & Branch Tables</b> in bot report.</div>
+                        <div class="status-desc-text kh-el">ធានាថាចំនួនទំនិញដែលបានស្កេន ត្រូវគ្នានឹង <b>តារាង មិនទាន់ចាត់ចែង</b> ក្នុងរបាយការណ៍ Bot។</div>
+                    </div>
+                </div>
+
+                <p class="sub-khmer kh-el">
+                    <b>គ្រប់គ្រងស្តុកចុងម៉ោង៖</b> នៅចុងបញ្ចប់នៃវេនការងារ ត្រូវតែប្រើមុខងារ Scan ចូលស្តុក ក្នុង App ដើម្បីស៊ើបអង្កេតទំនិញ និងទិន្នន័យក្នុងប្រព័ន្ធ!
+                </p>
+            </div>
+
+            <div class="right-exhibit">
+                <div class="tab-switcher three-cols">
+                    <button class="exhibit-tab active" onclick="switchExhibitSlide5('inv1', this)">1. Audit Summary</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide5('inv2', this)">2. Scan Package</button>
+                    <button class="exhibit-tab" onclick="switchExhibitSlide5('inv3', this)">3. Scanned Items</button>
+                </div>
+
+                <div class="exhibit-display-frame" onclick="openLightbox()">
+                    <img id="exhibitImgSlide5" src="images/tms_inventory_audit.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/tms_inventory_audit.png';" alt="TMS App Inventory Audit Summary" class="exhibit-img">
+                </div>
+
+                <div class="sticky-note-under" style="background: #f3e8ff; color: #6b21a8; border-color: #a855f7;">
+                    <div class="sticky-text-wrapper">
+                        <div class="en-el">📦 <b>EOD Audit Rule:</b> Zero un-scanned packages left before closing shift!</div>
+                        <div class="kh-el sticky-kh-text">📦 <b>ច្បាប់បិទវេន៖</b> ស្កេនទំនិញក្នុងស្តុកឱ្យអស់ មុនពេលបិទវេន!</div>
+                    </div>
+                    <div class="badge-tag-inline purple">📦 EOD AUDIT PASSED</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FIXED PERMANENTLY VISIBLE BOOK FLIP NAVIGATION BAR -->
+        <div class="bottom-nav">
+            <div class="page-mark" id="pageMark">PAGE 01 / 05 &nbsp;·&nbsp; METFONE EXPRESS</div>
+            
+            <div class="nav-controls-box">
+                <button class="book-turn-btn" id="prevBtn" onclick="prevSlide()" disabled>
+                    📖 <span>PREV PAGE</span>
+                </button>
+                <div class="slide-dots">
+                    <div class="dot active" id="dot1" onclick="goToSlide(1)"></div>
+                    <div class="dot" id="dot2" onclick="goToSlide(2)"></div>
+                    <div class="dot" id="dot3" onclick="goToSlide(3)"></div>
+                    <div class="dot" id="dot4" onclick="goToSlide(4)"></div>
+                    <div class="dot" id="dot5" onclick="goToSlide(5)"></div>
+                </div>
+                <button class="book-turn-btn" id="nextBtn" onclick="nextSlide()">
+                    <span>NEXT PAGE</span> 📖
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Fullscreen Sharp Lightbox Modal -->
+    <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
+        <div class="lightbox-box" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">CLOSE ✕</button>
+            <div style="font-weight: 900; font-size: 1.2rem; color: #0f172a;" id="lightboxTitle">Field Report Table Preview</div>
+            <div style="flex: 1; overflow: hidden; background: #ffffff; border: 2px solid var(--border-light); border-radius: 8px; padding: 8px;">
+                <img id="lightboxFullImg" src="images/thop001_branch_sharp.png" onerror="this.onerror=null; this.src='https://theanlegendary.github.io/run-py/images/thop001_branch_sharp.png';" class="lightbox-img-full">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        let currentTabSlide1 = 'table1';
+        let currentTabSlide2 = 'table2';
+        let currentTabSlide3 = 'table1';
+        let currentTabSlide4 = 'table2';
+        let currentTabSlide5 = 'inv1';
+
+        const sharpTables = {
+            'table1': { src: 'images/thop001_branch_sharp.png', title: '1. អីវ៉ាន់ត្រូវយក (Pickup Table) — Report_THOP001_Branch' },
+            'table2': { src: 'images/svap001_delivery_sharp.png', title: '2. អីវ៉ាន់ត្រូវចែក (Delivery 10H KPI) — Report_SVAP001_Delivery' },
+            'table3': { src: 'images/svap001_transit_sharp.png', title: '3. ដាក់ទៅ MEGA (Send Mega / Transit) — Report_SVAP001_Transit' },
+            'table4': { src: 'images/svap001_branch_sharp.png', title: '4. មិនទាន់ចាត់ចែង (Not Assign Table) — Report_SVAP001_Branch' },
+            'inv1': { src: 'images/tms_inventory_audit.png', title: '1. ត្រួតពិនិត្យស្តុក (TMS App Inventory Audit Summary)' },
+            'inv2': { src: 'images/tms_inventory_scan.png', title: '2. ស្កេនទំនិញចូលស្តុក (TMS App Scan Package Check)' },
+            'inv3': { src: 'images/tms_inventory_scanned_list.png', title: '3. បញ្ជីទំនិញដែលបានស្កេន (TMS App Scanned Inventory Items)' }
+        };
+
+        function setLanguage(lang) {
+            document.body.className = 'mode-' + lang;
+            document.getElementById('btnBoth').classList.remove('active');
+            document.getElementById('btnEn').classList.remove('active');
+            document.getElementById('btnKh').classList.remove('active');
+
+            if (lang === 'both') document.getElementById('btnBoth').classList.add('active');
+            if (lang === 'en') document.getElementById('btnEn').classList.add('active');
+            if (lang === 'kh') document.getElementById('btnKh').classList.add('active');
+        }
+
+        function goToSlide(slideNum) {
+            currentSlide = slideNum;
+            document.querySelectorAll('.slide-view').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            
+            document.getElementById('slide' + slideNum).classList.add('active');
+            document.getElementById('dot' + slideNum).classList.add('active');
+
+            document.getElementById('slideTag').innerText = `Slide ${slideNum} of 5 · Ops tms guide`;
+            document.getElementById('pageMark').innerHTML = `PAGE 0${slideNum} / 05 &nbsp;·&nbsp; METFONE EXPRESS`;
+
+            document.getElementById('prevBtn').disabled = (slideNum === 1);
+            document.getElementById('nextBtn').disabled = (slideNum === 5);
+        }
+
+        function nextSlide() {
+            if (currentSlide < 5) goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) goToSlide(currentSlide - 1);
+        }
+
+        function switchExhibit(tabKey, btnElement) {
+            currentTabSlide1 = tabKey;
+            document.querySelectorAll('#slide1 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImg').src = sharpTables[tabKey].src;
+        }
+
+        function switchExhibitSlide2(tabKey, btnElement) {
+            currentTabSlide2 = tabKey;
+            document.querySelectorAll('#slide2 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide2').src = sharpTables[tabKey].src;
+        }
+
+        function switchExhibitSlide3(tabKey, btnElement) {
+            currentTabSlide3 = tabKey;
+            document.querySelectorAll('#slide3 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide3').src = sharpTables[tabKey].src;
+        }
+
+        function switchExhibitSlide4(tabKey, btnElement) {
+            currentTabSlide4 = tabKey;
+            document.querySelectorAll('#slide4 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide4').src = sharpTables[tabKey].src;
+        }
+
+        function switchExhibitSlide5(tabKey, btnElement) {
+            currentTabSlide5 = tabKey;
+            document.querySelectorAll('#slide5 .exhibit-tab').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById('exhibitImgSlide5').src = sharpTables[tabKey].src;
+        }
+
+        function openLightbox() {
+            let keyMap = { 1: currentTabSlide1, 2: currentTabSlide2, 3: currentTabSlide3, 4: currentTabSlide4, 5: currentTabSlide5 };
+            let key = keyMap[currentSlide] || 'inv1';
+            let data = sharpTables[key];
+            document.getElementById('lightboxFullImg').src = data.src;
+            document.getElementById('lightboxTitle').innerText = data.title;
+            document.getElementById('lightboxModal').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightboxModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

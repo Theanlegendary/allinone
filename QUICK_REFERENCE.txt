@@ -1,0 +1,99 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    MORNING REPORT - QUICK REFERENCE                       ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📋 COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  /morning          All zones, age -12h
+  /morning zone1    Zone 1 only, age -12h
+  /morning zone5    Zone 5 only, age -12h
+  
+  /total            All zones, real age (no adjustment)
+  /total zone1      Zone 1 only, real age
+
+
+🎨 AGE COLORS (Updated - No More Yellow!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🟢 GREEN    0-10 hours       OK, on track
+  🔴 RED      >10 hours        URGENT, needs action NOW
+  
+  Special: Status 420/472 always 🟢 GREEN (unless >7 days old)
+
+
+⏰ AGE ADJUSTMENT EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Real Age    →  Adjusted (-12h)  →  Color
+  ────────────────────────────────────────────
+  8h 00m      →  0h 00m (capped)  →  🟢
+  13h 30m     →  1h 30m            →  🟢
+  18h 45m     →  6h 45m            →  🟢
+  21h 00m     →  9h 00m            →  🟢
+  22h 30m     →  10h 30m           →  🔴  ← Threshold
+  26h 15m     →  14h 15m           →  🔴
+
+
+📊 EXCEL OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File: Morning_Zone1_03.08_08H30.xlsx
+  
+  Sheet 1: All 4 tables
+  ├─ Table 1: Delivery (orders under delivery)
+  ├─ Table 2: Not Assign (at branch, not assigned)
+  ├─ Table 3: Pickup (waiting for pickup)
+  └─ Table 4: Send Mega (in transit to hub)
+
+
+🎯 BEST PRACTICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ Use /morning for reports between 6 AM - 12 PM
+  ✓ Use /total for afternoon/evening reports
+  ✓ Focus on 🔴 RED items first in morning reports
+  ✓ 🟢 GREEN items still have time, monitor but don't panic
+  
+
+💡 WHY USE /morning?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Problem:  Package held 15 hours (most overnight when shop closed)
+            Regular report shows 🔴 RED → Looks urgent
+  
+  Solution: /morning subtracts 12h overnight → Shows 3h actual work time
+            Morning report shows 🟢 GREEN → Fair assessment
+  
+  Result:   Manager focuses on truly urgent items (>10h actionable)
+            Not penalized for unavoidable overnight hold
+
+
+⚙️ COMPARE EXCEL FORMULAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Bonus Feature: Compare Excel now uses formulas!
+  
+  File: Urgent_Clearance_Compare_20260803_EDITABLE.xlsx
+  
+  CHANGE column  = 5PM - 9AM (auto-calculates)
+  CLEAR % column = (9AM - 5PM) / 9AM * 100 (auto-calculates)
+  TOTAL row      = SUM formulas (auto-calculates)
+  
+  ✓ Edit any 9AM/2PM/5PM value → Results update instantly!
+
+
+📞 SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Documentation:
+  - MORNING_REPORT_FEATURE.md      Full technical docs
+  - MORNING_REPORT_EXAMPLE.md      Excel examples with BATP001
+  - MORNING_VS_TOTAL_VISUAL.txt    Visual comparison
+  - QUICK_REFERENCE.txt            This file
+
+
+🚀 READY TO USE!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Just restart the bot and use:
+  
+  Morning: /morning zone1
+  Regular: /total zone1
+  
+  Both support all zone filters (zone1, zone2, zone3, zone4, zone5)
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                            END OF REFERENCE                               ║
+╚═══════════════════════════════════════════════════════════════════════════╝

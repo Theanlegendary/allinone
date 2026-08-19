@@ -1,0 +1,29 @@
+{
+  "03/08/2026": {
+    "9AM": {
+      "captured_at": "03/08/2026 14:59:37",
+      "bills": {
+        "1001": {
+          "branch": "PNPP010",
+          "category": "Pickup",
+          "status": "306",
+          "scan_time": "03/08/2026 09:00:00"
+        }
+      }
+    },
+    "2PM": {
+      "captured_at": "03/08/2026 15:00:33",
+      "bills": {}
+    },
+    "2PM_transitions": {
+      "1001": {
+        "branch": "PNPP010",
+        "category": "Pickup",
+        "status_9am": "306",
+        "new_status": "410",
+        "is_resolved": true,
+        "resolved_at": "03/08/2026 15:00:33"
+      }
+    }
+  }
+}

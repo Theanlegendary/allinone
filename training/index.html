@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metfone Ops Express — Operational Training & SOP Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Modern Minimalist ERP Tokens ─────────────────────────────── */
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --border-subtle: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-red: #e11d48;
+  --accent-red-hover: #be123c;
+  --accent-red-light: #fff1f2;
+  --badge-green-bg: #f0fdf4; --badge-green-txt: #166534; --badge-green-border: #bbf7d0;
+  --badge-blue-bg: #eff6ff;  --badge-blue-txt: #1e40af;  --badge-blue-border: #bfdbfe;
+  --badge-amber-bg: #fffbeb; --badge-amber-txt: #92400e; --badge-amber-border: #fef08a;
+  --badge-rose-bg: #fff1f2;  --badge-rose-txt: #9f1239;  --badge-rose-border: #fecdd3;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+/* ── Top Navigation Bar ────────────────────────────────────────── */
+header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand-pill {
+  background: var(--accent-red);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.brand-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+}
+.brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.brand-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.org-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.dot-online {
+  width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+}
+
+/* ── Segmented Control / Module Tabs ──────────────────────────── */
+.subnav-container {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 32px;
+  display: flex;
+  justify-content: center;
+}
+.segmented-control {
+  display: inline-flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 2px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.segment-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.segment-btn:hover {
+  color: var(--text-primary);
+}
+.segment-btn.active {
+  background: #ffffff;
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+.seg-num {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: var(--text-secondary);
+}
+.segment-btn.active .seg-num {
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+}
+
+/* ── Main Canvas Layout ────────────────────────────────────────── */
+main {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 32px 60px;
+}
+
+.module-page {
+  display: none;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.25s ease-out;
+}
+.module-page.active {
+  display: flex;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page Header Block ─────────────────────────────────────────── */
+.page-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.page-title-group h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.page-title-group p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ── Metric Summary Cards ──────────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.summary-card-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.summary-card-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+.summary-card-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── 4-Grid Upload Cards ──────────────────────────────────────── */
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.upload-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.upload-box:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+.upload-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+.pill-green { background: var(--badge-green-bg); color: var(--badge-green-txt); border-color: var(--badge-green-border); }
+.pill-blue  { background: var(--badge-blue-bg);  color: var(--badge-blue-txt);  border-color: var(--badge-blue-border); }
+.pill-amber { background: var(--badge-amber-bg); color: var(--badge-amber-txt); border-color: var(--badge-amber-border); }
+.pill-rose  { background: var(--badge-rose-bg);  color: var(--badge-rose-txt);  border-color: var(--badge-rose-border); }
+
+.preview-area {
+  height: 240px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.preview-area img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  background: #ffffff;
+  cursor: zoom-in;
+}
+.dropzone-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.dropzone-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+.dropzone-icon svg {
+  width: 20px; height: 20px; stroke: var(--text-secondary);
+}
+
+.upload-footer {
+  padding: 12px 18px;
+  background: #ffffff;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn-secondary {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+}
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: var(--border-hover);
+}
+.btn-danger {
+  background: #ffffff;
+  border: 1px solid #fecdd3;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background: #fff1f2;
+}
+
+/* ── Content Split Panels ──────────────────────────────────────── */
+.two-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.card-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Structured SOP List ───────────────────────────────────────── */
+.sop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sop-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+.sop-number {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+.sop-text h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sop-text p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+/* ── ERP Data Tables ───────────────────────────────────────────── */
+.table-wrapper {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+.erp-table th {
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.erp-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.erp-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Bottom Step Navigation ────────────────────────────────────── */
+.bottom-bar {
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Lightbox Modal ────────────────────────────────────────────── */
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lightbox img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); }
+#lightbox-close {
+  position: absolute; top: 24px; right: 32px;
+  background: #ffffff; border: none; border-radius: 50%;
+  color: #0f172a; width: 40px; height: 40px; font-size: 20px; font-weight: bold; cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+#file-input { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="brand-wrap">
+    <div class="brand-pill">METFONE</div>
+    <div class="brand-divider"></div>
+    <div class="brand-name">Ops Express</div>
+    <div class="brand-sub">Standard Operating Procedure</div>
+  </div>
+  <div class="header-right">
+    <div class="org-badge">
+      <div class="dot-online"></div>
+      Operational Console
+    </div>
+  </div>
+</header>
+
+<!-- Segmented Control Nav -->
+<div class="subnav-container">
+  <div class="segmented-control" id="nav-tabs">
+    <button class="segment-btn active" onclick="switchModule(0)">
+      <span class="seg-num">01</span>
+      Daily Pending Summary
+    </button>
+    <button class="segment-btn" onclick="switchModule(1)">
+      <span class="seg-num">02</span>
+      On-Hold & Exceptions
+    </button>
+    <button class="segment-btn" onclick="switchModule(2)">
+      <span class="seg-num">03</span>
+      Mega & Pickup Handovers
+    </button>
+    <button class="segment-btn" onclick="switchModule(3)">
+      <span class="seg-num">04</span>
+      10H KPI Performance
+    </button>
+    <button class="segment-btn" onclick="switchModule(4)">
+      <span class="seg-num">05</span>
+      EOD Inventory Close
+    </button>
+  </div>
+</div>
+
+<!-- Main Canvas -->
+<main>
+
+  <!-- MODULE 01 -->
+  <div class="module-page active" id="mod-0">
+    <div class="page-meta">
+      <div class="page-title-group">
+        <h1>01. Daily Pending Operational Summary</h1>
+        <p>Attach today's 4 core operational status reports for system verification.</p>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <span>Pickup Pending</span>
+          <span class="status-pill pill-green">Stage 1</span>
+        </div>
+        <div class="summary-card-value">Collected</div>
+        <div class="summary-card-desc">Parcels picked up at sender</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <span>Delivery Active</span>
+          <span class="status-pill pill-blue">Stage 2</span>
+        </div>
+        <div class="summary-card-value">Out for Delivery</div>
+        <div class="summary-card-desc">Assigned to driver routes</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <span>Send Mega</span>
+          <span class="status-pill pill-amber">Stage 3</span>
+        </div>
+        <div class="summary-card-value">In Transit</div>
+        <div class="summary-card-desc">Inter-station transport</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <span>Not Assign</span>
+          <span class="status-pill pill-rose">Action Required</span>
+        </div>
+        <div class="summary-card-value">Unassigned</div>
+        <div class="summary-card-desc">Pending rider allocation</div>
+      </div>
+    </div>
+
+    <div class="grid-2x2">
+      <!-- Slot 0 -->
+      <div class="upload-box" id="box-m1-0">
+        <div class="upload-header">
+          <span class="status-pill pill-green">Pickup Pending</span>
+          <span style="font-size:12px;color:var(--text-muted)">Report #1</span>
+        </div>
+        <div class="preview-area">
+          <div class="dropzone-placeholder">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            Upload Screenshot
+          </div>
+        </div>
+        <div class="upload-footer">
+          <button class="btn-secondary" onclick="uploadImg(0, 'slide1')">Attach File</button>
+          <button class="btn-danger" style="display:none" onclick="clearImg(0, 'slide1')">Remove</button>
+        </div>
+      </div>
+
+      <!-- Slot 1 -->
+      <div class="upload-box" id="box-m1-1">
+        <div class="upload-header">
+          <span class="status-pill pill-blue">Delivery Active</span>
+          <span style="font-size:12px;color:var(--text-muted)">Report #2</span>
+        </div>
+        <div class="preview-area">
+          <div class="dropzone-placeholder">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            Upload Screenshot
+          </div>
+        </div>
+        <div class="upload-footer">
+          <button class="btn-secondary" onclick="uploadImg(1, 'slide1')">Attach File</button>
+          <button class="btn-danger" style="display:none" onclick="clearImg(1, 'slide1')">Remove</button>
+        </div>
+      </div>
+
+      <!-- Slot 2 -->
+      <div class="upload-box" id="box-m1-2">
+        <div class="upload-header">
+          <span class="status-pill pill-amber">Send Mega (Transit)</span>
+          <span style="font-size:12px;color:var(--text-muted)">Report #3</span>
+        </div>
+        <div class="preview-area">
+          <div class="dropzone-placeholder">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            Upload Screenshot
+          </div>
+        </div>
+        <div class="upload-footer">
+          <button class="btn-secondary" onclick="uploadImg(2, 'slide1')">Attach File</button>
+          <button class="btn-danger" style="display:none" onclick="clearImg(2, 'slide1')">Remove</button>
+        </div>
+      </div>
+
+      <!-- Slot 3 -->
+      <div class="upload-box" id="box-m1-3">
+        <div class="upload-header">
+          <span class="status-pill pill-rose">Not Assign (Branch)</span>
+          <span style="font-size:12px;color:var(--text-muted)">Report #4</span>
+        </div>
+        <div class="preview-area">
+          <div class="dropzone-placeholder">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            Upload Screenshot
+          </div>
+        </div>
+        <div class="upload-footer">
+          <button class="btn-secondary" onclick="uploadImg(3, 'slide1')">Attach File</button>
+          <button class="btn-danger" style="display:none" onclick="clearImg(3, 'slide1')">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <span style="font-size:12px;color:var(--text-muted)">Module 1 of 5</span>
+      <button class="btn-secondary" onclick="switchModule(1)">Next: On-Hold & Exceptions →</button>
+    </div>
+  </div>
+
+  <!-- MODULE 02 -->
+  <div class="module-page" id="mod-1">
+    <div class="page-meta">
+      <div class="page-title-group">
+        <h1>02. On-Hold & Exception Management</h1>
+        <p>Standardized escalation procedures for unassigned parcels and delivery delays.</p>
+      </div>
+    </div>
+
+    <div class="two-panel-grid">
+      <div class="card-panel">
+        <div class="card-panel-title">Exception Protocol Guidelines</div>
+        <div class="sop-list">
+          <div class="sop-item">
+            <div class="sop-number">1</div>
+            <div class="sop-text">
+              <h4>Unassigned Parcel Allocation (Status 306)</h4>
+              <p>Parcels at service point must be assigned to driver routes within 2 hours of arrival.</p>
+            </div>
+          </div>
+          <div class="sop-item">
+            <div class="sop-number">2</div>
+            <div class="sop-text">
+              <h4>Unreachable Receiver (Status 404)</h4>
+              <p>Rider must make minimum 3 attempts spaced 30 minutes apart before logging exception.</p>
+            </div>
+          </div>
+          <div class="sop-item">
+            <div class="sop-number">3</div>
+            <div class="sop-text">
+              <h4>Address Verification</h4>
+              <p>If address is incomplete, verify with customer and update system notes before re-routing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-panel-title">
+          <span>Exception Proof Attachment</span>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:normal">1 Image Required</span>
+        </div>
+        <div class="upload-box" id="box-m2-0">
+          <div class="preview-area" style="height: 260px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload Proof Screenshot
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(0, 'slide2')">Attach Proof</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(0, 'slide2')">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-secondary" onclick="switchModule(0)">← Previous</button>
+      <button class="btn-secondary" onclick="switchModule(2)">Next: Mega & Pickup →</button>
+    </div>
+  </div>
+
+  <!-- MODULE 03 -->
+  <div class="module-page" id="mod-2">
+    <div class="page-meta">
+      <div class="page-title-group">
+        <h1>03. MEGA Transit & Pickup Handovers</h1>
+        <p>Tracking inter-station transit manifests and sender parcel collection.</p>
+      </div>
+    </div>
+
+    <div class="two-panel-grid">
+      <div class="card-panel">
+        <div class="card-panel-title">MEGA Transit Timeline</div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr><th>Stage</th><th>SLA</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Hub Arrival</td><td>&lt; 12h</td><td>Inbound Scan</td></tr>
+              <tr><td>Transit Dispatch</td><td>&lt; 24h</td><td>Manifest Audit</td></tr>
+              <tr><td>Overdue &gt;48h</td><td>Escalate</td><td>Manager Contact</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="upload-box" id="box-m3-0">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload MEGA Log
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(0, 'slide3')">Attach Log</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(0, 'slide3')">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-panel-title">Pickup Handover Timeline</div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr><th>Stage</th><th>SLA</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sender Collection</td><td>Same Day</td><td>Confirm Collection</td></tr>
+              <tr><td>Branch Handover</td><td>&lt; 4h</td><td>Station Scan</td></tr>
+              <tr><td>Overdue &gt;24h</td><td>Alert</td><td>Sender Notification</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="upload-box" id="box-m3-1">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload Pickup Log
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(1, 'slide3')">Attach Log</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(1, 'slide3')">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-secondary" onclick="switchModule(1)">← Previous</button>
+      <button class="btn-secondary" onclick="switchModule(3)">Next: 10H KPI →</button>
+    </div>
+  </div>
+
+  <!-- MODULE 04 -->
+  <div class="module-page" id="mod-3">
+    <div class="page-meta">
+      <div class="page-title-group">
+        <h1>04. 10-Hour KPI Measurement System</h1>
+        <p>Performance metrics: Green KPI (<=10h), Red Overdue (>10h), and VIP SLA targets.</p>
+      </div>
+    </div>
+
+    <div class="two-panel-grid">
+      <div class="card-panel">
+        <div class="card-panel-title">KPI Rules & Targets</div>
+        <div class="sop-list">
+          <div class="sop-item">
+            <div class="sop-number">✓</div>
+            <div class="sop-text">
+              <h4>Green KPI Target (≤ 10 Hours)</h4>
+              <p>Measured from arrival scan (306) to delivery scan (410). Minimum station target: 90%.</p>
+            </div>
+          </div>
+          <div class="sop-item">
+            <div class="sop-number">!</div>
+            <div class="sop-text">
+              <h4>Red Overdue (> 10 Hours)</h4>
+              <p>Parcels exceeding 10h require mandatory notes explaining delay cause.</p>
+            </div>
+          </div>
+        </div>
+        <div class="upload-box" id="box-m4-0">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload KPI Image #1
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(0, 'slide4')">Attach File</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(0, 'slide4')">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-panel-title">Aging Inventory Metrics</div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr><th>Column</th><th>Metric Definition</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Completed (410)</td><td>Delivered parcels today</td></tr>
+              <tr><td>&gt; 1 Day</td><td>Pending &gt;24 hours</td></tr>
+              <tr><td>&gt; 3 Days</td><td>Pending &gt;72 hours (Critical)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="upload-box" id="box-m4-1">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload KPI Image #2
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(1, 'slide4')">Attach File</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(1, 'slide4')">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-secondary" onclick="switchModule(2)">← Previous</button>
+      <button class="btn-secondary" onclick="switchModule(4)">Next: EOD Inventory →</button>
+    </div>
+  </div>
+
+  <!-- MODULE 05 -->
+  <div class="module-page" id="mod-4">
+    <div class="page-meta">
+      <div class="page-title-group">
+        <h1>05. End-of-Day Inventory Reconciliation</h1>
+        <p>Service point station close protocol, physical inventory audit, and discrepancy reporting.</p>
+      </div>
+    </div>
+
+    <div class="two-panel-grid">
+      <div class="card-panel">
+        <div class="card-panel-title">Station Closing Protocol</div>
+        <div class="sop-list">
+          <div class="sop-item">
+            <div class="sop-number">1</div>
+            <div class="sop-text">
+              <h4>Physical Parcel Audit</h4>
+              <p>Count all stored parcels physically. Count must match system inventory 100%.</p>
+            </div>
+          </div>
+          <div class="sop-item">
+            <div class="sop-number">2</div>
+            <div class="sop-text">
+              <h4>Discrepancy Escalation</h4>
+              <p>Any missing parcel must be logged and reported to zone manager before close.</p>
+            </div>
+          </div>
+        </div>
+        <div class="upload-box" id="box-m5-0">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload Audit Image #1
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(0, 'slide5')">Attach File</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(0, 'slide5')">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-panel-title">EOD Schedule</div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr><th>Task</th><th>Deadline</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Inbound Rescan</td><td>5:30 PM</td></tr>
+              <tr><td>Return Package Manifest</td><td>5:45 PM</td></tr>
+              <tr><td>Daily Summary Push</td><td>6:00 PM</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="upload-box" id="box-m5-1">
+          <div class="preview-area" style="height: 160px;">
+            <div class="dropzone-placeholder">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              </div>
+              Upload Audit Image #2
+            </div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="uploadImg(1, 'slide5')">Attach File</button>
+            <button class="btn-danger" style="display:none" onclick="clearImg(1, 'slide5')">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-secondary" onclick="switchModule(3)">← Previous</button>
+      <span style="font-size:12px;color:var(--text-muted)">All Modules Completed</span>
+    </div>
+  </div>
+
+</main>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="Preview">
+</div>
+
+<!-- Hidden Upload Input -->
+<input type="file" id="file-input" accept="image/*">
+
+<script>
+let currentMod = 0;
+let uploadContext = { slot: 0, slide: 'slide1' };
+
+const boxMap = {
+  slide1: { 0: 'box-m1-0', 1: 'box-m1-1', 2: 'box-m1-2', 3: 'box-m1-3' },
+  slide2: { 0: 'box-m2-0' },
+  slide3: { 0: 'box-m3-0', 1: 'box-m3-1' },
+  slide4: { 0: 'box-m4-0', 1: 'box-m4-1' },
+  slide5: { 0: 'box-m5-0', 1: 'box-m5-1' },
+};
+
+function switchModule(n) {
+  if (n < 0 || n > 4) return;
+  document.querySelectorAll('.segment-btn')[currentMod].classList.remove('active');
+  document.querySelectorAll('.module-page')[currentMod].classList.remove('active');
+
+  currentMod = n;
+
+  document.querySelectorAll('.segment-btn')[currentMod].classList.add('active');
+  document.querySelectorAll('.module-page')[currentMod].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function uploadImg(slot, slide) {
+  uploadContext = { slot, slide };
+  document.getElementById('file-input').click();
+}
+
+document.getElementById('file-input').addEventListener('change', async function() {
+  const files = this.files;
+  if (!files.length) return;
+
+  const fd = new FormData();
+  fd.append('slide', uploadContext.slide);
+  fd.append('slot', uploadContext.slot);
+  fd.append('file', files[0]);
+
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok && data.urls.length) {
+      renderBoxImage(uploadContext.slide, uploadContext.slot, data.urls[0]);
+    }
+  } catch (e) {
+    const localUrl = URL.createObjectURL(files[0]);
+    renderBoxImage(uploadContext.slide, uploadContext.slot, localUrl);
+  }
+  this.value = '';
+});
+
+function renderBoxImage(slide, slot, url) {
+  const boxId = boxMap[slide] && boxMap[slide][slot];
+  if (!boxId) return;
+  const box = document.getElementById(boxId);
+  if (!box) return;
+
+  const area = box.querySelector('.preview-area');
+  area.innerHTML = `<img src="${url}" onclick="openLightbox('${url}')" alt="Uploaded Attachment">`;
+
+  const btnDanger = box.querySelector('.btn-danger');
+  if (btnDanger) btnDanger.style.display = 'inline-block';
+  box.dataset.url = url;
+}
+
+function clearImg(slot, slide) {
+  const boxId = boxMap[slide] && boxMap[slide][slot];
+  if (!boxId) return;
+  const box = document.getElementById(boxId);
+  if (!box) return;
+
+  const url = box.dataset.url;
+  if (url && url.startsWith('/uploads/')) {
+    fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+  }
+
+  const area = box.querySelector('.preview-area');
+  area.innerHTML = `
+    <div class="dropzone-placeholder">
+      <div class="dropzone-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      Upload Screenshot
+    </div>`;
+
+  const btnDanger = box.querySelector('.btn-danger');
+  if (btnDanger) btnDanger.style.display = 'none';
+  delete box.dataset.url;
+}
+
+async function fetchSavedImages() {
+  for (const [slide, slots] of Object.entries(boxMap)) {
+    try {
+      const res = await fetch(`/api/images/${slide}`);
+      const data = await res.json();
+      data.images.forEach((url, i) => {
+        const slotKey = parseInt(Object.keys(slots)[i] || i);
+        if (slots[slotKey]) renderBoxImage(slide, slotKey, url);
+      });
+    } catch(e) {}
+  }
+}
+fetchSavedImages();
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+</script>
+</body>
+</html>

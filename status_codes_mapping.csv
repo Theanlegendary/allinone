@@ -1,0 +1,31 @@
+Status Code,Tab,Meaning,Khmer Action,Khmer Next Step
+110,Pickup,Parcel picked up,,
+120,Pickup,In transit to origin hub,,
+200,Pickup,Arrived at origin hub,,
+401,Delivery,Out for delivery today,ដឹកជញ្ជូន,ដឹកជូនថ្ងៃនេះ
+402,Delivery,Re-delivery attempt,ដឹកជញ្ជូន,ដឹកជូនឡើងវិញ
+420,Delivery,At store waiting pickup,ដឹកជញ្ជូន,ជូនដំណឹងភ្ញៀវមកទទួល
+430,Delivery,Contact receiver,ដឹកជញ្ជូន,ទាក់ទងអ្នកទទួល
+460,Delivery,Return initiated,ត្រឡប់,បញ្ជូនត្រឡប់ទៅហាងផ្ញើ
+470,Delivery,Return in progress,ត្រឡប់,បន្តដំណើរការត្រឡប់
+471,Delivery,Problem - check info,ពិនិត្យ,ពិនិត្យព័ត៌មាន
+472,Delivery,Problem - resolve issue,ពិនិត្យ,ដោះស្រាយបញ្ហា
+480,Delivery,Wrong address - confirm new,ពិនិត្យ,បញ្ជាក់អាសយដ្ឋានថ្មី
+500,Delivery,Return to sender store,ត្រឡប់,ផ្ញើត្រឡប់ទៅហាងផ្ញើ
+510,Delivery,Assigned for return delivery,ត្រឡប់,បញ្ជូនដឹកត្រឡប់
+511,Delivery,Returning in transit,ត្រឡប់,កំពុងដឹកត្រឡប់
+512,Delivery,Confirmed return assignment,ត្រឡប់,ពិនិត្យការដឹកត្រឡប់
+210,Transit (Mega Truck),Dispatched from origin,ពិនិត្យ,ផ្ទេរទៅឡានដឹក
+230,Transit (Mega Truck),Departed from sub-hub,ពិនិត្យ,ចាកចេញពីស្ថានីយ៍រង
+300,Transit (Mega Truck),Arrived at transit hub,ពិនិត្យ,ទទួលការផ្ទេរ
+302,Transit (Mega Truck),Departing transit hub,ពិនិត្យ,ទទួលការផ្ទេរ
+310,Transit (Mega Truck),Arrived at post office,ពិនិត្យ,ទទួលការផ្ទេរ
+311,Transit (Mega Truck),Arrived at destination hub,ពិនិត្យ,ទទួលការបញ្ជូន
+306,Branch (Assign Deliver),At store / in transit,ដឹកជញ្ជូន,ចាត់អ្នកដឹក
+309,Branch (Assign Deliver),Arrived at branch / agent,ដឹកជញ្ជូន,ចាត់អ្នកដឹក
+400,Branch (Assign Deliver),Assigned to deliver,ដឹកជញ្ជូន,ចាត់អ្នកដឹក
+99,Excluded,Cancelled,,
+100,Excluded,Cancelled,,
+201,Excluded,Returned to origin,,
+410,Excluded,Delivered successfully,,
+520,Excluded,Return completed,,
