@@ -330,6 +330,7 @@ class AppState extends ChangeNotifier {
   }
 
   bool get isAnyAudioPlaying => _isGuidedPlaying || _targetVolumes.values.any((v) => v > 0);
+  bool get isPlayingAny => isAnyAudioPlaying;
   Map<String, double> get activeAmbientTracks =>
       Map.fromEntries(_targetVolumes.entries.where((e) => e.value > 0.001));
 
@@ -890,6 +891,20 @@ class AppState extends ChangeNotifier {
     _savePresets(); notifyListeners();
   }
   void deletePreset(int index) { _presets.removeAt(index); _savePresets(); notifyListeners(); }
+  void applyCustomPreset(SoundPreset preset) {
+    stopAllAudio();
+    preset.volumes.forEach((track, volume) {
+      if (volume > 0) {
+        updateSoundTrackVolume(track, volume);
+      }
+    });
+    notifyListeners();
+  }
+  Future<void> startPanicResetCombo() async {
+    setPattern(BreathingPattern.relax478);
+    await updateSoundTrackVolume('Soft Rain', 0.55);
+    notifyListeners();
+  }
   void _savePresets() => _prefs?.setStringList('presets', _presets.map((p) => jsonEncode(p.toJson())).toList());
 
   BreathingPattern _pattern = BreathingPattern.box4444;

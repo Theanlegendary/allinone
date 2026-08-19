@@ -618,7 +618,88 @@ class HomeScreen extends StatelessWidget {
 
                       // ── 2b. Dynamic Curated Recommendations for Selected Mood ──
                       const _DynamicMoodRecommendations(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
+
+                      // ── 2bb. Your Pinned Custom Sound Mixes ──
+                      if (state.presets.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            const Icon(CupertinoIcons.bookmark_fill, color: mintAccent, size: 14),
+                            const SizedBox(width: 6),
+                            Text(
+                              'YOUR PINNED SOUND MIXES',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: mintAccent,
+                                letterSpacing: 1.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: state.presets.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final preset = entry.value;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF2DD4BF).withOpacity(0.18),
+                                        Colors.white.withOpacity(0.04),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.35)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          state.applyCustomPreset(preset);
+                                        },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(CupertinoIcons.play_circle_fill, color: mintAccent, size: 20),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              preset.name,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          state.deletePreset(index);
+                                        },
+                                        child: const Icon(CupertinoIcons.xmark, color: Colors.white54, size: 13),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                      ],
 
                       // ── 2c. Embedded Instant 1-Minute Calm Breathing Widget ──
                       const _HomeQuickBreathWidget(),
@@ -1958,8 +2039,8 @@ class _InstantStressSOSWidgetState extends State<_InstantStressSOSWidget> {
       _secondsLeft = 60;
     });
 
-    // Start soothing audio stream
-    state.playGuidedSession('Gentle Relief & Comfort', 1);
+    // Start soothing Soft Rain + 4-7-8 Relaxing Breathing Combo
+    state.startPanicResetCombo();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return;

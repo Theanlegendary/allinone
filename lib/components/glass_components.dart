@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1369,6 +1370,142 @@ class ActivePlayingListModal extends StatelessWidget {
 
               const SizedBox(height: 12),
 
+              // ── Quick Action Buttons: Save & Pin + Zen Screen ──
+              if (activeAmbient.isNotEmpty) ...[
+                Row(
+                  children: [
+                    // 💾 Save & Pin Mix to Home
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          final textCtrl = TextEditingController(
+                            text: 'My ${activeAmbient.keys.first} Mix',
+                          );
+                          showCupertinoDialog(
+                            context: context,
+                            builder: (dialogCtx) => CupertinoAlertDialog(
+                              title: const Text('Save & Pin Mix ✨'),
+                              content: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Column(
+                                  children: [
+                                    const Text('Give your custom sound blend a name to pin it to your Home Screen:'),
+                                    const SizedBox(height: 12),
+                                    CupertinoTextField(
+                                      controller: textCtrl,
+                                      placeholder: 'e.g. Rainy Cabin Hearth',
+                                      autofocus: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: const Text('Cancel'),
+                                  onPressed: () => Navigator.pop(dialogCtx),
+                                ),
+                                CupertinoDialogAction(
+                                  isDefaultAction: true,
+                                  child: const Text('Save & Pin'),
+                                  onPressed: () {
+                                    final name = textCtrl.text.trim().isEmpty
+                                        ? 'Custom Sanctuary Mix'
+                                        : textCtrl.text.trim();
+                                    state.savePreset(name, Map.from(activeAmbient));
+                                    Navigator.pop(dialogCtx);
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: tealPrimary.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(CupertinoIcons.bookmark_fill, color: Colors.black, size: 14),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Save & Pin Mix 💾',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // ⛶ Zen Fullscreen Mode
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context);
+                          ZenFullscreenModal.show(context);
+                        },
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFA855F7), Color(0xFF6D28D9)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFA855F7).withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(CupertinoIcons.fullscreen, color: Colors.white, size: 14),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Zen Screen ⛶',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
+
               // 🛑 Stop All Audio & Dismiss Button
               GestureDetector(
                 onTap: () {
@@ -1377,7 +1514,7 @@ class ActivePlayingListModal extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 child: Container(
-                  height: 50,
+                  height: 48,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFE29578), Color(0xFFF43F5E)],
@@ -1400,7 +1537,7 @@ class ActivePlayingListModal extends StatelessWidget {
                         Text(
                           'Stop All Soundscapes & Clear ✕',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -1414,6 +1551,269 @@ class ActivePlayingListModal extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ─── 🌌 Zen Fullscreen Screen Saver Modal ──────────────────────────────────────
+class ZenFullscreenModal extends StatefulWidget {
+  const ZenFullscreenModal({super.key});
+
+  static void show(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'ZenMode',
+      barrierColor: Colors.black,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) => const ZenFullscreenModal(),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(opacity: anim1, child: child);
+      },
+    );
+  }
+
+  @override
+  State<ZenFullscreenModal> createState() => _ZenFullscreenModalState();
+}
+
+class _ZenFullscreenModalState extends State<ZenFullscreenModal>
+    with SingleTickerProviderStateMixin {
+  late Timer _clockTimer;
+  String _timeStr = '';
+  late AnimationController _breatheCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    _clockTimer =
+        Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
+    _breatheCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    final h = now.hour.toString().padLeft(2, '0');
+    final m = now.minute.toString().padLeft(2, '0');
+    setState(() {
+      _timeStr = '$h:$m';
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer.cancel();
+    _breatheCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final activeCount = state.activeAmbientTracks.length;
+    final trackNames = state.activeAmbientTracks.keys.join(' + ');
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // 🌧️ Atmospheric Rain Droplets Wallpaper
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1200&q=80',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+          // Dark Radial Vignette
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.1,
+                  colors: [
+                    const Color(0xFF0F172A).withOpacity(0.4),
+                    Colors.black.withOpacity(0.92),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Central Breathing Halo
+          Center(
+            child: AnimatedBuilder(
+              animation: _breatheCtrl,
+              builder: (context, _) {
+                final scale = 1.0 + (_breatheCtrl.value * 0.25);
+                final opacity = 0.2 + (_breatheCtrl.value * 0.3);
+                return Container(
+                  width: 260 * scale,
+                  height: 260 * scale,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF2DD4BF).withOpacity(opacity),
+                        const Color(0xFFA855F7).withOpacity(opacity * 0.5),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top Row: Exit & Fullscreen Label
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.15)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(CupertinoIcons.moon_stars_fill,
+                                color: Color(0xFFA855F7), size: 14),
+                            SizedBox(width: 6),
+                            Text(
+                              'ZEN SCREEN',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white70,
+                                  letterSpacing: 1.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(CupertinoIcons.xmark_circle_fill,
+                            color: Colors.white60, size: 28),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+
+                  // Center: Glowing Clock & Inhale/Exhale Text
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _timeStr,
+                        style: const TextStyle(
+                          fontSize: 64,
+                          fontWeight: FontWeight.w200,
+                          color: Colors.white,
+                          letterSpacing: 3.0,
+                          shadows: [
+                            Shadow(color: Color(0xFF2DD4BF), blurRadius: 24),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      AnimatedBuilder(
+                        animation: _breatheCtrl,
+                        builder: (context, _) {
+                          final isInhaling =
+                              _breatheCtrl.status == AnimationStatus.forward;
+                          return Text(
+                            isInhaling ? 'Inhale Peace...' : 'Exhale Tension...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withOpacity(0.85),
+                              letterSpacing: 2.0,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // Bottom: Now Playing Soundscape & Controls
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(24),
+                      border:
+                          Border.all(color: Colors.white.withOpacity(0.14)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('CURRENT SOUNDSCAPE',
+                                  style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2DD4BF),
+                                      letterSpacing: 1.4)),
+                              const SizedBox(height: 2),
+                              Text(
+                                activeCount > 0
+                                    ? trackNames
+                                    : (state.currentGuidedTitle ??
+                                        'Tranquil Silence'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              state.isPlayingAny
+                                  ? CupertinoIcons.pause_fill
+                                  : CupertinoIcons.play_fill,
+                              color: Colors.white),
+                          onPressed: () {
+                            if (state.isPlayingAny) {
+                              state.stopAllAudio();
+                            } else {
+                              state.updateSoundTrackVolume('Soft Rain', 0.6);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
