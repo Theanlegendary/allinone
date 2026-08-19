@@ -330,11 +330,14 @@ class AppState extends ChangeNotifier {
   }
 
   bool get isAnyAudioPlaying => _isGuidedPlaying || _targetVolumes.values.any((v) => v > 0);
+  Map<String, double> get activeAmbientTracks =>
+      Map.fromEntries(_targetVolumes.entries.where((e) => e.value > 0.001));
+
   String get activePlayingLabel {
     if (_isGuidedPlaying && _currentGuidedTitle != null) {
       return _currentGuidedTitle!;
     }
-    final activeTracks = _targetVolumes.entries.where((e) => e.value > 0).map((e) => e.key).toList();
+    final activeTracks = _targetVolumes.entries.where((e) => e.value > 0.001).map((e) => e.key).toList();
     if (activeTracks.isEmpty) return 'No Audio Playing';
     if (activeTracks.length == 1) return activeTracks.first;
     return '${activeTracks.first} + ${activeTracks.length - 1} more';
