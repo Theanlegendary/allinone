@@ -1,7 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#">
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/allinone/">
+
+  <script>
+    // Force unregister all old service workers and purge browser cache storage
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (var r of registrations) {
+          r.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (var name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+  </script>
 
   <meta charset="UTF-8">
   <!-- iOS Full-Screen & Touch Optimizations -->
@@ -491,18 +509,9 @@
     </div>
   </div>
 
-  <script src="flutter_bootstrap.js?v=20260819_1710" async></script>
+  <script src="flutter_bootstrap.js" async></script>
 
   <script>
-    // ── Auto-update and bust service worker cache on reload ──
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.update();
-        }
-      });
-    }
-
     // ── Instant splash hide when Flutter paints first frame ──
     window.addEventListener('flutter-first-frame', function() {
       var splash = document.getElementById('splash');
