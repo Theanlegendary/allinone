@@ -1464,20 +1464,50 @@ class _DynamicMoodRecommendations extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: color.withOpacity(0.3), width: 1),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            color.withOpacity(0.16),
+                            const Color(0xFF0C1620).withOpacity(0.85),
+                            const Color(0xFF050D15).withOpacity(0.95),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: color.withOpacity(0.35), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withOpacity(0.12),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 44,
-                            height: 44,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.18),
-                              borderRadius: BorderRadius.circular(14),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  color.withOpacity(0.35),
+                                  color.withOpacity(0.15),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: color.withOpacity(0.45), width: 1),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            child: Icon(item['icon'] as IconData, color: color, size: 22),
+                            child: Icon(item['icon'] as IconData, color: color, size: 23),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -1487,38 +1517,49 @@ class _DynamicMoodRecommendations extends StatelessWidget {
                                 Text(
                                   item['title'] as String,
                                   style: const TextStyle(
-                                    fontSize: 14.5,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
+                                    letterSpacing: -0.2,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 3),
                                 Text(
                                   item['desc'] as String,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.white.withOpacity(0.65),
+                                    color: Colors.white.withOpacity(0.7),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
+                              gradient: LinearGradient(
+                                colors: [color, color.withOpacity(0.85)],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withOpacity(0.4),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                Icon(CupertinoIcons.play_fill, color: color, size: 14),
-                                const SizedBox(width: 4),
+                                Icon(CupertinoIcons.play_fill, color: Colors.black, size: 12),
+                                SizedBox(width: 4),
                                 Text(
                                   'Begin',
                                   style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: color,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black,
+                                    letterSpacing: -0.2,
                                   ),
                                 ),
                               ],

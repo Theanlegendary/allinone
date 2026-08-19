@@ -476,8 +476,9 @@ class _SessionCard extends StatelessWidget {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                const Color(0xFF09141D).withOpacity(0.82),
-                                const Color(0xFF050D15).withOpacity(0.94),
+                                accentColor.withOpacity(isPlayingThis ? 0.22 : 0.12),
+                                const Color(0xFF0A141D).withOpacity(0.88),
+                                const Color(0xFF050D15).withOpacity(0.96),
                               ],
                             ),
                           ),
@@ -497,13 +498,13 @@ class _SessionCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isPlayingThis ? accentColor : Colors.white.withOpacity(0.25),
+                                color: isPlayingThis ? accentColor : Colors.white.withOpacity(0.35),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: accentColor.withOpacity(0.4),
-                                  blurRadius: 12,
+                                  color: accentColor.withOpacity(isPlayingThis ? 0.5 : 0.25),
+                                  blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -544,9 +545,11 @@ class _SessionCard extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: accentColor.withOpacity(0.18),
+                                        gradient: LinearGradient(
+                                          colors: [accentColor.withOpacity(0.3), accentColor.withOpacity(0.15)],
+                                        ),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: accentColor.withOpacity(0.3)),
+                                        border: Border.all(color: accentColor.withOpacity(0.4)),
                                       ),
                                       child: Text(
                                         category,
@@ -579,25 +582,37 @@ class _SessionCard extends StatelessWidget {
                                     ],
                                     const Spacer(),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                                       decoration: BoxDecoration(
-                                        color: isPlayingThis ? accentColor : accentColor.withOpacity(0.15),
+                                        gradient: LinearGradient(
+                                          colors: isPlayingThis
+                                              ? [coralAccent, const Color(0xFFF43F5E)]
+                                              : [accentColor, accentColor.withOpacity(0.85)],
+                                        ),
                                         borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (isPlayingThis ? coralAccent : accentColor).withOpacity(0.4),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
                                       child: Row(
                                         children: [
                                           Icon(
                                             isPlayingThis ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
-                                            size: 15,
-                                            color: isPlayingThis ? Colors.black : accentColor,
+                                            size: 13,
+                                            color: Colors.black,
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
                                             isPlayingThis ? 'Pause' : 'Begin',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: isPlayingThis ? Colors.black : accentColor,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.black,
+                                              letterSpacing: -0.2,
                                             ),
                                           ),
                                         ],
