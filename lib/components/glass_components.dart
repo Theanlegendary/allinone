@@ -300,8 +300,8 @@ class GlassChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: selectedColor.withOpacity(0.25),
-                    blurRadius: 14,
+                    color: selectedColor.withOpacity(0.35),
+                    blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
                 ]
@@ -310,7 +310,9 @@ class GlassChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white.withOpacity(0.9),
+            color: isSelected
+                ? (selectedColor.computeLuminance() > 0.45 ? Colors.black : Colors.white)
+                : Colors.white.withOpacity(0.9),
             fontSize: isCompact(context) ? 12.5 : 13.0,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: -0.2,

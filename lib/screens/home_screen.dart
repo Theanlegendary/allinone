@@ -527,14 +527,15 @@ class HomeScreen extends StatelessWidget {
 
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
-                            ('😌 Calm', 'Calm'),
-                            ('😰 Stressed', 'Stressed'),
-                            ('😴 Sleepy', 'Sleepy'),
-                            ('🧠 Need Focus', 'Focus'),
-                            ('❤️ Emotional', 'Anxiety'),
-                            ('🌧️ Want Nature', 'Nature'),
+                            ('😌 Calm', 'Calm', tealPrimary),
+                            ('😰 Stressed', 'Stressed', coralAccent),
+                            ('😴 Sleepy', 'Sleepy', const Color(0xFFA855F7)), // Cosmic Twilight Purple Aura
+                            ('🧠 Need Focus', 'Focus', const Color(0xFF38BDF8)), // Electric Focus Cyan
+                            ('❤️ Emotional', 'Anxiety', const Color(0xFFEC4899)), // Ethereal Rose
+                            ('🌧️ Want Nature', 'Nature', mintAccent),
                           ].map((item) {
                             final isSelected = state.selectedMoodFilter == item.$2;
                             return Padding(
@@ -542,7 +543,7 @@ class HomeScreen extends StatelessWidget {
                               child: GlassChip(
                                 label: item.$1,
                                 isSelected: isSelected,
-                                selectedColor: tealPrimary,
+                                selectedColor: item.$3,
                                 onTap: () => state.setMoodFilter(item.$2),
                               ),
                             );
@@ -756,37 +757,59 @@ class HomeScreen extends StatelessWidget {
                           _QuickAction(
                             icon: Icons.self_improvement_rounded,
                             label: 'Meditate',
-                            color: tealPrimary,
+                            color: const Color(0xFF2DD4BF),
                             onTap: () => state.setTab(AppTab.meditate),
                           ),
                           const SizedBox(width: 10),
                           _QuickAction(
-                            icon: Icons.air_rounded,
+                            icon: CupertinoIcons.wind,
                             label: 'Breathe',
-                            color: mintAccent,
+                            color: const Color(0xFF74C69D),
                             onTap: () => state.setTab(AppTab.breathe),
                           ),
                           const SizedBox(width: 10),
                           _QuickAction(
-                            icon: Icons.nightlight_round,
+                            icon: CupertinoIcons.moon_stars_fill,
                             label: 'Sleep',
-                            color: coralAccent,
+                            color: const Color(0xFFA855F7), // Cosmic Purple Aura
                             onTap: () => state.setTab(AppTab.sleep),
                           ),
                           const SizedBox(width: 10),
                           _QuickAction(
                             icon: CupertinoIcons.sparkles,
                             label: 'AI Music',
-                            color: purpleAccent,
+                            color: const Color(0xFFFFB74D), // Radiant Gold Aura
                             onTap: () => state.setTab(AppTab.aiStudio),
                           ),
                         ],
                       ),
-
+                      const SizedBox(height: 14),
 
                       // ── 5. Subtle Streak Sanctuary ───────────────────────
-                      GlassCard(
-                        cornerRadius: 24,
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFFE29578).withOpacity(0.16),
+                              const Color(0xFFA855F7).withOpacity(0.08),
+                              Colors.white.withOpacity(0.04),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: const Color(0xFFE29578).withOpacity(0.32),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFE29578).withOpacity(0.14),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
                         padding: const EdgeInsets.all(18),
                         child: Row(
                           children: [
@@ -796,13 +819,20 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(CupertinoIcons.flame_fill, color: coralAccent, size: 20),
-                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: coralAccent.withOpacity(0.2),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(CupertinoIcons.flame_fill, color: coralAccent, size: 20),
+                                      ),
+                                      const SizedBox(width: 8),
                                       Text(
                                         '${state.streak} Day Streak',
                                         style: const TextStyle(
                                           fontSize: 17,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.bold,
                                           color: textPrimary,
                                         ),
                                       ),
@@ -811,7 +841,7 @@ class HomeScreen extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     state.practicedToday
-                                        ? 'Practiced today — habit active'
+                                        ? 'Practiced today — habit active 🔥'
                                         : 'Practice today to maintain your streak',
                                     style: TextStyle(
                                       fontSize: 12,
@@ -825,15 +855,28 @@ class HomeScreen extends StatelessWidget {
                                     children: List.generate(7, (i) {
                                       final practiced = i < (state.streak % 7 == 0 && state.streak > 0 ? 7 : state.streak % 7);
                                       return Container(
-                                        width: 18,
-                                        height: 18,
-                                        margin: const EdgeInsets.only(right: 5),
+                                        width: 20,
+                                        height: 20,
+                                        margin: const EdgeInsets.only(right: 6),
                                         decoration: BoxDecoration(
-                                          color: practiced ? tealPrimary.withOpacity(0.8) : Colors.white.withOpacity(0.08),
+                                          gradient: practiced
+                                              ? const LinearGradient(
+                                                  colors: [Color(0xFF2DD4BF), Color(0xFF14B8A6)],
+                                                )
+                                              : null,
+                                          color: practiced ? null : Colors.white.withOpacity(0.08),
                                           shape: BoxShape.circle,
+                                          boxShadow: practiced
+                                              ? [
+                                                  BoxShadow(
+                                                    color: const Color(0xFF2DD4BF).withOpacity(0.4),
+                                                    blurRadius: 6,
+                                                  ),
+                                                ]
+                                              : null,
                                         ),
                                         child: practiced
-                                            ? const Icon(CupertinoIcons.checkmark, color: Colors.black, size: 11)
+                                            ? const Icon(CupertinoIcons.checkmark, color: Colors.black, size: 12)
                                             : null,
                                       );
                                     }),
@@ -846,7 +889,7 @@ class HomeScreen extends StatelessWidget {
                                 Text(
                                   '${state.longestStreak}',
                                   style: const TextStyle(
-                                    fontSize: 28,
+                                    fontSize: 30,
                                     fontWeight: FontWeight.bold,
                                     color: coralAccent,
                                   ),
@@ -862,21 +905,22 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ]), // ← SliverChildListDelegate end
-                    ),    // ← SliverPadding end
-                  ],      // ← CustomScrollView slivers end
-                ),        // ← CustomScrollView end
-              ),          // ← SafeArea end
-            ),            // ← Container end
-          ],              // ← Stack children end
-        ));               // ← Stack and CupertinoPageScaffold end
-      },                  // ← Consumer builder lambda end
-    );           // ← Consumer widget end
-  }
+                      ),
+                    ]), // ← SliverChildListDelegate end
+                  ),    // ← SliverPadding end
+                ],      // ← CustomScrollView slivers end
+              ),        // ← CustomScrollView end
+            ),          // ← SafeArea end
+          ),            // ← Container end
+        ],              // ← Stack children end
+      ));               // ← Stack and CupertinoPageScaffold end
+    },                  // ← Consumer builder lambda end
+  );           // ← Consumer widget end
+}
 }
 
-// ── Soft Quick Action Pill ───────────────────────────────────────────────────
-class _QuickAction extends StatelessWidget {
+// ── Upgraded Radiant Quick Action Pill ─────────────────────────────────────────
+class _QuickAction extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -890,37 +934,108 @@ class _QuickAction extends StatelessWidget {
   });
 
   @override
+  State<_QuickAction> createState() => _QuickActionState();
+}
+
+class _QuickActionState extends State<_QuickAction> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 140));
+    _scale = Tween<double>(begin: 1.0, end: 0.93).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.14),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20),
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => _ctrl.forward(),
+        onTapUp: (_) {
+          _ctrl.reverse();
+          HapticFeedback.lightImpact();
+          widget.onTap();
+        },
+        onTapCancel: () => _ctrl.reverse(),
+        child: ScaleTransition(
+          scale: _scale,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  widget.color.withOpacity(0.12),
+                  Colors.white.withOpacity(0.03),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: widget.color.withOpacity(0.22),
+                width: 1.0,
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withOpacity(0.15),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        widget.color.withOpacity(0.35),
+                        widget.color.withOpacity(0.15),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: widget.color.withOpacity(0.5),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.color.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(widget.icon, color: widget.color, size: 23),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.label,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: textPrimary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
