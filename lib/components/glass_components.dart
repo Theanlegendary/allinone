@@ -657,30 +657,48 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
 
         final artworkUrl = sessionArtworks[title] ?? 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80';
 
+        final Map<String, (Color, Color)> sessionThemeColors = {
+          'Quiet Mind Sanctuary': (const Color(0xFFF59E0B), const Color(0xFFFCD34D)), // Golden Amber
+          'Peaceful Haven Journey': (const Color(0xFF10B981), const Color(0xFF34D399)), // Emerald Forest
+          'Gentle Relief & Comfort': (const Color(0xFF14B8A6), const Color(0xFF2DD4BF)), // Soft Teal
+          'Soft Body Rest & Ease': (const Color(0xFFF43F5E), const Color(0xFFFB7185)), // Rose Coral
+          'Calm Mountain Horizon': (const Color(0xFF38BDF8), const Color(0xFF7DD3FC)), // Sky Azure
+          'Peaceful Morning Awakening': (const Color(0xFFF59E0B), const Color(0xFFFDE68A)), // Morning Sun
+          'Peaceful Morning Start': (const Color(0xFFF59E0B), const Color(0xFFFDE68A)),
+          'Cozy Bedtime Slumber': (const Color(0xFF8B5CF6), const Color(0xFFA78BFA)), // Twilight Violet
+          'Warm Heart Comfort': (const Color(0xFFEC4899), const Color(0xFFF472B6)), // Warm Pink
+          'Healing Crystal Chimes': (const Color(0xFFA855F7), const Color(0xFFC084FC)), // Amethyst
+          'Loving Warmth & Peace': (const Color(0xFFF97316), const Color(0xFFFB923C)), // Warm Amber
+          'The Starry Night': (const Color(0xFF6366F1), const Color(0xFF818CF8)), // Indigo Night
+          'The Lighthouse Keeper': (const Color(0xFF0EA5E9), const Color(0xFF38BDF8)), // Ocean Azure
+          'Whispering Forest': (const Color(0xFF059669), const Color(0xFF10B981)), // Pine Green
+        };
+        final (primaryColor, accentColor) = sessionThemeColors[title] ?? (tealPrimary, mintAccent);
+
         return Material(
           color: Colors.transparent,
           child: Stack(
             children: [
-              // 🖼️ 1. HD Organic Blurred Artwork Background
+              // 🖼️ 1. HD Organic Blurred Artwork Background with Harmonic Color Tint
               Positioned.fill(
                 child: Image.network(
                   artworkUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Container(color: const Color(0xFF071118)),
+                  errorBuilder: (c, e, s) => Container(color: primaryColor.withOpacity(0.2)),
                 ),
               ),
               Positioned.fill(
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFF050C12).withOpacity(0.75),
-                          const Color(0xFF091822).withOpacity(0.85),
-                          const Color(0xFF04080D).withOpacity(0.95),
+                          const Color(0xFF04090E).withOpacity(0.72),
+                          primaryColor.withOpacity(0.18),
+                          const Color(0xFF03070C).withOpacity(0.94),
                         ],
                       ),
                     ),
@@ -701,15 +719,15 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              color: primaryColor.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withOpacity(0.2)),
+                              border: Border.all(color: primaryColor.withOpacity(0.35)),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.graphic_eq_rounded, color: tealPrimary, size: 16),
-                                SizedBox(width: 6),
-                                Text(
+                                Icon(Icons.graphic_eq_rounded, color: primaryColor, size: 16),
+                                const SizedBox(width: 6),
+                                const Text(
                                   'NATURAL SOOTHING AUDIO STREAM',
                                   style: TextStyle(
                                     color: Colors.white,
@@ -731,7 +749,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                       ),
                       const Spacer(),
 
-                      // 🖼️ 3. Centerpiece HD Artwork Card with Animated Breathing Glow Aura
+                      // 🖼️ 3. Centerpiece HD Artwork Card with Harmonic Breathing Glow Aura
                       AnimatedBuilder(
                         animation: _pulseCtrl,
                         builder: (_, __) {
@@ -739,26 +757,26 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                           return Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Pulsing Aura Ring 1
+                              // Pulsing Aura Ring 1 (Matches Track Color)
                               Transform.scale(
-                                scale: auraScale * 1.15,
+                                scale: auraScale * 1.18,
                                 child: Container(
-                                  width: 210,
-                                  height: 210,
+                                  width: 220,
+                                  height: 220,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: tealPrimary.withOpacity(0.12 * _pulseCtrl.value),
+                                    color: primaryColor.withOpacity(0.16 * _pulseCtrl.value),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: tealPrimary.withOpacity(0.3 * _pulseCtrl.value),
-                                        blurRadius: 50,
-                                        spreadRadius: 15,
+                                        color: primaryColor.withOpacity(0.42 * _pulseCtrl.value),
+                                        blurRadius: 55,
+                                        spreadRadius: 18,
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                              // Pulsing Aura Ring 2
+                              // Pulsing Aura Ring 2 (Matches Track Accent)
                               Transform.scale(
                                 scale: auraScale,
                                 child: Container(
@@ -768,9 +786,9 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                                     borderRadius: BorderRadius.circular(36),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: mintAccent.withOpacity(0.25),
-                                        blurRadius: 30,
-                                        spreadRadius: 5,
+                                        color: accentColor.withOpacity(0.35),
+                                        blurRadius: 32,
+                                        spreadRadius: 6,
                                       ),
                                     ],
                                   ),
@@ -800,7 +818,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                                     artworkUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (c, e, s) => Container(
-                                      color: tealPrimary.withOpacity(0.2),
+                                      color: primaryColor.withOpacity(0.2),
                                       child: const Icon(Icons.spa_rounded, color: Colors.white, size: 64),
                                     ),
                                   ),
@@ -839,7 +857,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const AnimatedSoundWave(accentColor: tealPrimary),
+                          AnimatedSoundWave(accentColor: primaryColor),
                           const SizedBox(width: 14),
                           Text(
                             '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}',
@@ -851,7 +869,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                             ),
                           ),
                           const SizedBox(width: 14),
-                          const AnimatedSoundWave(accentColor: tealPrimary),
+                          AnimatedSoundWave(accentColor: primaryColor),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -869,7 +887,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                           GlassChip(
                             label: state.isGuidedLooping ? 'Loop ♾️ On' : 'Loop Off',
                             isSelected: state.isGuidedLooping,
-                            selectedColor: tealPrimary,
+                            selectedColor: primaryColor,
                             onTap: () => state.toggleGuidedLoop(),
                           ),
                           const SizedBox(width: 12),
@@ -889,7 +907,7 @@ class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
                         child: GlassPillButton(
                           text: 'Complete & End Session',
                           icon: Icons.check_circle_outline_rounded,
-                          containerColor: tealPrimary,
+                          containerColor: primaryColor,
                           contentColor: Colors.black,
                           onTap: () => state.stopGuidedSession(completed: true),
                         ),
