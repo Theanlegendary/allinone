@@ -821,6 +821,8 @@ class HomeScreen extends StatelessWidget {
                           _QuickAction(
                             icon: Icons.self_improvement_rounded,
                             label: 'Meditate',
+                            sensorySound: '432Hz Zen',
+                            bgImage: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=300&q=80',
                             color: const Color(0xFF2DD4BF),
                             onTap: () => state.setTab(AppTab.meditate),
                           ),
@@ -828,6 +830,8 @@ class HomeScreen extends StatelessWidget {
                           _QuickAction(
                             icon: CupertinoIcons.wind,
                             label: 'Breathe',
+                            sensorySound: 'Alpine Air',
+                            bgImage: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=300&q=80',
                             color: const Color(0xFF74C69D),
                             onTap: () => state.setTab(AppTab.breathe),
                           ),
@@ -835,6 +839,8 @@ class HomeScreen extends StatelessWidget {
                           _QuickAction(
                             icon: CupertinoIcons.moon_stars_fill,
                             label: 'Sleep',
+                            sensorySound: 'Night Rain',
+                            bgImage: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=300&q=80',
                             color: const Color(0xFFA855F7), // Cosmic Purple Aura
                             onTap: () => state.setTab(AppTab.sleep),
                           ),
@@ -842,6 +848,8 @@ class HomeScreen extends StatelessWidget {
                           _QuickAction(
                             icon: CupertinoIcons.sparkles,
                             label: 'AI Music',
+                            sensorySound: 'Sound Bath',
+                            bgImage: 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=300&q=80',
                             color: const Color(0xFFFFB74D), // Radiant Gold Aura
                             onTap: () => state.setTab(AppTab.aiStudio),
                           ),
@@ -984,16 +992,20 @@ class HomeScreen extends StatelessWidget {
 }
 }
 
-// ── Upgraded Radiant Quick Action Pill ─────────────────────────────────────────
+// ── Synesthetic Sensory Practice Action Card ──────────────────────────────────
 class _QuickAction extends StatefulWidget {
   final IconData icon;
   final String label;
+  final String sensorySound;
+  final String bgImage;
   final Color color;
   final VoidCallback onTap;
 
   const _QuickAction({
     required this.icon,
     required this.label,
+    required this.sensorySound,
+    required this.bgImage,
     required this.color,
     required this.onTap,
   });
@@ -1010,7 +1022,7 @@ class _QuickActionState extends State<_QuickAction> with SingleTickerProviderSta
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 140));
-    _scale = Tween<double>(begin: 1.0, end: 0.93).animate(
+    _scale = Tween<double>(begin: 1.0, end: 0.92).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
     );
   }
@@ -1036,67 +1048,103 @@ class _QuickActionState extends State<_QuickAction> with SingleTickerProviderSta
         child: ScaleTransition(
           scale: _scale,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  widget.color.withOpacity(0.12),
-                  Colors.white.withOpacity(0.03),
-                ],
-              ),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: widget.color.withOpacity(0.22),
-                width: 1.0,
+                color: widget.color.withOpacity(0.42),
+                width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: widget.color.withOpacity(0.15),
+                  color: widget.color.withOpacity(0.24),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Stack(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        widget.color.withOpacity(0.35),
-                        widget.color.withOpacity(0.15),
+                // 🖼️ High-Res Atmospheric Sensory Background Texture
+                Positioned.fill(
+                  child: Image.network(
+                    widget.bgImage,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                ),
+                // Frosted Glass Dark Vignette
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          widget.color.withOpacity(0.35),
+                          const Color(0xFF07111B).withOpacity(0.86),
+                          const Color(0xFF040A10).withOpacity(0.96),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Card Content
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 4),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                widget.color.withOpacity(0.55),
+                                widget.color.withOpacity(0.2),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.5),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: widget.color.withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(widget.icon, color: Colors.white, size: 21),
+                        ),
+                        const SizedBox(height: 7),
+                        Text(
+                          widget.label,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.sensorySound,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            color: widget.color.withOpacity(0.95),
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ],
                     ),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: widget.color.withOpacity(0.5),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.color.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(widget.icon, color: widget.color, size: 23),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.label,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    color: textPrimary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
                   ),
                 ),
               ],
