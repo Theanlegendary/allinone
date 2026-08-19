@@ -5,7 +5,7 @@ import sys
 import urllib.parse
 
 PORT = 5050
-DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'docs')
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
