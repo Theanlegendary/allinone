@@ -696,63 +696,196 @@ class _SoundsScreenState extends State<SoundsScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Master Control Bar
-                    GlassCard(
-                      cornerRadius: 22,
+                    // 🎛️ Master Control Center Bar (Apple-level Luxury Tactile UI)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFF132230).withOpacity(0.95),
+                            const Color(0xFF091420).withOpacity(0.95),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: _isPlaying ? tealPrimary.withOpacity(0.45) : Colors.white.withOpacity(0.12),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _isPlaying ? tealPrimary.withOpacity(0.20) : Colors.black.withOpacity(0.35),
+                            blurRadius: 18,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
                       child: Row(
                         children: [
+                          // ⏯️ Glowing Play / Pause Master Dial
                           GestureDetector(
-                            onTap: () => _toggleMasterPlay(state),
-                            child: Container(
-                              width: 52,
-                              height: 52,
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              _toggleMasterPlay(state);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 48,
+                              height: 48,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: _isPlaying ? tealPrimary : Colors.white.withOpacity(0.08),
+                                gradient: _isPlaying
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : LinearGradient(
+                                        colors: [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.06)],
+                                      ),
+                                boxShadow: _isPlaying
+                                    ? [
+                                        BoxShadow(
+                                          color: tealPrimary.withOpacity(0.4),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
+                                    : null,
                               ),
                               child: Icon(
                                 _isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
                                 color: _isPlaying ? Colors.black : Colors.white,
-                                size: 30,
+                                size: 22,
                               ),
                             ),
                           ),
                           const SizedBox(width: 14),
+
+                          // 🏷️ Track Status & Active Counter
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _isPlaying ? 'Soundscape Active 🔊' : 'Mixer Paused',
-                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary, decoration: TextDecoration.none),
+                                Row(
+                                  children: [
+                                    if (_isPlaying) ...[
+                                      Container(
+                                        width: 7,
+                                        height: 7,
+                                        decoration: const BoxDecoration(
+                                          color: tealPrimary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    Flexible(
+                                      child: Text(
+                                        _isPlaying ? 'Soundscape Active' : 'Mixer Paused',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                const SizedBox(height: 2),
                                 Text(
                                   _isPlaying
-                                      ? '${_volumes.values.where((v) => v > 0).length} tracks playing'
-                                      : 'Tap play to listen',
-                                  style: TextStyle(fontSize: 12, color: textSecondary, decoration: TextDecoration.none),
+                                      ? '${_volumes.values.where((v) => v > 0).length} active layers'
+                                      : 'Tap play to start audio',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.65),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () => _randomizeMix(state),
-                            child: const Icon(CupertinoIcons.shuffle, color: textSecondary, size: 20),
+
+                          // 🔀 Shuffle Randomize Mix Button
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _randomizeMix(state);
+                            },
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.08),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white.withOpacity(0.12)),
+                              ),
+                              child: const Icon(CupertinoIcons.shuffle, color: Colors.white70, size: 16),
+                            ),
                           ),
-                          const SizedBox(width: 4),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () => _shareCurrentMix(state),
-                            child: const Icon(CupertinoIcons.share, color: tealPrimary, size: 20),
+                          const SizedBox(width: 8),
+
+                          // 📤 Share Mix Button
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _shareCurrentMix(state);
+                            },
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: tealPrimary.withOpacity(0.14),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: tealPrimary.withOpacity(0.35)),
+                              ),
+                              child: const Icon(CupertinoIcons.share, color: tealPrimary, size: 16),
+                            ),
                           ),
-                          const SizedBox(width: 6),
-                          GlassPillButton(
-                            text: 'Save',
-                            icon: CupertinoIcons.cloud_download,
-                            containerColor: Colors.white.withOpacity(0.12),
-                            contentColor: textPrimary,
-                            onTap: () => _showSavePresetDialog(context, state),
+                          const SizedBox(width: 10),
+
+                          // 💾 Save & Pin Mix Pill Button (High Contrast & Tactile)
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _showSavePresetDialog(context, state);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: tealPrimary.withOpacity(0.35),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(CupertinoIcons.bookmark_fill, color: Colors.black, size: 13),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Save',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.black,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
