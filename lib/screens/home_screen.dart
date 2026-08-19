@@ -75,32 +75,9 @@ class HomeScreen extends StatelessWidget {
         final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
         return CupertinoPageScaffold(
-          backgroundColor: state.themeMode.bgDark,
-          child: Stack(
-            children: [
-              // 🖼️ Dynamic Atmospheric Living Wallpaper Backdrop
-              if (state.wallpaper.imageUrl.isNotEmpty)
-                Positioned.fill(
-                  child: Image.network(
-                    state.wallpaper.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
-                  ),
-                ),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      state.wallpaper.baseColor.withOpacity(0.78),
-                      state.wallpaper.baseColor.withOpacity(0.94),
-                      state.wallpaper.baseColor,
-                    ],
-                  ),
-                ),
-                child: SafeArea(
-                  child: CustomScrollView(
+          backgroundColor: Colors.transparent,
+          child: SafeArea(
+            child: CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     slivers: [
                       CupertinoSliverNavigationBar(
@@ -866,18 +843,16 @@ class HomeScreen extends StatelessWidget {
 
                       // ── 6. Coming Soon / Next Month Roadmap Teaser ──
                       const _ComingSoonRoadmapSection(),
-                    ]), // ← SliverChildListDelegate end
-                  ),    // ← SliverList end
-                ),      // ← SliverPadding end
-              ],        // ← CustomScrollView slivers end
-              ),        // ← CustomScrollView end
-            ),          // ← SafeArea end
-          ),            // ← Container end
-        ],              // ← Stack children end
-      ));               // ← Stack and CupertinoPageScaffold end
-    },                  // ← Consumer builder lambda end
-  );           // ← Consumer widget end
-}
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 // ── Synesthetic Sensory Practice Action Card ──────────────────────────────────

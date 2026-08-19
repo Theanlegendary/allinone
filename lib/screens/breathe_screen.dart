@@ -195,7 +195,7 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
     final secs = _remainingSec % 60;
 
     return CupertinoPageScaffold(
-      backgroundColor: const Color(0xFF061118),
+      backgroundColor: Colors.transparent,
       navigationBar: CupertinoNavigationBar(
         middle: const Text('Breathe', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xE6061118),
@@ -208,16 +208,6 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
       ),
       child: Stack(
         children: [
-          // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF061118), Color(0xFF0C212E), Color(0xFF050E15)],
-              ),
-            ),
-          ),
           
           // Background Soft Radial Ambient Glow
           Positioned.fill(
