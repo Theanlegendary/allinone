@@ -258,22 +258,24 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               ),
             ),
 
-            // ── 🍎 iOS Native Tab Scaffold ──────────────────────────────────
+            // ── 🍎 Authentic Apple iOS Inspired Footer Tab Bar ──────────────
             CupertinoTabScaffold(
               backgroundColor: Colors.transparent,
               controller: _tabController,
               tabBar: CupertinoTabBar(
                 onTap: (index) {
-                  HapticFeedback.lightImpact();
+                  HapticFeedback.selectionClick();
                   state.setTab(_indexToAppTab(index));
                 },
-                backgroundColor: const Color(0xF0080F17), // Deep navy, ~94% opacity
-                activeColor: tealPrimary,
-                inactiveColor: const Color(0xFF4A6070), // Muted slate
-
-                // ── Premium crown item with gradient badge ──
+                backgroundColor: const Color(0xC4081119), // Apple iOS ultra-translucent frosted glass
+                border: const Border(
+                  top: BorderSide(color: Color(0x26FFFFFF), width: 0.5), // Apple standard 0.5px hairline
+                ),
+                activeColor: const Color(0xFF2DD4BF), // iOS Seafoam Cyan
+                inactiveColor: const Color(0xFF8E9BAE), // iOS System Gray 2
+                iconSize: 22,
+                height: 54,
                 currentIndex: _appTabToIndex(state.tab),
-
                 items: [
                   const BottomNavigationBarItem(
                     icon: Icon(CupertinoIcons.house),
