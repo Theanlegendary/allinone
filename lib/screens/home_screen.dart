@@ -1059,6 +1059,10 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 26),
+
+                      // ── 6. Coming Soon / Next Month Roadmap Teaser ──
+                      const _ComingSoonRoadmapSection(),
                     ]), // ← SliverChildListDelegate end
                   ),    // ← SliverList end
                 ),      // ← SliverPadding end
@@ -2427,6 +2431,262 @@ class _AtmosphericMoodChipState extends State<_AtmosphericMoodChip>
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── 🔮 Coming Soon / Next Month Roadmap Section ──────────────────────────────
+class _ComingSoonRoadmapSection extends StatelessWidget {
+  const _ComingSoonRoadmapSection();
+
+  static const _upcomingDrops = [
+    (
+      '🚆 Tokyo Sleeper Train in Rain',
+      '8D Spatial Audio • Heavy downpour & rhythmic rails',
+      'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=400&q=80',
+      Color(0xFF38BDF8),
+    ),
+    (
+      '🏔️ Nordic Blizzard Fireplace',
+      '8D Spatial Audio • Roaring hearth & howling snowstorm',
+      'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=400&q=80',
+      Color(0xFFE29578),
+    ),
+    (
+      '🌊 Bioluminescent Ocean (528Hz)',
+      'Healing Frequency • Deep submarine pad resonance',
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=400&q=80',
+      Color(0xFF2DD4BF),
+    ),
+    (
+      '🌅 Time-of-Day Adaptive Aura',
+      'Living Interface • Sunrise Amber to Cosmic Indigo',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
+      Color(0xFFFFB74D),
+    ),
+    (
+      '📖 The Starlit Observatory',
+      'Sleep Journey • Narrated deep galaxy bedtime tale',
+      'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
+      Color(0xFFA855F7),
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFA855F7).withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(CupertinoIcons.sparkles,
+                  color: Color(0xFFA855F7), size: 14),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'COMING IN NEXT MONTH DROP',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFA855F7),
+                letterSpacing: 1.6,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    Border.all(color: const Color(0xFFFFD700).withOpacity(0.4)),
+              ),
+              child: const Text(
+                'ROADMAP ✨',
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFFD700),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: _upcomingDrops.map((drop) {
+              final title = drop.$1;
+              final subtitle = drop.$2;
+              final imgUrl = drop.$3;
+              final accentColor = drop.$4;
+
+              return Container(
+                width: 240,
+                margin: const EdgeInsets.only(right: 14),
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                      color: accentColor.withOpacity(0.35), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Background Image
+                    Positioned.fill(
+                      child: Image.network(
+                        imgUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                    ),
+                    // Dark Glass Overlay
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.3),
+                              const Color(0xFF07111B).withOpacity(0.88),
+                              const Color(0xFF040A10).withOpacity(0.96),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Content
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: accentColor.withOpacity(0.5)),
+                                ),
+                                child: Text(
+                                  '🔒 COMING SOON',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                              const Icon(CupertinoIcons.lock_fill,
+                                  color: Colors.white60, size: 13),
+                            ],
+                          ),
+                          const SizedBox(height: 38),
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.7),
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              showCupertinoDialog(
+                                context: context,
+                                builder: (ctx) => CupertinoAlertDialog(
+                                  title: Text('$title ✨'),
+                                  content: const Padding(
+                                    padding: EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      '🔔 You\'re on the VIP list!\n\nThis will unlock automatically in Next Month\'s Sanctuary content update at no extra charge.',
+                                    ),
+                                  ),
+                                  actions: [
+                                    CupertinoDialogAction(
+                                      child: const Text('Awesome 🌿'),
+                                      onPressed: () => Navigator.pop(ctx),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: Container(
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.2)),
+                              ),
+                              child: const Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(CupertinoIcons.bell_fill,
+                                        color: Colors.white, size: 11),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      'Notify Me',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
