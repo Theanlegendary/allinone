@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
 
-// ─── Neumorphic Theme Demo & Showcase Screen ──────────────────────────────────
+// ─── Twilight Lavender Dark Neumorphic Soft UI Showcase ──────────────────────
 class NeumorphismDemoScreen extends StatefulWidget {
   const NeumorphismDemoScreen({super.key});
 
@@ -12,451 +15,574 @@ class NeumorphismDemoScreen extends StatefulWidget {
 }
 
 class _NeumorphismDemoScreenState extends State<NeumorphismDemoScreen> {
+  // Twilight Lavender Dark Neumorphic Tokens
+  static const Color _neuDarkSurface = Color(0xFF0D1826);
+  static const Color _neuLavender = Color(0xFFC7D2FE);
+  static const Color _neuLavenderGlow = Color(0xFFA5B4FC);
+  static const Color _neuTextPrimary = Color(0xFFF1F5F9);
+  static const Color _neuTextSecondary = Color(0xFF94A3B8);
+  static const Color _neuDarkShadow = Color(0xFF04080F);
+  static const Color _neuLightGlow = Color(0x1FC7D2FE);
+
   bool _isButtonPressed = false;
   bool _isSwitchOn = true;
-  double _sliderValue = 0.65;
-  int _selectedChip = 0;
+  double _sliderValue = 0.75;
+  int _selectedChip = 1; // Default to Sleep (Moon)
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedSettings();
+  }
+
+  Future<void> _loadSavedSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isSwitchOn = prefs.getBool('neu_switch_on') ?? true;
+      _sliderValue = prefs.getDouble('neu_slider_val') ?? 0.75;
+      _selectedChip = prefs.getInt('neu_chip_idx') ?? 1;
+    });
+  }
+
+  Future<void> _saveSetting(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value is bool) {
+      await prefs.setBool(key, value);
+    } else if (value is double) {
+      await prefs.setDouble(key, value);
+    } else if (value is int) {
+      await prefs.setInt(key, value);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, state, _) {
-        final isNeumorphicActive = state.themeMode == SanctuaryThemeMode.neumorphism;
+        final wallpaper = state.wallpaper;
 
         return Scaffold(
-          backgroundColor: neuSurface,
-          appBar: AppBar(
-            backgroundColor: neuSurface,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: neuText),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: const Text(
-              'Neumorphism (Soft UI)',
-              style: TextStyle(color: neuText, fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: TextButton.icon(
-                  onPressed: () {
-                    if (isNeumorphicActive) {
-                      state.setThemeMode(SanctuaryThemeMode.midnightNavy);
-                    } else {
-                      state.setThemeMode(SanctuaryThemeMode.neumorphism);
-                    }
-                  },
-                  icon: Icon(
-                    isNeumorphicActive ? Icons.check_circle_rounded : Icons.palette_outlined,
-                    color: neuAccent,
-                    size: 18,
+          backgroundColor: _neuDarkSurface,
+          body: Stack(
+            children: [
+              // 🖼️ Dynamic Living Wallpaper Background
+              if (wallpaper.imageUrl.isNotEmpty)
+                Positioned.fill(
+                  child: Image.network(
+                    wallpaper.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                   ),
-                  label: Text(
-                    isNeumorphicActive ? 'Applied ✓' : 'Apply Theme',
-                    style: const TextStyle(color: neuAccent, fontWeight: FontWeight.bold),
+                ),
+
+              // Dark Atmospheric Vignette Overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        _neuDarkSurface.withOpacity(0.85),
+                        _neuDarkSurface.withOpacity(0.95),
+                        _neuDarkSurface,
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 1. Theme Header Card
-                _buildNeuCard(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: neuSurface,
-                          shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(color: neuDarkShadow, offset: Offset(8, 8), blurRadius: 16),
-                            BoxShadow(color: neuLightShadow, offset: Offset(-8, -8), blurRadius: 16),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text('🎨', style: TextStyle(fontSize: 36)),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Neumorphism (Soft UI)',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: neuText,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Extruded dual shadows • Soft monochromatic surface • Subtle depth (Era: 2019–2020)',
-                        style: TextStyle(fontSize: 13, color: neuSubtext, height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+
+              // Content
+              SafeArea(
+                child: Column(
+                  children: [
+                    // Top App Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
                         children: [
-                          _buildColorTag('Surface #E0E5EC', neuSurface),
-                          const SizedBox(width: 8),
-                          _buildColorTag('Accent #6C757D', neuAccent, isDark: true),
-                          const SizedBox(width: 8),
-                          _buildColorTag('Text #3D3D3D', neuText, isDark: true),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _neuDarkSurface,
+                              shape: BoxShape.circle,
+                              boxShadow: const [
+                                BoxShadow(color: _neuDarkShadow, offset: Offset(4, 4), blurRadius: 8),
+                                BoxShadow(color: _neuLightGlow, offset: Offset(-3, -3), blurRadius: 6),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(CupertinoIcons.back, color: _neuTextPrimary, size: 20),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Twilight Soft UI 🌙',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: _neuTextPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                Text(
+                                  'Dark Neumorphic Tactile Controls',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: _neuTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // 🖼️ Wallpaper Switcher
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _neuDarkSurface,
+                              shape: BoxShape.circle,
+                              boxShadow: const [
+                                BoxShadow(color: _neuDarkShadow, offset: Offset(4, 4), blurRadius: 8),
+                                BoxShadow(color: _neuLightGlow, offset: Offset(-3, -3), blurRadius: 6),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(CupertinoIcons.photo_on_rectangle, color: _neuLavender, size: 18),
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                showCupertinoModalPopup(
+                                  context: context,
+                                  builder: (ctx) => CupertinoActionSheet(
+                                    title: const Text('Atmospheric Background 🖼️'),
+                                    message: const Text('Change the ambient living backdrop across all pages:'),
+                                    actions: AppWallpaper.values.map((w) {
+                                      final isCurrent = state.wallpaper == w;
+                                      return CupertinoActionSheetAction(
+                                        onPressed: () {
+                                          state.setWallpaper(w);
+                                          Navigator.pop(ctx);
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(w.displayName),
+                                            if (isCurrent) ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(CupertinoIcons.checkmark_alt, color: tealPrimary, size: 16),
+                                            ],
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                    cancelButton: CupertinoActionSheetAction(
+                                      isDefaultAction: true,
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 28),
-                const Text(
-                  'INTERACTIVE NEUMORPHIC COMPONENTS',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: neuAccent,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 14),
+                    // Scrollable Component Showcase
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // 1. Hero Moonlight Orb
+                            _buildNeuCard(
+                              child: Column(
+                                children: [
+                                  // Glowing Lavender Moon Capsule
+                                  Container(
+                                    width: 84,
+                                    height: 84,
+                                    decoration: BoxDecoration(
+                                      color: _neuDarkSurface,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        const BoxShadow(
+                                          color: _neuDarkShadow,
+                                          offset: Offset(8, 8),
+                                          blurRadius: 16,
+                                        ),
+                                        const BoxShadow(
+                                          color: _neuLightGlow,
+                                          offset: Offset(-8, -8),
+                                          blurRadius: 16,
+                                        ),
+                                        BoxShadow(
+                                          color: _neuLavender.withOpacity(0.18),
+                                          blurRadius: 28,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Container(
+                                        width: 58,
+                                        height: 58,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF162338),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: _neuLavender.withOpacity(0.3),
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(
+                                            CupertinoIcons.moon_stars_fill,
+                                            color: _neuLavender,
+                                            size: 28,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Twilight Lavender Soft UI',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: _neuTextPrimary,
+                                      letterSpacing: -0.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Text(
+                                    'Dual-shadow extruded surfaces • Tactile depth • Auto-saved local state',
+                                    style: TextStyle(fontSize: 12, color: _neuTextSecondary, height: 1.4),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
 
-                // 2. Buttons (Extruded vs Inset)
-                _buildNeuCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '1. Buttons & Controls',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: neuText),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Tap the button to toggle between Extruded (Outward) and Inset (Pressed) states:',
-                        style: TextStyle(fontSize: 12, color: neuSubtext),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          // Extruded / Inset Toggle Button
-                          Expanded(
-                            child: GestureDetector(
-                              onTapDown: (_) => setState(() => _isButtonPressed = true),
-                              onTapUp: (_) => setState(() => _isButtonPressed = false),
-                              onTapCancel: () => setState(() => _isButtonPressed = false),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                height: 54,
-                                decoration: BoxDecoration(
-                                  color: neuSurface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: _isButtonPressed
-                                      ? [
-                                          // Inset simulation
-                                          BoxShadow(
-                                            color: neuDarkShadow.withOpacity(0.8),
-                                            offset: const Offset(2, 2),
-                                            blurRadius: 4,
+                            const SizedBox(height: 22),
+
+                            // 2. Tactile Buttons (Extruded vs Inset)
+                            _buildNeuCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(CupertinoIcons.hand_draw_fill, color: _neuLavender, size: 16),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        '1. Physical Tactile Button',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: _neuTextPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Text(
+                                    'Press and hold to physically recess the button inward (Inset depth):',
+                                    style: TextStyle(fontSize: 12, color: _neuTextSecondary),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  GestureDetector(
+                                    onTapDown: (_) {
+                                      HapticFeedback.lightImpact();
+                                      setState(() => _isButtonPressed = true);
+                                    },
+                                    onTapUp: (_) => setState(() => _isButtonPressed = false),
+                                    onTapCancel: () => setState(() => _isButtonPressed = false),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 120),
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        color: _isButtonPressed
+                                            ? const Color(0xFF0A121E)
+                                            : _neuDarkSurface,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: _isButtonPressed
+                                              ? _neuLavender.withOpacity(0.4)
+                                              : _neuLavender.withOpacity(0.12),
+                                          width: 1,
+                                        ),
+                                        boxShadow: _isButtonPressed
+                                            ? [
+                                                BoxShadow(
+                                                  color: _neuDarkShadow.withOpacity(0.9),
+                                                  offset: const Offset(3, 3),
+                                                  blurRadius: 6,
+                                                  spreadRadius: -1,
+                                                ),
+                                              ]
+                                            : const [
+                                                BoxShadow(
+                                                  color: _neuDarkShadow,
+                                                  offset: Offset(6, 6),
+                                                  blurRadius: 14,
+                                                ),
+                                                BoxShadow(
+                                                  color: _neuLightGlow,
+                                                  offset: Offset(-5, -5),
+                                                  blurRadius: 12,
+                                                ),
+                                              ],
+                                      ),
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              _isButtonPressed
+                                                  ? CupertinoIcons.moon_fill
+                                                  : CupertinoIcons.sparkles,
+                                              color: _neuLavender,
+                                              size: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              _isButtonPressed
+                                                  ? 'INSET (PRESSED INTO SCREEN)'
+                                                  : 'EXTRUDED SOFT UI BUTTON',
+                                              style: TextStyle(
+                                                color: _isButtonPressed ? _neuLavender : _neuTextPrimary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12.5,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+
+                                  // Soft UI Toggle Switch
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Tactile Haptic Switch',
+                                            style: TextStyle(
+                                              color: _neuTextPrimary,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13.5,
+                                            ),
                                           ),
-                                        ]
-                                      : const [
-                                          BoxShadow(
-                                            color: neuDarkShadow,
-                                            offset: Offset(6, 6),
-                                            blurRadius: 12,
-                                          ),
-                                          BoxShadow(
-                                            color: neuLightShadow,
-                                            offset: Offset(-6, -6),
-                                            blurRadius: 12,
+                                          Text(
+                                            'Auto-saved to local memory',
+                                            style: TextStyle(
+                                              color: _neuTextSecondary,
+                                              fontSize: 11,
+                                            ),
                                           ),
                                         ],
-                                ),
-                                child: Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        _isButtonPressed ? Icons.touch_app_rounded : Icons.play_arrow_rounded,
-                                        color: neuAccent,
                                       ),
-                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          final nextVal = !_isSwitchOn;
+                                          setState(() => _isSwitchOn = nextVal);
+                                          _saveSetting('neu_switch_on', nextVal);
+                                        },
+                                        child: Container(
+                                          width: 58,
+                                          height: 32,
+                                          padding: const EdgeInsets.all(3),
+                                          decoration: BoxDecoration(
+                                            color: _neuDarkSurface,
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: const [
+                                              BoxShadow(color: _neuDarkShadow, offset: Offset(3, 3), blurRadius: 6),
+                                              BoxShadow(color: _neuLightGlow, offset: Offset(-3, -3), blurRadius: 6),
+                                            ],
+                                          ),
+                                          child: AnimatedAlign(
+                                            duration: const Duration(milliseconds: 200),
+                                            alignment: _isSwitchOn ? Alignment.centerRight : Alignment.centerLeft,
+                                            child: Container(
+                                              width: 26,
+                                              height: 26,
+                                              decoration: BoxDecoration(
+                                                color: _isSwitchOn ? _neuLavender : const Color(0xFF1E293B),
+                                                shape: BoxShape.circle,
+                                                boxShadow: _isSwitchOn
+                                                    ? [
+                                                        BoxShadow(
+                                                          color: _neuLavenderGlow.withOpacity(0.5),
+                                                          blurRadius: 10,
+                                                        ),
+                                                      ]
+                                                    : const [
+                                                        BoxShadow(
+                                                          color: _neuDarkShadow,
+                                                          offset: Offset(2, 2),
+                                                          blurRadius: 4,
+                                                        ),
+                                                      ],
+                                              ),
+                                              child: Icon(
+                                                _isSwitchOn ? CupertinoIcons.checkmark : CupertinoIcons.xmark,
+                                                size: 13,
+                                                color: _isSwitchOn ? Colors.black : _neuTextSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 22),
+
+                            // 3. Soft Chips & Volume Slider
+                            _buildNeuCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(CupertinoIcons.slider_horizontal_3, color: _neuLavender, size: 16),
+                                      SizedBox(width: 8),
                                       Text(
-                                        _isButtonPressed ? 'PRESSED (INSET)' : 'EXTRUDED BUTTON',
+                                        '2. Mood Selector & Volume Slider',
                                         style: TextStyle(
-                                          color: neuText,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: _neuTextPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    children: [
+                                      _buildChip(0, '😌 Calm'),
+                                      const SizedBox(width: 8),
+                                      _buildChip(1, '🌙 Sleep'),
+                                      const SizedBox(width: 8),
+                                      _buildChip(2, '🧠 Focus'),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Master Ambient Level',
+                                        style: TextStyle(
+                                          color: _neuTextPrimary,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${(_sliderValue * 100).toInt()}%',
+                                        style: const TextStyle(
+                                          color: _neuLavender,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 13,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Neumorphic Toggle Switch
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Soft UI Toggle Switch', style: TextStyle(color: neuText, fontWeight: FontWeight.w600, fontSize: 14)),
-                              Text('Monochromatic state transition', style: TextStyle(color: neuSubtext, fontSize: 12)),
-                            ],
-                          ),
-                          GestureDetector(
-                            onTap: () => setState(() => _isSwitchOn = !_isSwitchOn),
-                            child: Container(
-                              width: 60,
-                              height: 32,
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                color: neuSurface,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: const [
-                                  BoxShadow(color: neuDarkShadow, offset: Offset(3, 3), blurRadius: 6),
-                                  BoxShadow(color: neuLightShadow, offset: Offset(-3, -3), blurRadius: 6),
-                                ],
-                              ),
-                              child: AnimatedAlign(
-                                duration: const Duration(milliseconds: 200),
-                                alignment: _isSwitchOn ? Alignment.centerRight : Alignment.centerLeft,
-                                child: Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: BoxDecoration(
-                                    color: _isSwitchOn ? neuAccent : neuSurface,
-                                    shape: BoxShape.circle,
-                                    boxShadow: _isSwitchOn
-                                        ? [BoxShadow(color: neuAccent.withOpacity(0.4), blurRadius: 8)]
-                                        : const [
-                                            BoxShadow(color: neuDarkShadow, offset: Offset(2, 2), blurRadius: 4),
-                                            BoxShadow(color: neuLightShadow, offset: Offset(-2, -2), blurRadius: 4),
-                                          ],
-                                  ),
-                                  child: Icon(
-                                    _isSwitchOn ? Icons.check_rounded : Icons.close_rounded,
-                                    size: 14,
-                                    color: _isSwitchOn ? Colors.white : neuSubtext,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // 3. Neumorphic Breathing Orb
-                _buildNeuCard(
-                  child: Column(
-                    children: [
-                      const Text(
-                        '2. Soft UI Breathing Orb',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: neuText),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: neuSurface,
-                          shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(color: neuDarkShadow, offset: Offset(12, 12), blurRadius: 24),
-                            BoxShadow(color: neuLightShadow, offset: Offset(-12, -12), blurRadius: 24),
-                          ],
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: neuSurface,
-                              shape: BoxShape.circle,
-                              boxShadow: const [
-                                BoxShadow(color: neuDarkShadow, offset: Offset(6, 6), blurRadius: 12),
-                                BoxShadow(color: neuLightShadow, offset: Offset(-6, -6), blurRadius: 12),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('💨', style: TextStyle(fontSize: 28)),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    'INHALE',
-                                    style: TextStyle(
-                                      color: neuAccent,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 10,
-                                      letterSpacing: 1.2,
+                                  const SizedBox(height: 8),
+                                  SliderTheme(
+                                    data: SliderThemeData(
+                                      activeTrackColor: _neuLavender,
+                                      inactiveTrackColor: const Color(0xFF1E293B),
+                                      thumbColor: _neuLavender,
+                                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
+                                      overlayColor: _neuLavender.withOpacity(0.18),
+                                    ),
+                                    child: Slider(
+                                      value: _sliderValue,
+                                      onChanged: (v) {
+                                        setState(() => _sliderValue = v);
+                                        _saveSetting('neu_slider_val', v);
+                                      },
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      const Text(
-                        'Concentric Neumorphic depth layers create a tactile 3D orb feeling',
-                        style: TextStyle(fontSize: 12, color: neuSubtext),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // 4. Neumorphic Chips & Slider
-                _buildNeuCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '3. Chips & Slider',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: neuText),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: List.generate(3, (i) {
-                          final labels = ['😌 Calm', '😴 Sleep', '🧠 Focus'];
-                          final isSelected = _selectedChip == i;
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedChip = i),
-                              child: Container(
-                                margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: neuSurface,
-                                  borderRadius: BorderRadius.circular(14),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color: neuDarkShadow.withOpacity(0.6),
-                                            offset: const Offset(2, 2),
-                                            blurRadius: 4,
-                                          ),
-                                        ]
-                                      : const [
-                                          BoxShadow(color: neuDarkShadow, offset: Offset(4, 4), blurRadius: 8),
-                                          BoxShadow(color: neuLightShadow, offset: Offset(-4, -4), blurRadius: 8),
-                                        ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    labels[i],
-                                    style: TextStyle(
-                                      color: isSelected ? neuAccent : neuText,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Volume Level', style: TextStyle(color: neuText, fontWeight: FontWeight.w600, fontSize: 13)),
-                          Text('${(_sliderValue * 100).toInt()}%', style: const TextStyle(color: neuAccent, fontWeight: FontWeight.bold, fontSize: 13)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SliderTheme(
-                        data: SliderThemeData(
-                          activeTrackColor: neuAccent,
-                          inactiveTrackColor: neuDarkShadow.withOpacity(0.4),
-                          thumbColor: neuSurface,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12, elevation: 4),
-                          overlayColor: neuAccent.withOpacity(0.15),
-                        ),
-                        child: Slider(
-                          value: _sliderValue,
-                          onChanged: (v) => setState(() => _sliderValue = v),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // 5. Verdict & Comparison Card
-                _buildNeuCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Text('⚖️', style: TextStyle(fontSize: 22)),
-                          SizedBox(width: 8),
-                          Text(
-                            'Design Evaluation: Is Neumorphism Cool?',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: neuText),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _buildBullet('PRO', 'Clean, soft, tactile feel — very relaxing for eye strain.', true),
-                      _buildBullet('PRO', 'Creates a unique physical hardware/instrument panel aesthetic.', true),
-                      _buildBullet('CON', 'Low contrast outdoors — harder to read in bright sunlight.', false),
-                      _buildBullet('CON', 'Requires light background (`#E0E5EC`), losing dark mode vibe.', false),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: neuSurface,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(color: neuDarkShadow, offset: Offset(3, 3), blurRadius: 6),
-                            BoxShadow(color: neuLightShadow, offset: Offset(-3, -3), blurRadius: 6),
                           ],
                         ),
-                        child: Text(
-                          isNeumorphicActive
-                              ? '✅ Neumorphism theme is currently ACTIVE across Sanctuary!'
-                              : '💡 Tap "Apply Theme" at the top right to try Neumorphism on all screens.',
-                          style: const TextStyle(fontSize: 12, color: neuAccent, fontWeight: FontWeight.w600),
-                          textAlign: TextAlign.center,
-                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 32),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildChip(int index, String label) {
+    final isSelected = _selectedChip == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedChip = index);
+          _saveSetting('neu_chip_idx', index);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF1E293B) : _neuDarkSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? _neuLavender.withOpacity(0.6) : Colors.white.withOpacity(0.06),
+              width: 1.2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: _neuLavender.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : const [
+                    BoxShadow(color: _neuDarkShadow, offset: Offset(4, 4), blurRadius: 8),
+                    BoxShadow(color: _neuLightGlow, offset: Offset(-3, -3), blurRadius: 6),
+                  ],
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? _neuLavender : _neuTextSecondary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -464,62 +590,15 @@ class _NeumorphismDemoScreenState extends State<NeumorphismDemoScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: neuSurface,
+        color: _neuDarkSurface.withOpacity(0.9),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.07), width: 1),
         boxShadow: const [
-          BoxShadow(color: neuDarkShadow, offset: Offset(9, 9), blurRadius: 18),
-          BoxShadow(color: neuLightShadow, offset: Offset(-9, -9), blurRadius: 18),
+          BoxShadow(color: _neuDarkShadow, offset: Offset(8, 8), blurRadius: 18),
+          BoxShadow(color: _neuLightGlow, offset: Offset(-6, -6), blurRadius: 16),
         ],
       ),
       child: child,
-    );
-  }
-
-  Widget _buildColorTag(String label, Color color, {bool isDark = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: neuDarkShadow.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: isDark ? Colors.white : neuText,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBullet(String tag, String text, bool isPositive) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: isPositive ? const Color(0xFF52B788) : const Color(0xFFE29578),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              tag,
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 9),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 13, color: neuText, height: 1.3),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

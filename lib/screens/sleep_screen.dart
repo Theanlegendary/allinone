@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
+import 'package:relax_mindfulness/theme/neumorphism_demo.dart';
 import 'package:relax_mindfulness/components/glass_components.dart';
 
 class SleepScreen extends StatefulWidget {
@@ -879,6 +881,82 @@ class _SleepScreenState extends State<SleepScreen> {
                               onTap: () => state.playGuidedSession('Ancient Temple Bells', 45),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 28),
+
+                        // ── 6. TWILIGHT SOFT UI SHOWCASE CARD ──
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).push(
+                              CupertinoPageRoute(builder: (_) => const NeumorphismDemoScreen()),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0D1826).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(color: const Color(0xFFC7D2FE).withOpacity(0.35), width: 1.2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  offset: const Offset(0, 8),
+                                  blurRadius: 18,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF162338),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFC7D2FE).withOpacity(0.2),
+                                        blurRadius: 12,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      CupertinoIcons.moon_stars_fill,
+                                      color: Color(0xFFC7D2FE),
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Twilight Soft UI Controls 🌙',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(height: 3),
+                                      Text(
+                                        'Tactile haptic dials, mood orb & living wallpaper',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(CupertinoIcons.chevron_right, color: Color(0xFFC7D2FE), size: 16),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
