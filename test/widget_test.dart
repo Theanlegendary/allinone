@@ -10,10 +10,10 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: appState,
-        child: const RelaxApp(),
+        child: const SanctuaryApp(),
       ),
     );
 
-    expect(find.byType(RelaxApp), findsOneWidget);
+    expect(find.byType(SanctuaryApp), findsOneWidget);
   });
 }

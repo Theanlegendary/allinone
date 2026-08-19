@@ -133,9 +133,8 @@ class ScreenScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final pad = Spacing.of(context);
-    final navBarHeight = 68.0;
-    final miniPlayerSpace = 68.0 + 14.0;  // player height + gap
+    const navBarHeight = 68.0;
+    const miniPlayerSpace = 68.0 + 14.0;  // player height + gap
 
     final bottomInset = (addNavBarPadding ? navBarHeight : 0.0) +
         (addMiniPlayerPadding ? miniPlayerSpace : 0.0);
