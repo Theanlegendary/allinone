@@ -126,44 +126,8 @@ class _SleepScreenState extends State<SleepScreen> {
     final state = context.watch<AppState>();
 
     return CupertinoPageScaffold(
-      backgroundColor: bgDark,
-      child: Stack(
-        children: [
-          // 🌌 Cosmic Night Sky Header Artwork Backdrop
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 320,
-            child: ShaderMask(
-              shaderCallback: (rect) {
-                return const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black, Colors.transparent],
-                ).createShader(rect);
-              },
-              blendMode: BlendMode.dstIn,
-              child: Image.network(
-                'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF080F16).withOpacity(0.65),
-                  const Color(0xFF0D1E2C),
-                  const Color(0xFF070E15),
-                ],
-              ),
-            ),
-            child: CustomScrollView(
+      backgroundColor: Colors.transparent,
+      child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
                 const CupertinoSliverNavigationBar(
@@ -964,9 +928,6 @@ class _SleepScreenState extends State<SleepScreen> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -53,41 +53,9 @@ class _MeditationScreenState extends State<MeditationScreen> {
         : _sessions.where((s) => s.$4 == _selectedCategory).toList();
 
     return CupertinoPageScaffold(
-      backgroundColor: bgDark,
-      child: Stack(
-        children: [
-          // 🌌 Aurora / Northern Lights Header Backdrop (matches reference screenshot)
-          Positioned(
-            top: 0, left: 0, right: 0,
-            height: 280,
-            child: ShaderMask(
-              shaderCallback: (rect) => const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black, Colors.transparent],
-              ).createShader(rect),
-              blendMode: BlendMode.dstIn,
-              child: Image.network(
-                'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1200&q=80',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF0A1A12).withOpacity(0.7),
-                  bgDark,
-                  bgMid,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
+      backgroundColor: Colors.transparent,
+      child: SafeArea(
+        bottom: false,
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
@@ -389,9 +357,6 @@ class _MeditationScreenState extends State<MeditationScreen> {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
     );
   }
 }

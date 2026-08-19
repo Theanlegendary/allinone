@@ -1029,6 +1029,11 @@ class AppState extends ChangeNotifier {
       _favoriteSounds = savedFavs.toSet();
     }
 
+    final savedWallpaperIdx = _prefs!.getInt('app_wallpaper');
+    if (savedWallpaperIdx != null && savedWallpaperIdx >= 0 && savedWallpaperIdx < AppWallpaper.values.length) {
+      _wallpaper = AppWallpaper.values[savedWallpaperIdx];
+    }
+
     _loadRecents();
     _loadReminder();
     _loadPremiumState();

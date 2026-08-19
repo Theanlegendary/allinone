@@ -233,8 +233,34 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
         return Stack(
           children: [
+            // 🖼️ App-Wide Global Living Atmospheric Wallpaper Stack
+            if (state.wallpaper.imageUrl.isNotEmpty)
+              Positioned.fill(
+                child: Image.network(
+                  state.wallpaper.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      state.wallpaper.baseColor.withOpacity(0.78),
+                      state.wallpaper.baseColor.withOpacity(0.94),
+                      state.wallpaper.baseColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             // ── 🍎 iOS Native Tab Scaffold ──────────────────────────────────
             CupertinoTabScaffold(
+              backgroundColor: Colors.transparent,
               controller: _tabController,
               tabBar: CupertinoTabBar(
                 onTap: (index) {

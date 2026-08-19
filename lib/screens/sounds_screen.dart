@@ -628,16 +628,8 @@ class _SoundsScreenState extends State<SoundsScreen> {
     final activeSubtextColor = isClay ? claySubtext : textSecondary;
 
     return CupertinoPageScaffold(
-      backgroundColor: state.themeMode.bgDark,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [state.themeMode.bgDark, state.themeMode.bgMid, state.themeMode.bgDark],
-          ),
-        ),
-        child: CustomScrollView(
+      backgroundColor: Colors.transparent,
+      child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             CupertinoSliverNavigationBar(
@@ -926,7 +918,6 @@ class _SoundsScreenState extends State<SoundsScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }
