@@ -43,14 +43,19 @@ jobs:
           path: build/ios/ipa/Sanctuary-iOS-Release.ipa
 
       - name: 🚀 Upload to TestFlight (If App Store Connect Secrets Configured)
-        if: env.APP_STORE_CONNECT_API_KEY != ''
+        if: ${{ env.APP_STORE_CONNECT_API_KEY != '' }}
         env:
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
+          echo "Setting up Apple App Store Connect API Key..."
+          mkdir -p ~/.private_keys
+          echo "$APP_STORE_CONNECT_API_KEY" > ~/.private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
+          
           echo "Uploading IPA to Apple App Store Connect / TestFlight..."
-          xcrun altool --upload-app -f build/ios/ipa/Sanctuary-iOS-Release.ipa \
+          xcrun altool --upload-app \
+            -f build/ios/ipa/Sanctuary-iOS-Release.ipa \
             --type ios \
             --apiKey "$APP_STORE_CONNECT_KEY_ID" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
