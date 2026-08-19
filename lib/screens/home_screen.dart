@@ -1324,18 +1324,41 @@ class _DailyAffirmationBannerState extends State<_DailyAffirmationBanner> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: tealPrimary.withOpacity(0.25), width: 1),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            tealPrimary.withOpacity(0.18),
+            const Color(0xFFA855F7).withOpacity(0.08),
+            const Color(0xFF07121B).withOpacity(0.88),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: tealPrimary.withOpacity(0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: tealPrimary.withOpacity(0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: tealPrimary.withOpacity(0.15),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tealPrimary.withOpacity(0.35),
+                  tealPrimary.withOpacity(0.15),
+                ],
+              ),
               shape: BoxShape.circle,
+              border: Border.all(color: tealPrimary.withOpacity(0.5), width: 1),
             ),
             child: const Icon(CupertinoIcons.quote_bubble_fill, color: tealPrimary, size: 20),
           ),
@@ -1860,8 +1883,28 @@ class _InstantStressSOSWidgetState extends State<_InstantStressSOSWidget> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
 
-    return GlassCard(
-      cornerRadius: 24,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            coralAccent.withOpacity(0.18),
+            const Color(0xFFA855F7).withOpacity(0.09),
+            const Color(0xFF07111B).withOpacity(0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: coralAccent.withOpacity(0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: coralAccent.withOpacity(0.15),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1979,16 +2022,44 @@ class _StressReductionMeter extends StatelessWidget {
     final score = (50 + (minutesToday * 3)).clamp(50, 98);
     final statusText = score >= 85 ? 'Serene & Calm 🌿' : score >= 70 ? 'Balanced 🧘' : 'Rest Needed 😴';
 
-    return GlassCard(
-      cornerRadius: 22,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF2DD4BF).withOpacity(0.16),
+            const Color(0xFF0C1620).withOpacity(0.85),
+            const Color(0xFF060E15).withOpacity(0.92),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2DD4BF).withOpacity(0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: mintAccent.withOpacity(0.18),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2DD4BF), Color(0xFF14B8A6)],
+              ),
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2DD4BF).withOpacity(0.4),
+                  blurRadius: 10,
+                ),
+              ],
             ),
             child: const Center(
               child: Text('✨', style: TextStyle(fontSize: 22)),
