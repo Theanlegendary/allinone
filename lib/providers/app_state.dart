@@ -1050,6 +1050,17 @@ class AppState extends ChangeNotifier {
           pauseGuidedSession();
         }
       });
+
+      // Auto-pause during phone calls / Siri interruptions
+      session.interruptionEventStream.listen((event) {
+        if (event.begin) {
+          debugPrint('Audio interrupted by incoming call / system prompt, pausing audio');
+          pauseAllAmbientSoundTracks();
+          if (_isGuidedPlaying) {
+            pauseGuidedSession();
+          }
+        }
+      });
     } catch (e) {
       debugPrint('AudioSession configuration error: $e');
     }
