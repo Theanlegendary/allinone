@@ -299,558 +299,754 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
+                        padding: const EdgeInsets.fromLTRB(22, 8, 22, 100),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
+                            // ── Subtitle ──
                             Text(
-                              'Take a deep breath. You are safe and at peace here.',
+                              'Take a moment for yourself.',
                               style: TextStyle(
-                                fontSize: 13.5,
-                                color: activeSubtextColor,
+                                fontSize: 14.5,
+                                color: Colors.white.withOpacity(0.65),
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
 
-                      // ── 0. Daily Affirmation & Mindfulness Inspiration ──
-                      const RepaintBoundary(child: _DailyAffirmationBanner()),
-                      const SizedBox(height: 16),
+                            // ── 1. The Main Breathing Element: Large Organic Breathing Orb ──
+                            const _HeroOrganicBreathingSection(),
+                            const SizedBox(height: 32),
 
-                      // ── 🆘 1-Tap Emergency Panic & Stress SOS Relief ──
-                      const RepaintBoundary(child: _InstantStressSOSWidget()),
-                      const SizedBox(height: 16),
+                            // ── Hairline Divider ──
+                            Divider(
+                              color: Colors.white.withOpacity(0.12),
+                              thickness: 0.5,
+                              height: 1,
+                            ),
+                            const SizedBox(height: 28),
 
-                      // ── 📊 Daily Calm & Stress Reduction Index ──
-                      const RepaintBoundary(child: _StressReductionMeter()),
-                      const SizedBox(height: 20),
+                            // ── 2. Emotional State & Quick Duration Selector ──
+                            const _EmotionalDurationSelector(),
+                            const SizedBox(height: 28),
 
-                      // ── 1. Hero Featured Sanctuary Card (Tall 240px & Alive Motion) ──
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: 230,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: Image.network(
-                                  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-                                  fit: BoxFit.cover,
-                                  // GPU-accelerated: decode once at display size, never re-decode on scroll
-                                  cacheWidth: 800,
-                                  filterQuality: FilterQuality.medium,
-                                  gaplessPlayback: true,
-                                ),
-                              ),
-                              Positioned.fill(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.black.withOpacity(0.35),
-                                        Colors.black.withOpacity(0.88),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(22),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: coralAccent.withOpacity(0.25),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: coralAccent.withOpacity(0.4)),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(CupertinoIcons.leaf_arrow_circlepath, color: Colors.white, size: 12),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                'DAILY PRACTICE',
-                                                style: TextStyle(
-                                                  fontSize: 9.5,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                  letterSpacing: 1.2,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        const AnimatedSoundWave(accentColor: coralAccent),
-                                      ],
-                                    ),
+                            // ── Hairline Divider ──
+                            Divider(
+                              color: Colors.white.withOpacity(0.12),
+                              thickness: 0.5,
+                              height: 1,
+                            ),
+                            const SizedBox(height: 28),
 
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 56,
-                                          height: 56,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.18),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: Colors.white30, width: 1.5),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.3),
-                                                blurRadius: 10,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Icon(featuredIcon, color: Colors.white, size: 26),
-                                        ),
-                                        const SizedBox(width: 16),
+                            // ── 3. Tonight: Quiet Your Mind Before Sleep ──
+                            const _TonightSlumberCard(),
+                            const SizedBox(height: 24),
 
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                today['title']! as String,
-                                                style: const TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                  letterSpacing: -0.3,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                today['desc']! as String,
-                                                style: const TextStyle(
-                                                  fontSize: 12.5,
-                                                  color: Colors.white70,
-                                                  height: 1.3,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: GlassPillButton(
-                                        text: 'Begin Peaceful Journey →',
-                                        icon: CupertinoIcons.play_fill,
-                                        containerColor: tealPrimary,
-                                        contentColor: Colors.black,
-                                        onTap: () {
-                                          final type = today['type']! as String;
-                                          if (type == 'Meditation') {
-                                            state.playGuidedSession(today['title']! as String, today['mins']! as int);
-                                          } else if (type == 'Breathing') {
-                                            state.setTab(AppTab.breathe);
-                                          } else if (type == 'Sleep') {
-                                            state.setTab(AppTab.sleep);
-                                          } else {
-                                            state.setTab(AppTab.sounds);
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            // ── 4. Pinned Sound Mixes (If any saved) ──
+                            if (state.presets.isNotEmpty) ...[
+                              const _PinnedMixesSection(),
+                              const SizedBox(height: 24),
                             ],
-                          ),
+                          ]),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
+      }
 
-                      // ── 2. Atmospheric Mood Pod with Blurred Raindrop Backdrop ───
-                      Container(
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(26),
-                          border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            // 🌧️ Atmospheric Rain Droplets on Glass Wallpaper
-                            Positioned.fill(
-                              child: Image.network(
-                                'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=800&q=80',
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                              ),
-                            ),
-                            // Frosted Dark Glass Vignette Tint
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      const Color(0xFF0C1924).withOpacity(0.82),
-                                      const Color(0xFF060E16).withOpacity(0.92),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: tealPrimary.withOpacity(0.25),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(CupertinoIcons.sparkles, color: tealPrimary, size: 13),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'HOW DO YOU FEEL TODAY?',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white.withOpacity(0.85),
-                                          letterSpacing: 1.8,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    physics: const BouncingScrollPhysics(),
-                                    child: Row(
-                                      children: [
-                                        ('😌', 'Calm', 'Calm', tealPrimary),
-                                        ('😰', 'Stressed', 'Stressed', coralAccent),
-                                        ('😴', 'Sleepy', 'Sleepy', const Color(0xFFA855F7)),
-                                        ('🧠', 'Need Focus', 'Focus', const Color(0xFF38BDF8)),
-                                        ('❤️', 'Emotional', 'Anxiety', const Color(0xFFEC4899)),
-                                        ('🌧️', 'Want Nature', 'Nature', mintAccent),
-                                      ].map((item) {
-                                        final isSelected = state.selectedMoodFilter == item.$3;
-                                        return Padding(
-                                          padding: const EdgeInsets.only(right: 8),
-                                          child: _AtmosphericMoodChip(
-                                            emoji: item.$1,
-                                            title: item.$2,
-                                            moodKey: item.$3,
-                                            auraColor: item.$4,
-                                            isSelected: isSelected,
-                                            onTap: () => state.setMoodFilter(item.$3),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+// ── 1. The Main Breathing Element: Large Organic Breathing Orb ────────────────
+class _HeroOrganicBreathingSection extends StatefulWidget {
+  const _HeroOrganicBreathingSection();
+
+  @override
+  State<_HeroOrganicBreathingSection> createState() => _HeroOrganicBreathingSectionState();
+}
+
+class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSection>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnimation;
+  String _phase = 'Breathe in';
+  int _secondsInPhase = 4;
+  Timer? _phaseTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.28).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeInOutSine),
+    );
+
+    _startBreathingLoop();
+  }
+
+  void _startBreathingLoop() {
+    _runInhale();
+  }
+
+  void _runInhale() {
+    if (!mounted) return;
+    setState(() {
+      _phase = 'Breathe in';
+      _secondsInPhase = 4;
+    });
+    _animController.duration = const Duration(seconds: 4);
+    _animController.forward(from: 0.0);
+
+    _phaseTimer?.cancel();
+    _phaseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_secondsInPhase > 1) {
+        setState(() => _secondsInPhase--);
+      } else {
+        timer.cancel();
+        _runHold();
+      }
+    });
+  }
+
+  void _runHold() {
+    if (!mounted) return;
+    setState(() {
+      _phase = 'Hold gently';
+      _secondsInPhase = 4;
+    });
+
+    _phaseTimer?.cancel();
+    _phaseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_secondsInPhase > 1) {
+        setState(() => _secondsInPhase--);
+      } else {
+        timer.cancel();
+        _runRelease();
+      }
+    });
+  }
+
+  void _runRelease() {
+    if (!mounted) return;
+    setState(() {
+      _phase = 'Let it go';
+      _secondsInPhase = 6;
+    });
+    _animController.duration = const Duration(seconds: 6);
+    _animController.reverse(from: 1.0);
+
+    _phaseTimer?.cancel();
+    _phaseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_secondsInPhase > 1) {
+        setState(() => _secondsInPhase--);
+      } else {
+        timer.cancel();
+        _runInhale();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _phaseTimer?.cancel();
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return Column(
+      children: [
+        const SizedBox(height: 10),
+        // ── Big Organic Breathing Orb with Soft Radial Glow ──
+        Center(
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Soft Radial Background Glow
+                  Container(
+                    width: 250 * _scaleAnimation.value,
+                    height: 250 * _scaleAnimation.value,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF2DD4BF).withOpacity(0.16 * _scaleAnimation.value),
+                          const Color(0xFF0F766E).withOpacity(0.06 * _scaleAnimation.value),
+                          Colors.transparent,
+                        ],
                       ),
-                      const SizedBox(height: 18),
+                    ),
+                  ),
 
-                      // ── 2b. Dynamic Curated Recommendations for Selected Mood ──
-                      const _DynamicMoodRecommendations(),
-                      const SizedBox(height: 18),
+                  // Outer Subtle Aura Ring
+                  Container(
+                    width: 215 * _scaleAnimation.value,
+                    height: 215 * _scaleAnimation.value,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF2DD4BF).withOpacity(0.22),
+                        width: 1.2,
+                      ),
+                    ),
+                  ),
 
-                      // ── 2bb. Your Pinned Custom Sound Mixes ──
-                      if (state.presets.isNotEmpty) ...[
-                        Row(
-                          children: [
-                            const Icon(CupertinoIcons.bookmark_fill, color: mintAccent, size: 14),
-                            const SizedBox(width: 6),
-                            Text(
-                              'YOUR PINNED SOUND MIXES',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: mintAccent,
-                                letterSpacing: 1.6,
-                              ),
-                            ),
+                  // Center Solid Organic Breathing Circle
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      state.startPanicResetCombo();
+                    },
+                    child: Container(
+                      width: 175,
+                      height: 175,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFF132F34).withOpacity(0.92),
+                            const Color(0xFF071719).withOpacity(0.96),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: state.presets.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final preset = entry.value;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        const Color(0xFF2DD4BF).withOpacity(0.18),
-                                        Colors.white.withOpacity(0.04),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.35)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          state.applyCustomPreset(preset);
-                                        },
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(CupertinoIcons.play_circle_fill, color: mintAccent, size: 20),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              preset.name,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.selectionClick();
-                                          state.deletePreset(index);
-                                        },
-                                        child: const Icon(CupertinoIcons.xmark, color: Colors.white54, size: 13),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                        border: Border.all(
+                          color: const Color(0xFF2DD4BF).withOpacity(0.4),
+                          width: 1.5,
                         ),
-                        const SizedBox(height: 18),
-                      ],
-
-                      // ── 2c. Embedded Instant 1-Minute Calm Breathing Widget ──
-                      const _HomeQuickBreathWidget(),
-                      const SizedBox(height: 26),
-
-                      // ── 3. FEATURED AMBIENT CAROUSEL (Large 240px Cards) ──
-                      Row(
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2DD4BF).withOpacity(0.2),
+                            blurRadius: 24,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(CupertinoIcons.star_fill, color: tealPrimary, size: 16),
-                          const SizedBox(width: 6),
-                          Text(
-                            'FEATURED AMBIENT SOUNDSCAPES',
+                          const Text(
+                            '◯',
                             style: TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 18,
+                              color: Color(0xFF2DD4BF),
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'BREATHE',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 2.8,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            '4 · 4 · 6',
+                            style: TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: tealPrimary,
-                              letterSpacing: 1.6,
+                              color: Color(0xFF2DD4BF),
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '$_phase · $_secondsInPhase s',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.white.withOpacity(0.75),
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
 
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _SpotifyAmbientCard(
-                              title: '432Hz Healing Chimes',
-                              subtitle: 'Deep Solfeggio Resonant Harmonic Tones',
-                              duration: '20 min',
-                              imageUrl: 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=500&q=80',
-                              color: tealPrimary,
-                              onTap: () => state.playGuidedSession('Healing Crystal Chimes', 20),
-                            ),
-                            const SizedBox(width: 14),
-                            _SpotifyAmbientCard(
-                              title: 'Cozy Rain & Hearth',
-                              subtitle: 'Soft Downpour & Warm Fireplace Crackle',
-                              duration: '25 min',
-                              imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=500&q=80',
-                              color: coralAccent,
-                              onTap: () => state.applyCuratedPreset('🌧️ Rainy Cabin'),
-                            ),
-                            const SizedBox(width: 14),
-                            _SpotifyAmbientCard(
-                              title: 'Alpine Forest Stream',
-                              subtitle: 'Flowing Mountain Water & Morning Birds',
-                              duration: '30 min',
-                              imageUrl: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=500&q=80',
-                              color: mintAccent,
-                              onTap: () => state.applyCuratedPreset('🌲 Forest Walk'),
-                            ),
-                            const SizedBox(width: 14),
-                            _SpotifyAmbientCard(
-                              title: 'Cosmic Deep Waves',
-                              subtitle: '108Hz Delta Drone & Soft Space Pad',
-                              duration: '35 min',
-                              imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=500&q=80',
-                              color: purpleAccent,
-                              onTap: () => state.applyCuratedPreset('🌌 Deep Space'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+        const SizedBox(height: 26),
 
-                      // ── 4. RICHER "YOUR SANCTUARY JOURNEY" CARD (Circular Progress Ring) ──
-                      Row(
-                        children: [
-                          const Icon(CupertinoIcons.heart_fill, color: coralAccent, size: 16),
-                          const SizedBox(width: 6),
-                          Text(
-                            'YOUR SANCTUARY JOURNEY',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                              color: textSecondary,
-                              letterSpacing: 1.6,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF0F262B),
-                              Color(0xFF0C1924),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(26),
-                          border: Border.all(color: tealPrimary.withOpacity(0.25), width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.35),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            // Circular Progress Ring Indicator
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 64,
-                                  height: 64,
-                                  child: CircularProgressIndicator(
-                                    value: (state.totalMinutes % 60) / 60.0 == 0 ? 0.65 : (state.totalMinutes % 60) / 60.0,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.white.withOpacity(0.1),
-                                    color: tealPrimary,
-                                  ),
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${state.totalMinutes}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'MINS',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.bold,
-                                        color: tealPrimary,
-                                        letterSpacing: 1.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 18),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(CupertinoIcons.flame_fill, color: coralAccent, size: 18),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${state.streak} Day Peace Streak 🌸',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    state.totalMinutes > 0
-                                        ? 'You have spent ${state.totalMinutes} minutes resting & healing this week 🕊️'
-                                        : 'Take a gentle breath and start your first peaceful moment today 🌿',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: textSecondary,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // ── 6. Coming Soon / Next Month Roadmap Teaser ──
-                      const _ComingSoonRoadmapSection(),
-                    ]),
+        // ── Tactile Action Pill Button ──
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.heavyImpact();
+            state.startPanicResetCombo();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2DD4BF).withOpacity(0.35),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.spa_rounded, color: Colors.black, size: 16),
+                SizedBox(width: 8),
+                Text(
+                  'Start Reset',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ],
             ),
           ),
-        );
+        ),
+      ],
+    );
+  }
+}
+
+// ── 2. Emotional State & Quick Duration Selector ─────────────────────────────
+class _EmotionalDurationSelector extends StatelessWidget {
+  const _EmotionalDurationSelector();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'You seem a little tense today.',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.92),
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Let’s make the next minute lighter.',
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.white.withOpacity(0.6),
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        // ── 3 Duration Options (60 sec · Reset | 3 min · Calm | 10 min · Deep Rest) ──
+        Row(
+          children: [
+            Expanded(
+              child: _DurationPill(
+                duration: '60 sec',
+                label: 'Reset',
+                color: const Color(0xFF2DD4BF),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  state.startPanicResetCombo();
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _DurationPill(
+                duration: '3 min',
+                label: 'Calm',
+                color: const Color(0xFF38BDF8),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  state.playGuidedSession('Quiet Mind Sanctuary', 3);
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _DurationPill(
+                duration: '10 min',
+                label: 'Deep Rest',
+                color: const Color(0xFFA78BFA),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  state.playGuidedSession('Peaceful Haven Journey', 10);
+                },
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 18),
+
+        // ── Emotional Feelings Check-In ──
+        Text(
+          'How are you feeling?',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.5),
+            letterSpacing: 0.4,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _MoodFeelingChip(
+              emoji: '😣',
+              label: 'Overwhelmed',
+              isSelected: state.selectedMoodFilter == 'Stressed',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                state.setMoodFilter('Stressed');
+                state.startPanicResetCombo();
+              },
+            ),
+            const SizedBox(width: 8),
+            _MoodFeelingChip(
+              emoji: '😐',
+              label: 'Neutral',
+              isSelected: state.selectedMoodFilter == 'Calm',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                state.setMoodFilter('Calm');
+                state.playGuidedSession('Gentle Relief & Comfort', 5);
+              },
+            ),
+            const SizedBox(width: 8),
+            _MoodFeelingChip(
+              emoji: '🙂',
+              label: 'Grounded',
+              isSelected: state.selectedMoodFilter == 'Focus',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                state.setMoodFilter('Focus');
+                state.playGuidedSession('Peaceful Morning Awakening', 10);
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ── Duration Pill Widget ─────────────────────────────────────────────────────
+class _DurationPill extends StatelessWidget {
+  final String duration;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DurationPill({
+    required this.duration,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: color.withOpacity(0.35), width: 1),
+        ),
+        child: Column(
+          children: [
+            Text(
+              duration,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.75),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Mood Feeling Chip Widget ─────────────────────────────────────────────────
+class _MoodFeelingChip extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _MoodFeelingChip({
+    required this.emoji,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF2DD4BF).withOpacity(0.2) : Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF2DD4BF).withOpacity(0.5) : Colors.white.withOpacity(0.12),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 18)),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? const Color(0xFF2DD4BF) : Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── 3. Tonight Slumber Card ──────────────────────────────────────────────────
+class _TonightSlumberCard extends StatelessWidget {
+  const _TonightSlumberCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        state.setTab(AppTab.sleep);
       },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF131B2A).withOpacity(0.9),
+              const Color(0xFF0A0F1A).withOpacity(0.95),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: const Color(0xFFA78BFA).withOpacity(0.25),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFA78BFA).withOpacity(0.16),
+                border: Border.all(color: const Color(0xFFA78BFA).withOpacity(0.35)),
+              ),
+              child: const Icon(
+                CupertinoIcons.moon_stars_fill,
+                color: Color(0xFFA78BFA),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'TONIGHT',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFA78BFA),
+                      letterSpacing: 1.8,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Quiet your mind before sleep',
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+              child: const Icon(
+                CupertinoIcons.arrow_right,
+                color: Colors.white70,
+                size: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── 4. Pinned Mixes Section ──────────────────────────────────────────────────
+class _PinnedMixesSection extends StatelessWidget {
+  const _PinnedMixesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(CupertinoIcons.bookmark_fill, color: mintAccent, size: 13),
+            const SizedBox(width: 6),
+            const Text(
+              'YOUR PINNED SOUND MIXES',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: mintAccent,
+                letterSpacing: 1.6,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: state.presets.asMap().entries.map((entry) {
+              final index = entry.key;
+              final preset = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF2DD4BF).withOpacity(0.18),
+                        Colors.white.withOpacity(0.04),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          state.applyCustomPreset(preset);
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(CupertinoIcons.play_circle_fill, color: mintAccent, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              preset.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          state.deletePreset(index);
+                        },
+                        child: const Icon(CupertinoIcons.xmark, color: Colors.white54, size: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
