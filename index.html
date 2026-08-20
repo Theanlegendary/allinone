@@ -3,34 +3,17 @@
 <head>
   <base href="/allinone/">
 
-  <script>
-    // Force unregister all old service workers and purge browser cache storage
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (var r of registrations) {
-          r.unregister();
-        }
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (var name of names) {
-          caches.delete(name);
-        }
-      });
-    }
-  </script>
-
   <meta charset="UTF-8">
   <!-- iOS Full-Screen & Touch Optimizations -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
 
-  <!-- ── Critical Resource Preloads (Speed Up First Paint) ── -->
+  <!-- ── Critical Resource Preloads & Noto Font Fallbacks for CanvasKit ── -->
   <link rel="preload" href="flutter_bootstrap.js" as="script">
   <link rel="preload" href="main.dart.js" as="script">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://raw.githubusercontent.com">
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
   <link rel="dns-prefetch" href="https://actions.google.com">
