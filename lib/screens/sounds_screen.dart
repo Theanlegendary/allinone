@@ -579,7 +579,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                           value: vol > 0,
                           activeColor: color,
                           onChanged: (val) {
-                            final newVol = val ? 0.6 : 0.0;
+                            final newVol = val ? 0.35 : 0.0;
                             setState(() {
                               _volumes[name] = newVol;
                               _isPlaying = true;

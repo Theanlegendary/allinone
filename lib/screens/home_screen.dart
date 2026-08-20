@@ -277,6 +277,28 @@ class HomeScreen extends StatelessWidget {
                                           },
                                           child: const Text('Send Feedback / Sound Request 💌'),
                                         ),
+                                        CupertinoActionSheetAction(
+                                          onPressed: () async {
+                                            Navigator.pop(ctx);
+                                            await state.restorePurchase();
+                                            if (context.mounted) {
+                                              showCupertinoDialog(
+                                                context: context,
+                                                barrierDismissible: true,
+                                                builder: (rCtx) {
+                                                  Future.delayed(const Duration(seconds: 2), () {
+                                                    if (rCtx.mounted) Navigator.pop(rCtx);
+                                                  });
+                                                  return const CupertinoAlertDialog(
+                                                    title: Text('Purchases Restored ✓'),
+                                                    content: Text('Your Apple ID subscriptions and unlocked soundscapes have been verified.'),
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          },
+                                          child: const Text('Restore Purchases (Apple ID) 🔄'),
+                                        ),
                                       ],
                                       cancelButton: CupertinoActionSheetAction(
                                         isDefaultAction: true,
