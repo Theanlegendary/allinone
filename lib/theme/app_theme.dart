@@ -90,6 +90,13 @@ ThemeData buildAppTheme() {
   );
 }
 
+const List<String> emojiFontFallbacks = [
+  'Noto Color Emoji',
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'sans-serif',
+];
+
 // ─── Cupertino / iOS Theme ─────────────────────────────────────────────────────
 // Maps the existing dark palette to iOS Cupertino system tokens.
 // Used by CupertinoApp as the top-level theme.
@@ -107,12 +114,14 @@ CupertinoThemeData buildCupertinoTheme() {
         fontSize: 17,
         fontWeight: FontWeight.normal,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       navTitleTextStyle: TextStyle(
         color: textPrimary,
         fontSize: 17,
         fontWeight: FontWeight.w600,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       navLargeTitleTextStyle: TextStyle(
         color: textPrimary,
@@ -120,32 +129,39 @@ CupertinoThemeData buildCupertinoTheme() {
         fontWeight: FontWeight.bold,
         letterSpacing: -0.5,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       navActionTextStyle: TextStyle(
         color: tealPrimary,
         fontSize: 17,
         fontWeight: FontWeight.normal,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       tabLabelTextStyle: TextStyle(
         color: textSecondary,
-        fontSize: 10,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       actionTextStyle: TextStyle(
         color: tealPrimary,
         fontSize: 17,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       pickerTextStyle: TextStyle(
         color: textPrimary,
         fontSize: 21,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
       dateTimePickerTextStyle: TextStyle(
         color: textPrimary,
         fontSize: 21,
         decoration: TextDecoration.none,
+        fontFamilyFallback: emojiFontFallbacks,
       ),
     ),
   );
