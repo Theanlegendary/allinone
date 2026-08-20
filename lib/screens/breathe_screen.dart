@@ -94,8 +94,24 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
             final posInPhase = _cycleTick - elapsed;
             _phaseSecLeft = p.$2 - posInPhase;
             if (oldPhase != _phase || posInPhase == 0) {
-              HapticFeedback.selectionClick();
+              // Strong tactile cue on phase switch
+              if (_phase == BreathPhase.inhale) {
+                HapticFeedback.mediumImpact();
+              } else if (_phase == BreathPhase.hold) {
+                HapticFeedback.heavyImpact();
+              } else if (_phase == BreathPhase.exhale) {
+                HapticFeedback.mediumImpact();
+              } else {
+                HapticFeedback.lightImpact();
+              }
               _updateOrb(p.$2);
+            } else {
+              // Subtle pacing tick per second
+              if (_phase == BreathPhase.inhale) {
+                HapticFeedback.lightImpact();
+              } else if (_phase == BreathPhase.exhale) {
+                HapticFeedback.selectionClick();
+              }
             }
             break;
           }
@@ -105,6 +121,7 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
 
       if (_remainingSec <= 0) {
         t.cancel();
+        if (!mounted) return; // BUG FIX: widget may be gone when timer fires
         setState(() => _isRunning = false);
         HapticFeedback.heavyImpact();
         context.read<AppState>().recordSession(

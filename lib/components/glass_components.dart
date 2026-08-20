@@ -604,7 +604,7 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
   }
 }
 
-// ─── GuidedPlayerOverlay (Soft Healing Audio Player) ─────────────────────
+// ─── GuidedPlayerOverlay (Serenly Screen 3 Immersive Ocean Breath Player) ──────
 class GuidedPlayerOverlay extends StatefulWidget {
   const GuidedPlayerOverlay({super.key});
 
@@ -612,307 +612,394 @@ class GuidedPlayerOverlay extends StatefulWidget {
   State<GuidedPlayerOverlay> createState() => _GuidedPlayerOverlayState();
 }
 
-class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseCtrl.dispose();
-    super.dispose();
-  }
+class _GuidedPlayerOverlayState extends State<GuidedPlayerOverlay> {
+  double _dragValue = 0.0;
+  bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, state, _) {
-        if (!state.isGuidedPlaying) return const SizedBox();
+        if (!state.isGuidedPlaying) return const SizedBox.shrink();
 
-        final mins = state.guidedRemainingSec ~/ 60;
-        final secs = state.guidedRemainingSec % 60;
-        final title = state.currentGuidedTitle ?? 'Peaceful Haven Journey';
+        final totalSec = state.guidedTotalSec > 0 ? state.guidedTotalSec : 2700;
+        final elapsedSec = (totalSec - state.guidedRemainingSec).clamp(0, totalSec);
+        final title = state.currentGuidedTitle ?? 'Ocean Breath';
 
-        final Map<String, String> sessionArtworks = {
-          'Peaceful Haven Journey': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80',
-          'Gentle Relief & Comfort': 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80',
-          'Soft Body Rest & Ease': 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
-          'Calm Mountain Horizon': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-          'Peaceful Morning Awakening': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=80',
-          'Peaceful Morning Start': 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=80',
-          'Quiet Mind Sanctuary': 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80',
-          'Cozy Bedtime Slumber': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-          'Warm Heart Comfort': 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80',
-          'Healing Crystal Chimes': 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=800&q=80',
-          'Loving Warmth & Peace': 'https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=800&q=80',
-        };
+        final elapsedMins = elapsedSec ~/ 60;
+        final elapsedRemainderSecs = elapsedSec % 60;
+        final totalMins = totalSec ~/ 60;
+        final totalRemainderSecs = totalSec % 60;
 
-        final artworkUrl = sessionArtworks[title] ?? 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80';
+        final elapsedStr = '${elapsedMins.toString()}:${elapsedRemainderSecs.toString().padLeft(2, '0')}';
+        final totalStr = '${totalMins.toString()}:${totalRemainderSecs.toString().padLeft(2, '0')}';
 
-        final Map<String, (Color, Color)> sessionThemeColors = {
-          'Quiet Mind Sanctuary': (const Color(0xFFF59E0B), const Color(0xFFFCD34D)), // Golden Amber
-          'Peaceful Haven Journey': (const Color(0xFF10B981), const Color(0xFF34D399)), // Emerald Forest
-          'Gentle Relief & Comfort': (const Color(0xFF14B8A6), const Color(0xFF2DD4BF)), // Soft Teal
-          'Soft Body Rest & Ease': (const Color(0xFFF43F5E), const Color(0xFFFB7185)), // Rose Coral
-          'Calm Mountain Horizon': (const Color(0xFF38BDF8), const Color(0xFF7DD3FC)), // Sky Azure
-          'Peaceful Morning Awakening': (const Color(0xFFF59E0B), const Color(0xFFFDE68A)), // Morning Sun
-          'Peaceful Morning Start': (const Color(0xFFF59E0B), const Color(0xFFFDE68A)),
-          'Cozy Bedtime Slumber': (const Color(0xFF8B5CF6), const Color(0xFFA78BFA)), // Twilight Violet
-          'Warm Heart Comfort': (const Color(0xFFEC4899), const Color(0xFFF472B6)), // Warm Pink
-          'Healing Crystal Chimes': (const Color(0xFFA855F7), const Color(0xFFC084FC)), // Amethyst
-          'Loving Warmth & Peace': (const Color(0xFFF97316), const Color(0xFFFB923C)), // Warm Amber
-          'The Starry Night': (const Color(0xFF6366F1), const Color(0xFF818CF8)), // Indigo Night
-          'The Lighthouse Keeper': (const Color(0xFF0EA5E9), const Color(0xFF38BDF8)), // Ocean Azure
-          'Whispering Forest': (const Color(0xFF059669), const Color(0xFF10B981)), // Pine Green
-        };
-        final (primaryColor, accentColor) = sessionThemeColors[title] ?? (tealPrimary, mintAccent);
+        // Center Countdown / Duration String
+        final remainingMins = state.guidedRemainingSec ~/ 60;
+        final remainingSecs = state.guidedRemainingSec % 60;
+        final centerTimerStr = '${remainingMins.toString()}:${remainingSecs.toString().padLeft(2, '0')}';
+
+        final progress = totalSec > 0 ? (elapsedSec / totalSec).clamp(0.0, 1.0) : 0.0;
+        final effectiveProgress = _isDragging ? _dragValue : progress;
 
         return Material(
           color: Colors.transparent,
           child: Stack(
             children: [
-              // 🖼️ 1. HD Organic Blurred Artwork Background with Harmonic Color Tint
+              // 🌊 1. Full-Bleed Atmospheric Dusk Ocean Wallpaper
               Positioned.fill(
                 child: Image.network(
-                  artworkUrl,
+                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
                   fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Container(color: primaryColor.withOpacity(0.2)),
+                  errorBuilder: (_, __, ___) => Container(color: const Color(0xFF08090C)),
                 ),
               ),
+
+              // Smooth Dark Gradient Vignette
               Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFF04090E).withOpacity(0.72),
-                          primaryColor.withOpacity(0.18),
-                          const Color(0xFF03070C).withOpacity(0.94),
-                        ],
-                      ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.45),
+                        Colors.black.withOpacity(0.15),
+                        Colors.black.withOpacity(0.65),
+                        Colors.black.withOpacity(0.95),
+                      ],
+                      stops: const [0.0, 0.35, 0.70, 1.0],
                     ),
                   ),
                 ),
               ),
 
-              // 🌿 2. Full Player Content Interface
+              // 📱 2. Clean Serenly Player Interface
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                   child: Column(
                     children: [
-                      // Top Navigation Header
+                      // Top Row: Circular Back `<` & More `...`
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: primaryColor.withOpacity(0.35)),
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.14),
+                              border: Border.all(color: Colors.white.withOpacity(0.15), width: 0.8),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.graphic_eq_rounded, color: primaryColor, size: 16),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  'NATURAL SOOTHING AUDIO STREAM',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                              ],
+                            child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () => state.stopGuidedSession(completed: false),
+                              child: const Icon(
+                                CupertinoIcons.chevron_left,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
-                          // iOS-style chevron down dismiss button
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () => state.stopGuidedSession(completed: false),
-                            child: const Icon(CupertinoIcons.chevron_down, color: Colors.white, size: 28),
+
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.14),
+                              border: Border.all(color: Colors.white.withOpacity(0.15), width: 0.8),
+                            ),
+                            child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                showCupertinoModalPopup(
+                                  context: context,
+                                  builder: (ctx) => CupertinoActionSheet(
+                                    title: Text(title),
+                                    actions: [
+                                      CupertinoActionSheetAction(
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          state.extendGuidedSession(10);
+                                        },
+                                        child: const Text('Extend +10 Minutes ⏱️'),
+                                      ),
+                                      CupertinoActionSheetAction(
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          state.toggleGuidedLoop();
+                                        },
+                                        child: Text(state.isGuidedLooping ? 'Disable Loop ♾️' : 'Enable Loop ♾️'),
+                                      ),
+                                      CupertinoActionSheetAction(
+                                        isDestructiveAction: true,
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          state.stopGuidedSession(completed: true);
+                                        },
+                                        child: const Text('End & Complete Session'),
+                                      ),
+                                    ],
+                                    cancelButton: CupertinoActionSheetAction(
+                                      isDefaultAction: true,
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Icon(
+                                CupertinoIcons.ellipsis,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      const Spacer(),
 
-                      // 🖼️ 3. Centerpiece HD Artwork Card with Harmonic Breathing Glow Aura
-                      AnimatedBuilder(
-                        animation: _pulseCtrl,
-                        builder: (_, __) {
-                          final auraScale = 1.0 + (0.06 * _pulseCtrl.value);
-                          return Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Pulsing Aura Ring 1 (Matches Track Color)
-                              Transform.scale(
-                                scale: auraScale * 1.18,
-                                child: Container(
-                                  width: 220,
-                                  height: 220,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: primaryColor.withOpacity(0.16 * _pulseCtrl.value),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: primaryColor.withOpacity(0.42 * _pulseCtrl.value),
-                                        blurRadius: 55,
-                                        spreadRadius: 18,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // Pulsing Aura Ring 2 (Matches Track Accent)
-                              Transform.scale(
-                                scale: auraScale,
-                                child: Container(
-                                  width: 200,
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(36),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: accentColor.withOpacity(0.35),
-                                        blurRadius: 32,
-                                        spreadRadius: 6,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // High Definition Artwork Image Container
-                              Container(
-                                width: 200,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(32),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.5),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: Image.network(
-                                    artworkUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => Container(
-                                      color: primaryColor.withOpacity(0.2),
-                                      child: const Icon(Icons.spa_rounded, color: Colors.white, size: 64),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
                       const SizedBox(height: 32),
 
-                      // Title & Description
+                      // Title & Subtitles
                       Text(
                         title,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                           letterSpacing: -0.4,
                         ),
                       ),
                       const SizedBox(height: 6),
-
                       Text(
-                        'Soft continuous natural soundscape • Deep stress relief',
+                        'Breathe with the rhythm of the waves.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white.withOpacity(0.65),
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // ⏱️ Large Glowing Timer
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedSoundWave(accentColor: primaryColor),
-                          const SizedBox(width: 14),
-                          Text(
-                            '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}',
-                            style: const TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          AnimatedSoundWave(accentColor: primaryColor),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Interactive Live Playback Controls (+10m, Loop ♾️, Restart 🔄)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GlassChip(
-                            label: '+10 Min',
-                            isSelected: false,
-                            onTap: () => state.extendGuidedSession(10),
-                          ),
-                          const SizedBox(width: 12),
-                          GlassChip(
-                            label: state.isGuidedLooping ? 'Loop ♾️ On' : 'Loop Off',
-                            isSelected: state.isGuidedLooping,
-                            selectedColor: primaryColor,
-                            onTap: () => state.toggleGuidedLoop(),
-                          ),
-                          const SizedBox(width: 12),
-                          GlassChip(
-                            label: 'Restart 🔄',
-                            isSelected: false,
-                            onTap: () => state.restartGuidedSession(10),
-                          ),
-                        ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Calm Sounds • 45 min',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.55),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
 
                       const Spacer(),
 
-                      // Complete Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: GlassPillButton(
-                          text: 'Complete & End Session',
-                          icon: Icons.check_circle_outline_rounded,
-                          containerColor: primaryColor,
-                          contentColor: Colors.black,
-                          onTap: () => state.stopGuidedSession(completed: true),
+                      // ⏱️ Giant Central Digital Countdown Timer (Screen 3)
+                      Text(
+                        centerTimerStr,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 56,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -1.0,
                         ),
                       ),
-                      const SizedBox(height: 12),
+
+                      const Spacer(),
+
+                      // ⏯️ Minimalist Playback Controls (15s Rewind, Play/Pause, 15s Forward)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 15s Rewind
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              state.restartGuidedSession(5);
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  CupertinoIcons.gobackward_15,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '15',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(width: 48),
+
+                          // Large Minimal Play / Pause Toggle
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              state.toggleGuidedPlayPause();
+                            },
+                            child: Container(
+                              width: 68,
+                              height: 68,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                state.isGuidedPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+                                color: Colors.black87,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 48),
+
+                          // 15s Forward
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              state.extendGuidedSession(5);
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  CupertinoIcons.goforward_15,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '15',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 38),
+
+                      // ── Progress Scrubber with Floating Tooltip (Screen 3) ──
+                      Column(
+                        children: [
+                          // Floating Tooltip Bubble showing current timestamp
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final sliderWidth = constraints.maxWidth;
+                              final bubbleOffset = (sliderWidth * effectiveProgress).clamp(18.0, sliderWidth - 18.0);
+
+                              return Stack(
+                                children: [
+                                  SizedBox(height: 30, width: sliderWidth),
+                                  Positioned(
+                                    left: bubbleOffset - 22,
+                                    top: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.35),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        elapsedStr,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+
+                          // Custom Clean Slider
+                          SliderTheme(
+                            data: SliderThemeData(
+                              trackHeight: 3.5,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                              activeTrackColor: Colors.white,
+                              inactiveTrackColor: Colors.white.withOpacity(0.2),
+                              thumbColor: Colors.white,
+                              overlayColor: Colors.white.withOpacity(0.1),
+                            ),
+                            child: Slider(
+                              value: effectiveProgress,
+                              onChanged: (v) {
+                                setState(() {
+                                  _isDragging = true;
+                                  _dragValue = v;
+                                });
+                              },
+                              onChangeEnd: (v) {
+                                setState(() {
+                                  _isDragging = false;
+                                });
+                              },
+                            ),
+                          ),
+
+                          // Elapsed vs Total Timestamps
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  elapsedStr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.55),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  totalStr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.55),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -1831,6 +1918,283 @@ class _ZenFullscreenModalState extends State<ZenFullscreenModal>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── 🚀 Viral Sound Mix Share Modal & Social Card Export ──────────────────────
+class SoundMixShareModal extends StatelessWidget {
+  const SoundMixShareModal({super.key});
+
+  static void show(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => const SoundMixShareModal(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final activeTracks = state.activeAmbientTracks.entries.toList();
+    final shareUrl = state.generateShareUrl();
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D1017),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle Bar
+            Container(
+              width: 40,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Share Your Soundscape 🌿',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Send your custom mix to friends or post to Stories',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.white60, size: 24),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 🖼️ Viral Aesthetic Snapshot Card (Instagram / TikTok ready)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF161B26),
+                    const Color(0xFF0B0E14),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: tealPrimary.withOpacity(0.4), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: tealPrimary.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(CupertinoIcons.sparkles, color: tealPrimary, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'SANCTUARY AMBIENT MIX',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: tealPrimary,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${activeTracks.length} Layers',
+                          style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  if (activeTracks.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: Text(
+                          'Play some sounds to create your unique mix!',
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ),
+                    )
+                  else
+                    ...activeTracks.map((entry) {
+                      final pct = (entry.value * 100).round();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                entry.key,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 4,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: entry.value,
+                                  backgroundColor: Colors.white.withOpacity(0.1),
+                                  valueColor: const AlwaysStoppedAnimation<Color>(tealPrimary),
+                                  minHeight: 5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '$pct%',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(18),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Clipboard.setData(ClipboardData(text: shareUrl));
+                      Navigator.pop(context);
+                      showCupertinoDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (ctx) {
+                          Future.delayed(const Duration(seconds: 2), () {
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          });
+                          return const CupertinoAlertDialog(
+                            title: Text('Link Copied! 🔗'),
+                            content: Text('Your soundscape mix link is copied to clipboard. Share it with anyone!'),
+                          );
+                        },
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.link, size: 16, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Copy Link',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    color: tealPrimary,
+                    borderRadius: BorderRadius.circular(18),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      Clipboard.setData(ClipboardData(text: 'Listen to my relaxing sound mix on Sanctuary: $shareUrl'));
+                      Navigator.pop(context);
+                      showCupertinoDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (ctx) {
+                          Future.delayed(const Duration(seconds: 2), () {
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          });
+                          return const CupertinoAlertDialog(
+                            title: Text('Shared to Story 🌟'),
+                            content: Text('Invite text copied. Open Instagram, WhatsApp, or TikTok to paste & share.'),
+                          );
+                        },
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.share_up, size: 16, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text(
+                          'Share to Friends',
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -75,41 +75,46 @@ class _SleepScreenState extends State<SleepScreen> {
     showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          color: const Color(0xE6050D15),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // BUG FIX: Use StatefulBuilder so setState is scoped to modal, not parent widget
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              height: 300,
+              color: const Color(0xE6050D15),
+              child: SafeArea(
+                top: false,
+                child: Column(
                   children: [
-                    CupertinoButton(
-                      child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
-                      onPressed: () => Navigator.of(context).pop(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CupertinoButton(
+                          child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        CupertinoButton(
+                          child: const Text('Done', style: TextStyle(color: purpleAccent)),
+                          onPressed: () {
+                            _startTimer(_selectedDuration.inMinutes);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
                     ),
-                    CupertinoButton(
-                      child: const Text('Done', style: TextStyle(color: purpleAccent)),
-                      onPressed: () {
-                        _startTimer(_selectedDuration.inMinutes);
-                        Navigator.of(context).pop();
-                      },
+                    Expanded(
+                      child: CupertinoTimerPicker(
+                        mode: CupertinoTimerPickerMode.hm,
+                        initialTimerDuration: _selectedDuration,
+                        onTimerDurationChanged: (Duration newDuration) {
+                          setModalState(() => _selectedDuration = newDuration);
+                        },
+                      ),
                     ),
                   ],
                 ),
-                Expanded(
-                  child: CupertinoTimerPicker(
-                    mode: CupertinoTimerPickerMode.hm,
-                    initialTimerDuration: _selectedDuration,
-                    onTimerDurationChanged: (Duration newDuration) {
-                      setState(() => _selectedDuration = newDuration);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

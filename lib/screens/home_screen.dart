@@ -321,19 +321,49 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(22, 8, 22, 100),
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            // ── Subtitle ──
-                            Text(
-                              'Take a moment for yourself.',
-                              style: TextStyle(
-                                fontSize: 14.5,
-                                color: Colors.white.withOpacity(0.65),
-                                fontWeight: FontWeight.w400,
-                              ),
+                            // ── Serenly Top Avatar & Greeting Header ──
+                            const _SerenlyUserHeader(),
+                            const SizedBox(height: 20),
+
+                            // ── Serenly Hero Banner: "Return To Stillness" ──
+                            const _SerenlyHeroReturnToStillness(),
+                            const SizedBox(height: 18),
+
+                            // ── Serenly Special Holiday Offer Strip ──
+                            const _SerenlyHolidayOfferCard(),
+                            const SizedBox(height: 26),
+
+                            // ── Serenly "Popular" Horizontal Photo Cards Carousel ──
+                            const _SerenlyPopularSection(),
+                            const SizedBox(height: 28),
+
+                            // ── Section Title: Today's Dailies ──
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Today's Dailies",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                Text(
+                                  "See All",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
 
                             // ── 1. The Main Breathing Element: Large Organic Breathing Orb ──
                             const _HeroOrganicBreathingSection(),
@@ -380,6 +410,456 @@ class HomeScreen extends StatelessWidget {
         }
       }
 
+// ── Serenly User Header ───────────────────────────────────────────────────────
+class _SerenlyUserHeader extends StatelessWidget {
+  const _SerenlyUserHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            // User Avatar Photo
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.2),
+                image: const DecorationImage(
+                  image: NetworkImage(
+                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Good evening, Tamara',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.65),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Welcome back!',
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        // Frosted Bell Icon Button
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF1E212B).withOpacity(0.8),
+            border: Border.all(color: Colors.white.withOpacity(0.14), width: 0.8),
+          ),
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              showCupertinoDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (ctx) => CupertinoAlertDialog(
+                  title: const Text('Notifications 🔔'),
+                  content: const Text('Your daily evening wind-down reminder is set for 9:30 PM.'),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: const Icon(
+              CupertinoIcons.bell,
+              color: Colors.white,
+              size: 19,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Serenly Hero Banner: Return To Stillness ──────────────────────────────────
+class _SerenlyHeroReturnToStillness extends StatelessWidget {
+  const _SerenlyHeroReturnToStillness();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 250,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        image: const DecorationImage(
+          image: NetworkImage(
+            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+          ),
+          fit: BoxFit.cover,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Dark dusk gradient overlay
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.2),
+                  Colors.black.withOpacity(0.5),
+                  Colors.black.withOpacity(0.92),
+                ],
+                stops: const [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text(
+                  'Return To Stillness',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Gentle sleep stories and calming meditations to guide you into restful nights.',
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Colors.white.withOpacity(0.8),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Tag Pill
+                Text(
+                  'Deep Sleep • 45 min',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.white.withOpacity(0.65),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Play Pill Button
+                Consumer<AppState>(
+                  builder: (context, state, _) {
+                    return CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        state.startGuidedSession(
+                          'Ocean Breath',
+                          'Breathe with the rhythm of the waves. Calm Sounds • 45 min',
+                          2700,
+                          45,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white.withOpacity(0.25), width: 0.8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(CupertinoIcons.play_fill, color: Colors.white, size: 14),
+                            SizedBox(width: 6),
+                            Text(
+                              'Play',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Serenly Holiday Offer Strip ───────────────────────────────────────────────
+class _SerenlyHolidayOfferCard extends StatelessWidget {
+  const _SerenlyHolidayOfferCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        state.setTab(AppTab.aiStudio);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        decoration: BoxDecoration(
+          color: const Color(0xFF13151D),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.8),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              CupertinoIcons.sparkles,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Special Holiday Offer',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Gift Serenly: Save 25% until December 31.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.55),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: Colors.white.withOpacity(0.4),
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Serenly "Popular" Section ─────────────────────────────────────────────────
+class _SerenlyPopularSection extends StatelessWidget {
+  const _SerenlyPopularSection();
+
+  static const _popularCards = [
+    {
+      'title': 'Ocean Breath',
+      'tag': 'Calm Sounds',
+      'mins': 45,
+      'image': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'title': 'Gentle Reset',
+      'tag': 'Stress Relief',
+      'mins': 15,
+      'image': 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'title': 'Forest Slumber',
+      'tag': 'Deep Sleep',
+      'mins': 30,
+      'image': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Popular',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: -0.3,
+              ),
+            ),
+            Text(
+              'See All',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        SizedBox(
+          height: 190,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _popularCards.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final item = _popularCards[index];
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  state.startGuidedSession(
+                    item['title'] as String,
+                    'Breathe with the rhythm of the waves. ${item['tag']} • ${item['mins']} min',
+                    (item['mins'] as int) * 60,
+                    item['mins'] as int,
+                  );
+                },
+                child: Container(
+                  width: 165,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(22),
+                    image: DecorationImage(
+                      image: NetworkImage(item['image'] as String),
+                      fit: BoxFit.cover,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      // Gradient Overlay
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.75),
+                            ],
+                            stops: const [0.4, 1.0],
+                          ),
+                        ),
+                      ),
+
+                      // Category Tag Pill at Top Left
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.6),
+                          ),
+                          child: Text(
+                            item['tag'] as String,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Card Title at Bottom Left
+                      Positioned(
+                        bottom: 14,
+                        left: 14,
+                        right: 14,
+                        child: Text(
+                          item['title'] as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ── 1. The Main Breathing Element: Large Organic Breathing Orb ────────────────
 class _HeroOrganicBreathingSection extends StatefulWidget {
   const _HeroOrganicBreathingSection();
@@ -416,6 +896,7 @@ class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSecti
 
   void _runInhale() {
     if (!mounted) return;
+    HapticFeedback.mediumImpact();
     setState(() {
       _phase = 'Breathe in';
       _secondsInPhase = 4;
@@ -427,6 +908,7 @@ class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSecti
     _phaseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       if (_secondsInPhase > 1) {
+        HapticFeedback.lightImpact();
         setState(() => _secondsInPhase--);
       } else {
         timer.cancel();
@@ -437,6 +919,7 @@ class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSecti
 
   void _runHold() {
     if (!mounted) return;
+    HapticFeedback.heavyImpact();
     setState(() {
       _phase = 'Hold gently';
       _secondsInPhase = 4;
@@ -456,6 +939,7 @@ class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSecti
 
   void _runRelease() {
     if (!mounted) return;
+    HapticFeedback.mediumImpact();
     setState(() {
       _phase = 'Let it go';
       _secondsInPhase = 6;
@@ -467,6 +951,7 @@ class _HeroOrganicBreathingSectionState extends State<_HeroOrganicBreathingSecti
     _phaseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       if (_secondsInPhase > 1) {
+        HapticFeedback.selectionClick();
         setState(() => _secondsInPhase--);
       } else {
         timer.cancel();

@@ -267,14 +267,14 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   HapticFeedback.selectionClick();
                   state.setTab(_indexToAppTab(index));
                 },
-                backgroundColor: const Color(0xC4081119), // Apple iOS ultra-translucent frosted glass
+                backgroundColor: const Color(0xE60D0F16), // Serenly Obsidian frosted glass
                 border: const Border(
-                  top: BorderSide(color: Color(0x26FFFFFF), width: 0.5), // Apple standard 0.5px hairline
+                  top: BorderSide(color: Color(0x1FFFFFFF), width: 0.8), // Hairline white contour
                 ),
-                activeColor: const Color(0xFF2DD4BF), // iOS Seafoam Cyan
-                inactiveColor: const Color(0xFF8E9BAE), // iOS System Gray 2
-                iconSize: 22,
-                height: 54,
+                activeColor: Colors.white, // Serenly Crisp White
+                inactiveColor: const Color(0xFF64748B), // Slate 500
+                iconSize: 21,
+                height: 56,
                 currentIndex: _appTabToIndex(state.tab),
                 items: [
                   const BottomNavigationBarItem(
@@ -283,9 +283,9 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                     label: 'Home',
                   ),
                   const BottomNavigationBarItem(
-                    icon: Icon(CupertinoIcons.person_crop_circle),
-                    activeIcon: Icon(CupertinoIcons.person_crop_circle_fill),
-                    label: 'Meditate',
+                    icon: Icon(CupertinoIcons.compass),
+                    activeIcon: Icon(CupertinoIcons.compass_fill),
+                    label: 'Discover',
                   ),
                   const BottomNavigationBarItem(
                     icon: Icon(CupertinoIcons.wind),

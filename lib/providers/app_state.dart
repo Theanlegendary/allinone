@@ -272,6 +272,10 @@ class AppState extends ChangeNotifier {
     'Whispering Pine Forest': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
     'Desert Stargazing': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
     'Ancient Temple Bells': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/things/singing-bowl.mp3',
+    'Ocean Breath': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/waves.mp3',
+    'Gentle Reset': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/river.mp3',
+    'Forest Slumber': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/nature/wind-in-trees.mp3',
+    'Return To Stillness': 'https://raw.githubusercontent.com/remvze/moodist/main/public/sounds/rain/light-rain.mp3',
   };
 
   static String _resolveCdnUrl(String rawUrl) {
@@ -680,6 +684,34 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _guidedTotalSec = 2700;
+  int get guidedTotalSec => _guidedTotalSec;
+
+  Future<void> startGuidedSession(String title, String subtitle, int totalSec, int durationMins) async {
+    _guidedTotalSec = totalSec;
+    await playGuidedSession(title, durationMins);
+  }
+
+  void toggleGuidedPlayPause() {
+    if (_isGuidedPlaying) {
+      pauseGuidedSession();
+    } else {
+      _guidedPlayer.play();
+      _isGuidedPlaying = true;
+      _guidedTimer?.cancel();
+      _guidedTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!_isGuidedPlaying || _guidedRemainingSec <= 0) {
+          timer.cancel();
+          stopGuidedSession(completed: true, durationMins: _guidedTotalSec ~/ 60);
+        } else {
+          _guidedRemainingSec--;
+          notifyListeners();
+        }
+      });
+      notifyListeners();
+    }
+  }
+
   Future<void> pauseGuidedSession() async {
     _guidedTimer?.cancel();
     await _guidedPlayer.pause();
@@ -1009,6 +1041,15 @@ class AppState extends ChangeNotifier {
     final lastMs = _prefs!.getInt('last_practice_ms') ?? 0;
     if (lastMs > 0) _practicedToday = _sameDay(DateTime.fromMillisecondsSinceEpoch(lastMs), DateTime.now());
 
+    // BUG FIX: themeMode was saved but never restored — always defaulted to midnightNavy
+    final savedTheme = _prefs!.getString('theme_mode');
+    if (savedTheme != null) {
+      _themeMode = SanctuaryThemeMode.values.firstWhere(
+        (e) => e.name == savedTheme,
+        orElse: () => SanctuaryThemeMode.midnightNavy,
+      );
+    }
+
     final rawS = _prefs!.getStringList('sessions') ?? [];
     _sessions = rawS.map((s) { try { return SessionRecord.fromJson(jsonDecode(s)); } catch (_) { return null; } })
         .whereType<SessionRecord>().toList();
@@ -1035,8 +1076,11 @@ class AppState extends ChangeNotifier {
     }
 
     _loadRecents();
+    _loadFavorites(); // BUG FIX: was never called — favorites reset on every restart
     _loadReminder();
     _loadPremiumState();
+    // BUG FIX: _totalSessions was never restored — counter always restarted from 0
+    _totalSessions = _prefs!.getInt('total_sessions') ?? _sessions.length;
 
     try {
       final session = await AudioSession.instance;
@@ -1213,6 +1257,17 @@ class AppState extends ChangeNotifier {
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
   bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  // ─── Streak & Viral Milestone Unlocks ────────────────────────────────────────
+  bool isMilestoneUnlocked(int days) => _streak >= days || _longestStreak >= days;
+
+  String? get currentStreakTitle {
+    if (_streak >= 30) return '🏆 Mindful Zen Master (30+ Days)';
+    if (_streak >= 14) return '✨ Inner Peace Voyager (14 Days)';
+    if (_streak >= 7) return '🌿 Serene Habit Builder (7 Days)';
+    if (_streak >= 3) return '🌱 Calm Explorer (3 Days)';
+    return '🌸 Peaceful Beginning (Day 1)';
+  }
 
   void _updateStreak() {
     if (_practicedToday) return;

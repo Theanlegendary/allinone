@@ -547,15 +547,12 @@ class _PremiumScreenState extends State<PremiumScreen>
         await Purchases.purchaseProduct('premium_monthly');
       }
       
-      // Update local state to reflect purchase success immediately
-      if (state.trialActive) {
-        await state.purchasePremium();
-      } else {
-        await state.startFreeTrial();
-      }
+      // BUG FIX: always grant full premium after successful RevenueCat charge
+      // Previously, non-trial users were incorrectly dropped into startFreeTrial()
+      await state.purchasePremium();
 
       if (mounted) {
-        _showSuccessSheet(context, state.trialActive ? 'Trial Active! 🎉' : 'Welcome to Premium! 🪷');
+        _showSuccessSheet(context, 'Welcome to Premium! 🪷');
       }
     } catch (e) {
       debugPrint("Purchase Error: $e");

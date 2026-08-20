@@ -317,7 +317,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
                                   trailingIcon: CupertinoIcons.play_fill,
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    Provider.of<AppState>(context, listen: false).playGuidedSession(s.$2, int.parse(s.$3));
+                                    Provider.of<AppState>(context, listen: false).playGuidedSession(s.$2, int.tryParse(s.$3) ?? 10);
                                   },
                                 ),
                                 CupertinoContextMenuAction(
@@ -401,7 +401,7 @@ class _SessionCard extends StatelessWidget {
             if (isPlayingThis) {
               state.pauseGuidedSession();
             } else {
-              state.playGuidedSession(title, int.parse(duration));
+              state.playGuidedSession(title, int.tryParse(duration) ?? 10);
             }
           },
           child: Padding(

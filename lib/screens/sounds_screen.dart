@@ -640,8 +640,18 @@ class _SoundsScreenState extends State<SoundsScreen> {
               backgroundColor: const Color(0xE6050D15),
               trailing: CupertinoButton(
                 padding: EdgeInsets.zero,
-                onPressed: () {},
-                child: const Icon(CupertinoIcons.slider_horizontal_3, color: tealPrimary),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  SoundMixShareModal.show(context);
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.share, color: tealPrimary, size: 20),
+                    SizedBox(width: 4),
+                    Text('Share', style: TextStyle(color: tealPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
             SliverToBoxAdapter(

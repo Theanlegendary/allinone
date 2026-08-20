@@ -1,444 +1,189 @@
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
 import 'package:relax_mindfulness/theme/app_theme.dart';
-import 'package:relax_mindfulness/components/glass_components.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
-
-  @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
-}
-
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _ctrl = PageController();
-  int _page = 0;
-
-  static const _backgroundGradients = [
-    [Color(0xFF09141D), Color(0xFF0F2634), Color(0xFF081017)],
-    [Color(0xFF0A121A), Color(0xFF142431), Color(0xFF081119)],
-    [Color(0xFF0F1A24), Color(0xFF1A2E3D), Color(0xFF0A131C)],
-  ];
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _next() {
-    if (_page < 2) {
-      _ctrl.nextPage(
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeOutCubic,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF08090C),
       body: Stack(
         children: [
-          // Background ambient gradient
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 600),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: _backgroundGradients[_page],
-              ),
+          // ── Atmospheric Background Photography & Vignette Glow ──
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=1200&q=80',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(color: const Color(0xFF08090C)),
             ),
           ),
 
-          // Subtle background ambient light glow
-          Positioned(
-            top: -60,
-            right: -40,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 600),
-              width: 260,
-              height: 260,
+          // Deep Dark Obsidian Vignette Overlay
+          Positioned.fill(
+            child: Container(
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _page == 0
-                    ? tealPrimary.withOpacity(0.12)
-                    : _page == 1
-                        ? mintAccent.withOpacity(0.12)
-                        : coralAccent.withOpacity(0.12),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF08090C).withOpacity(0.75),
+                    const Color(0xFF08090C).withOpacity(0.60),
+                    const Color(0xFF08090C).withOpacity(0.92),
+                    const Color(0xFF08090C),
+                  ],
+                  stops: const [0.0, 0.35, 0.70, 1.0],
+                ),
               ),
             ),
           ),
 
+          // ── Main Content Area ──
           SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: PageView(
-                    controller: _ctrl,
-                    onPageChanged: (p) => setState(() => _page = p),
-                    children: const [_Slide1(), _Slide2(), _Slide3()],
-                  ),
-                ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 32),
 
-                // Navigation Footer
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                  child: Column(
+                  // 🌸 Top Brand Logo (Asterisk / Star + Serenly / Sanctuary)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Smooth Page Indicator Dots
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(3, (i) {
-                          final isSelected = i == _page;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: isSelected ? 28 : 7,
-                            height: 7,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: isSelected ? tealPrimary : Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          );
-                        }),
+                      const Icon(
+                        CupertinoIcons.sparkles,
+                        color: Color(0xFFFFFFFF),
+                        size: 20,
                       ),
-                      const SizedBox(height: 24),
-
-                      // Navigation Buttons
-                      if (_page < 2)
-                        Row(
-                          children: [
-                            TextButton(
-                              onPressed: () => context.read<AppState>().completeOnboarding(),
-                              child: Text(
-                                'Skip',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.45),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            GlassPillButton(
-                              text: 'Continue →',
-                              onTap: _next,
-                            ),
-                          ],
-                        )
-                      else
-                        SizedBox(
-                          width: double.infinity,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => context.read<AppState>().completeOnboarding(),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [tealPrimary, mintAccent],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: tealPrimary.withOpacity(0.35),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'Begin Your Practice',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Serenly',
+                        style: GoogleFonts.outfit(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-// ── Slide 1 ──────────────────────────────────────────────────────────────────
-class _Slide1 extends StatelessWidget {
-  const _Slide1();
+                  const Spacer(),
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Hero Glowing Lotus Badge
-          Container(
-            width: 110,
-            height: 110,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: tealPrimary.withOpacity(0.12),
-              border: Border.all(color: tealPrimary.withOpacity(0.3), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: tealPrimary.withOpacity(0.2),
-                  blurRadius: 30,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.spa_rounded,
-              color: tealPrimary,
-              size: 54,
-            ),
-          ),
-          const SizedBox(height: 36),
-
-          const Text(
-            'Relax & Mindfulness',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          Text(
-            'A quiet space to restore focus, calm your mind, and prepare for deep, restful sleep.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.white.withOpacity(0.65),
-              height: 1.55,
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.12)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.auto_awesome_rounded, color: tealPrimary, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'Designed for daily serenity',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  // ── Hero Headline & Subtitle ──
+                  Text(
+                    'Step Into Stillness',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+                  const SizedBox(height: 12),
+                  Text(
+                    'Create your account to discover guided experiences crafted for rest, focus, and renewal.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF94A3B8),
+                      height: 1.45,
+                    ),
+                  ),
 
-// ── Slide 2 ──────────────────────────────────────────────────────────────────
-class _Slide2 extends StatelessWidget {
-  const _Slide2();
+                  const SizedBox(height: 36),
 
-  static const _features = [
-    (Icons.self_improvement_rounded, 'Guided Meditation', 'Sessions for stress relief, focus & clarity', tealPrimary),
-    (Icons.air_rounded, 'Breathing Exercises', 'Box, 4-7-8, and resonance breathing patterns', mintAccent),
-    (Icons.equalizer_rounded, 'Ambient Sound Mixer', '11 customizable continuous audio tracks', coralAccent),
-    (Icons.nightlight_round, 'Bedtime Sleep Stories', 'Narrated journeys with auto-fade sleep timer', purpleAccent),
-  ];
+                  // ── Social & Email Auth Pill Buttons (Serenly Clean Frosted Glass) ──
+                  _AuthPillButton(
+                    icon: CupertinoIcons.mail_solid,
+                    label: 'Continue with Email',
+                    onTap: () => context.read<AppState>().completeOnboarding(),
+                  ),
+                  const SizedBox(height: 12),
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Everything You Need',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Simple, effective tools crafted for daily peace.',
-            style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.55)),
-          ),
-          const SizedBox(height: 28),
+                  _AuthPillButton(
+                    icon: Icons.apple,
+                    iconSize: 22,
+                    label: 'Continue with Apple',
+                    onTap: () => context.read<AppState>().completeOnboarding(),
+                  ),
+                  const SizedBox(height: 12),
 
-          ..._features.map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: GlassCard(
-                  cornerRadius: 18,
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: f.$4.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(f.$1, color: f.$4, size: 22),
+                  _AuthPillButton(
+                    customIcon: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              f.$2,
-                              style: const TextStyle(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'G',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    label: 'Continue with Google',
+                    onTap: () => context.read<AppState>().completeOnboarding(),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // ── Legal Disclaimer & Login Prompt ──
+                  Text(
+                    'By continuing, you agree to our Terms and Privacy Policy,\nincluding how to opt out of promotions.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      color: const Color(0xFF64748B),
+                      height: 1.4,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  GestureDetector(
+                    onTap: () => context.read<AppState>().completeOnboarding(),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: RichText(
+                        text: TextSpan(
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          children: const [
+                            TextSpan(text: 'Have an account? '),
+                            TextSpan(
+                              text: 'Log In',
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              f.$3,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.55),
-                                fontSize: 12,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-}
 
-// ── Slide 3 ──────────────────────────────────────────────────────────────────
-class _Slide3 extends StatelessWidget {
-  const _Slide3();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Hero Frosted Glass Checkmark Badge (Replaces generic green box emoji)
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: mintAccent.withOpacity(0.12),
-              border: Border.all(color: mintAccent.withOpacity(0.35), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: mintAccent.withOpacity(0.2),
-                  blurRadius: 30,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: mintAccent,
-              size: 48,
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          const Text(
-            'Ready to Begin',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          Text(
-            'Build consistency, track your mindful minutes, and find your quiet center every day.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.white.withOpacity(0.65),
-              height: 1.55,
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // Apple-style Glass Highlights Card
-          GlassCard(
-            cornerRadius: 20,
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: _HighlightTile(
-                    icon: Icons.local_fire_department_rounded,
-                    color: coralAccent,
-                    title: 'Streaks',
-                    subtitle: 'Daily habit',
-                  ),
-                ),
-                Expanded(
-                  child: _HighlightTile(
-                    icon: Icons.insights_rounded,
-                    color: tealPrimary,
-                    title: 'Insights',
-                    subtitle: 'Weekly stats',
-                  ),
-                ),
-                Expanded(
-                  child: _HighlightTile(
-                    icon: Icons.spa_rounded,
-                    color: mintAccent,
-                    title: 'Calm',
-                    subtitle: 'On demand',
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ],
@@ -447,49 +192,67 @@ class _Slide3 extends StatelessWidget {
   }
 }
 
-class _HighlightTile extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
+// ── Translucent Glass Auth Button ─────────────────────────────────────────────
+class _AuthPillButton extends StatelessWidget {
+  final IconData? icon;
+  final Widget? customIcon;
+  final double iconSize;
+  final String label;
+  final VoidCallback onTap;
 
-  const _HighlightTile({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
+  const _AuthPillButton({
+    this.icon,
+    this.customIcon,
+    this.iconSize = 19,
+    required this.label,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 20),
+    return Container(
+      width: double.infinity,
+      height: 54,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E212B).withOpacity(0.70),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.14),
+          width: 0.8,
         ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: onTap,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (customIcon != null) customIcon!,
+                if (icon != null)
+                  Icon(
+                    icon,
+                    color: Colors.white,
+                    size: iconSize,
+                  ),
+                const SizedBox(width: 10),
+                Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
-            fontSize: 11,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

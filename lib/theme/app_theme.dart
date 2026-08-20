@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─── Theme 1: Luxury Editorial + Neo Minimalism Palette ──────────────────────
+// ─── Theme 1: Serenly Luxury Obsidian + Neo Minimalism Palette ────────────────
 const Color tealPrimary     = Color(0xFF52B788); // Apple Fitness/Health Sage Green (#52b788)
 const Color tealDark        = Color(0xFF3B8260);
 const Color coralAccent     = Color(0xFFE29578); // Soft Warm Terracotta Peach (#e29578)
@@ -10,14 +10,22 @@ const Color mintAccent      = Color(0xFF74C69D); // Fresh Soft Spring Mint (#74c
 const Color purpleAccent    = Color(0xFFB8B8D1); // Ethereal Dusk Lavender (#b8b8d1)
 const Color greenAccent     = Color(0xFF95D5B2);
 
-const Color bgDark          = Color(0xFF050D15); // Deep Navy Midnight Sanctuary (#050d15)
-const Color bgMid           = Color(0xFF0A1622); // Deep Oceanic Midnight Navy (#0a1622)
-const Color bgSurface       = Color(0xFF0E1E2C);
+// Serenly Ultra Dark Obsidian tokens
+const Color serenlyBg       = Color(0xFF08090C); // Pure obsidian night (#08090c)
+const Color serenlySurface  = Color(0xFF111319); // Subtle dark card surface
+const Color serenlyGlass    = Color(0x1AFFFFFF); // Translucent pill fill
+const Color serenlyBorder   = Color(0x1FFFFFFF); // Hairline white contour
+const Color serenlyGold     = Color(0xFFE5A96E); // Warm sunset golden glow
+const Color serenlyDuskBlue = Color(0xFF38BDF8); // Ocean breath cyan
+
+const Color bgDark          = Color(0xFF08090C); // Deep Obsidian Midnight Sanctuary (#08090c)
+const Color bgMid           = Color(0xFF0F1117); // Obsidian Surface Navy (#0f1117)
+const Color bgSurface       = Color(0xFF141720);
 
 const Color glassWhite      = Color(0x0CFFFFFF); // Ultra-soft 0.05 glass opacity
 const Color glassBorder     = Color(0x1AFFFFFF); // Soft 0.1 border contour
-const Color textPrimary     = Color(0xFFF4F8FA); // Warm Editorial Off-White (#f4f8fa)
-const Color textSecondary   = Color(0xFF8BA0B2); // Editorial Slate Blue Mist (#8ba0b2)
+const Color textPrimary     = Color(0xFFFFFFFF); // Pure Crisp White
+const Color textSecondary   = Color(0xFF94A3B8); // Slate 400 Editorial Subtext
 
 // ─── Claymorphism Soft UI Theme Palette ──────────────────────────────────────
 const Color clayAccent       = Color(0xFFD4A574); // Warm Sand Clay Accent (#d4a574)
