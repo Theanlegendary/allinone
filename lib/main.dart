@@ -267,14 +267,13 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                   HapticFeedback.selectionClick();
                   state.setTab(_indexToAppTab(index));
                 },
-                backgroundColor: const Color(0xE60D0F16), // Serenly Obsidian frosted glass
+                backgroundColor: const Color(0xF00D0F16), // Serenly Obsidian frosted glass
                 border: const Border(
-                  top: BorderSide(color: Color(0x1FFFFFFF), width: 0.8), // Hairline white contour
+                  top: BorderSide(color: Color(0x2EFFFFFF), width: 0.8), // Clear top boundary
                 ),
-                activeColor: Colors.white, // Serenly Crisp White
-                inactiveColor: const Color(0xFF64748B), // Slate 500
-                iconSize: 21,
-                height: 56,
+                activeColor: const Color(0xFFFFFFFF), // Pure bright active white
+                inactiveColor: const Color(0xFFA0AEC0), // High-contrast clear silver/slate
+                iconSize: 23,
                 currentIndex: _appTabToIndex(state.tab),
                 items: [
                   const BottomNavigationBarItem(
@@ -303,8 +302,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                     label: 'Sleep',
                   ),
                   BottomNavigationBarItem(
-                    icon: _PremiumTabIcon(isPremium: state.isPremium, isActive: false),
-                    activeIcon: _PremiumTabIcon(isPremium: state.isPremium, isActive: true),
+                    icon: const Icon(CupertinoIcons.sparkles),
+                    activeIcon: const Icon(CupertinoIcons.sparkles),
                     label: state.isPremium ? 'Premium' : 'AI',
                   ),
                 ],
