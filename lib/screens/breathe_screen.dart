@@ -335,61 +335,62 @@ class _BreatheScreenState extends State<BreatheScreen> with TickerProviderStateM
 
                   const Spacer(),
 
-                  // ── Hero Glowing 3D Breathing Lotus Orb ────────────────────
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_orbCtrl, _pulseCtrl]),
-                    builder: (context, _) {
-                      final scale = 0.72 + (0.28 * _orbCtrl.value);
-                      final orbSize = 250.0 * scale;
+                  // ── Hero Glowing 3D Breathing Lotus Orb (GPU Isolated) ──
+                  RepaintBoundary(
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([_orbCtrl, _pulseCtrl]),
+                      builder: (context, _) {
+                        final scale = 0.72 + (0.28 * _orbCtrl.value);
+                        final orbSize = 250.0 * scale;
 
-                      return Container(
-                        width: orbSize,
-                        height: orbSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              _phaseColor.withOpacity(0.9),
-                              _phaseColor.withOpacity(0.5),
-                              _phaseColor.withOpacity(0.1),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _phaseColor.withOpacity(0.4 * _pulseCtrl.value),
-                              blurRadius: 40 * scale,
-                              spreadRadius: 10,
+                        return Container(
+                          width: orbSize,
+                          height: orbSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                _phaseColor.withOpacity(0.9),
+                                _phaseColor.withOpacity(0.5),
+                                _phaseColor.withOpacity(0.1),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$_phaseSecLeft',
-                                style: const TextStyle(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _phaseLabel,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white.withOpacity(0.95),
-                                  letterSpacing: 2.0,
-                                ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _phaseColor.withOpacity(0.4 * _pulseCtrl.value),
+                                blurRadius: 40 * scale,
+                                spreadRadius: 10 * scale,
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    },
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _phaseLabel,
+                                  style: TextStyle(
+                                    fontSize: 24 * scale,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$_phaseSecLeft s',
+                                  style: TextStyle(
+                                    fontSize: 32 * scale,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 24),
 

@@ -334,6 +334,10 @@ class HomeScreen extends StatelessWidget {
 
                             // ── Serenly Special Holiday Offer Strip ──
                             const _SerenlyHolidayOfferCard(),
+                            const SizedBox(height: 18),
+
+                            // ── ⚡ 1-Tap SOS Panic / Stress Reset Utility Card ──
+                            const QuickPanicResetCard(),
                             const SizedBox(height: 26),
 
                             // ── Serenly "Popular" Horizontal Photo Cards Carousel ──
@@ -422,17 +426,36 @@ class _SerenlyUserHeader extends StatelessWidget {
         Row(
           children: [
             // User Avatar Photo
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.2),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+class _SerenlyUserHeader extends StatelessWidget {
+  const _SerenlyUserHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Left User Avatar + Greeting
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                ViralStreakShareModal.show(context);
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFF9500).withOpacity(0.4), width: 1.5),
+                  image: const DecorationImage(
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                    ),
+                    fit: BoxFit.cover,
                   ),
-                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -463,40 +486,78 @@ class _SerenlyUserHeader extends StatelessWidget {
           ],
         ),
 
-        // Frosted Bell Icon Button
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF1E212B).withOpacity(0.8),
-            border: Border.all(color: Colors.white.withOpacity(0.14), width: 0.8),
-          ),
-          child: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              showCupertinoDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (ctx) => CupertinoAlertDialog(
-                  title: const Text('Notifications 🔔'),
-                  content: const Text('Your daily evening wind-down reminder is set for 9:30 PM.'),
-                  actions: [
-                    CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.pop(ctx),
+        // Right Action Pills: Viral Streak Share + Bell
+        Row(
+          children: [
+            // 🔥 Viral Streak Share Pill
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              minSize: 36,
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                ViralStreakShareModal.show(context);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E212B).withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFF9500).withOpacity(0.4), width: 1),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(CupertinoIcons.flame_fill, color: Color(0xFFFF9500), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${state.streak}d',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
-              );
-            },
-            child: const Icon(
-              CupertinoIcons.bell,
-              color: Colors.white,
-              size: 19,
+              ),
             ),
-          ),
+            const SizedBox(width: 8),
+
+            // Frosted Bell Icon Button
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF1E212B).withOpacity(0.8),
+                border: Border.all(color: Colors.white.withOpacity(0.14), width: 0.8),
+              ),
+              child: CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  showCupertinoDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (ctx) => CupertinoAlertDialog(
+                      title: const Text('Notifications 🔔'),
+                      content: const Text('Your daily evening wind-down reminder is set for 9:30 PM.'),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text('OK'),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: const Icon(
+                  CupertinoIcons.bell,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

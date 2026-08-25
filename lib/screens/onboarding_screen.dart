@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:relax_mindfulness/providers/app_state.dart';
@@ -51,23 +52,53 @@ class OnboardingScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 32),
 
-                  // 🌸 Top Brand Logo (Asterisk / Star + Serenly / Sanctuary)
+                  // 🌸 Top Brand Logo with 1-Tap Skip/Explore for Zero Friction
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(
-                        CupertinoIcons.sparkles,
-                        color: Color(0xFFFFFFFF),
-                        size: 20,
+                      const SizedBox(width: 48), // Balance for center alignment
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            CupertinoIcons.sparkles,
+                            color: Color(0xFFFFFFFF),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Serenly',
+                            style: GoogleFonts.outfit(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Serenly',
-                        style: GoogleFonts.outfit(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minSize: 32,
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.read<AppState>().completeOnboarding();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.8),
+                          ),
+                          child: Text(
+                            'Skip',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
                         ),
                       ),
                     ],

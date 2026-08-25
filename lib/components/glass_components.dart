@@ -2199,3 +2199,387 @@ class SoundMixShareModal extends StatelessWidget {
     );
   }
 }
+
+// ─── 🏆 Viral Streak Milestone Card Modal (Share to Instagram/WhatsApp) ───────
+class ViralStreakShareModal extends StatelessWidget {
+  const ViralStreakShareModal({super.key});
+
+  static void show(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => const ViralStreakShareModal(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    const inviteUrl = 'https://theanlegendary.github.io/allinone/?ref=streak';
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D1017),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle Bar
+            Container(
+              width: 40,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Milestone Badge 🏆',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Inspire friends & gift them 1 month of calm',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                  child: const Icon(CupertinoIcons.xmark_circle_fill, color: Colors.white60, size: 24),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 🖼️ Luxury Obsidian Achievement Story Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF1E2433),
+                    Color(0xFF0C0E14),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.4), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withOpacity(0.15),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(CupertinoIcons.flame_fill, color: Color(0xFFFF9500), size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'DAILY MINDFULNESS HABIT',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFFFF9500),
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          state.currentStreakTitle,
+                          style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Streak Big Number
+                  Text(
+                    '${state.streak}',
+                    style: const TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1.0,
+                      letterSpacing: -1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Day Streak Completed',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Stats Row
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.35),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          children: [
+                            Text('${state.totalMinutes}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                            const SizedBox(height: 2),
+                            Text('Minutes Calm', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.55))),
+                          ],
+                        ),
+                        Container(width: 1, height: 24, color: Colors.white12),
+                        Column(
+                          children: [
+                            Text('${state.totalSessions}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                            const SizedBox(height: 2),
+                            Text('Sessions', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.55))),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(CupertinoIcons.sparkles, color: tealPrimary, size: 13),
+                      const SizedBox(width: 6),
+                      Text(
+                        'sanctuary.app • Beat stress in 60s',
+                        style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.5)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Viral Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    color: const Color(0xFF1C2230),
+                    borderRadius: BorderRadius.circular(18),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Clipboard.setData(const ClipboardData(text: inviteUrl));
+                      showCupertinoDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (ctx) {
+                          Future.delayed(const Duration(seconds: 2), () {
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          });
+                          return const CupertinoAlertDialog(
+                            title: Text('Invite Link Copied 📋'),
+                            content: Text('Gift link copied. Friends get 1 month of full access.'),
+                          );
+                        },
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.link, size: 16, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text(
+                          'Gift a Friend',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    color: const Color(0xFFFF9500),
+                    borderRadius: BorderRadius.circular(18),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      Clipboard.setData(ClipboardData(
+                        text: '🔥 I just reached a ${state.streak}-day mindfulness streak on Sanctuary! Try it free: $inviteUrl',
+                      ));
+                      Navigator.pop(context);
+                      showCupertinoDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (ctx) {
+                          Future.delayed(const Duration(seconds: 2), () {
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          });
+                          return const CupertinoAlertDialog(
+                            title: Text('Streak Card Copied 🌟'),
+                            content: Text('Open Instagram or WhatsApp to share your achievement with friends!'),
+                          );
+                        },
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.share_up, size: 16, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text(
+                          'Share Story',
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── ⚡ 60-Second SOS Panic/Stress Reset Card ───────────────────────────────────
+class QuickPanicResetCard extends StatelessWidget {
+  const QuickPanicResetCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A1528),
+            const Color(0xFF0E0B16),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF9D4EDD).withOpacity(0.35), width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF9D4EDD).withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: const Color(0xFF9D4EDD).withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF9D4EDD).withOpacity(0.4), width: 1),
+            ),
+            child: const Icon(CupertinoIcons.bolt_fill, color: Color(0xFFD8B4FE), size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Immediate Calm SOS',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '1-Min 4-7-8 Breath + Soothing Rain',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.65),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              final state = context.read<AppState>();
+              state.startPanicResetCombo();
+              state.setTab(AppTab.breathe);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF9D4EDD),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x669D4EDD), blurRadius: 10),
+                ],
+              ),
+              child: const Text(
+                'Reset ⚡',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
