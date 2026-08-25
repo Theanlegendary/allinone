@@ -506,6 +506,13 @@
       };
     })();
 
+    // ── Automatic Service Worker Fresh Update ──
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        console.log('App updated with latest icons & assets.');
+      });
+    }
+
     // ── Instant splash hide when Flutter paints first frame ──
     window.addEventListener('flutter-first-frame', function() {
       var splash = document.getElementById('splash');
