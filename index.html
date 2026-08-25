@@ -495,6 +495,24 @@
   <script src="flutter_bootstrap.js" async></script>
 
   <script>
+    // ── Suppress harmless Skia / CanvasKit font fallback notice ──
+    (function() {
+      var origWarn = console.warn;
+      console.warn = function() {
+        if (arguments.length > 0 && typeof arguments[0] === 'string' && arguments[0].indexOf('Could not find a set of Noto fonts') !== -1) {
+          return;
+        }
+        origWarn.apply(console, arguments);
+      };
+    })();
+
+    // ── Automatic Service Worker Fresh Update ──
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        console.log('App updated with latest icons & assets.');
+      });
+    }
+
     // ── Instant splash hide when Flutter paints first frame ──
     window.addEventListener('flutter-first-frame', function() {
       var splash = document.getElementById('splash');
