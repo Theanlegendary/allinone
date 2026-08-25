@@ -38,7 +38,7 @@ class _SleepScreenState extends State<SleepScreen> {
     (
       'Night Forest',
       '40 min',
-      'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=400&q=80',
       tealPrimary
     ),
     (
@@ -832,7 +832,7 @@ class _SleepScreenState extends State<SleepScreen> {
                               title: 'Whispering Pine Forest',
                               narrator: 'Julian Ross',
                               duration: '28 min',
-                              imageUrl: 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=400&q=80',
+                              imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=400&q=80',
                               onTap: () => state.playGuidedSession('Whispering Pine Forest', 28),
                             ),
                             _buildSleepStoryTile(
