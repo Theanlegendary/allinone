@@ -106,10 +106,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(OnboardingScreen), findsOneWidget);
-    expect(find.text('Step Into Stillness'), findsOneWidget);
+    expect(find.text('Master Your Mind\nwith Ease'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
     expect(find.text('Skip'), findsOneWidget);
 
-    // Tap Skip
+    // Tap Skip to complete onboarding
     await tester.tap(find.text('Skip'));
     await tester.pump(const Duration(milliseconds: 500));
     expect(appState.onboardingDone, true);

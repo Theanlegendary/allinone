@@ -481,6 +481,7 @@ class AppState extends ChangeNotifier {
   List<SessionRecord> get sessions => List.unmodifiable(_sessions);
 
   int get totalMinutes => _sessions.fold(0, (sum, s) => sum + s.durationMinutes);
+  int get totalSessions => _totalSessions;
 
   double get avgMood {
     final rated = _sessions.where((s) => s.moodRating > 0);

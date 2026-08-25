@@ -420,17 +420,6 @@ class _SerenlyUserHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            // User Avatar Photo
-class _SerenlyUserHeader extends StatelessWidget {
-  const _SerenlyUserHeader();
-
-  @override
-  Widget build(BuildContext context) {
     final state = context.watch<AppState>();
 
     return Row(

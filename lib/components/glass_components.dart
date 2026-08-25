@@ -2327,7 +2327,7 @@ class ViralStreakShareModal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          state.currentStreakTitle,
+                          state.currentStreakTitle ?? 'Mindful Habit',
                           style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600),
                         ),
                       ),
