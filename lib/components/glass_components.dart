@@ -578,7 +578,10 @@ class _MoodCheckInDialogState extends State<MoodCheckInDialog>
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 color: _selected != null ? tealPrimary : tealPrimary.withOpacity(0.25),
                                 borderRadius: BorderRadius.circular(16),
-                                onPressed: _selected != null ? () => widget.onMoodSelected(_selected!) : null,
+                                onPressed: _selected != null ? () {
+                                  HapticFeedback.heavyImpact();
+                                  widget.onMoodSelected(_selected!);
+                                } : null,
                                 child: Text(
                                   _selected != null ? 'Save Rating ✓' : 'Select Mood',
                                   style: TextStyle(

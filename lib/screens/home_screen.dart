@@ -2129,8 +2129,41 @@ class _DailyAffirmationBannerState extends State<_DailyAffirmationBanner> {
             ),
           ),
           const SizedBox(width: 8),
+          // Share Quote to Instagram / WhatsApp
           GestureDetector(
             onTap: () {
+              HapticFeedback.mediumImpact();
+              Clipboard.setData(ClipboardData(
+                text: '🌸 Daily Calm Thought:\n${current['quote']}\n— ${current['author']}\n\nFind your stillness on Sanctuary: https://theanlegendary.github.io/allinone/?quote=daily',
+              ));
+              showCupertinoDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (ctx) {
+                  Future.delayed(const Duration(seconds: 2), () {
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  });
+                  return const CupertinoAlertDialog(
+                    title: Text('Quote Copied 🌟'),
+                    content: Text('Daily calm quote copied. Paste to your Instagram Story or WhatsApp status!'),
+                  );
+                },
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(CupertinoIcons.share_up, color: Colors.white70, size: 16),
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Refresh Quote
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
               setState(() {
                 _quoteIndex = (_quoteIndex + 1) % _quotes.length;
               });
